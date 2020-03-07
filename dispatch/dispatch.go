@@ -6,9 +6,11 @@ import (
 	"github.com/rami3l/pacapt-go/parser"
 )
 
-func Dispatch(args parser.CmdArgs) (err error) {
+// Dispatch according to command line arguments
+func Dispatch(args *parser.CmdArgs) (err error) {
 	pacman := NewPacMan()
 	kw := args.Keywords
+
 	switch {
 	case args.Query:
 		switch {
@@ -63,4 +65,10 @@ func Dispatch(args parser.CmdArgs) (err error) {
 	}
 
 	return
+}
+
+// GetErrorCode for some error
+// TODO: Make this function REALLY return correct error code
+func GetErrorCode(_ error) int {
+	return 1
 }
