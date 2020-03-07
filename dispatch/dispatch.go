@@ -1,0 +1,3 @@
+package dispatch
+
+func Dispatch() {}
