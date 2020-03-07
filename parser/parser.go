@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/akamensky/argparse"
 )
@@ -12,6 +13,24 @@ type CmdArgs struct {
 	Query, Remove, Sync bool
 	I, L, O, S, U, Y    bool
 	C                   int
+	Keywords            []string
+}
+
+// stripTargets distinguishes between pacapt flags and package names
+// ! WARNING: Extremely dirty...
+func stripTargets(args []string) (cmd []string, keywords []string) {
+	var targetsStart int = 1
+	for _, s := range args[1:] {
+		if !strings.HasPrefix(s, "-") {
+			break
+		}
+		targetsStart++
+	}
+
+	cmd = args[:targetsStart]
+	keywords = args[targetsStart:]
+	// fmt.Printf("cmd: %s, args: %s\n", cmd, keywords)
+	return
 }
 
 // Run the argument parser
@@ -28,7 +47,7 @@ func Run() (args *CmdArgs, err error) {
 	// ! WARNING
 	// ! Some long flag names are completely different for different operations,
 	// ! but I think mose of us just use the shorthand form anyway...
-	// see: https://www.archlinux.org/pacman/pacman.8.html#
+	// see: https://www.archlinux.org/pacman/pacman.8.html
 	i := parser.Flag("i", "info", &argparse.Options{Help: "(-Q/S) info"})
 	l := parser.Flag("l", "list", &argparse.Options{Help: "(-Q) list"})
 	o := parser.Flag("o", "owns", &argparse.Options{Help: "(-Q) owns"})
@@ -40,7 +59,10 @@ func Run() (args *CmdArgs, err error) {
 	c := parser.FlagCounter("c", "clean", &argparse.Options{Help: "(-S) clean"})
 
 	// Parse input
-	err = parser.Parse(os.Args)
+	cmd, keywords := stripTargets(os.Args)
+	if err = parser.Parse(cmd); err != nil {
+		return
+	}
 
 	// A naive implementation of a mutually exclusive check.
 	count := 0
@@ -50,7 +72,7 @@ func Run() (args *CmdArgs, err error) {
 		}
 	}
 	if count != 1 {
-		err = fmt.Errorf("pacapt: exactly ONE operation expected, found %d", count)
+		err = fmt.Errorf("pacapt: Exactly 1 operation expected, found %d", count)
 		return
 	}
 
@@ -59,6 +81,7 @@ func Run() (args *CmdArgs, err error) {
 		*query, *remove, *sync,
 		*i, *l, *o, *s, *u, *y,
 		*c,
+		keywords,
 	}
 
 	return
