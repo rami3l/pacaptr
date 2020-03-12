@@ -2,6 +2,7 @@ package dispatch
 
 import (
 	"fmt"
+	"os/exec"
 
 	"github.com/rami3l/pacapt-go/parser"
 )
@@ -71,4 +72,14 @@ func Dispatch(args *parser.CmdArgs) (err error) {
 // TODO: Make this function REALLY return correct error code
 func GetErrorCode(_ error) int {
 	return 1
+}
+
+// RunCommand and get the error.
+func RunCommand(cmd []string) (err error) {
+	out, err := exec.Command(cmd[0], cmd[1:]...).CombinedOutput()
+	fmt.Printf("%s\n", out)
+	if err != nil {
+		return
+	}
+	return
 }

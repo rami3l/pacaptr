@@ -8,6 +8,8 @@ import (
 	"github.com/akamensky/argparse"
 )
 
+// TODO: Support more operation combinations.
+
 // CmdArgs collects pacapt arguments.
 type CmdArgs struct {
 	Query, Remove, Sync bool
