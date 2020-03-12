@@ -61,6 +61,8 @@ func (self *Homebrew) Qp(keywords []string) (err error) {
 }
 
 func (self *Homebrew) Qs(keywords []string) (err error) {
+	// TODO: it seems that the output of `brew list python` in fish has a mechanism against duplication:
+	// /usr/local/Cellar/python/3.6.0/Frameworks/Python.framework/ (1234 files)
 	out, err := exec.Command("brew", append([]string{"list"}, keywords...)...).Output()
 	if err != nil {
 		return
@@ -79,7 +81,13 @@ func (self *Homebrew) Qu(keywords []string) (err error) {
 }
 
 func (self *Homebrew) R(keywords []string) (err error) {
-	return fmt.Errorf("pacapt: Feature not implemented")
+	// TODO: better remove (deal with `homebrew cask uninstall`)
+	out, err := exec.Command("brew", append([]string{"remove"}, keywords...)...).Output()
+	if err != nil {
+		return
+	}
+	fmt.Printf("%s\n", out)
+	return
 }
 
 func (self *Homebrew) Rn(keywords []string) (err error) {
@@ -91,11 +99,18 @@ func (self *Homebrew) Rns(keywords []string) (err error) {
 }
 
 func (self *Homebrew) Rs(keywords []string) (err error) {
+	// TODO: implement -Rs
 	return fmt.Errorf("pacapt: Feature not implemented")
 }
 
 func (self *Homebrew) S(keywords []string) (err error) {
-	return fmt.Errorf("pacapt: Feature not implemented")
+	// TODO: better install (deal with `homebrew cask install`)
+	out, err := exec.Command("brew", append([]string{"install"}, keywords...)...).Output()
+	if err != nil {
+		return
+	}
+	fmt.Printf("%s\n", out)
+	return
 }
 
 func (self *Homebrew) Sc(keywords []string) (err error) {
@@ -151,11 +166,21 @@ func (self *Homebrew) Ss(keywords []string) (err error) {
 }
 
 func (self *Homebrew) Su(keywords []string) (err error) {
-	return fmt.Errorf("pacapt: Feature not implemented")
+	out, err := exec.Command("brew", append([]string{"upgrade"}, keywords...)...).Output()
+	if err != nil {
+		return
+	}
+	fmt.Printf("%s\n", out)
+	return
 }
 
 func (self *Homebrew) Suy(keywords []string) (err error) {
-	return fmt.Errorf("pacapt: Feature not implemented")
+	err = self.Sy(keywords)
+	if err != nil {
+		return
+	}
+	err = self.Su(keywords)
+	return
 }
 
 func (self *Homebrew) Sw(keywords []string) (err error) {
@@ -163,7 +188,12 @@ func (self *Homebrew) Sw(keywords []string) (err error) {
 }
 
 func (self *Homebrew) Sy(keywords []string) (err error) {
-	return fmt.Errorf("pacapt: Feature not implemented")
+	out, err := exec.Command("brew", append([]string{"update"}, keywords...)...).Output()
+	if err != nil {
+		return
+	}
+	fmt.Printf("%s\n", out)
+	return
 }
 
 func (self *Homebrew) U(keywords []string) (err error) {
