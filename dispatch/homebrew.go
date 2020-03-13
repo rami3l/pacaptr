@@ -12,16 +12,15 @@ import (
 type Homebrew struct{}
 
 // For method implementation see: https://golang.org/src/os/exec/example_test.go
-// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta and https://wiki.archlinux.org/index.php/Pacman
-
-// TODO: for now the output will only be printed out when an operation is finished, which is disturbing. Fix that.
+// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
+// and https://wiki.archlinux.org/index.php/Pacman
 
 // Q generates a list of installed packages.
 func (hb *Homebrew) Q(kw []string) (err error) {
 	return fmt.Errorf("pacapt: Feature not implemented")
 }
 
-// Qc shows the changelog of a package
+// Qc shows the changelog of a package.
 func (hb *Homebrew) Qc(kw []string) (err error) {
 	return RunCommand(append([]string{"brew", "log"}, kw...))
 }
@@ -31,7 +30,7 @@ func (hb *Homebrew) Qe(kw []string) (err error) {
 	return fmt.Errorf("pacapt: Feature not implemented")
 }
 
-// Qi displays local package information: Name, version, description, etc.
+// Qi displays local package information: name, version, description, etc.
 func (hb *Homebrew) Qi(kw []string) (err error) {
 	return RunCommand(append([]string{"brew", "info"}, kw...))
 }
@@ -169,7 +168,7 @@ func (hb *Homebrew) Sg(kw []string) (err error) {
 	return fmt.Errorf("pacapt: Feature not implemented")
 }
 
-// Si displays remote package information: Name, version, description, etc.
+// Si displays remote package information: name, version, description, etc.
 func (hb *Homebrew) Si(kw []string) (err error) {
 	return RunCommand(append([]string{"brew", "info"}, kw...))
 }
