@@ -8,6 +8,8 @@ import (
 	"github.com/akamensky/argparse"
 )
 
+// TODO: Support more operation combinations.
+
 // CmdArgs collects pacapt arguments.
 type CmdArgs struct {
 	Query, Remove, Sync bool
@@ -16,7 +18,7 @@ type CmdArgs struct {
 	Keywords            []string
 }
 
-// stripTargets distinguishes between pacapt flags and package names
+// stripTargets distinguishes between pacapt flags and package names.
 // ! WARNING: Extremely dirty...
 func stripTargets(args []string) (cmd []string, keywords []string) {
 	var targetsStart int = 1
@@ -33,7 +35,7 @@ func stripTargets(args []string) (cmd []string, keywords []string) {
 	return
 }
 
-// Run the argument parser
+// Run the argument parser.
 func Run() (args *CmdArgs, err error) {
 	// Create new parser object
 	parser := argparse.NewParser("pacapt", "A pacman-like wrapper for package managers")
