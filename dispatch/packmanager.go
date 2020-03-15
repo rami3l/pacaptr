@@ -1,5 +1,9 @@
 package dispatch
 
+import (
+	"runtime"
+)
+
 // PackManager represents a PACkage MANager
 type PackManager interface {
 	Q([]string) error
@@ -33,8 +37,15 @@ type PackManager interface {
 	U([]string) error
 }
 
-// NewPackManager detects the package manager in use
+// DetectPackManager detects the package manager in use
 // TODO: Make this function REALLY detect package managers
-func NewPackManager(dryRun bool) PackManager {
-	return &Homebrew{dryRun}
+func DetectPackManager(dryRun bool, noConfirm bool) PackManager {
+	switch runtime.GOOS {
+	case "windows":
+		return &Chocolatey{dryRun, noConfirm}
+	case "darwin":
+		return &Homebrew{dryRun}
+	default:
+		return &Unknown{dryRun, noConfirm}
+	}
 }
