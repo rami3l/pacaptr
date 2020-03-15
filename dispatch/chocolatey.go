@@ -12,7 +12,7 @@ type Chocolatey struct {
 // and https://wiki.archlinux.org/index.php/Pacman
 
 // RunIfNotDry prints out the command if DryRun, else it runs the command.
-func (ch Chocolatey) RunIfNotDry(cmd []string) (err error) {
+func (ch *Chocolatey) RunIfNotDry(cmd []string) (err error) {
 	if ch.DryRun {
 		PrintCommand(cmd)
 		return

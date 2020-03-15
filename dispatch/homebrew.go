@@ -18,12 +18,29 @@ type Homebrew struct {
 // and https://wiki.archlinux.org/index.php/Pacman
 
 // RunIfNotDry prints out the command if DryRun, else it runs the command.
-func (hb Homebrew) RunIfNotDry(cmd []string) (err error) {
+func (hb *Homebrew) RunIfNotDry(cmd []string) (err error) {
 	if hb.DryRun {
 		PrintCommand(cmd)
 		return
 	}
 	RunCommand(cmd)
+	return
+}
+
+// CheckOutput runs the command and returns its output both to a string and to Stdout(ignored if DryRun).
+func (hb *Homebrew) CheckOutput(cmd []string) (out string, err error) {
+	var outBuf strings.Builder
+	PrintCommand(cmd)
+	p := exec.Command(cmd[0], cmd[1:]...)
+	if hb.DryRun {
+		p.Stdout = &outBuf
+		p.Stderr = &outBuf
+	} else {
+		p.Stdout = io.MultiWriter(os.Stdout, &outBuf)
+		p.Stderr = io.MultiWriter(os.Stderr, &outBuf)
+	}
+	err = p.Run()
+	out = outBuf.String()
 	return
 }
 
@@ -89,20 +106,10 @@ func (hb *Homebrew) Qu(kw []string) (err error) {
 // R removes a single package, leaving all of its dependencies installed.
 func (hb *Homebrew) R(kw []string) (err error) {
 	uninstall := func(pack string) (err error) {
-		var outBuf strings.Builder
-		PrintCommand([]string{"brew", "uninstall", pack})
-		p := exec.Command("brew", "uninstall", pack)
-		if hb.DryRun {
-			p.Stdout = &outBuf
-			p.Stderr = &outBuf
-		} else {
-			p.Stdout = io.MultiWriter(os.Stdout, &outBuf)
-			p.Stderr = io.MultiWriter(os.Stderr, &outBuf)
-		}
-		err = p.Run()
+		out, err := hb.CheckOutput([]string{"brew", "uninstall", pack})
 
 		// fallback when `brew uninstall` fails
-		if index := strings.Index(outBuf.String(), "Error: No such keg:"); index != -1 {
+		if index := strings.Index(out, "Error: No such keg:"); index != -1 {
 			fmt.Printf(":: `%s` is not installed or installed with brew/cask.\n", pack)
 			fmt.Printf(":: Now trying with brew/cask...\n")
 			err = hb.RunIfNotDry([]string{"brew", "cask", "uninstall", pack})
