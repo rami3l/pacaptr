@@ -44,7 +44,7 @@ func (hb *Homebrew) Qe(kw []string) (err error) {
 
 // Qi displays local package information: name, version, description, etc.
 func (hb *Homebrew) Qi(kw []string) (err error) {
-	return hb.RunIfNotDry(append([]string{"brew", "info"}, kw...))
+	return hb.Si(kw)
 }
 
 // Qk verifies one or more packages.
