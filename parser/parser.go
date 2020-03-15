@@ -17,6 +17,7 @@ type CmdArgs struct {
 	C                   int
 	Keywords            []string
 	DryRun              bool
+	NoConfirm           bool
 }
 
 // stripTargets distinguishes between pacapt flags and package names.
@@ -61,8 +62,9 @@ func Run() (args *CmdArgs, err error) {
 	// Flagcounters
 	c := parser.FlagCounter("c", "clean", &argparse.Options{Help: "(-S) clean"})
 
-	// DryRun
-	dryRun := parser.Flag("", "dryrun", &argparse.Options{Help: "perform a dry run"})
+	// Other flags
+	dryRun := parser.Flag("", "dryrun", &argparse.Options{Help: "Perform a dry run"})
+	noConfirm := parser.Flag("", "noconfirm", &argparse.Options{Help: "Answer yes to every question"})
 
 	// Parse input
 	cmd, keywords := stripTargets(os.Args)
@@ -89,6 +91,7 @@ func Run() (args *CmdArgs, err error) {
 		*c,
 		keywords,
 		*dryRun,
+		*noConfirm,
 	}
 
 	return
