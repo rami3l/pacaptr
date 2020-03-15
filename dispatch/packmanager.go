@@ -1,7 +1,7 @@
 package dispatch
 
-// PacMan represents a PACkage MANager
-type PacMan interface {
+// PackManager represents a PACkage MANager
+type PackManager interface {
 	Q([]string) error
 	Qc([]string) error
 	Qe([]string) error
@@ -33,8 +33,8 @@ type PacMan interface {
 	U([]string) error
 }
 
-// NewPacMan detects the package manager in use
+// NewPackManager detects the package manager in use
 // TODO: Make this function REALLY detect package managers
-func NewPacMan() PacMan {
-	return &Homebrew{}
+func NewPackManager(dryRun bool) PackManager {
+	return &Homebrew{dryRun}
 }
