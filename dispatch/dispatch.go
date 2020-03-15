@@ -11,7 +11,7 @@ import (
 
 // Dispatch according to command line arguments.
 func Dispatch(args *parser.CmdArgs) (err error) {
-	pacman := NewPackManager(args.DryRun)
+	pacman := DetectPackManager(args.DryRun, args.NoConfirm)
 	kw := args.Keywords
 
 	switch {
