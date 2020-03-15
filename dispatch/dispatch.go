@@ -83,7 +83,7 @@ func NotImplemented() (err error) {
 
 // PrintCommand prints the command to be executed.
 func PrintCommand(cmd []string) {
-	fmt.Printf(":: %s\n", strings.Join(cmd, " "))
+	fmt.Printf(">> %s\n", strings.Join(cmd, " "))
 }
 
 // RunCommand and get the error.

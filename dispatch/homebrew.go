@@ -170,15 +170,13 @@ func (hb *Homebrew) S(kw []string) (err error) {
 		}
 
 		switch code {
-		case notFound:
-			return fmt.Errorf("pacpat: `%s` fails to install", pack)
-		case caskNotNeeded:
+		case notFound, caskNotNeeded:
 			return hb.RunIfNotDry([]string{"brew", "install", pack})
 		case caskNeeded:
 			return hb.RunIfNotDry([]string{"brew", "cask", "install", pack})
-		default:
-			return
 		}
+
+		return
 	}
 
 	for _, pack := range kw {
