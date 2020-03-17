@@ -27,7 +27,7 @@ func (hb *Homebrew) RunIfNotDry(cmd []string) (err error) {
 	return
 }
 
-// CheckOutput runs the command and returns its output both to a string and to Stdout(ignored if DryRun).
+// CheckOutput runs the command and returns its output both to a string and to Stdout (ignored if DryRun).
 func (hb *Homebrew) CheckOutput(cmd []string) (out string, err error) {
 	var outBuf strings.Builder
 	PrintCommand(cmd)

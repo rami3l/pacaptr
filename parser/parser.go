@@ -20,20 +20,20 @@ type CmdArgs struct {
 	NoConfirm           bool
 }
 
-// stripTargets distinguishes between pacapt flags and package names.
+// stripKeywords distinguishes between pacapt flags and package names.
 // ! WARNING: Extremely dirty...
-func stripTargets(args []string) (cmd []string, keywords []string) {
+func stripKeywords(args []string) (cmd []string, kw []string) {
 	cmd = args[:1]
 
 	for _, s := range args[1:] {
 		if strings.HasPrefix(s, "-") {
 			cmd = append(cmd, s)
 		} else {
-			keywords = append(keywords, s)
+			kw = append(kw, s)
 		}
 	}
 
-	// fmt.Printf("cmd: %s, keywords: %s\n", cmd, keywords)
+	// fmt.Printf("cmd: %s, kw: %s\n", cmd, keywords)
 	return
 }
 
@@ -67,7 +67,7 @@ func Run() (args *CmdArgs, err error) {
 	noConfirm := parser.Flag("", "noconfirm", &argparse.Options{Help: "Answer yes to every question"})
 
 	// Parse input
-	cmd, keywords := stripTargets(os.Args)
+	cmd, kw := stripKeywords(os.Args)
 	if err = parser.Parse(cmd); err != nil {
 		return
 	}
@@ -89,7 +89,7 @@ func Run() (args *CmdArgs, err error) {
 		*query, *remove, *sync,
 		*i, *l, *o, *s, *u, *y,
 		*c,
-		keywords,
+		kw,
 		*dryRun,
 		*noConfirm,
 	}
