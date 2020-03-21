@@ -186,6 +186,9 @@ func (ch *Chocolatey) Ss(kw []string) (err error) {
 
 // Su updates outdated packages.
 func (ch *Chocolatey) Su(kw []string) (err error) {
+	if len(kw) == 0 {
+		kw = []string{"all"}
+	}
 	var cmd []string
 	if ch.NoConfirm {
 		cmd = append([]string{"choco", "upgrade", "--yes"}, kw...)

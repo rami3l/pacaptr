@@ -1,6 +1,7 @@
 package dispatch
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -93,14 +94,30 @@ func (hb *Homebrew) Qp(kw []string) (err error) {
 
 // Qs searches locally installed package for names or descriptions.
 func (hb *Homebrew) Qs(kw []string) (err error) {
-	// TODO: it seems that the output of `brew list python` in fish has a mechanism against duplication:
-	// /usr/local/Cellar/python/3.6.0/Frameworks/Python.framework/ (1234 files)
-	return hb.RunIfNotDry(append([]string{"brew", "list"}, kw...))
+	outBytes, err := exec.Command("brew", "list").Output()
+	out := fmt.Sprintf("%s", outBytes)
+	scanner := bufio.NewScanner(strings.NewReader(out))
+	for scanner.Scan() {
+		line := scanner.Text()
+		if i := strings.Index(line, strings.Join(kw, " ")); i != -1 {
+			fmt.Printf("%s\n", line)
+		}
+	}
+	return
 }
 
 // Qu lists packages which have an update available.
 func (hb *Homebrew) Qu(kw []string) (err error) {
-	return hb.RunIfNotDry(append([]string{"brew", "outdated"}, kw...))
+	outBytes, err := exec.Command("brew", "outdated").Output()
+	out := fmt.Sprintf("%s", outBytes)
+	scanner := bufio.NewScanner(strings.NewReader(out))
+	for scanner.Scan() {
+		line := scanner.Text()
+		if i := strings.Index(line, strings.Join(kw, " ")); i != -1 {
+			fmt.Printf("%s\n", line)
+		}
+	}
+	return
 }
 
 // R removes a single package, leaving all of its dependencies installed.
@@ -238,7 +255,11 @@ func (hb *Homebrew) Ss(kw []string) (err error) {
 
 // Su updates outdated packages.
 func (hb *Homebrew) Su(kw []string) (err error) {
-	return hb.RunIfNotDry(append([]string{"brew", "upgrade"}, kw...))
+	if err = hb.RunIfNotDry(append([]string{"brew", "upgrade"}, kw...)); err != nil {
+		return
+	}
+	err = hb.RunIfNotDry(append([]string{"brew", "cask", "upgrade"}, kw...))
+	return
 }
 
 // Suy refreshes the local package database, then updates outdated packages.
