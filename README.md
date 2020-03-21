@@ -4,13 +4,15 @@
 
 `pacapt` is a wrapper for many package managers with pacman-style command syntax.
 
+_Note: To start with, we choose to focus on `homebrew`. Support for more package managers will be added Soon™._
+
 Use one syntax to rule them all!
 
 ## Warning: WIP
 
-This is an experimental port of [icy/pacapt] in Golang. We chose Golang for better readability, better testing, and hopefully without loss of portability.
+This is an experimental port of [icy/pacapt] in Golang. We choose Golang for better readability, better testing, and hopefully without loss of portability.
 
-Now the implementations of different package managers are all placed in `dispatch` package, and we're implementing `homebrew` to start with.
+Now the implementations of different package managers are all placed in `dispatch` package, with names like `impl_xxx.go`.
 
 To play along at home:
 
@@ -25,7 +27,7 @@ cd pacapt-go
 go run main.go -S curl
 ```
 
-There is also a --dryrun option that will try to print out the command to be executed.
+There is also a --dryrun option that will try to just print out the command to be executed. Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
 
 ## Implemented Features
 
