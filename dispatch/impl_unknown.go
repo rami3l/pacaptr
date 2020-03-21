@@ -34,6 +34,7 @@ func (unk *Unknown) CheckOutput(cmd []string) (out string, err error) {
 	var outBuf strings.Builder
 	PrintCommand(cmd)
 	p := exec.Command(cmd[0], cmd[1:]...)
+	p.Stdin = os.Stdin
 	if unk.DryRun {
 		p.Stdout = &outBuf
 		p.Stderr = &outBuf

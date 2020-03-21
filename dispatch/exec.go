@@ -21,6 +21,7 @@ func PrintCommand(cmd []string) {
 func RunCommand(cmd []string) (err error) {
 	PrintCommand(cmd)
 	p := exec.Command(cmd[0], cmd[1:]...)
+	p.Stdin = os.Stdin
 	p.Stdout = os.Stdout
 	p.Stderr = os.Stderr
 	if err = p.Run(); err != nil {
