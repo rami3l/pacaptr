@@ -61,7 +61,7 @@ func Dispatch(args *parser.CmdArgs) (err error) {
 		}
 
 	default:
-		err = fmt.Errorf("pacapt: Feature not implemented")
+		err = fmt.Errorf("Invalid flag")
 	}
 
 	return

@@ -9,7 +9,7 @@ import (
 
 // NotImplemented throws a "Not Implemented" error.
 func NotImplemented() (err error) {
-	return fmt.Errorf("pacapt: Feature not implemented")
+	return fmt.Errorf("Feature not implemented")
 }
 
 // PrintCommand prints the command to be executed.

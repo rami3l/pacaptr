@@ -1,23 +1,26 @@
 package main
 
 import (
-	"fmt"
 	"os"
+
+	"github.com/fatih/color"
 
 	"github.com/rami3l/pacapt-go/dispatch"
 	"github.com/rami3l/pacapt-go/parser"
 )
 
 func main() {
+	red := color.New(color.FgHiRed)
+
 	args, err := parser.Run()
 	if err != nil {
-		fmt.Println(err)
+		red.Fprintf(os.Stderr, ":: parser: %s\n", err)
 		os.Exit(dispatch.GetErrorCode(err))
 	}
 
 	err = dispatch.Dispatch(args)
 	if err != nil {
-		fmt.Println(err)
+		red.Fprintf(os.Stderr, ":: dispatch: %s\n", err)
 		os.Exit(dispatch.GetErrorCode(err))
 	}
 
