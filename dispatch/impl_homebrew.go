@@ -19,8 +19,8 @@ type Homebrew struct {
 // and https://wiki.archlinux.org/index.php/Pacman
 
 // RunIfNotDry prints out the command if DryRun, else it runs the command.
-func (hb *Homebrew) RunIfNotDry(cmd []string) (err error) {
-	if hb.DryRun {
+func (pm *Homebrew) RunIfNotDry(cmd []string) (err error) {
+	if pm.DryRun {
 		PrintCommand(cmd)
 		return
 	}
@@ -29,12 +29,12 @@ func (hb *Homebrew) RunIfNotDry(cmd []string) (err error) {
 }
 
 // CheckOutput runs the command and returns its output both to a string and to Stdout (ignored if DryRun).
-func (hb *Homebrew) CheckOutput(cmd []string) (out string, err error) {
+func (pm *Homebrew) CheckOutput(cmd []string) (out string, err error) {
 	var outBuf strings.Builder
 	PrintCommand(cmd)
 	p := exec.Command(cmd[0], cmd[1:]...)
 	p.Stdin = os.Stdin
-	if hb.DryRun {
+	if pm.DryRun {
 		p.Stdout = &outBuf
 		p.Stderr = &outBuf
 	} else {
@@ -47,54 +47,54 @@ func (hb *Homebrew) CheckOutput(cmd []string) (out string, err error) {
 }
 
 // Q generates a list of installed packages.
-func (hb *Homebrew) Q(kw []string) (err error) {
+func (pm *Homebrew) Q(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Qc shows the changelog of a package.
-func (hb *Homebrew) Qc(kw []string) (err error) {
-	return hb.RunIfNotDry(append([]string{"brew", "log"}, kw...))
+func (pm *Homebrew) Qc(kw []string) (err error) {
+	return pm.RunIfNotDry(append([]string{"brew", "log"}, kw...))
 }
 
 // Qe lists packages installed explicitly (not as dependencies).
-func (hb *Homebrew) Qe(kw []string) (err error) {
+func (pm *Homebrew) Qe(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Qi displays local package information: name, version, description, etc.
-func (hb *Homebrew) Qi(kw []string) (err error) {
-	return hb.Si(kw)
+func (pm *Homebrew) Qi(kw []string) (err error) {
+	return pm.Si(kw)
 }
 
 // Qk verifies one or more packages.
-func (hb *Homebrew) Qk(kw []string) (err error) {
+func (pm *Homebrew) Qk(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Ql displays files provided by local package.
-func (hb *Homebrew) Ql(kw []string) (err error) {
+func (pm *Homebrew) Ql(kw []string) (err error) {
 	// TODO: it seems that the output of `brew list python` in fish has a mechanism against duplication:
 	// /usr/local/Cellar/python/3.6.0/Frameworks/Python.framework/ (1234 files)
-	return hb.RunIfNotDry(append([]string{"brew", "list"}, kw...))
+	return pm.RunIfNotDry(append([]string{"brew", "list"}, kw...))
 }
 
 // Qm lists packages that are installed but are not available in any installation source (anymore).
-func (hb *Homebrew) Qm(kw []string) (err error) {
+func (pm *Homebrew) Qm(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Qo queries the package which provides FILE.
-func (hb *Homebrew) Qo(kw []string) (err error) {
+func (pm *Homebrew) Qo(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Qp queries a package supplied on the command line rather than an entry in the package management database.
-func (hb *Homebrew) Qp(kw []string) (err error) {
+func (pm *Homebrew) Qp(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Qs searches locally installed package for names or descriptions.
-func (hb *Homebrew) Qs(kw []string) (err error) {
+func (pm *Homebrew) Qs(kw []string) (err error) {
 	outBytes, err := exec.Command("brew", "list").Output()
 	out := fmt.Sprintf("%s", outBytes)
 	scanner := bufio.NewScanner(strings.NewReader(out))
@@ -108,7 +108,7 @@ func (hb *Homebrew) Qs(kw []string) (err error) {
 }
 
 // Qu lists packages which have an update available.
-func (hb *Homebrew) Qu(kw []string) (err error) {
+func (pm *Homebrew) Qu(kw []string) (err error) {
 	outBytes, err := exec.Command("brew", "outdated").Output()
 	out := fmt.Sprintf("%s", outBytes)
 	scanner := bufio.NewScanner(strings.NewReader(out))
@@ -122,15 +122,15 @@ func (hb *Homebrew) Qu(kw []string) (err error) {
 }
 
 // R removes a single package, leaving all of its dependencies installed.
-func (hb *Homebrew) R(kw []string) (err error) {
+func (pm *Homebrew) R(kw []string) (err error) {
 	uninstall := func(pack string) (err error) {
-		out, err := hb.CheckOutput([]string{"brew", "uninstall", pack})
+		out, err := pm.CheckOutput([]string{"brew", "uninstall", pack})
 
 		// fallback when `brew uninstall` fails
 		if index := strings.Index(out, "Error: No such keg:"); index != -1 {
 			fmt.Printf(":: `%s` is not installed or installed with brew/cask.\n", pack)
 			fmt.Printf(":: Now trying with brew/cask...\n")
-			err = hb.RunIfNotDry([]string{"brew", "cask", "uninstall", pack})
+			err = pm.RunIfNotDry([]string{"brew", "cask", "uninstall", pack})
 		}
 
 		return
@@ -146,23 +146,23 @@ func (hb *Homebrew) R(kw []string) (err error) {
 }
 
 // Rn removes a package and skips the generation of configuration backup files.
-func (hb *Homebrew) Rn(kw []string) (err error) {
+func (pm *Homebrew) Rn(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
-func (hb *Homebrew) Rns(kw []string) (err error) {
+func (pm *Homebrew) Rns(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Rs removes a package and its dependencies which are not required by any other installed package.
-func (hb *Homebrew) Rs(kw []string) (err error) {
+func (pm *Homebrew) Rs(kw []string) (err error) {
 	// TODO: implement -Rs
 	return NotImplemented()
 }
 
 // S installs one or more packages by name.
-func (hb *Homebrew) S(kw []string) (err error) {
+func (pm *Homebrew) S(kw []string) (err error) {
 	const (
 		notFound      = iota
 		caskNotNeeded = iota
@@ -196,9 +196,9 @@ func (hb *Homebrew) S(kw []string) (err error) {
 
 		switch code {
 		case notFound, caskNotNeeded:
-			return hb.RunIfNotDry([]string{"brew", "install", pack})
+			return pm.RunIfNotDry([]string{"brew", "install", pack})
 		case caskNeeded:
-			return hb.RunIfNotDry([]string{"brew", "cask", "install", pack})
+			return pm.RunIfNotDry([]string{"brew", "cask", "install", pack})
 		}
 
 		return
@@ -214,75 +214,75 @@ func (hb *Homebrew) S(kw []string) (err error) {
 }
 
 // Sc removes all the cached packages that are not currently installed, and the unused sync database.
-func (hb *Homebrew) Sc(kw []string) (err error) {
-	return hb.RunIfNotDry(append([]string{"brew", "cleanup"}, kw...))
+func (pm *Homebrew) Sc(kw []string) (err error) {
+	return pm.RunIfNotDry(append([]string{"brew", "cleanup"}, kw...))
 }
 
 // Scc removes all files from the cache.
-func (hb *Homebrew) Scc(kw []string) (err error) {
-	return hb.RunIfNotDry(append([]string{"brew", "cleanup", "-s"}, kw...))
+func (pm *Homebrew) Scc(kw []string) (err error) {
+	return pm.RunIfNotDry(append([]string{"brew", "cleanup", "-s"}, kw...))
 }
 
 // Sccc ...
 // ! What is this?
-func (hb *Homebrew) Sccc(kw []string) (err error) {
+func (pm *Homebrew) Sccc(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Sg lists all packages belonging to the GROUP.
-func (hb *Homebrew) Sg(kw []string) (err error) {
+func (pm *Homebrew) Sg(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Si displays remote package information: name, version, description, etc.
-func (hb *Homebrew) Si(kw []string) (err error) {
-	return hb.RunIfNotDry(append([]string{"brew", "info"}, kw...))
+func (pm *Homebrew) Si(kw []string) (err error) {
+	return pm.RunIfNotDry(append([]string{"brew", "info"}, kw...))
 }
 
 // Sii displays packages which require X to be installed, aka reverse dependencies.
-func (hb *Homebrew) Sii(kw []string) (err error) {
+func (pm *Homebrew) Sii(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Sl displays a list of all packages in all installation sources that are handled by the packages management.
-func (hb *Homebrew) Sl(kw []string) (err error) {
+func (pm *Homebrew) Sl(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Ss searches for package(s) by searching the expression in name, description, short description.
-func (hb *Homebrew) Ss(kw []string) (err error) {
-	return hb.RunIfNotDry(append([]string{"brew", "search"}, kw...))
+func (pm *Homebrew) Ss(kw []string) (err error) {
+	return pm.RunIfNotDry(append([]string{"brew", "search"}, kw...))
 }
 
 // Su updates outdated packages.
-func (hb *Homebrew) Su(kw []string) (err error) {
-	if err = hb.RunIfNotDry(append([]string{"brew", "upgrade"}, kw...)); err != nil {
+func (pm *Homebrew) Su(kw []string) (err error) {
+	if err = pm.RunIfNotDry(append([]string{"brew", "upgrade"}, kw...)); err != nil {
 		return
 	}
-	err = hb.RunIfNotDry(append([]string{"brew", "cask", "upgrade"}, kw...))
+	err = pm.RunIfNotDry(append([]string{"brew", "cask", "upgrade"}, kw...))
 	return
 }
 
 // Suy refreshes the local package database, then updates outdated packages.
-func (hb *Homebrew) Suy(kw []string) (err error) {
-	if err = hb.Sy(kw); err != nil {
+func (pm *Homebrew) Suy(kw []string) (err error) {
+	if err = pm.Sy(kw); err != nil {
 		return
 	}
-	err = hb.Su(kw)
+	err = pm.Su(kw)
 	return
 }
 
 // Sw retrieves all packages from the server, but does not install/upgrade anything.
-func (hb *Homebrew) Sw(kw []string) (err error) {
+func (pm *Homebrew) Sw(kw []string) (err error) {
 	return NotImplemented()
 }
 
 // Sy refreshes the local package database.
-func (hb *Homebrew) Sy(kw []string) (err error) {
-	return hb.RunIfNotDry(append([]string{"brew", "update"}, kw...))
+func (pm *Homebrew) Sy(kw []string) (err error) {
+	return pm.RunIfNotDry(append([]string{"brew", "update"}, kw...))
 }
 
 // U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
-func (hb *Homebrew) U(kw []string) (err error) {
+func (pm *Homebrew) U(kw []string) (err error) {
 	return NotImplemented()
 }
