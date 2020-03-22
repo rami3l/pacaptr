@@ -43,4 +43,6 @@ There is also a --dryrun option that will try to just print out the command to b
 
 - `Chocolatey` support: Experimental. Don't forget to run in an elevated shell!
 
+- `Dpkg/Apt` support: Experimental.
+
 [icy/pacapt]: https://github.com/icy/pacapt
