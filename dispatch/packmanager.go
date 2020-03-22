@@ -86,7 +86,7 @@ func DetectPackManager(dryRun bool, noConfirm bool) (pm PackManager) {
 		switch {
 		// Apt/Dpkg for Debian/Ubuntu/Termux
 		case isExe("apt-get", "/usr/bin/apt-get"):
-			return // &Dpkg{dryRun, noConfirm}
+			return &Dpkg{dryRun, noConfirm}
 
 		// Cave for Exherbo
 		case isExe("cave", "/usr/bin/cave"):
