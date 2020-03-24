@@ -259,8 +259,7 @@ func (pm *Homebrew) Su(kw []string) (err error) {
 	if err = pm.RunIfNotDry(append([]string{"brew", "upgrade"}, kw...)); err != nil {
 		return
 	}
-	err = pm.RunIfNotDry(append([]string{"brew", "cask", "upgrade"}, kw...))
-	return
+	return pm.RunIfNotDry(append([]string{"brew", "cask", "upgrade"}, kw...))
 }
 
 // Suy refreshes the local package database, then updates outdated packages.
@@ -268,8 +267,7 @@ func (pm *Homebrew) Suy(kw []string) (err error) {
 	if err = pm.Sy(kw); err != nil {
 		return
 	}
-	err = pm.Su(kw)
-	return
+	return pm.Su(kw)
 }
 
 // Sw retrieves all packages from the server, but does not install/upgrade anything.

@@ -8,56 +8,56 @@ import (
 
 // Dispatch according to command line arguments.
 func Dispatch(args *parser.CmdArgs) (err error) {
-	pacman := DetectPackManager(args.DryRun, args.NoConfirm)
+	pm := DetectPackManager(args.DryRun, args.NoConfirm)
 	kw := args.Keywords
 
 	switch {
 	case args.Query:
 		switch {
 		case args.C > 0:
-			err = pacman.Qc(kw)
+			err = pm.Qc(kw)
 		case args.I:
-			err = pacman.Qi(kw)
+			err = pm.Qi(kw)
 		case args.L:
-			err = pacman.Ql(kw)
+			err = pm.Ql(kw)
 		case args.O:
-			err = pacman.Qo(kw)
+			err = pm.Qo(kw)
 		case args.S:
-			err = pacman.Qs(kw)
+			err = pm.Qs(kw)
 		case args.U:
-			err = pacman.Qu(kw)
+			err = pm.Qu(kw)
 		default:
-			err = pacman.Q(kw)
+			err = pm.Q(kw)
 		}
 
 	case args.Remove:
 		switch {
 		case args.S:
-			err = pacman.Rs(kw)
+			err = pm.Rs(kw)
 		default:
-			err = pacman.R(kw)
+			err = pm.R(kw)
 		}
 
 	case args.Sync:
 		switch {
 		case args.C == 1:
-			err = pacman.Sc(kw)
+			err = pm.Sc(kw)
 		case args.C == 2:
-			err = pacman.Scc(kw)
+			err = pm.Scc(kw)
 		case args.C == 3:
-			err = pacman.Sccc(kw)
+			err = pm.Sccc(kw)
 		case args.I:
-			err = pacman.Si(kw)
+			err = pm.Si(kw)
 		case args.S:
-			err = pacman.Ss(kw)
+			err = pm.Ss(kw)
 		case args.U && args.Y:
-			err = pacman.Suy(kw)
+			err = pm.Suy(kw)
 		case args.U:
-			err = pacman.Su(kw)
+			err = pm.Su(kw)
 		case args.Y:
-			err = pacman.Sy(kw)
+			err = pm.Sy(kw)
 		default:
-			err = pacman.S(kw)
+			err = pm.S(kw)
 		}
 
 	default:

@@ -216,5 +216,5 @@ func (pm *Chocolatey) Sy(kw []string) (err error) {
 
 // U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
 func (pm *Chocolatey) U(kw []string) (err error) {
-	return pm.Su(kw)
+	return NotImplemented()
 }

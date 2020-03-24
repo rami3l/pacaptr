@@ -171,8 +171,7 @@ func (pm *Dpkg) Su(kw []string) (err error) {
 	if err = pm.RunIfNotDry(append([]string{"apt-get", "upgrade"}, kw...)); err != nil {
 		return
 	}
-	err = pm.RunIfNotDry(append([]string{"apt-get", "dist-upgrade"}, kw...))
-	return
+	return pm.RunIfNotDry(append([]string{"apt-get", "dist-upgrade"}, kw...))
 }
 
 // Suy refreshes the local package database, then updates outdated packages.
@@ -180,8 +179,7 @@ func (pm *Dpkg) Suy(kw []string) (err error) {
 	if err = pm.Sy(kw); err != nil {
 		return
 	}
-	err = pm.Su(kw)
-	return
+	return pm.Su(kw)
 }
 
 // Sw retrieves all packages from the server, but does not install/upgrade anything.
