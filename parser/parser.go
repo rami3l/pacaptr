@@ -12,12 +12,12 @@ import (
 
 // CmdArgs collects pacapt arguments.
 type CmdArgs struct {
-	Query, Remove, Sync bool
-	I, L, O, S, U, Y    bool
-	C                   int
-	Keywords            []string
-	DryRun              bool
-	NoConfirm           bool
+	Query, Remove, Sync, Upgrade       bool
+	E, G, K, L, M, N, O, P, S, U, W, Y bool
+	C, I                               int
+	Keywords                           []string
+	DryRun                             bool
+	NoConfirm                          bool
 }
 
 // stripKeywords distinguishes between pacapt flags and package names.
@@ -46,21 +46,30 @@ func Run() (args *CmdArgs, err error) {
 	query := parser.Flag("Q", "Query", &argparse.Options{Help: "Query"})
 	remove := parser.Flag("R", "Remove", &argparse.Options{Help: "Remove"})
 	sync := parser.Flag("S", "Sync", &argparse.Options{Help: "Sync"})
+	upgrade := parser.Flag("U", "Upgrade", &argparse.Options{Help: "Upgrade"})
 
 	// Flags
 	// ! WARNING
 	// ! Some long flag names are completely different for different operations,
 	// ! but I think mose of us just use the shorthand form anyway...
 	// see: https://www.archlinux.org/pacman/pacman.8.html
-	i := parser.Flag("i", "info", &argparse.Options{Help: "(-Q/S) info"})
+
+	e := parser.Flag("e", "explicit", &argparse.Options{Help: "(-Q) explicit"})
+	g := parser.Flag("g", "groups", &argparse.Options{Help: "(-Q/S) groups"})
+	k := parser.Flag("k", "check", &argparse.Options{Help: "(-Q) check"})
 	l := parser.Flag("l", "list", &argparse.Options{Help: "(-Q) list"})
+	m := parser.Flag("m", "foreign", &argparse.Options{Help: "(-Q) foreign"})
+	n := parser.Flag("n", "nosave", &argparse.Options{Help: "(-R) nosave"})
 	o := parser.Flag("o", "owns", &argparse.Options{Help: "(-Q) owns"})
+	p := parser.Flag("p", "print", &argparse.Options{Help: "(-Q/R/S) print"})
 	s := parser.Flag("s", "search", &argparse.Options{Help: "(-S) search | (-R) recursive"})
 	u := parser.Flag("u", "sysupgrade", &argparse.Options{Help: "(-S) sysupgrade"})
+	w := parser.Flag("w", "downloadonly", &argparse.Options{Help: "(-S) downloadonly"})
 	y := parser.Flag("y", "refresh", &argparse.Options{Help: "(-S) refresh"})
 
 	// Flagcounters
 	c := parser.FlagCounter("c", "clean", &argparse.Options{Help: "(-S) clean"})
+	i := parser.FlagCounter("i", "info", &argparse.Options{Help: "(-Q/S) info"})
 
 	// Other flags
 	dryRun := parser.Flag("", "dryrun", &argparse.Options{Help: "Perform a dry run"})
@@ -86,9 +95,9 @@ func Run() (args *CmdArgs, err error) {
 
 	// Collect arguments
 	args = &CmdArgs{
-		*query, *remove, *sync,
-		*i, *l, *o, *s, *u, *y,
-		*c,
+		*query, *remove, *sync, *upgrade,
+		*e, *g, *k, *l, *m, *n, *o, *p, *s, *u, *w, *y,
+		*c, *i,
 		kw,
 		*dryRun,
 		*noConfirm,

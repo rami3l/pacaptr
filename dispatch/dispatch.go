@@ -14,14 +14,22 @@ func Dispatch(args *parser.CmdArgs) (err error) {
 	switch {
 	case args.Query:
 		switch {
-		case args.C > 0:
+		case args.C == 1:
 			err = pm.Qc(kw)
-		case args.I:
+		case args.E:
+			err = pm.Qe(kw)
+		case args.I == 1:
 			err = pm.Qi(kw)
+		case args.K:
+			err = pm.Qk(kw)
 		case args.L:
 			err = pm.Ql(kw)
+		case args.M:
+			err = pm.Qm(kw)
 		case args.O:
 			err = pm.Qo(kw)
+		case args.P:
+			err = pm.Qp(kw)
 		case args.S:
 			err = pm.Qs(kw)
 		case args.U:
@@ -32,6 +40,10 @@ func Dispatch(args *parser.CmdArgs) (err error) {
 
 	case args.Remove:
 		switch {
+		case args.N && args.S:
+			err = pm.Rns(kw)
+		case args.N:
+			err = pm.Rn(kw)
 		case args.S:
 			err = pm.Rs(kw)
 		default:
@@ -46,8 +58,14 @@ func Dispatch(args *parser.CmdArgs) (err error) {
 			err = pm.Scc(kw)
 		case args.C == 3:
 			err = pm.Sccc(kw)
-		case args.I:
+		case args.G:
+			err = pm.Sg(kw)
+		case args.I == 1:
 			err = pm.Si(kw)
+		case args.I == 2:
+			err = pm.Sii(kw)
+		case args.L:
+			err = pm.Sl(kw)
 		case args.S:
 			err = pm.Ss(kw)
 		case args.U && args.Y:
@@ -56,9 +74,14 @@ func Dispatch(args *parser.CmdArgs) (err error) {
 			err = pm.Su(kw)
 		case args.Y:
 			err = pm.Sy(kw)
+		case args.W:
+			err = pm.Sw(kw)
 		default:
 			err = pm.S(kw)
 		}
+
+	case args.Upgrade:
+		err = pm.U(kw)
 
 	default:
 		err = fmt.Errorf("Invalid flag")
