@@ -83,7 +83,7 @@ func Run() (args *CmdArgs, err error) {
 
 	// A naive implementation of a mutually exclusive check.
 	count := 0
-	for _, op := range []bool{*query, *remove, *sync} {
+	for _, op := range []bool{*query, *remove, *sync, *upgrade} {
 		if op {
 			count++
 		}
