@@ -23,8 +23,7 @@ func (pm *Dpkg) RunIfNotDry(cmd []string) (err error) {
 		PrintCommand(cmd)
 		return
 	}
-	RunCommand(cmd)
-	return
+	return RunCommand(cmd)
 }
 
 // CheckOutput runs the command and returns its output both to a string and to Stdout (ignored if DryRun).
@@ -112,7 +111,7 @@ func (pm *Dpkg) Rn(kw []string) (err error) {
 
 // Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
 func (pm *Dpkg) Rns(kw []string) (err error) {
-	return pm.RunIfNotDry(append([]string{"apt-get", "--purge", "autoremove"}, kw...))
+	return pm.RunIfNotDry(append([]string{"apt-get", "autoremove", "--purge"}, kw...))
 }
 
 // Rs removes a package and its dependencies which are not required by any other installed package.
@@ -184,7 +183,7 @@ func (pm *Dpkg) Suy(kw []string) (err error) {
 
 // Sw retrieves all packages from the server, but does not install/upgrade anything.
 func (pm *Dpkg) Sw(kw []string) (err error) {
-	return pm.RunIfNotDry(append([]string{"apt-get", "--download-only", "install"}, kw...))
+	return pm.RunIfNotDry(append([]string{"apt-get", "install", "--download-only"}, kw...))
 }
 
 // Sy refreshes the local package database.

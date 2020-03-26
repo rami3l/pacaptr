@@ -24,8 +24,7 @@ func (pm *Chocolatey) RunIfNotDry(cmd []string) (err error) {
 		PrintCommand(cmd)
 		return
 	}
-	RunCommand(cmd)
-	return
+	return RunCommand(cmd)
 }
 
 // CheckOutput runs the command and returns its output both to a string and to Stdout (ignored if DryRun).

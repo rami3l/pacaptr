@@ -24,8 +24,7 @@ func (pm *Homebrew) RunIfNotDry(cmd []string) (err error) {
 		PrintCommand(cmd)
 		return
 	}
-	RunCommand(cmd)
-	return
+	return RunCommand(cmd)
 }
 
 // CheckOutput runs the command and returns its output both to a string and to Stdout (ignored if DryRun).
@@ -85,6 +84,7 @@ func (pm *Homebrew) Qm(kw []string) (err error) {
 
 // Qo queries the package which provides FILE.
 func (pm *Homebrew) Qo(kw []string) (err error) {
+	// TODO: implement -Qo
 	return NotImplemented()
 }
 
@@ -158,15 +158,16 @@ func (pm *Homebrew) Rns(kw []string) (err error) {
 // Rs removes a package and its dependencies which are not required by any other installed package.
 func (pm *Homebrew) Rs(kw []string) (err error) {
 	// TODO: implement -Rs
+	// ! Maybe we should just call `brew rmtree`
 	return NotImplemented()
 }
 
 // S installs one or more packages by name.
 func (pm *Homebrew) S(kw []string) (err error) {
 	const (
-		notFound      = iota
-		caskNotNeeded = iota
-		caskNeeded    = iota
+		notFound = iota
+		caskNotNeeded
+		caskNeeded
 	)
 
 	search := func(pack string) (code int, err error) {
@@ -215,12 +216,18 @@ func (pm *Homebrew) S(kw []string) (err error) {
 
 // Sc removes all the cached packages that are not currently installed, and the unused sync database.
 func (pm *Homebrew) Sc(kw []string) (err error) {
-	return pm.RunIfNotDry(append([]string{"brew", "cleanup"}, kw...))
+	if pm.DryRun {
+		return RunCommand(append([]string{"brew", "cleanup", "--dry-run"}, kw...))
+	}
+	return RunCommand(append([]string{"brew", "cleanup"}, kw...))
 }
 
 // Scc removes all files from the cache.
 func (pm *Homebrew) Scc(kw []string) (err error) {
-	return pm.RunIfNotDry(append([]string{"brew", "cleanup", "-s"}, kw...))
+	if pm.DryRun {
+		return RunCommand(append([]string{"brew", "cleanup", "-s", "--dry-run"}, kw...))
+	}
+	return RunCommand(append([]string{"brew", "cleanup", "-s"}, kw...))
 }
 
 // Sccc ...
@@ -241,7 +248,7 @@ func (pm *Homebrew) Si(kw []string) (err error) {
 
 // Sii displays packages which require X to be installed, aka reverse dependencies.
 func (pm *Homebrew) Sii(kw []string) (err error) {
-	return NotImplemented()
+	return pm.RunIfNotDry(append([]string{"brew", "uses"}, kw...))
 }
 
 // Sl displays a list of all packages in all installation sources that are handled by the packages management.
@@ -272,7 +279,7 @@ func (pm *Homebrew) Suy(kw []string) (err error) {
 
 // Sw retrieves all packages from the server, but does not install/upgrade anything.
 func (pm *Homebrew) Sw(kw []string) (err error) {
-	return NotImplemented()
+	return pm.RunIfNotDry(append([]string{"brew", "fetch"}, kw...))
 }
 
 // Sy refreshes the local package database.
