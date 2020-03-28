@@ -55,6 +55,23 @@ PPAs might be added when appropriate.
 - `Chocolatey` support: Experimental. Don't forget to run in an elevated shell!
 
 - `Dpkg/Apt` support: Experimental.
-- `--dryrun`: An option that will try to just print out the command to be executed. Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
+
+- `--dryrun`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
+
+    Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
+
+    For instance:
+
+    ```bash
+    # Nothing will be deleted here:
+    pacapt-go -Sc --dryrun
+    >> brew cleanup --dry-run
+    .. (showing the files to be removed)
+
+    # Without `--dryrun`, everything will work as shown above:
+    pacapt-go -Sc
+    >> brew cleanup
+    .. (cleaning up)
+    ```
 
 [icy/pacapt]: https://github.com/icy/pacapt
