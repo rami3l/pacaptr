@@ -27,11 +27,22 @@ cd pacapt-go
 go run main.go -S curl
 ```
 
-There is also a --dryrun option that will try to just print out the command to be executed. Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
+## Installation
+
+```bash
+# To install
+go install "github.com/rami3l/pacapt-go"
+
+# To uninstall
+go clean -i "github.com/rami3l/pacapt-go"
+```
+
+We currently provide `go install` only.
+PPAs might be added when appropriate.
 
 ## Implemented Features
 
-- `Homebrew` support: Experimental, but now with automatic `brew cask` invocation implemented for `-S`, `-R`, `-Su`, and more.
+- `Homebrew` support: Experimental, with automatic `brew cask` invocation implemented for `-S`, `-R`, `-Su`, and more.
   
     ```bash
     go run main.go -S curl --dryrun
@@ -44,5 +55,6 @@ There is also a --dryrun option that will try to just print out the command to b
 - `Chocolatey` support: Experimental. Don't forget to run in an elevated shell!
 
 - `Dpkg/Apt` support: Experimental.
+- `--dryrun`: An option that will try to just print out the command to be executed. Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
 
 [icy/pacapt]: https://github.com/icy/pacapt
