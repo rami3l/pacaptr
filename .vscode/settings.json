@@ -6,6 +6,7 @@
         "Tazpkg",
         "Zypper",
         "choco",
+        "gsudo",
         "rdepends",
         "rmtree"
     ]

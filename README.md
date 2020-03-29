@@ -29,20 +29,34 @@ go run main.go -S curl
 
 ## Installation
 
-```bash
-# To install
-go install "github.com/rami3l/pacapt-go"
+To install:
 
-# To uninstall
+```bash
+go install "github.com/rami3l/pacapt-go"
+```
+
+To uninstall:
+
+```bash
 go clean -i "github.com/rami3l/pacapt-go"
 ```
 
 We currently provide `go install` only.
 PPAs might be added when appropriate.
 
+For Homebrew users:
+
+- To use `-Rs`, you need to install [rmtree] first:
+
+    ```bash
+    brew tap beeftornado/rmtree
+    ```
+
 ## Implemented Features
 
-- `Homebrew` support: Experimental, with automatic `brew cask` invocation implemented for `-S`, `-R`, `-Su`, and more.
+- `Homebrew` support: Experimental.
+  
+  - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
   
     ```bash
     go run main.go -S curl --dryrun
@@ -52,15 +66,15 @@ PPAs might be added when appropriate.
     >> brew cask install gimp
     ```
 
-- `Chocolatey` support: Experimental. Don't forget to run in an elevated shell!
+- `Chocolatey` support: Experimental.
+
+  - Tips: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
 - `Dpkg/Apt` support: Experimental.
 
 - `--dryrun`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
-    Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
-
-    For instance:
+  - Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation. For instance:
 
     ```bash
     # Nothing will be deleted here:
@@ -68,10 +82,12 @@ PPAs might be added when appropriate.
     >> brew cleanup --dry-run
     .. (showing the files to be removed)
 
-    # Without `--dryrun`, everything will work as shown above:
+    # Without `--dryrun`, the forementioned files will be removed:
     pacapt-go -Sc
     >> brew cleanup
     .. (cleaning up)
     ```
 
 [icy/pacapt]: https://github.com/icy/pacapt
+[rmtree]: https://github.com/beeftornado/homebrew-rmtree
+[gsudo]: https://github.com/gerardog/gsudo
