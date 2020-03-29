@@ -1,5 +1,11 @@
 # pacapt-go
 
+- [pacapt-go](#pacapt-go)
+  - [Introduction](#introduction)
+  - [Warning: WIP](#warning-wip)
+  - [Installation](#installation)
+  - [Implemented Features](#implemented-features)
+
 ## Introduction
 
 `pacapt` is a wrapper for many package managers with pacman-style command syntax.
