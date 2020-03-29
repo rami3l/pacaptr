@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -101,16 +102,35 @@ func (pm *Homebrew) Qp(kw []string) (err error) {
 
 // Qs searches locally installed package for names or descriptions.
 func (pm *Homebrew) Qs(kw []string) (err error) {
-	outBytes, err := exec.Command("brew", "list").Output()
-	out := fmt.Sprintf("%s", outBytes)
-	scanner := bufio.NewScanner(strings.NewReader(out))
-	for scanner.Scan() {
-		line := scanner.Text()
-		if i := strings.Index(line, strings.Join(kw, " ")); i != -1 {
-			fmt.Printf("%s\n", line)
+	// According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
+	// when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
+	matchAll := func(str string, kw []string) (match bool) {
+		for _, k := range kw {
+			if re := regexp.MustCompile(k); !re.Match([]byte(str)) {
+				return false
+			}
 		}
+		return true
 	}
-	return
+
+	search := func(cmd []string) (err error) {
+		PrintCommand(append(cmd, kw...))
+		outBytes, err := exec.Command(cmd[0], cmd[1:]...).Output()
+		out := fmt.Sprintf("%s", outBytes)
+		scanner := bufio.NewScanner(strings.NewReader(out))
+		for scanner.Scan() {
+			line := scanner.Text()
+			if matchAll(line, kw) {
+				fmt.Printf("%s\n", line)
+			}
+		}
+		return
+	}
+
+	if err = search([]string{"brew", "list"}); err != nil {
+		return
+	}
+	return search([]string{"brew", "cask", "list"})
 }
 
 // Qu lists packages which have an update available.
