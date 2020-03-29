@@ -3,8 +3,6 @@ package dispatch
 import (
 	"bufio"
 	"fmt"
-	"io"
-	"os"
 	"os/exec"
 	"strings"
 )
@@ -27,21 +25,29 @@ func (pm *Homebrew) RunIfNotDry(cmd []string) (err error) {
 	return RunCommand(cmd)
 }
 
-// CheckOutput runs the command and returns its output both to a string and to Stdout (ignored if DryRun).
-func (pm *Homebrew) CheckOutput(cmd []string) (out string, err error) {
-	var outBuf strings.Builder
-	PrintCommand(cmd)
-	p := exec.Command(cmd[0], cmd[1:]...)
-	p.Stdin = os.Stdin
-	if pm.DryRun {
-		p.Stdout = &outBuf
-		p.Stderr = &outBuf
-	} else {
-		p.Stdout = io.MultiWriter(os.Stdout, &outBuf)
-		p.Stderr = io.MultiWriter(os.Stderr, &outBuf)
+const (
+	notFound = iota
+	caskNotNeeded
+	caskNeeded
+)
+
+// search determines if a package should be (un)installed with a `brew cask` command.
+func (pm *Homebrew) search(pack string) (code int, err error) {
+	p := exec.Command("brew", "info", pack)
+	outbytes, err := p.CombinedOutput()
+	out := fmt.Sprintf("%s", outbytes)
+	// fmt.Print(out)
+
+	code = caskNotNeeded
+	if i := strings.Index(out, "Error: No available formula with the name"); i != -1 {
+		code = notFound
+		if j := strings.Index(out, "Found a cask named"); j != -1 {
+			code = caskNeeded
+		}
+		err = nil
 	}
-	err = p.Run()
-	out = outBuf.String()
+
+	// fmt.Printf("Code: %v\n", code)
 	return
 }
 
@@ -124,13 +130,16 @@ func (pm *Homebrew) Qu(kw []string) (err error) {
 // R removes a single package, leaving all of its dependencies installed.
 func (pm *Homebrew) R(kw []string) (err error) {
 	uninstall := func(pack string) (err error) {
-		out, err := pm.CheckOutput([]string{"brew", "uninstall", pack})
+		code, err := pm.search(pack)
+		if err != nil {
+			return
+		}
 
-		// fallback when `brew uninstall` fails
-		if index := strings.Index(out, "Error: No such keg:"); index != -1 {
-			fmt.Printf(":: `%s` is not installed or installed with brew/cask.\n", pack)
-			fmt.Printf(":: Now trying with brew/cask...\n")
-			err = pm.RunIfNotDry([]string{"brew", "cask", "uninstall", pack})
+		switch code {
+		case notFound, caskNotNeeded:
+			return pm.RunIfNotDry([]string{"brew", "uninstall", pack})
+		case caskNeeded:
+			return pm.RunIfNotDry([]string{"brew", "cask", "uninstall", pack})
 		}
 
 		return
@@ -159,38 +168,26 @@ func (pm *Homebrew) Rns(kw []string) (err error) {
 func (pm *Homebrew) Rs(kw []string) (err error) {
 	// TODO: implement -Rs
 	// ! Maybe we should just call `brew rmtree`
-	return NotImplemented()
+	if pm.DryRun {
+		err = RunCommand(append([]string{"brew", "rmtree", "--dry-run"}, kw...))
+	} else {
+		err = RunCommand(append([]string{"brew", "rmtree"}, kw...))
+	}
+
+	/*
+		if index := strings.Index(out, "Error: Unknown command: rmtree"); index != -1 {
+			fmt.Printf(":: `rmtree` is not installed. You may try installing it with the following command:\n")
+			fmt.Printf(":: brew tap beeftornado/rmtree\n")
+			return
+		}
+	*/
+	return
 }
 
 // S installs one or more packages by name.
 func (pm *Homebrew) S(kw []string) (err error) {
-	const (
-		notFound = iota
-		caskNotNeeded
-		caskNeeded
-	)
-
-	search := func(pack string) (code int, err error) {
-		p := exec.Command("brew", "info", pack)
-		outbytes, err := p.CombinedOutput()
-		out := fmt.Sprintf("%s", outbytes)
-		// fmt.Print(out)
-
-		code = caskNotNeeded
-		if i := strings.Index(out, "Error: No available formula with the name"); i != -1 {
-			code = notFound
-			if j := strings.Index(out, "Found a cask named"); j != -1 {
-				code = caskNeeded
-			}
-			err = nil
-		}
-
-		// fmt.Printf("Code: %v\n", code)
-		return
-	}
-
 	install := func(pack string) (err error) {
-		code, err := search(pack)
+		code, err := pm.search(pack)
 		if err != nil {
 			return
 		}

@@ -25,7 +25,7 @@ func RunCommand(cmd []string) (err error) {
 	p.Stdout = os.Stdout
 	p.Stderr = os.Stderr
 	if err = p.Run(); err != nil {
-		return fmt.Errorf("pacapt: error while running command `%s`", cmd)
+		return fmt.Errorf("%s %s", cmd, err)
 	}
 	return
 }
