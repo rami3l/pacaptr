@@ -174,13 +174,12 @@ func (pm *Homebrew) Rs(kw []string) (err error) {
 		err = RunCommand(append([]string{"brew", "rmtree"}, kw...))
 	}
 
-	/*
-		if index := strings.Index(out, "Error: Unknown command: rmtree"); index != -1 {
-			fmt.Printf(":: `rmtree` is not installed. You may try installing it with the following command:\n")
-			fmt.Printf(":: brew tap beeftornado/rmtree\n")
-			return
-		}
-	*/
+	errMsg := fmt.Sprintf("%s", err)
+	if index := strings.Index(errMsg, "Unknown command: rmtree"); index != -1 {
+		fmt.Printf(":: `rmtree` is not installed. You may try installing it with the following command:\n")
+		fmt.Printf(":: brew tap beeftornado/rmtree\n")
+		return
+	}
 	return
 }
 
