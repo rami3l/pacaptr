@@ -114,7 +114,7 @@ func (pm *Homebrew) Qs(kw []string) (err error) {
 	}
 
 	search := func(cmd []string) (err error) {
-		PrintCommand(append(cmd, kw...))
+		PrintCommand(append(cmd))
 		outBytes, err := exec.Command(cmd[0], cmd[1:]...).Output()
 		out := fmt.Sprintf("%s", outBytes)
 		scanner := bufio.NewScanner(strings.NewReader(out))
