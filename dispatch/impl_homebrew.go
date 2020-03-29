@@ -39,7 +39,7 @@ func (pm *Homebrew) search(pack string) (code int, err error) {
 	// fmt.Print(out)
 
 	code = caskNotNeeded
-	if i := strings.Index(out, "Error: No available formula with the name"); i != -1 {
+	if i := strings.Index(out, "No available formula with the name"); i != -1 {
 		code = notFound
 		if j := strings.Index(out, "Found a cask named"); j != -1 {
 			code = caskNeeded
