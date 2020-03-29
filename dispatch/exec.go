@@ -2,6 +2,7 @@ package dispatch
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -19,13 +20,15 @@ func PrintCommand(cmd []string) {
 
 // RunCommand and get the error.
 func RunCommand(cmd []string) (err error) {
+	var errBuf strings.Builder
 	PrintCommand(cmd)
 	p := exec.Command(cmd[0], cmd[1:]...)
 	p.Stdin = os.Stdin
 	p.Stdout = os.Stdout
-	p.Stderr = os.Stderr
-	if err = p.Run(); err != nil {
-		return fmt.Errorf("pacapt: error while running command `%s`", cmd)
+	p.Stderr = io.MultiWriter(os.Stderr, &errBuf)
+
+	if runErr := p.Run(); runErr != nil {
+		return fmt.Errorf("%s", errBuf.String())
 	}
-	return
+	return nil
 }

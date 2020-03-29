@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	red := color.New(color.FgHiRed)
+	red := color.New(color.FgRed)
 
 	args, err := parser.Run()
 	if err != nil {
@@ -20,7 +20,7 @@ func main() {
 
 	err = dispatch.Dispatch(args)
 	if err != nil {
-		red.Fprintf(os.Stderr, ":: dispatch: %s\n", err)
+		// red.Fprintf(os.Stderr, ":: %s\n", err)
 		os.Exit(dispatch.GetErrorCode(err))
 	}
 

@@ -1,12 +1,5 @@
 package dispatch
 
-import (
-	"io"
-	"os"
-	"os/exec"
-	"strings"
-)
-
 // Dpkg package manager config.
 type Dpkg struct {
 	DryRun    bool
@@ -24,24 +17,6 @@ func (pm *Dpkg) RunIfNotDry(cmd []string) (err error) {
 		return
 	}
 	return RunCommand(cmd)
-}
-
-// CheckOutput runs the command and returns its output both to a string and to Stdout (ignored if DryRun).
-func (pm *Dpkg) CheckOutput(cmd []string) (out string, err error) {
-	var outBuf strings.Builder
-	PrintCommand(cmd)
-	p := exec.Command(cmd[0], cmd[1:]...)
-	p.Stdin = os.Stdin
-	if pm.DryRun {
-		p.Stdout = &outBuf
-		p.Stderr = &outBuf
-	} else {
-		p.Stdout = io.MultiWriter(os.Stdout, &outBuf)
-		p.Stderr = io.MultiWriter(os.Stderr, &outBuf)
-	}
-	err = p.Run()
-	out = outBuf.String()
-	return
 }
 
 // Q generates a list of installed packages.
