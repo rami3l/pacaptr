@@ -9,79 +9,79 @@ import (
 // Dispatch according to command line arguments.
 func Dispatch(args *parser.CmdArgs) (err error) {
 	pm := DetectPackManager(args.DryRun, args.NoConfirm)
-	kw := args.Keywords
+	kws := args.Keywords
 
 	switch {
 	case args.Query:
 		switch {
 		case args.C == 1:
-			err = pm.Qc(kw)
+			err = pm.Qc(kws)
 		case args.E:
-			err = pm.Qe(kw)
+			err = pm.Qe(kws)
 		case args.I == 1:
-			err = pm.Qi(kw)
+			err = pm.Qi(kws)
 		case args.K:
-			err = pm.Qk(kw)
+			err = pm.Qk(kws)
 		case args.L:
-			err = pm.Ql(kw)
+			err = pm.Ql(kws)
 		case args.M:
-			err = pm.Qm(kw)
+			err = pm.Qm(kws)
 		case args.O:
-			err = pm.Qo(kw)
+			err = pm.Qo(kws)
 		case args.P:
-			err = pm.Qp(kw)
+			err = pm.Qp(kws)
 		case args.S:
-			err = pm.Qs(kw)
+			err = pm.Qs(kws)
 		case args.U:
-			err = pm.Qu(kw)
+			err = pm.Qu(kws)
 		default:
-			err = pm.Q(kw)
+			err = pm.Q(kws)
 		}
 
 	case args.Remove:
 		switch {
 		case args.N && args.S:
-			err = pm.Rns(kw)
+			err = pm.Rns(kws)
 		case args.N:
-			err = pm.Rn(kw)
+			err = pm.Rn(kws)
 		case args.S:
-			err = pm.Rs(kw)
+			err = pm.Rs(kws)
 		default:
-			err = pm.R(kw)
+			err = pm.R(kws)
 		}
 
 	case args.Sync:
 		switch {
 		case args.C == 1:
-			err = pm.Sc(kw)
+			err = pm.Sc(kws)
 		case args.C == 2:
-			err = pm.Scc(kw)
+			err = pm.Scc(kws)
 		case args.C == 3:
-			err = pm.Sccc(kw)
+			err = pm.Sccc(kws)
 		case args.G:
-			err = pm.Sg(kw)
+			err = pm.Sg(kws)
 		case args.I == 1:
-			err = pm.Si(kw)
+			err = pm.Si(kws)
 		case args.I == 2:
-			err = pm.Sii(kw)
+			err = pm.Sii(kws)
 		case args.L:
-			err = pm.Sl(kw)
+			err = pm.Sl(kws)
 		case args.S:
-			err = pm.Ss(kw)
+			err = pm.Ss(kws)
 		case args.U && args.Y:
-			err = pm.Suy(kw)
+			err = pm.Suy(kws)
 		case args.U:
-			err = pm.Su(kw)
+			err = pm.Su(kws)
 		case args.Y:
-			err = pm.Sy(kw)
+			err = pm.Sy(kws)
 		case args.W:
-			err = pm.Sw(kw)
+			err = pm.Sw(kws)
 		default:
-			err = pm.S(kw)
+			err = pm.S(kws)
 		}
 
 	case args.Upgrade:
-		err = pm.U(kw)
+		err = pm.U(kws)
 
 	default:
 		err = fmt.Errorf("Invalid flag")
