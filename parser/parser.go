@@ -73,8 +73,11 @@ func Run() (args *CmdArgs, err error) {
 
 	// Other flags
 	dryRun := parser.Flag("", "dryrun", &argparse.Options{Help: "Perform a dry run"})
-	dryRunAlt := parser.Flag("", "dry-run", &argparse.Options{Help: "Perform a dry run"})
+	dryRunLong := parser.Flag("", "dry-run", &argparse.Options{Help: "Perform a dry run"})
+
+	yes := parser.Flag("", "yes", &argparse.Options{Help: "Answer yes to every question"})
 	noConfirm := parser.Flag("", "noconfirm", &argparse.Options{Help: "Answer yes to every question"})
+	noConfirmLong := parser.Flag("", "no-confirm", &argparse.Options{Help: "Answer yes to every question"})
 
 	// Parse input
 	cmd, kw := stripKeywords(os.Args)
@@ -100,8 +103,8 @@ func Run() (args *CmdArgs, err error) {
 		*e, *g, *k, *l, *m, *n, *o, *p, *s, *u, *w, *y,
 		*c, *i,
 		kw,
-		*dryRun || *dryRunAlt,
-		*noConfirm,
+		*dryRun || *dryRunLong,
+		*yes || *noConfirm || *noConfirmLong,
 	}
 
 	return
