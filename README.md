@@ -78,7 +78,7 @@ For Homebrew users:
 
 - `Dpkg/Apt` support: Experimental.
 
-- `--dryrun`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
+- `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
   - Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation. For instance:
 
@@ -93,6 +93,8 @@ For Homebrew users:
     >> brew cleanup
     .. (cleaning up)
     ```
+
+- `--yes`, `--noconfirm`, `--no-confirm`: Use this flag to trigger the corresponding flag of your package manager (if possible) in order to answer "yes" to every incoming question. Potentially dangerous if you don't know what you're doing!
 
 [icy/pacapt]: https://github.com/icy/pacapt
 [rmtree]: https://github.com/beeftornado/homebrew-rmtree
