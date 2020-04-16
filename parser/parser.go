@@ -18,6 +18,7 @@ type CmdArgs struct {
 	Keywords                           []string
 	DryRun                             bool
 	NoConfirm                          bool
+	Cask                               bool
 }
 
 // stripKeywords distinguishes between pacapt flags and package names.
@@ -79,6 +80,8 @@ func Run() (args *CmdArgs, err error) {
 	noConfirm := parser.Flag("", "noconfirm", &argparse.Options{Help: "Answer yes to every question"})
 	noConfirmLong := parser.Flag("", "no-confirm", &argparse.Options{Help: "Answer yes to every question"})
 
+	cask := parser.Flag("", "cask", &argparse.Options{Help: "Force the use of `brew cask` in some commands."})
+
 	// Parse input
 	cmd, kws := stripKeywords(os.Args)
 	if err = parser.Parse(cmd); err != nil {
@@ -105,6 +108,7 @@ func Run() (args *CmdArgs, err error) {
 		kws,
 		*dryRun || *dryRunLong,
 		*yes || *noConfirm || *noConfirmLong,
+		*cask,
 	}
 
 	return

@@ -8,7 +8,7 @@ import (
 
 // Dispatch according to command line arguments.
 func Dispatch(args *parser.CmdArgs) (err error) {
-	pm := DetectPackManager(args.DryRun, args.NoConfirm)
+	pm := DetectPackManager(args)
 	kws := args.Keywords
 
 	switch {

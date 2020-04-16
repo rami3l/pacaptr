@@ -72,6 +72,8 @@ For Homebrew users:
     >> brew cask install gimp
     ```
 
+  - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
+
 - `Chocolatey` support: Experimental.
 
   - Tips: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
