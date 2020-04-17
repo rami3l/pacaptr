@@ -4,7 +4,7 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/rami3l/pacapt-go/parser"
+	"github.com/rami3l/pacapt-ng/parser"
 )
 
 // PackManager represents a PACkage MANager
