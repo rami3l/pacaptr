@@ -65,10 +65,10 @@ For Homebrew users:
   - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
   
     ```bash
-    go run main.go -S curl --dryrun
+    pacapt-ng -S curl --dryrun
     >> brew install curl
 
-    go run main.go -S gimp --dryrun
+    pacapt-ng -S gimp --dryrun
     >> brew cask install gimp
     ```
 
