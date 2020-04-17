@@ -1,4 +1,4 @@
-module github.com/rami3l/pacapt-go
+module github.com/rami3l/pacapt-ng
 
 go 1.14
 

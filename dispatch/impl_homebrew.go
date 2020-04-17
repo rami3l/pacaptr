@@ -11,6 +11,7 @@ import (
 // Homebrew package manager config.
 type Homebrew struct {
 	DryRun bool
+	Cask   bool
 }
 
 // For method implementation see: https://golang.org/src/os/exec/example_test.go
@@ -157,7 +158,10 @@ func (pm *Homebrew) R(kws []string) (err error) {
 
 		switch code {
 		case notFound, caskNotNeeded:
-			return pm.RunIfNotDry([]string{"brew", "uninstall", pack})
+			if !pm.Cask {
+				return pm.RunIfNotDry([]string{"brew", "uninstall", pack})
+			}
+			fallthrough
 		case caskNeeded:
 			return pm.RunIfNotDry([]string{"brew", "cask", "uninstall", pack})
 		}
@@ -213,7 +217,10 @@ func (pm *Homebrew) S(kws []string) (err error) {
 
 		switch code {
 		case notFound, caskNotNeeded:
-			return pm.RunIfNotDry([]string{"brew", "install", pack})
+			if !pm.Cask {
+				return pm.RunIfNotDry([]string{"brew", "install", pack})
+			}
+			fallthrough
 		case caskNeeded:
 			return pm.RunIfNotDry([]string{"brew", "cask", "install", pack})
 		}

@@ -3,6 +3,8 @@ package dispatch
 import (
 	"os/exec"
 	"runtime"
+
+	"github.com/rami3l/pacapt-ng/parser"
 )
 
 // PackManager represents a PACkage MANager
@@ -60,7 +62,10 @@ func isExe(name string, path string) bool {
 
 // DetectPackManager detects the package manager in use.
 // TODO: Make this function REALLY detect package managers
-func DetectPackManager(dryRun bool, noConfirm bool) (pm PackManager) {
+func DetectPackManager(args *parser.CmdArgs) (pm PackManager) {
+	dryRun := args.DryRun
+	noConfirm := args.NoConfirm
+	cask := args.Cask
 	pm = &Unknown{dryRun, noConfirm}
 
 	switch runtime.GOOS {
@@ -72,7 +77,7 @@ func DetectPackManager(dryRun bool, noConfirm bool) (pm PackManager) {
 		switch {
 		// Homebrew
 		case isExe("brew", "/usr/local/bin/brew"):
-			return &Homebrew{dryRun}
+			return &Homebrew{dryRun, cask}
 
 		// Macports
 		case isExe("port", "/opt/local/bin/port"):

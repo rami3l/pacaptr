@@ -3,12 +3,12 @@ package dispatch
 import (
 	"fmt"
 
-	"github.com/rami3l/pacapt-go/parser"
+	"github.com/rami3l/pacapt-ng/parser"
 )
 
 // Dispatch according to command line arguments.
 func Dispatch(args *parser.CmdArgs) (err error) {
-	pm := DetectPackManager(args.DryRun, args.NoConfirm)
+	pm := DetectPackManager(args)
 	kws := args.Keywords
 
 	switch {

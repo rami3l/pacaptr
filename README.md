@@ -1,9 +1,9 @@
-# pacapt-go
+# pacapt-ng
 
-- [pacapt-go](#pacapt-go)
+- [pacapt-ng](#pacapt-ng)
   - [Introduction](#introduction)
   - [Warning: WIP](#warning-wip)
-  - [Installation](#installation)
+  - [Build from source](#build-from-source)
   - [Implemented Features](#implemented-features)
 
 ## Introduction
@@ -23,8 +23,8 @@ Now the implementations of different package managers are all placed in `dispatc
 To play along at home:
 
 ```bash
-git clone https://github.com/rami3l/pacapt-go.git
-cd pacapt-go
+git clone https://github.com/rami3l/pacapt-ng.git
+cd pacapt-ng
 ```
 
 ... and then try something like:
@@ -33,18 +33,18 @@ cd pacapt-go
 go run main.go -S curl
 ```
 
-## Installation
+## Build from source
 
 To install:
 
 ```bash
-go install "github.com/rami3l/pacapt-go"
+go install "github.com/rami3l/pacapt-ng"
 ```
 
 To uninstall:
 
 ```bash
-go clean -i "github.com/rami3l/pacapt-go"
+go clean -i "github.com/rami3l/pacapt-ng"
 ```
 
 We currently provide `go install` only.
@@ -72,6 +72,8 @@ For Homebrew users:
     >> brew cask install gimp
     ```
 
+  - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
+
 - `Chocolatey` support: Experimental.
 
   - Tips: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
@@ -84,12 +86,12 @@ For Homebrew users:
 
     ```bash
     # Nothing will be deleted here:
-    pacapt-go -Sc --dryrun
+    pacapt-ng -Sc --dryrun
     >> brew cleanup --dry-run
     .. (showing the files to be removed)
 
     # Without `--dryrun`, the forementioned files will be removed:
-    pacapt-go -Sc
+    pacapt-ng -Sc
     >> brew cleanup
     .. (cleaning up)
     ```
