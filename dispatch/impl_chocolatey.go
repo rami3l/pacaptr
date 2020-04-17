@@ -14,7 +14,7 @@ type Chocolatey struct {
 // RunIfNotDry prints out the command if DryRun, else it runs the command.
 func (pm *Chocolatey) RunIfNotDry(cmd []string) (err error) {
 	if pm.DryRun {
-		PrintCommand(cmd)
+		PrintCommand(cmd, true)
 		return
 	}
 	return RunCommand(cmd)

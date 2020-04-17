@@ -21,7 +21,7 @@ type Homebrew struct {
 // RunIfNotDry prints out the command if DryRun, else it runs the command.
 func (pm *Homebrew) RunIfNotDry(cmd []string) (err error) {
 	if pm.DryRun {
-		PrintCommand(cmd)
+		PrintCommand(cmd, true)
 		return
 	}
 	return RunCommand(cmd)
@@ -115,7 +115,7 @@ func (pm *Homebrew) Qs(kws []string) (err error) {
 	}
 
 	search := func(cmd []string) (err error) {
-		PrintCommand(append(cmd))
+		PrintCommand(append(cmd), false)
 		outBytes, err := exec.Command(cmd[0], cmd[1:]...).Output()
 		out := fmt.Sprintf("%s", outBytes)
 		scanner := bufio.NewScanner(strings.NewReader(out))

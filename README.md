@@ -66,10 +66,10 @@ For Homebrew users:
   
     ```bash
     pacapt-ng -S curl --dryrun
-    >> brew install curl
+    #> brew install curl
 
     pacapt-ng -S gimp --dryrun
-    >> brew cask install gimp
+    #> brew cask install gimp
     ```
 
   - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
@@ -82,12 +82,14 @@ For Homebrew users:
 
 - `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
+  - `#>` means that the following command will not be run, while `>>` means that it will be.
+
   - Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation. For instance:
 
     ```bash
     # Nothing will be deleted here:
     pacapt-ng -Sc --dryrun
-    >> brew cleanup --dry-run
+    #> brew cleanup --dry-run
     .. (showing the files to be removed)
 
     # Without `--dryrun`, the forementioned files will be removed:

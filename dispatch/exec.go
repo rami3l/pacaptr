@@ -14,14 +14,20 @@ func NotImplemented() (err error) {
 }
 
 // PrintCommand prints the command to be executed.
-func PrintCommand(cmd []string) {
-	fmt.Printf(">> %s\n", strings.Join(cmd, " "))
+func PrintCommand(cmd []string, dry bool) {
+	var prompt string
+	if dry {
+		prompt = "#>"
+	} else {
+		prompt = ">>"
+	}
+	fmt.Printf("%s %s\n", prompt, strings.Join(cmd, " "))
 }
 
 // RunCommand and get the error.
 func RunCommand(cmd []string) (err error) {
 	var errBuf strings.Builder
-	PrintCommand(cmd)
+	PrintCommand(cmd, false)
 	p := exec.Command(cmd[0], cmd[1:]...)
 	p.Stdin = os.Stdin
 	p.Stdout = os.Stdout
