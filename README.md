@@ -3,7 +3,7 @@
 - [pacapt-ng](#pacapt-ng)
   - [Introduction](#introduction)
   - [Warning: WIP](#warning-wip)
-  - [Build from source](#build-from-source)
+  - [Building](#building)
   - [Implemented Features](#implemented-features)
 
 ## Introduction
@@ -33,7 +33,7 @@ cd pacapt-ng
 go run main.go -S curl
 ```
 
-## Build from source
+## Building
 
 To install:
 
