@@ -10,6 +10,10 @@ macro_rules! make_pm {
 }
 
 pub trait PackManager {
+    fn run(cmd: &str, kws: &[&str], quiet: bool) -> Result<(), String> {
+        todo!()
+    }
+
     make_pm!(
         q, qc, qe, qi, qk, ql, qm, qo, qp, qs, qu, r, rn, rns, rs, s, sc, scc, sccc, sg, si, sii,
         sl, ss, su, suy, sw, sy, u
