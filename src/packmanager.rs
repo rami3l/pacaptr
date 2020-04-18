@@ -1,16 +1,19 @@
 mod homebrew;
 mod unknown;
 
+pub use self::{homebrew::Homebrew, unknown::Unknown};
+use crate::error::Error;
+
 macro_rules! make_pm {
     ($( $method:ident ), *) => {
-        $(fn $method(&self, _kws: &[&str]) -> Result<(), String> {
+        $(fn $method(&self, _kws: &[&str]) -> Result<(), Error> {
             unimplemented!("{}", stringify!($method))
         })*
     };
 }
 
 pub trait PackManager {
-    fn run(cmd: &str, kws: &[&str], quiet: bool) -> Result<(), String> {
+    fn run(cmd: &str, kws: &[&str]) -> Result<(), Error> {
         todo!()
     }
 

@@ -1,9 +1,15 @@
 mod dispatch;
+mod error;
+mod exec;
 mod packmanager;
+
+use dispatch::Opt;
+use structopt::StructOpt;
 
 #[macro_use]
 extern crate lazy_static;
 
 fn main() {
-    println!("Hello, world!");
+    let opt = Opt::from_args();
+    println!("{:?}", opt);
 }

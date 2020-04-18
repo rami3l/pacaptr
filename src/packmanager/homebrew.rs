@@ -1,10 +1,11 @@
 use super::PackManager;
+use crate::error::Error;
+use crate::exec::{self, Mode};
 use regex::Regex;
-use subprocess::{Exec, Redirection};
 
 pub struct Homebrew {
-    dry_run: bool,
-    cask: bool,
+    pub dry_run: bool,
+    pub force_cask: bool,
 }
 
 enum CaskState {
@@ -14,15 +15,9 @@ enum CaskState {
 }
 
 impl Homebrew {
-    fn search(&self, pack: &str) -> Result<CaskState, String> {
-        let out = Exec::cmd("brew")
-            .arg("info")
-            .arg(pack)
-            .stdout(Redirection::Pipe)
-            .stderr(Redirection::Merge)
-            .capture()
-            .map_err(|_| "Could not capture stdout".to_string())?
-            .stdout_str();
+    fn search(&self, pack: &str) -> Result<CaskState, Error> {
+        let out_bytes = exec::exec("brew", &["info", pack], Mode::Mute)?;
+        let out = String::from_utf8(out_bytes).unwrap();
 
         let code = {
             lazy_static! {

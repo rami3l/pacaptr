@@ -9,6 +9,8 @@
         "gsudo",
         "noconfirm",
         "rdepends",
-        "rmtree"
+        "rmtree",
+        "structopt",
+        "sysupgrade"
     ]
 }
