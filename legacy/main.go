@@ -5,8 +5,8 @@ import (
 
 	"github.com/fatih/color"
 
-	"github.com/rami3l/pacapt-ng/dispatch"
-	"github.com/rami3l/pacapt-ng/parser"
+	"github.com/rami3l/pacaptr/dispatch"
+	"github.com/rami3l/pacaptr/parser"
 )
 
 func main() {

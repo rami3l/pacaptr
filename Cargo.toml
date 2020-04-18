@@ -1,5 +1,5 @@
 [package]
-name = "pacapt-ng"
+name = "pacaptr"
 version = "0.1.0"
 authors = ["Rami3L <rami3l@outlook.com>"]
 edition = "2018"

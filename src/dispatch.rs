@@ -224,7 +224,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "should run: suy")]
     fn simple_syu() {
-        let opt = dbg!(Opt::from_iter(&["pacapt-ng", "-Syu"]));
+        let opt = dbg!(Opt::from_iter(&["pacaptr", "-Syu"]));
 
         assert!(opt.keywords.is_empty());
         assert!(opt.sync);
@@ -237,7 +237,7 @@ mod tests {
     #[should_panic(expected = "should run: suy")]
     fn long_syu() {
         let opt = dbg!(Opt::from_iter(&[
-            "pacapt-ng",
+            "pacaptr",
             "--sync",
             "--refresh",
             "--sysupgrade"
@@ -253,7 +253,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "should run: sw [\"curl\", \"wget\"]")]
     fn simple_si() {
-        let opt = dbg!(Opt::from_iter(&["pacapt-ng", "-Sw", "curl", "wget"]));
+        let opt = dbg!(Opt::from_iter(&["pacaptr", "-Sw", "curl", "wget"]));
 
         assert!(opt.sync);
         assert!(opt.w);
@@ -263,7 +263,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "should run: s [\"docker\"]")]
     fn additional_flags() {
-        let opt = dbg!(Opt::from_iter(&["pacapt-ng", "-S", "docker", "--cask"]));
+        let opt = dbg!(Opt::from_iter(&["pacaptr", "-S", "docker", "--cask"]));
 
         assert!(opt.sync);
         assert!(opt.force_cask);
@@ -273,7 +273,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "exactly 1 operation expected")]
     fn too_many_ops() {
-        let opt = dbg!(Opt::from_iter(&["pacapt-ng", "-SQns", "docker", "--cask"]));
+        let opt = dbg!(Opt::from_iter(&["pacaptr", "-SQns", "docker", "--cask"]));
 
         assert!(opt.sync);
         assert!(opt.query);
