@@ -3,7 +3,7 @@ package dispatch
 import (
 	"fmt"
 
-	"github.com/rami3l/pacapt-ng/parser"
+	"github.com/rami3l/pacaptr/parser"
 )
 
 // Dispatch according to command line arguments.

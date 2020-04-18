@@ -1,6 +1,6 @@
-# pacapt-ng
+# pacaptr
 
-- [pacapt-ng](#pacapt-ng)
+- [pacaptr](#pacaptr)
   - [Introduction](#introduction)
   - [Warning: WIP](#warning-wip)
   - [Building](#building)
@@ -23,8 +23,8 @@ Now the implementations of different package managers are all placed in `dispatc
 To play along at home:
 
 ```bash
-git clone https://github.com/rami3l/pacapt-ng.git
-cd pacapt-ng
+git clone https://github.com/rami3l/pacaptr.git
+cd pacaptr
 ```
 
 ... and then try something like:
@@ -38,13 +38,13 @@ go run main.go -S curl
 To install:
 
 ```bash
-go install "github.com/rami3l/pacapt-ng"
+go install "github.com/rami3l/pacaptr"
 ```
 
 To uninstall:
 
 ```bash
-go clean -i "github.com/rami3l/pacapt-ng"
+go clean -i "github.com/rami3l/pacaptr"
 ```
 
 We currently provide `go install` only.
@@ -65,10 +65,10 @@ For Homebrew users:
   - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
   
     ```bash
-    pacapt-ng -S curl --dryrun
+    pacaptr -S curl --dryrun
     #> brew install curl
 
-    pacapt-ng -S gimp --dryrun
+    pacaptr -S gimp --dryrun
     #> brew cask install gimp
     ```
 
@@ -88,12 +88,12 @@ For Homebrew users:
 
     ```bash
     # Nothing will be deleted here:
-    pacapt-ng -Sc --dryrun
+    pacaptr -Sc --dryrun
     #> brew cleanup --dry-run
     .. (showing the files to be removed)
 
     # Without `--dryrun`, the forementioned files will be removed:
-    pacapt-ng -Sc
+    pacaptr -Sc
     >> brew cleanup
     .. (cleaning up)
     ```
