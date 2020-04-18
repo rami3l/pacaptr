@@ -9,6 +9,12 @@ impl std::convert::From<&str> for Error {
     }
 }
 
+impl std::convert::From<String> for Error {
+    fn from(msg: String) -> Self {
+        Error { msg }
+    }
+}
+
 impl std::convert::From<std::io::Error> for Error {
     fn from(io_err: std::io::Error) -> Self {
         Error {

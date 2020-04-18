@@ -7,7 +7,7 @@ use crate::error::Error;
 macro_rules! make_pm {
     ($( $method:ident ), *) => {
         $(fn $method(&self, _kws: &[&str]) -> Result<(), Error> {
-            unimplemented!("{}", stringify!($method))
+            Err(format!("\"{}\" unimplemented", stringify!($method)).into())
         })*
     };
 }
