@@ -151,6 +151,13 @@ func (pm *Homebrew) Qu(kws []string) (err error) {
 // R removes a single package, leaving all of its dependencies installed.
 func (pm *Homebrew) R(kws []string) (err error) {
 	uninstall := func(pack string) (err error) {
+		brewUninstall := func() error { return pm.RunIfNotDry([]string{"brew", "uninstall", pack}) }
+		brewCaskUninstall := func() error { return pm.RunIfNotDry([]string{"brew", "cask", "uninstall", pack}) }
+
+		if pm.Cask {
+			return brewCaskUninstall()
+		}
+
 		code, err := pm.search(pack)
 		if err != nil {
 			return
@@ -158,12 +165,9 @@ func (pm *Homebrew) R(kws []string) (err error) {
 
 		switch code {
 		case notFound, caskNotNeeded:
-			if !pm.Cask {
-				return pm.RunIfNotDry([]string{"brew", "uninstall", pack})
-			}
-			fallthrough
+			return brewUninstall()
 		case caskNeeded:
-			return pm.RunIfNotDry([]string{"brew", "cask", "uninstall", pack})
+			return brewCaskUninstall()
 		}
 
 		return
@@ -210,6 +214,13 @@ func (pm *Homebrew) Rs(kws []string) (err error) {
 // S installs one or more packages by name.
 func (pm *Homebrew) S(kws []string) (err error) {
 	install := func(pack string) (err error) {
+		brewInstall := func() error { return pm.RunIfNotDry([]string{"brew", "install", pack}) }
+		brewCaskInstall := func() error { return pm.RunIfNotDry([]string{"brew", "cask", "install", pack}) }
+
+		if pm.Cask {
+			return brewCaskInstall()
+		}
+
 		code, err := pm.search(pack)
 		if err != nil {
 			return
@@ -217,12 +228,9 @@ func (pm *Homebrew) S(kws []string) (err error) {
 
 		switch code {
 		case notFound, caskNotNeeded:
-			if !pm.Cask {
-				return pm.RunIfNotDry([]string{"brew", "install", pack})
-			}
-			fallthrough
+			return brewInstall()
 		case caskNeeded:
-			return pm.RunIfNotDry([]string{"brew", "cask", "install", pack})
+			return brewCaskInstall()
 		}
 
 		return
