@@ -3,6 +3,7 @@ mod unknown;
 
 pub use self::{homebrew::Homebrew, unknown::Unknown};
 use crate::error::Error;
+use crate::exec::{self, Mode};
 
 macro_rules! make_pm {
     ($( $method:ident ), *) => {
@@ -13,8 +14,11 @@ macro_rules! make_pm {
 }
 
 pub trait PackManager {
-    fn run(cmd: &str, kws: &[&str]) -> Result<(), Error> {
-        todo!()
+    /// A helper method to simplify direction command invocation.
+    /// Override this to implement features such as `dryrun`.
+    fn just_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
+        exec::exec(cmd, subcmd, kws, Mode::Verbose)?;
+        Ok(())
     }
 
     make_pm!(

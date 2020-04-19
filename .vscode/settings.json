@@ -11,6 +11,7 @@
         "rdepends",
         "rmtree",
         "structopt",
+        "subcmd",
         "sysupgrade"
     ]
 }
