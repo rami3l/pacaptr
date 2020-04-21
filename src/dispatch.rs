@@ -103,7 +103,7 @@ impl Opt {
     /// Check if an Opt object is malformed.
     pub fn check(&self) -> Result<(), Error> {
         match () {
-            () if {
+            _ if {
                 let mut count = 0;
                 for &v in &[self.query, self.remove, self.sync, self.update] {
                     if v {
@@ -134,48 +134,48 @@ impl Opt {
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
 
         match () {
-            () if self.query => match () {
-                () if self.c == 1 => pm.qc(&kws),
-                () if self.c >= 2 => unimplemented!(),
-                () if self.e => pm.qe(&kws),
-                () if self.i == 1 => pm.qi(&kws),
-                () if self.i >= 2 => unimplemented!(),
-                () if self.k => pm.qk(&kws),
-                () if self.l => pm.ql(&kws),
-                () if self.m => pm.qm(&kws),
-                () if self.o => pm.qo(&kws),
-                () if self.p => pm.qp(&kws),
-                () if self.s => pm.qs(&kws),
-                () if self.u => pm.qu(&kws),
+            _ if self.query => match () {
+                _ if self.c == 1 => pm.qc(&kws),
+                _ if self.c >= 2 => unimplemented!(),
+                _ if self.e => pm.qe(&kws),
+                _ if self.i == 1 => pm.qi(&kws),
+                _ if self.i >= 2 => unimplemented!(),
+                _ if self.k => pm.qk(&kws),
+                _ if self.l => pm.ql(&kws),
+                _ if self.m => pm.qm(&kws),
+                _ if self.o => pm.qo(&kws),
+                _ if self.p => pm.qp(&kws),
+                _ if self.s => pm.qs(&kws),
+                _ if self.u => pm.qu(&kws),
                 _ => pm.q(&kws),
             },
 
-            () if self.remove => match () {
-                () if self.n && self.s => pm.rns(&kws),
-                () if self.n => pm.rn(&kws),
-                () if self.s => pm.rs(&kws),
+            _ if self.remove => match () {
+                _ if self.n && self.s => pm.rns(&kws),
+                _ if self.n => pm.rn(&kws),
+                _ if self.s => pm.rs(&kws),
                 _ => pm.r(&kws),
             },
 
-            () if self.sync => match () {
-                () if self.c == 1 => pm.sc(&kws),
-                () if self.c == 2 => pm.scc(&kws),
-                () if self.c == 3 => pm.sccc(&kws),
-                () if self.c >= 4 => unimplemented!(),
-                () if self.g => pm.sg(&kws),
-                () if self.i == 1 => pm.si(&kws),
-                () if self.i == 2 => pm.sii(&kws),
-                () if self.i >= 3 => unimplemented!(),
-                () if self.l => pm.sl(&kws),
-                () if self.s => pm.ss(&kws),
-                () if self.u && self.y => pm.suy(&kws),
-                () if self.u => pm.su(&kws),
-                () if self.y => pm.sy(&kws),
-                () if self.w => pm.sw(&kws),
+            _ if self.sync => match () {
+                _ if self.c == 1 => pm.sc(&kws),
+                _ if self.c == 2 => pm.scc(&kws),
+                _ if self.c == 3 => pm.sccc(&kws),
+                _ if self.c >= 4 => unimplemented!(),
+                _ if self.g => pm.sg(&kws),
+                _ if self.i == 1 => pm.si(&kws),
+                _ if self.i == 2 => pm.sii(&kws),
+                _ if self.i >= 3 => unimplemented!(),
+                _ if self.l => pm.sl(&kws),
+                _ if self.s => pm.ss(&kws),
+                _ if self.u && self.y => pm.suy(&kws),
+                _ if self.u => pm.su(&kws),
+                _ if self.y => pm.sy(&kws),
+                _ if self.w => pm.sw(&kws),
                 _ => pm.s(&kws),
             },
 
-            () if self.update => pm.u(&kws),
+            _ if self.update => pm.u(&kws),
 
             _ => Err("Invalid flag".into()),
         }

@@ -17,7 +17,7 @@ pub trait PackManager {
     /// A helper method to simplify direction command invocation.
     /// Override this to implement features such as `dryrun`.
     fn just_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
-        exec::exec(cmd, subcmd, kws, Mode::Verbose)?;
+        exec::exec(cmd, subcmd, kws, Mode::CheckErr)?;
         Ok(())
     }
 

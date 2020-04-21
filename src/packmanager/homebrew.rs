@@ -47,7 +47,7 @@ impl PackManager for Homebrew {
         let mode = if self.dry_run {
             Mode::DryRun
         } else {
-            Mode::Verbose
+            Mode::CheckErr
         };
         exec::exec(cmd, subcmd, kws, mode)?;
         Ok(())
@@ -159,7 +159,7 @@ impl PackManager for Homebrew {
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, kws: &[&str]) -> Result<(), Error> {
         if self.dry_run {
-            exec::exec("brew", &["cleanup", "--dry-run"], kws, Mode::Verbose)?;
+            exec::exec("brew", &["cleanup", "--dry-run"], kws, Mode::CheckErr)?;
             Ok(())
         } else {
             self.just_run("brew", &["cleanup"], kws)
@@ -169,7 +169,7 @@ impl PackManager for Homebrew {
     /// Scc removes all files from the cache.
     fn scc(&self, kws: &[&str]) -> Result<(), Error> {
         if self.dry_run {
-            exec::exec("brew", &["cleanup", "-s", "--dry-run"], kws, Mode::Verbose)?;
+            exec::exec("brew", &["cleanup", "-s", "--dry-run"], kws, Mode::CheckErr)?;
             Ok(())
         } else {
             self.just_run("brew", &["cleanup", "-s"], kws)
