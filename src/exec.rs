@@ -12,14 +12,14 @@ pub enum Mode {
     /// Solely print out the command that should be executed, and stop.
     DryRun,
 
-    /// Silently collect all the output. Print nothing.
+    /// Silently collect all the output as a String. Print nothing.
     Mute,
 
-    /// Print out the command which should be executed, run it and collect its stdout/stderr combined as a String.
-    /// Potentially dangerous as it destroys the colored stdout. Use it if really necessary.
+    /// Print out the command which should be executed, run it and collect its stdout/stderr combined as a Vec<u8>.
+    /// Potentially dangerous as it destroys the colored stdout. Use it only if really necessary.
     CheckAll,
 
-    /// Print out the command which should be executed, run it and collect its stderr as a String.
+    /// Print out the command which should be executed, run it and collect its stderr as a Vec<u8>.
     /// This will not break the colored stdout.
     CheckErr,
 }
@@ -43,8 +43,8 @@ pub fn exec(cmd: &str, subcmd: &[&str], kws: &[&str], mode: Mode) -> Result<Vec<
 }
 
 /// Execute a command and return its stdout and stderr collected in a `Vec<u8>`.
-/// The command is provided in `command-subcommand-keywords` form.
-/// For example, `brew-[install]-[curl fish]`. If there is no subcommand, just pass &[].
+/// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
+/// If there is no subcommand, just pass `&[]`.
 /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
 fn exec_checkall(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<Vec<u8>, Error> {
     let stdout_reader = Exec::cmd(cmd)
@@ -70,9 +70,9 @@ fn exec_checkall(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
 }
 
 /// Execute a command and collect it's stderr in a `Vec<u8>`.
-/// The command is provided in `command-subcommand-keywords` form.
-/// For example, `brew-[install]-[curl fish]`. If there is no subcommand, just pass &[].
-/// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
+/// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
+/// If there is no subcommand, just pass `&[]`.
+/// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
 fn exec_checkerr(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<Vec<u8>, Error> {
     let stdout_reader = Exec::cmd(cmd)
         .args(subcmd)
@@ -85,7 +85,7 @@ fn exec_checkerr(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
     let mut stderr = std::io::stderr();
 
     for mb in stdout_reader.bytes() {
-        let b = mb.unwrap();
+        let b = mb?;
         out.write(&[b])?;
         if !mute {
             stderr.write(&[b])?;
@@ -95,7 +95,7 @@ fn exec_checkerr(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
     Ok(out)
 }
 
-/// Print the command after a given prompt.
+/// Print the command after the given prompt.
 pub fn print(cmd: &str, subcmd: &[&str], kws: &[&str], prompt: &str) {
     let mut cmd_str: String = cmd.into();
     for &w in subcmd.iter().chain(kws) {
