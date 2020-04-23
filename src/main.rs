@@ -8,12 +8,12 @@ extern crate lazy_static;
 
 use colored::*;
 use dispatch::Opt;
-use exec::PROMPT_INFO;
+use exec::PROMPT_ERROR;
 use structopt::StructOpt;
 
 fn main() {
     let opt = Opt::from_args();
     if let Err(e) = opt.dispatch() {
-        eprintln!("{}", format!("{} Error: {}", PROMPT_INFO, e).red());
+        eprintln!("{}", format!("{} Error: {}", PROMPT_ERROR, e).red());
     }
 }

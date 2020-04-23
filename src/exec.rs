@@ -6,6 +6,7 @@ use subprocess::{Exec, Redirection};
 pub static PROMPT_DRYRUN: &str = "#>";
 pub static PROMPT_RUN: &str = ">>";
 pub static PROMPT_INFO: &str = "::";
+pub static PROMPT_ERROR: &str = "!!";
 
 /// Different ways in which a command shall be dealt with.
 pub enum Mode {

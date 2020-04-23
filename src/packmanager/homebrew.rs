@@ -1,6 +1,6 @@
 use super::PackManager;
 use crate::error::Error;
-use crate::exec::{self, Mode};
+use crate::exec::{self, Mode, PROMPT_INFO, PROMPT_RUN};
 use regex::Regex;
 
 pub struct Homebrew {
@@ -71,26 +71,34 @@ impl PackManager for Homebrew {
     }
 
     /// Qs searches locally installed package for names or descriptions.
+    // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
+    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     fn qs(&self, kws: &[&str]) -> Result<(), Error> {
-        todo!()
+        let search = |contents: String| {
+            let rs: Vec<Regex> = kws.iter().map(|kw| Regex::new(kw).unwrap()).collect();
+            for line in contents.lines() {
+                let matches_all = rs.iter().all(|regex| regex.find(line).is_some());
+
+                if matches_all {
+                    println!("{}", line);
+                }
+            }
+        };
+
+        let search_output = |cmd, subcmd| {
+            exec::print(cmd, subcmd, &[], PROMPT_RUN);
+            let out_bytes = exec::exec(cmd, subcmd, &[], Mode::Mute)?;
+            search(String::from_utf8(out_bytes)?);
+            Ok(())
+        };
+
+        search_output("brew", &["list"])?;
+        search_output("brew", &["cask", "list"])
     }
 
     /// Qu lists packages which have an update available.
-    // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
-    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     fn qu(&self, kws: &[&str]) -> Result<(), Error> {
-        let outbytes = exec::exec("brew", &["outdated"], kws, Mode::Mute)?;
-        let out = String::from_utf8(outbytes)?;
-        let rs: Vec<Regex> = kws.iter().map(|kw| Regex::new(kw).unwrap()).collect();
-
-        for line in out.lines() {
-            let matches_all = rs.iter().all(|regex| regex.find(line).is_some());
-
-            if matches_all {
-                println!("{}", line);
-            }
-        }
-        Ok(())
+        self.just_run("brew", &["outdated"], kws)
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
@@ -129,7 +137,24 @@ impl PackManager for Homebrew {
 
     /// Rs removes a package and its dependencies which are not required by any other installed package.
     fn rs(&self, kws: &[&str]) -> Result<(), Error> {
-        todo!()
+        let err_msg: String = if self.dry_run {
+            exec::exec("brew", &["rmtree", "--dry-run"], kws, Mode::CheckErr)
+        } else {
+            exec::exec("brew", &["rmtree"], kws, Mode::CheckErr)
+        }
+        .and_then(|bytes| String::from_utf8(bytes).map_err(|e| e.into()))?;
+
+        lazy_static! {
+            static ref RMTREE_MISSING: Regex = Regex::new(r"Unknown command: rmtree").unwrap();
+        }
+
+        if RMTREE_MISSING.find(&err_msg).is_some() {
+            println!("{} `rmtree` is not installed. You may try installing it with the following command:", PROMPT_INFO);
+            println!("{} brew tap beeftornado/rmtree", PROMPT_INFO);
+            return Err("`rmtree` required".into());
+        }
+
+        Ok(())
     }
 
     /// S installs one or more packages by name.
@@ -198,7 +223,7 @@ impl PackManager for Homebrew {
     }
 
     /// Su updates outdated packages.
-    /// TODO: What if `pacman -Su curl`?
+    // TODO: What if `pacman -Su curl`?
     fn su(&self, kws: &[&str]) -> Result<(), Error> {
         self.just_run("brew", &["upgrade"], kws)?;
         self.just_run("brew", &["cask", "upgrade"], kws)
