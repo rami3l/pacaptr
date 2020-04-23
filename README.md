@@ -16,7 +16,11 @@ Use one syntax to rule them all!
 
 ## Warning: WIP
 
-This is an experimental port of [icy/pacapt] in Golang. We choose Golang for better readability, better testing, and hopefully without loss of portability.
+This is an experimental port of [icy/pacapt] in Golang.
+
+~~We choose Golang for better readability, better testing, and hopefully without loss of portability.~~
+
+*I finally choose to go on with Rust instead of Golang. You can check it out right now in the [rs-dev] branch.*
 
 Now the implementations of different package managers are all placed in `dispatch` package, with names like `impl_xxx.go`.
 
@@ -50,14 +54,6 @@ go clean -i "github.com/rami3l/pacaptr"
 We currently provide `go install` only.
 PPAs might be added when appropriate.
 
-For Homebrew users:
-
-- To use `-Rs`, you need to install [rmtree] first:
-
-    ```bash
-    brew tap beeftornado/rmtree
-    ```
-
 ## Implemented Features
 
 - `Homebrew` support: Experimental.
@@ -73,6 +69,12 @@ For Homebrew users:
     ```
 
   - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
+  
+  - To use `-Rs`, you need to install [rmtree] first:
+
+    ```bash
+    brew tap beeftornado/rmtree
+    ```
 
 - `Chocolatey` support: Experimental.
 
@@ -103,3 +105,4 @@ For Homebrew users:
 [icy/pacapt]: https://github.com/icy/pacapt
 [rmtree]: https://github.com/beeftornado/homebrew-rmtree
 [gsudo]: https://github.com/gerardog/gsudo
+[rs-dev]: https://github.com/rami3l/pacaptr/tree/rs-dev
