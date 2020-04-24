@@ -5,6 +5,7 @@ use structopt::StructOpt;
 fn main() {
     let opt = Opt::from_args();
     if let Err(e) = opt.dispatch() {
-        print_err(e, PROMPT_ERROR)
+        print_err(e, PROMPT_ERROR);
+        std::process::exit(1);
     }
 }
