@@ -14,18 +14,22 @@ pub enum Mode {
     /// Solely print out the command that should be executed, and stop.
     DryRun,
 
-    /// Silently collect all the output as a String. Print nothing.
+    /// Silently collect all the `stdout`/`stderr` combined. Print nothing.
     Mute,
 
-    /// Print out the command which should be executed, run it and collect its stdout/stderr combined as a Vec<u8>.
-    /// Potentially dangerous as it destroys the colored stdout. Use it only if really necessary.
+    /// Print out the command which should be executed, run it and collect its `stdout`/`stderr` combined.
+    /// Potentially dangerous as it destroys the colored `stdout`. Use it only if really necessary.
     CheckAll,
 
-    /// Print out the command which should be executed, run it and collect its stderr as a Vec<u8>.
-    /// This will not break the colored stdout.
+    /// Print out the command which should be executed, run it and collect its `stderr`.
+    /// This will work with a colored `stdout`.
     CheckErr,
 }
 
+/// Execute a command and return a `Result<Vec<u8>, _>`.
+/// The exact behavior depends on the `mode` passed in. See `exec::Mode`'s documentation for more info.
+/// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
+/// If there is no subcommand, just pass `&[]`.
 pub fn exec(cmd: &str, subcmd: &[&str], kws: &[&str], mode: Mode) -> Result<Vec<u8>, Error> {
     match mode {
         Mode::DryRun => {
@@ -44,7 +48,7 @@ pub fn exec(cmd: &str, subcmd: &[&str], kws: &[&str], mode: Mode) -> Result<Vec<
     }
 }
 
-/// Execute a command and return its stdout and stderr collected in a `Vec<u8>`.
+/// Execute a command and return its `stdout` and `stderr`.
 /// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
 /// If there is no subcommand, just pass `&[]`.
 /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
@@ -71,7 +75,7 @@ fn exec_checkall(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
     Ok(out)
 }
 
-/// Execute a command and collect it's stderr in a `Vec<u8>`.
+/// Execute a command and collect it's `stderr`.
 /// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
 /// If there is no subcommand, just pass `&[]`.
 /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
