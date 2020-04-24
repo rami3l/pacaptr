@@ -1,13 +1,5 @@
-mod dispatch;
-mod error;
-mod exec;
-mod packmanager;
-
-#[macro_use]
-extern crate lazy_static;
-
-use dispatch::Opt;
-use exec::{print_err, PROMPT_ERROR};
+use pacaptr::dispatch::Opt;
+use pacaptr::exec::{print_err, PROMPT_ERROR};
 use structopt::StructOpt;
 
 fn main() {

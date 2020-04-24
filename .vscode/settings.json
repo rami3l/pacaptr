@@ -8,6 +8,7 @@
         "choco",
         "gsudo",
         "noconfirm",
+        "pacaptr",
         "rdepends",
         "rmtree",
         "structopt",
