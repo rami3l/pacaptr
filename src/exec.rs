@@ -1,4 +1,5 @@
 use crate::error::Error;
+use colored::Colorize;
 use std::io::BufReader;
 use std::io::{Read, Write};
 use subprocess::{Exec, Redirection};
@@ -6,7 +7,7 @@ use subprocess::{Exec, Redirection};
 pub static PROMPT_DRYRUN: &str = "#>";
 pub static PROMPT_RUN: &str = ">>";
 pub static PROMPT_INFO: &str = "::";
-pub static PROMPT_ERROR: &str = "!!";
+pub static PROMPT_ERROR: &str = "xx";
 
 /// Different ways in which a command shall be dealt with.
 pub enum Mode {
@@ -28,16 +29,16 @@ pub enum Mode {
 pub fn exec(cmd: &str, subcmd: &[&str], kws: &[&str], mode: Mode) -> Result<Vec<u8>, Error> {
     match mode {
         Mode::DryRun => {
-            print(cmd, subcmd, kws, PROMPT_DRYRUN);
+            print_cmd(cmd, subcmd, kws, PROMPT_DRYRUN);
             Ok(Vec::new())
         }
         Mode::Mute => exec_checkall(cmd, subcmd, kws, true),
         Mode::CheckAll => {
-            print(cmd, subcmd, kws, PROMPT_RUN);
+            print_cmd(cmd, subcmd, kws, PROMPT_RUN);
             exec_checkall(cmd, subcmd, kws, false)
         }
         Mode::CheckErr => {
-            print(cmd, subcmd, kws, PROMPT_RUN);
+            print_cmd(cmd, subcmd, kws, PROMPT_RUN);
             exec_checkerr(cmd, subcmd, kws, false)
         }
     }
@@ -60,7 +61,7 @@ fn exec_checkall(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
     let mut stdout = std::io::stdout();
 
     for mb in stdout_reader.bytes() {
-        let b = mb.unwrap();
+        let b = mb?;
         out.write(&[b])?;
         if !mute {
             stdout.write(&[b])?;
@@ -96,12 +97,21 @@ fn exec_checkerr(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
     Ok(out)
 }
 
-/// Print the command after the given prompt.
-pub fn print(cmd: &str, subcmd: &[&str], kws: &[&str], prompt: &str) {
+/// Print out the command after the given prompt.
+pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], prompt: &str) {
     let mut cmd_str: String = cmd.into();
     for &w in subcmd.iter().chain(kws) {
         cmd_str.push(' ');
         cmd_str.push_str(w);
     }
     println!("{} {}", prompt, cmd_str);
+}
+
+/// Print out a message after the given prompt.
+pub fn print_msg(msg: &str, prompt: &str) {
+    println!("{} {}", prompt, msg);
+}
+
+pub fn print_err(err: impl std::error::Error, prompt: &str) {
+    eprintln!("{}", format!("{} {}", prompt, err).red());
 }

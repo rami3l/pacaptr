@@ -1,6 +1,6 @@
 use super::PackManager;
 use crate::error::Error;
-use crate::exec::{self, Mode, PROMPT_INFO, PROMPT_RUN};
+use crate::exec::{self, print_msg, Mode, PROMPT_INFO, PROMPT_RUN};
 use regex::Regex;
 
 pub struct Homebrew {
@@ -86,7 +86,7 @@ impl PackManager for Homebrew {
         };
 
         let search_output = |cmd, subcmd| {
-            exec::print(cmd, subcmd, &[], PROMPT_RUN);
+            exec::print_cmd(cmd, subcmd, &[], PROMPT_RUN);
             let out_bytes = exec::exec(cmd, subcmd, &[], Mode::Mute)?;
             search(String::from_utf8(out_bytes)?);
             Ok(())
@@ -137,20 +137,24 @@ impl PackManager for Homebrew {
 
     /// Rs removes a package and its dependencies which are not required by any other installed package.
     fn rs(&self, kws: &[&str]) -> Result<(), Error> {
-        let err_msg: String = if self.dry_run {
-            exec::exec("brew", &["rmtree", "--dry-run"], kws, Mode::CheckErr)
+        let subcmd: &[&str] = if self.dry_run {
+            &["rmtree", "--dry-run"]
         } else {
-            exec::exec("brew", &["rmtree"], kws, Mode::CheckErr)
-        }
-        .and_then(|bytes| String::from_utf8(bytes).map_err(|e| e.into()))?;
+            &["rmtree"]
+        };
+        let err_bytes = exec::exec("brew", subcmd, kws, Mode::CheckErr)?;
+        let err_msg = String::from_utf8(err_bytes)?;
 
         lazy_static! {
             static ref RMTREE_MISSING: Regex = Regex::new(r"Unknown command: rmtree").unwrap();
         }
 
         if RMTREE_MISSING.find(&err_msg).is_some() {
-            println!("{} `rmtree` is not installed. You may try installing it with the following command:", PROMPT_INFO);
-            println!("{} brew tap beeftornado/rmtree", PROMPT_INFO);
+            print_msg(
+                "`rmtree` is not installed. You may try installing it with the following command:",
+                PROMPT_INFO,
+            );
+            print_msg("brew tap beeftornado/rmtree", PROMPT_INFO);
             return Err("`rmtree` required".into());
         }
 
