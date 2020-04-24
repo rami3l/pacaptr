@@ -80,7 +80,7 @@ fn exec_checkall(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
 /// If there is no subcommand, just pass `&[]`.
 /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
 fn exec_checkerr(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<Vec<u8>, Error> {
-    let stdout_reader = Exec::cmd(cmd)
+    let stderr_reader = Exec::cmd(cmd)
         .args(subcmd)
         .args(kws)
         .stream_stderr()
@@ -90,7 +90,7 @@ fn exec_checkerr(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
     let mut out = Vec::<u8>::new();
     let mut stderr = std::io::stderr();
 
-    for mb in stdout_reader.bytes() {
+    for mb in stderr_reader.bytes() {
         let b = mb?;
         out.write(&[b])?;
         if !mute {
