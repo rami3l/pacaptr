@@ -8,7 +8,11 @@
         "choco",
         "gsudo",
         "noconfirm",
+        "pacaptr",
         "rdepends",
-        "rmtree"
+        "rmtree",
+        "structopt",
+        "subcmd",
+        "sysupgrade"
     ]
 }

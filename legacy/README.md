@@ -16,13 +16,13 @@ Use one syntax to rule them all!
 
 ## Warning: WIP
 
-This is an experimental port of [icy/pacapt] in Rust.
+This is an experimental port of [icy/pacapt] in Golang.
 
 ~~We choose Golang for better readability, better testing, and hopefully without loss of portability.~~
 
-I finally choose to go on with Rust instead of Golang.
+*I finally choose to go on with Rust instead of Golang. You can check it out right now in the [rs-dev] branch.*
 
-Now the implementations of different package managers are all placed in `./src/packmanager` folder, with names like `homebrew.rs`.
+Now the implementations of different package managers are all placed in `dispatch` package, with names like `impl_xxx.go`.
 
 To play along at home:
 
@@ -34,26 +34,24 @@ cd pacaptr
 ... and then try something like:
 
 ```bash
-cargo run -- -S curl
+go run main.go -S curl
 ```
 
 ## Building
 
-Suppose you have cloned and `cd`'d into the `pacaptr` folder.
-
 To install:
 
 ```bash
-cargo install --path .
+go install "github.com/rami3l/pacaptr"
 ```
 
 To uninstall:
 
 ```bash
-cargo uninstall pacaptr
+go clean -i "github.com/rami3l/pacaptr"
 ```
 
-We currently provide `cargo install` only.
+We currently provide `go install` only.
 PPAs might be added when appropriate.
 
 ## Implemented Features
@@ -78,11 +76,11 @@ PPAs might be added when appropriate.
     brew tap beeftornado/rmtree
     ```
 
-~~- `Chocolatey` support: Experimental.~~
+- `Chocolatey` support: Experimental.
 
-  ~~- Tips: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].~~
+  - Tips: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
-~~- `Dpkg/Apt` support: Experimental.~~
+- `Dpkg/Apt` support: Experimental.
 
 - `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
