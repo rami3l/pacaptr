@@ -145,13 +145,16 @@ impl Opt {
         let no_confirm = self.no_confirm;
         let force_cask = self.force_cask;
 
-        let unknown = Box::new(Unknown {});
+        let unknown = Box::new(unknown::Unknown {});
 
         match () {
             // Windows
             _ if cfg!(target_os = "windows") => match () {
                 // Chocolatey
-                _ if is_exe(Some("choco"), None) => unknown,
+                _ if is_exe(Some("choco"), None) => Box::new(chocolatey::Chocolatey {
+                    dry_run,
+                    no_confirm,
+                }),
 
                 _ => unknown,
             },
@@ -159,10 +162,12 @@ impl Opt {
             // macOS
             _ if cfg!(target_os = "macos") => match () {
                 // Homebrew
-                _ if is_exe(Some("brew"), Some("/usr/local/bin/brew")) => Box::new(Homebrew {
-                    dry_run,
-                    force_cask,
-                }),
+                _ if is_exe(Some("brew"), Some("/usr/local/bin/brew")) => {
+                    Box::new(homebrew::Homebrew {
+                        dry_run,
+                        force_cask,
+                    })
+                }
 
                 _ => unknown,
             },
@@ -170,7 +175,10 @@ impl Opt {
             // Linux
             _ if cfg!(target_os = "linux") => match () {
                 // Apt/Dpkg for Debian/Ubuntu/Termux
-                _ if is_exe(Some("apt-get"), Some("/usr/bin/apt-get")) => unknown,
+                _ if is_exe(Some("apt-get"), Some("/usr/bin/apt-get")) => Box::new(dpkg::Dpkg {
+                    dry_run,
+                    no_confirm,
+                }),
 
                 _ => unknown,
             },
@@ -179,6 +187,7 @@ impl Opt {
         }
     }
 
+    /// Execute the job according to the flags received and the package manager detected.
     pub fn dispatch_from(&self, pm: Box<dyn PackManager>) -> Result<(), Error> {
         self.check()?;
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();

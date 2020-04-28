@@ -1,7 +1,8 @@
-mod homebrew;
-mod unknown;
+pub mod chocolatey;
+pub mod dpkg;
+pub mod homebrew;
+pub mod unknown;
 
-pub use self::{homebrew::Homebrew, unknown::Unknown};
 use crate::error::Error;
 use crate::exec::{self, Mode};
 
