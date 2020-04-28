@@ -229,13 +229,36 @@ impl PackManager for Homebrew {
     /// Su updates outdated packages.
     // TODO: What if `pacman -Su curl`?
     fn su(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["upgrade"], kws)?;
-        self.just_run("brew", &["cask", "upgrade"], kws)
+        if kws.is_empty() {
+            self.just_run("brew", &["upgrade"], kws)?;
+            self.just_run("brew", &["cask", "upgrade"], kws)
+        } else {
+            let upgrade = |pack: &str| -> Result<(), Error> {
+                let brew_upgrade = || self.just_run("brew", &["upgrade"], &[pack]);
+                let brew_cask_upgrade = || self.just_run("brew", &["cask", "upgrade"], &[pack]);
+
+                if self.force_cask {
+                    return brew_cask_upgrade();
+                }
+
+                let code = self.search(pack)?;
+                match code {
+                    CaskState::NotFound | CaskState::Unneeded => brew_upgrade(),
+                    CaskState::Needed => brew_cask_upgrade(),
+                }
+            };
+
+            for &pack in kws {
+                upgrade(pack)?;
+            }
+
+            Ok(())
+        }
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
     fn suy(&self, kws: &[&str]) -> Result<(), Error> {
-        self.sy(kws)?;
+        self.sy(&[])?;
         self.su(kws)
     }
 
@@ -245,7 +268,7 @@ impl PackManager for Homebrew {
     }
 
     /// Sy refreshes the local package database.
-    fn sy(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["update"], kws)
+    fn sy(&self, _kws: &[&str]) -> Result<(), Error> {
+        self.just_run("brew", &["update"], &[])
     }
 }
