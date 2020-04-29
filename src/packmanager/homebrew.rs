@@ -15,6 +15,7 @@ enum CaskState {
 }
 
 impl Homebrew {
+    /// Search the output of `brew info` to see if we need `brew cask` for a certain package.
     fn search(&self, pack: &str) -> Result<CaskState, Error> {
         let out_bytes = exec::exec("brew", &["info"], &[pack], Mode::Mute)?;
         let out = String::from_utf8(out_bytes)?;
@@ -38,6 +39,25 @@ impl Homebrew {
         };
 
         Ok(code)
+    }
+
+    /// The common logic behind functions like S and R to use `brew cask` commands automatically.
+    /// With the exception of `self.force_cask`,
+    /// this function will use `self.search()` to see if we need `brew cask` for a certain package,
+    /// and then try to execute the corresponding command.
+    fn auto_cask_do(&self, subcmd: &str, pack: &str) -> Result<(), Error> {
+        let brew_do = || self.just_run("brew", &[subcmd], &[pack]);
+        let brew_cask_do = || self.just_run("brew", &["cask", subcmd], &[pack]);
+
+        if self.force_cask {
+            return brew_cask_do();
+        }
+
+        let code = self.search(pack)?;
+        match code {
+            CaskState::NotFound | CaskState::Unneeded => brew_do(),
+            CaskState::Needed => brew_cask_do(),
+        }
     }
 }
 
@@ -103,25 +123,9 @@ impl PackManager for Homebrew {
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str]) -> Result<(), Error> {
-        let uninstall = |pack: &str| -> Result<(), Error> {
-            let brew_uninstall = || self.just_run("brew", &["uninstall"], &[pack]);
-            let brew_cask_uninstall = || self.just_run("brew", &["cask", "uninstall"], &[pack]);
-
-            if self.force_cask {
-                return brew_cask_uninstall();
-            }
-
-            let code = self.search(pack)?;
-            match code {
-                CaskState::NotFound | CaskState::Unneeded => brew_uninstall(),
-                CaskState::Needed => brew_cask_uninstall(),
-            }
-        };
-
         for &pack in kws {
-            uninstall(pack)?;
+            self.auto_cask_do("uninstall", pack)?;
         }
-
         Ok(())
     }
 
@@ -163,25 +167,9 @@ impl PackManager for Homebrew {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str]) -> Result<(), Error> {
-        let install = |pack: &str| -> Result<(), Error> {
-            let brew_install = || self.just_run("brew", &["install"], &[pack]);
-            let brew_cask_install = || self.just_run("brew", &["cask", "install"], &[pack]);
-
-            if self.force_cask {
-                return brew_cask_install();
-            }
-
-            let code = self.search(pack)?;
-            match code {
-                CaskState::NotFound | CaskState::Unneeded => brew_install(),
-                CaskState::Needed => brew_cask_install(),
-            }
-        };
-
         for &pack in kws {
-            install(pack)?;
+            self.auto_cask_do("install", pack)?;
         }
-
         Ok(())
     }
 
@@ -233,25 +221,9 @@ impl PackManager for Homebrew {
             self.just_run("brew", &["upgrade"], kws)?;
             self.just_run("brew", &["cask", "upgrade"], kws)
         } else {
-            let upgrade = |pack: &str| -> Result<(), Error> {
-                let brew_upgrade = || self.just_run("brew", &["upgrade"], &[pack]);
-                let brew_cask_upgrade = || self.just_run("brew", &["cask", "upgrade"], &[pack]);
-
-                if self.force_cask {
-                    return brew_cask_upgrade();
-                }
-
-                let code = self.search(pack)?;
-                match code {
-                    CaskState::NotFound | CaskState::Unneeded => brew_upgrade(),
-                    CaskState::Needed => brew_cask_upgrade(),
-                }
-            };
-
             for &pack in kws {
-                upgrade(pack)?;
+                self.auto_cask_do("upgrade", pack)?;
             }
-
             Ok(())
         }
     }

@@ -95,7 +95,7 @@ pub struct Opt {
     force_cask: bool,
 
     // Keywords
-    #[structopt(name = "KEYWORDS", help = "Package names, sometimes regex")]
+    #[structopt(name = "KEYWORDS", help = "Package names (sometimes also regex)")]
     keywords: Vec<String>,
 }
 
