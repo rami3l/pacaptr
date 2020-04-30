@@ -62,7 +62,7 @@ impl Homebrew {
 }
 
 impl PackManager for Homebrew {
-    /// A helper method to simplify direction command invocation.
+    /// A helper method to simplify direct command invocation.
     fn just_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
         let mode = if self.dry_run {
             Mode::DryRun
@@ -215,7 +215,6 @@ impl PackManager for Homebrew {
     }
 
     /// Su updates outdated packages.
-    // TODO: What if `pacman -Su curl`?
     fn su(&self, kws: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
             self.just_run("brew", &["upgrade"], kws)?;

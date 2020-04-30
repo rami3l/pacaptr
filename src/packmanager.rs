@@ -15,7 +15,7 @@ macro_rules! make_pm {
 }
 
 pub trait PackManager {
-    /// A helper method to simplify direction command invocation.
+    /// A helper method to simplify direct command invocation.
     /// Override this to implement features such as `dryrun`.
     fn just_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
         exec::exec(cmd, subcmd, kws, Mode::CheckErr)?;
