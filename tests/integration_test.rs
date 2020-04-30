@@ -42,3 +42,26 @@ mod homebrew {
             .run(false)
     }
 }
+
+mod chocolatey {
+    use super::Test;
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn chocolatey_working_example() {
+        Test::new()
+            .input(&["-Si", "wget"])
+            .output(&["GNU Wget is a free software package"])
+            .run(false)
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    #[should_panic(expected = "Failed with pattern `GNU Wget is not a free software package`")]
+    fn chocolatey_error_example() {
+        Test::new()
+            .input(&["-Si", "wget"])
+            .output(&["GNU Wget is not a free software package"])
+            .run(false)
+    }
+}
