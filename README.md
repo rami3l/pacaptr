@@ -18,9 +18,7 @@ Use one syntax to rule them all!
 
 This is an experimental port of [icy/pacapt] in Rust.
 
-~~We choose Golang for better readability, better testing, and hopefully without loss of portability.~~
-
-I finally choose to go on with Rust instead of Golang.
+We choose Rust for better readability, better testing, and hopefully without loss of portability.
 
 Now the implementations of different package managers are all placed in `./src/packmanager` folder, with names like `homebrew.rs`.
 
@@ -78,11 +76,11 @@ PPAs might be added when appropriate.
     brew tap beeftornado/rmtree
     ```
 
-~~- `Chocolatey` support: Experimental.~~
+- `Chocolatey` support: Experimental.
 
-  ~~- Tips: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].~~
+  - Tips: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
-~~- `Dpkg/Apt` support: Experimental.~~
+- ~~`Dpkg/Apt` support: Experimental.~~
 
 - `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
