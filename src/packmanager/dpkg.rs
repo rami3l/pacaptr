@@ -101,7 +101,7 @@ impl PackManager for Dpkg {
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apt-get", &["search"], kws)
+        self.just_run("apt-cache", &["search"], kws)
     }
 
     /// Su updates outdated packages.

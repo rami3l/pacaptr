@@ -14,6 +14,9 @@ macro_rules! make_pm {
     };
 }
 
+/// The behaviors of a Pack(age)Manager.
+/// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
+/// and https://wiki.archlinux.org/index.php/Pacman
 pub trait PackManager {
     /// A helper method to simplify direct command invocation.
     /// Override this to implement features such as `dryrun`.
