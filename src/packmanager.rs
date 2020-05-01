@@ -1,7 +1,8 @@
-mod homebrew;
-mod unknown;
+pub mod chocolatey;
+pub mod dpkg;
+pub mod homebrew;
+pub mod unknown;
 
-pub use self::{homebrew::Homebrew, unknown::Unknown};
 use crate::error::Error;
 use crate::exec::{self, Mode};
 
@@ -13,8 +14,11 @@ macro_rules! make_pm {
     };
 }
 
+/// The behaviors of a Pack(age)Manager.
+/// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
+/// and https://wiki.archlinux.org/index.php/Pacman
 pub trait PackManager {
-    /// A helper method to simplify direction command invocation.
+    /// A helper method to simplify direct command invocation.
     /// Override this to implement features such as `dryrun`.
     fn just_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
         exec::exec(cmd, subcmd, kws, Mode::CheckErr)?;

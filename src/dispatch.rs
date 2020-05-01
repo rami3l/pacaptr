@@ -95,7 +95,7 @@ pub struct Opt {
     force_cask: bool,
 
     // Keywords
-    #[structopt(name = "KEYWORDS", help = "Package names, sometimes regex")]
+    #[structopt(name = "KEYWORDS", help = "Package names (sometimes also regex)")]
     keywords: Vec<String>,
 }
 
@@ -122,14 +122,67 @@ impl Opt {
 
     /// Detect the PackManager implementation in question.
     // TODO: Implement this function.
-    pub fn detect_pm(&self) -> impl PackManager {
-        return Homebrew {
-            dry_run: self.dry_run,
-            force_cask: self.force_cask,
-        };
+    pub fn detect_pm(&self) -> Box<dyn PackManager> {
+        /// is_exe checks if an executable exists by name (consult the PATH) or by path.
+        /// To check by name (or path) only, pass `""` as path (or name).
+        fn is_exe(name: &str, path: &str) -> bool {
+            if !name.is_empty() && which::which(name).is_ok() {
+                return true;
+            }
+
+            if !path.is_empty() && std::path::Path::new(path).exists() {
+                return true;
+            }
+
+            false
+        }
+
+        let dry_run = self.dry_run;
+        let no_confirm = self.no_confirm;
+        let force_cask = self.force_cask;
+
+        let unknown = Box::new(unknown::Unknown {});
+
+        match () {
+            // Windows
+            _ if cfg!(target_os = "windows") => match () {
+                // Chocolatey
+                _ if is_exe("choco", "") => Box::new(chocolatey::Chocolatey {
+                    dry_run,
+                    no_confirm,
+                }),
+
+                _ => unknown,
+            },
+
+            // macOS
+            _ if cfg!(target_os = "macos") => match () {
+                // Homebrew
+                _ if is_exe("brew", "/usr/local/bin/brew") => Box::new(homebrew::Homebrew {
+                    dry_run,
+                    force_cask,
+                }),
+
+                _ => unknown,
+            },
+
+            // Linux
+            _ if cfg!(target_os = "linux") => match () {
+                // Apt/Dpkg for Debian/Ubuntu/Termux
+                _ if is_exe("apt-get", "/usr/bin/apt-get") => Box::new(dpkg::Dpkg {
+                    dry_run,
+                    no_confirm,
+                }),
+
+                _ => unknown,
+            },
+
+            _ => unknown,
+        }
     }
 
-    pub fn dispatch_from(&self, pm: impl PackManager) -> Result<(), Error> {
+    /// Execute the job according to the flags received and the package manager detected.
+    pub fn dispatch_from(&self, pm: Box<dyn PackManager>) -> Result<(), Error> {
         self.check()?;
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
 
@@ -230,7 +283,7 @@ mod tests {
         assert!(opt.sync);
         assert!(opt.y);
         assert!(opt.u);
-        opt.dispatch_from(opt.make_mock()).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
     }
 
     #[test]
@@ -247,7 +300,7 @@ mod tests {
         assert!(opt.sync);
         assert!(opt.y);
         assert!(opt.u);
-        opt.dispatch_from(opt.make_mock()).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
     }
 
     #[test]
@@ -257,7 +310,7 @@ mod tests {
 
         assert!(opt.sync);
         assert!(opt.w);
-        opt.dispatch_from(opt.make_mock()).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
     }
 
     #[test]
@@ -267,7 +320,7 @@ mod tests {
 
         assert!(opt.sync);
         assert!(opt.force_cask);
-        opt.dispatch_from(opt.make_mock()).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
     }
 
     #[test]
@@ -279,6 +332,6 @@ mod tests {
         assert!(opt.query);
         assert!(opt.n);
         assert!(opt.s);
-        opt.dispatch_from(opt.make_mock()).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
     }
 }
