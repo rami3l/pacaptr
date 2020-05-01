@@ -124,18 +124,14 @@ impl Opt {
     // TODO: Implement this function.
     pub fn detect_pm(&self) -> Box<dyn PackManager> {
         /// is_exe checks if an executable exists by name (consult the PATH) or by path.
-        /// To check by name (or path) only, pass `None` as path (or name).
-        fn is_exe(name: Option<&str>, path: Option<&str>) -> bool {
-            if let Some(n) = name {
-                if which::which(n).is_ok() {
-                    return true;
-                }
+        /// To check by name (or path) only, pass `""` as path (or name).
+        fn is_exe(name: &str, path: &str) -> bool {
+            if !name.is_empty() && which::which(name).is_ok() {
+                return true;
             }
 
-            if let Some(p) = path {
-                if std::path::Path::new(p).exists() {
-                    return true;
-                }
+            if !path.is_empty() && std::path::Path::new(path).exists() {
+                return true;
             }
 
             false
@@ -151,7 +147,7 @@ impl Opt {
             // Windows
             _ if cfg!(target_os = "windows") => match () {
                 // Chocolatey
-                _ if is_exe(Some("choco"), None) => Box::new(chocolatey::Chocolatey {
+                _ if is_exe("choco", "") => Box::new(chocolatey::Chocolatey {
                     dry_run,
                     no_confirm,
                 }),
@@ -162,12 +158,10 @@ impl Opt {
             // macOS
             _ if cfg!(target_os = "macos") => match () {
                 // Homebrew
-                _ if is_exe(Some("brew"), Some("/usr/local/bin/brew")) => {
-                    Box::new(homebrew::Homebrew {
-                        dry_run,
-                        force_cask,
-                    })
-                }
+                _ if is_exe("brew", "/usr/local/bin/brew") => Box::new(homebrew::Homebrew {
+                    dry_run,
+                    force_cask,
+                }),
 
                 _ => unknown,
             },
@@ -175,7 +169,7 @@ impl Opt {
             // Linux
             _ if cfg!(target_os = "linux") => match () {
                 // Apt/Dpkg for Debian/Ubuntu/Termux
-                _ if is_exe(Some("apt-get"), Some("/usr/bin/apt-get")) => Box::new(dpkg::Dpkg {
+                _ if is_exe("apt-get", "/usr/bin/apt-get") => Box::new(dpkg::Dpkg {
                     dry_run,
                     no_confirm,
                 }),
