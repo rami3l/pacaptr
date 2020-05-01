@@ -80,7 +80,7 @@ PPAs might be added when appropriate.
 
   - Tips: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
-- ~~`Dpkg/Apt` support: Experimental.~~
+- `Dpkg/Apt` support: Experimental.
 
 - `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 

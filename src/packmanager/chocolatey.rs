@@ -8,12 +8,12 @@ pub struct Chocolatey {
 }
 
 impl Chocolatey {
-    fn check_no_confirm(&self, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
+    fn check_no_confirm(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
         let mut subcmd: Vec<&str> = subcmd.iter().cloned().collect();
         if self.no_confirm {
             subcmd.push("--yes");
         }
-        self.just_run("choco", &subcmd, kws)
+        self.just_run(cmd, &subcmd, kws)
     }
 }
 
@@ -46,17 +46,17 @@ impl PackManager for Chocolatey {
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm(&["uninstall"], kws)
+        self.check_no_confirm("choco", &["uninstall"], kws)
     }
 
     /// Rs removes a package and its dependencies which are not required by any other installed package.
     fn rs(&self, kws: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm(&["uninstall", "--removedependencies"], kws)
+        self.check_no_confirm("choco", &["uninstall", "--removedependencies"], kws)
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm(&["install"], kws)
+        self.check_no_confirm("choco", &["install"], kws)
     }
 
     /// Si displays remote package information: name, version, description, etc.
@@ -72,9 +72,9 @@ impl PackManager for Chocolatey {
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.check_no_confirm(&["upgrade"], &["all"])
+            self.check_no_confirm("choco", &["upgrade"], &["all"])
         } else {
-            self.check_no_confirm(&["upgrade"], kws)
+            self.check_no_confirm("choco", &["upgrade"], kws)
         }
     }
 
