@@ -102,21 +102,14 @@ pub struct Opt {
 impl Opt {
     /// Check if an Opt object is malformed.
     pub fn check(&self) -> Result<(), Error> {
-        match () {
-            _ if {
-                let mut count = 0;
-                for &v in &[self.query, self.remove, self.sync, self.update] {
-                    if v {
-                        count += 1;
-                    }
-                }
-                count != 1
-            } =>
-            {
-                Err("exactly 1 operation expected".into())
-            }
-
-            _ => Ok(()),
+        let count = [self.query, self.remove, self.sync, self.update]
+            .iter()
+            .filter(|x| **x)
+            .count();
+        if count != 1 {
+            Err("exactly 1 operation expected".into())
+        } else {
+            Ok(())
         }
     }
 
