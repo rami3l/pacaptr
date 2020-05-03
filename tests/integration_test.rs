@@ -52,6 +52,20 @@ mod homebrew {
             .output(&["brew uninstall curl", "brew cask uninstall gimp"])
             .run(false)
     }
+
+    #[test]
+    #[ignore]
+    #[cfg(target_os = "macos")]
+    fn install_uninstall() {
+        Test::new()
+            .input(&["-S", "wget"])
+            .output(&["🍺"])
+            .input(&["-S", "wget"])
+            .output(&["is already installed"])
+            .input(&["-R", "wget"])
+            .output(&["Uninstalling"])
+            .run(false)
+    }
 }
 
 mod chocolatey {

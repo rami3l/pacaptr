@@ -33,11 +33,9 @@ impl Test {
             panic!("Expect an input before an output")
         }
 
-        let mut cmd: Option<Vec<_>> = None;
-        // Reset `self.cmd`.
-        std::mem::swap(&mut self.cmd, &mut cmd);
+        let cmd = std::mem::replace(&mut self.cmd, None).unwrap();
         self.sequence
-            .push((cmd.unwrap(), out.iter().map(|s| s.to_string()).collect()));
+            .push((cmd, out.iter().map(|s| s.to_string()).collect()));
         self
     }
 
