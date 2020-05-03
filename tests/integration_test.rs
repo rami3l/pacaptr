@@ -2,11 +2,11 @@ pub use self::utils::Test;
 
 mod utils;
 
+#[cfg(target_os = "macos")]
 mod homebrew {
     use super::Test;
 
     #[test]
-    #[cfg(target_os = "macos")]
     fn working_example() {
         Test::new()
             .input(&["-Si", "curl"])
@@ -15,7 +15,6 @@ mod homebrew {
     }
 
     #[test]
-    #[cfg(target_os = "macos")]
     #[should_panic(expected = "Failed with pattern `curl is not keg-only`")]
     fn error_example() {
         Test::new()
@@ -25,7 +24,6 @@ mod homebrew {
     }
 
     #[test]
-    #[cfg(target_os = "macos")]
     fn s_auto_cask() {
         Test::new()
             .input(&["-S", "curl", "gimp", "--dryrun"])
@@ -34,7 +32,6 @@ mod homebrew {
     }
 
     #[test]
-    #[cfg(target_os = "macos")]
     fn s_force_cask() {
         Test::new()
             .input(&["-S", "docker", "--dryrun"])
@@ -45,20 +42,32 @@ mod homebrew {
     }
 
     #[test]
-    #[cfg(target_os = "macos")]
     fn r_cask() {
         Test::new()
             .input(&["-R", "curl", "gimp", "--dryrun"])
             .output(&["brew uninstall curl", "brew cask uninstall gimp"])
             .run(false)
     }
+
+    #[test]
+    #[ignore]
+    fn install_uninstall() {
+        Test::new()
+            .input(&["-S", "wget"])
+            .output(&["brew install wget"])
+            .input(&["-S", "wget"])
+            .output(&["brew install wget", "is already installed"])
+            .input(&["-R", "wget"])
+            .output(&["brew uninstall wget", "Uninstalling /usr/local/Cellar/wget"])
+            .run(false)
+    }
 }
 
+#[cfg(target_os = "windows")]
 mod chocolatey {
     use super::Test;
 
     #[test]
-    #[cfg(target_os = "windows")]
     fn working_example() {
         Test::new()
             .input(&["-Si", "wget"])
@@ -67,7 +76,6 @@ mod chocolatey {
     }
 
     #[test]
-    #[cfg(target_os = "windows")]
     #[should_panic(expected = "Failed with pattern `GNU Wget is not a free software package`")]
     fn error_example() {
         Test::new()
@@ -78,7 +86,6 @@ mod chocolatey {
 
     #[test]
     #[ignore]
-    #[cfg(target_os = "windows")]
     fn install_uninstall() {
         Test::new()
             .input(&["-S", "wget", "--yes"])

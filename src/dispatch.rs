@@ -102,21 +102,14 @@ pub struct Opt {
 impl Opt {
     /// Check if an Opt object is malformed.
     pub fn check(&self) -> Result<(), Error> {
-        match () {
-            _ if {
-                let mut count = 0;
-                for &v in &[self.query, self.remove, self.sync, self.update] {
-                    if v {
-                        count += 1;
-                    }
-                }
-                count != 1
-            } =>
-            {
-                Err("exactly 1 operation expected".into())
-            }
-
-            _ => Ok(()),
+        let count = [self.query, self.remove, self.sync, self.update]
+            .iter()
+            .filter(|&&x| x)
+            .count();
+        if count != 1 {
+            Err("exactly 1 operation expected".into())
+        } else {
+            Ok(())
         }
     }
 
@@ -251,11 +244,7 @@ mod tests {
         };
     }
 
-    struct MockPM {
-        dry_run: bool,
-        no_confirm: bool,
-        force_cask: bool,
-    }
+    struct MockPM {}
 
     impl PackManager for MockPM {
         make_mock_pm!(
@@ -266,11 +255,7 @@ mod tests {
 
     impl Opt {
         fn make_mock(&self) -> MockPM {
-            MockPM {
-                dry_run: self.dry_run,
-                no_confirm: self.no_confirm,
-                force_cask: self.force_cask,
-            }
+            MockPM {}
         }
     }
 
@@ -316,9 +301,13 @@ mod tests {
     #[test]
     #[should_panic(expected = "should run: s [\"docker\"]")]
     fn additional_flags() {
-        let opt = dbg!(Opt::from_iter(&["pacaptr", "-S", "docker", "--cask"]));
+        let opt = dbg!(Opt::from_iter(&[
+            "pacaptr", "-S", "--dryrun", "--yes", "docker", "--cask"
+        ]));
 
         assert!(opt.sync);
+        assert!(opt.dry_run);
+        assert!(opt.no_confirm);
         assert!(opt.force_cask);
         opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
     }

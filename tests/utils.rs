@@ -33,11 +33,9 @@ impl Test {
             panic!("Expect an input before an output")
         }
 
-        let mut cmd: Option<Vec<_>> = None;
-        // Reset `self.cmd`.
-        std::mem::swap(&mut self.cmd, &mut cmd);
+        let cmd = std::mem::replace(&mut self.cmd, None).unwrap();
         self.sequence
-            .push((cmd.unwrap(), out.iter().map(|s| s.to_string()).collect()));
+            .push((cmd, out.iter().map(|s| s.to_string()).collect()));
         self
     }
 
@@ -46,7 +44,14 @@ impl Test {
             patterns
                 .iter()
                 .map(|p| (p, regex::Regex::new(p).unwrap()))
-                .for_each(|(p, re)| assert!(re.find(out).is_some(), "Failed with pattern `{}`", p))
+                .for_each(|(p, re)| {
+                    assert!(
+                        re.find(out).is_some(),
+                        "Failed with pattern `{}`, got `{}`",
+                        p,
+                        out
+                    )
+                })
         };
 
         // Prevent running the test before `self.sequence` is configured.
