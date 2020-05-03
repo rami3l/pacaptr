@@ -44,7 +44,14 @@ impl Test {
             patterns
                 .iter()
                 .map(|p| (p, regex::Regex::new(p).unwrap()))
-                .for_each(|(p, re)| assert!(re.find(out).is_some(), "Failed with pattern `{}`", p))
+                .for_each(|(p, re)| {
+                    assert!(
+                        re.find(out).is_some(),
+                        "Failed with pattern `{}`, got `{}`",
+                        p,
+                        out
+                    )
+                })
         };
 
         // Prevent running the test before `self.sequence` is configured.

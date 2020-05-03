@@ -59,7 +59,7 @@ mod homebrew {
     fn install_uninstall() {
         Test::new()
             .input(&["-S", "wget"])
-            .output(&["/usr/local/Cellar/wget"])
+            .output(&["*"])
             .input(&["-S", "wget"])
             .output(&["is already installed"])
             .input(&["-R", "wget"])
