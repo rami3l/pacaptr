@@ -59,11 +59,11 @@ mod homebrew {
     fn install_uninstall() {
         Test::new()
             .input(&["-S", "wget"])
-            .output(&["🍺"])
+            .output(&["/usr/local/Cellar/wget"])
             .input(&["-S", "wget"])
             .output(&["is already installed"])
             .input(&["-R", "wget"])
-            .output(&["Uninstalling"])
+            .output(&["Uninstalling /usr/local/Cellar/wget"])
             .run(false)
     }
 }
