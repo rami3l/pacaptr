@@ -29,6 +29,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - run: apt-get update && apt-get install -y curl
       - uses: dtolnay/rust-toolchain@stable
       - name: Build
         run: cargo build --verbose
