@@ -7,11 +7,11 @@ on:
     branches: [master, rs-dev]
 
 jobs:
-  build:
+  win-mac-build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [windows-latest, macOS-latest]
 
     steps:
       - uses: actions/checkout@v2
@@ -21,3 +21,19 @@ jobs:
         run: cargo test --verbose
       - name: Run heavy tests
         run: cargo test --verbose -- --ignored
+
+  debian-build:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://debian:testing-slim
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: cargo build --verbose
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run integration tests
+        run: cargo test dpkg --verbose
+      - name: Run heavy tests
+        run: cargo test dpkg --verbose -- --ignored
