@@ -48,7 +48,7 @@ impl Homebrew {
     fn auto_cask_do(&self, subcmd: &[&str], pack: &str) -> Result<(), Error> {
         let brew_do = || self.just_run("brew", subcmd, &[pack]);
         let brew_cask_do = || {
-            let subcmd: Vec<&str> = vec!["cask"].iter().chain(subcmd).map(|&s| s).collect();
+            let subcmd: Vec<&str> = ["cask"].iter().chain(subcmd).map(|&s| s).collect();
             self.just_run("brew", &subcmd, &[pack])
         };
 
