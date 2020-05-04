@@ -4,6 +4,7 @@ use regex;
 static CARGO: &str = "cargo";
 static RUN: &[&str] = &["run", "--"];
 
+#[derive(Debug)]
 enum Input<'i> {
     Pacaptr {
         args: &'i [&'i str],
@@ -50,11 +51,8 @@ impl<'t> Test<'t> {
 
     pub fn output(mut self, out: &'t [&str]) -> Self {
         // Guard against `self.output()` without `self.pending_input` being set.
-        if self.pending_input.is_none() {
-            panic!("Expect an input before an output")
-        }
-
-        let cmd = std::mem::replace(&mut self.pending_input, None).unwrap();
+        let cmd = std::mem::replace(&mut self.pending_input, None)
+            .expect("Expect an input before an output");
         self.sequence.push((cmd, out));
         self
     }
