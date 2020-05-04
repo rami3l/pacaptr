@@ -28,10 +28,10 @@ impl<'t> Test<'t> {
         }
     }
 
-    pub fn input(mut self, args: &'t [&str]) -> Self {
-        // Guard against `self.input().input()`.
+    pub fn pacaptr(mut self, args: &'t [&str]) -> Self {
+        // Guard against consecutive inputs without calling `self.output()`.
         if let Some(_) = self.pending_input {
-            panic!("Unexpected consecutive input")
+            panic!("Unexpected consecutive inputs")
         } else {
             self.pending_input = Some(Input::Pacaptr { args });
         }
@@ -39,9 +39,9 @@ impl<'t> Test<'t> {
     }
 
     pub fn exec(mut self, cmd: &'t str, subcmd: &'t [&str], kws: &'t [&str]) -> Self {
-        // Guard against `self.input().input()`.
+        // Guard against consecutive inputs without calling `self.output()`.
         if let Some(_) = self.pending_input {
-            panic!("Unexpected consecutive input")
+            panic!("Unexpected consecutive inputs")
         } else {
             self.pending_input = Some(Input::Exec { cmd, subcmd, kws });
         }
@@ -49,7 +49,7 @@ impl<'t> Test<'t> {
     }
 
     pub fn output(mut self, out: &'t [&str]) -> Self {
-        // Guard against `self.output()` without `self.cmd` being set.
+        // Guard against `self.output()` without `self.pending_input` being set.
         if self.pending_input.is_none() {
             panic!("Expect an input before an output")
         }
@@ -63,7 +63,7 @@ impl<'t> Test<'t> {
         let try_match = |out: &str, patterns: &[&str]| {
             patterns
                 .iter()
-                .map(|p| (p, regex::Regex::new(p).unwrap()))
+                .map(|&p| (p, regex::Regex::new(p).unwrap()))
                 .for_each(|(p, re)| {
                     assert!(
                         re.find(out).is_some(),
@@ -89,7 +89,7 @@ impl<'t> Test<'t> {
                 &Input::Exec { cmd, subcmd, kws } => exec::exec(cmd, subcmd, kws, mode).unwrap(),
             };
             let got = String::from_utf8(got_bytes).unwrap();
-            try_match(&got, patterns);
+            try_match(&got, *patterns);
         }
     }
 }
