@@ -25,7 +25,7 @@ jobs:
   debian-build:
     runs-on: ubuntu-latest
     container:
-      image: docker://debian:testing-slim
+      image: docker://debian:testing
 
     steps:
       - uses: actions/checkout@v2
