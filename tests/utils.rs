@@ -1,46 +1,66 @@
 use pacaptr::exec::{self, Mode};
 use regex;
 
-static EXE: &str = "cargo";
-static SUBCMD: &[&str] = &["run", "--"];
+static CARGO: &str = "cargo";
+static RUN: &[&str] = &["run", "--"];
 
-pub struct Test {
-    sequence: Vec<(Vec<String>, Vec<String>)>,
-    cmd: Option<Vec<String>>,
+enum Input<'i> {
+    Pacaptr {
+        args: &'i [&'i str],
+    },
+    Exec {
+        cmd: &'i str,
+        subcmd: &'i [&'i str],
+        kws: &'i [&'i str],
+    },
 }
 
-impl Test {
+pub struct Test<'t> {
+    sequence: Vec<(Input<'t>, &'t [&'t str])>,
+    pending_input: Option<Input<'t>>,
+}
+
+impl<'t> Test<'t> {
     pub fn new() -> Self {
         Test {
             sequence: Vec::new(),
-            cmd: None,
+            pending_input: None,
         }
     }
 
-    pub fn input(mut self, cmd: &[&str]) -> Self {
+    pub fn input(mut self, args: &'t [&str]) -> Self {
         // Guard against `self.input().input()`.
-        if let Some(_) = self.cmd {
+        if let Some(_) = self.pending_input {
             panic!("Unexpected consecutive input")
         } else {
-            self.cmd = Some(cmd.iter().map(|s| s.to_string()).collect());
+            self.pending_input = Some(Input::Pacaptr { args });
         }
         self
     }
 
-    pub fn output(mut self, out: &[&str]) -> Self {
+    pub fn exec(mut self, cmd: &'t str, subcmd: &'t [&str], kws: &'t [&str]) -> Self {
+        // Guard against `self.input().input()`.
+        if let Some(_) = self.pending_input {
+            panic!("Unexpected consecutive input")
+        } else {
+            self.pending_input = Some(Input::Exec { cmd, subcmd, kws });
+        }
+        self
+    }
+
+    pub fn output(mut self, out: &'t [&str]) -> Self {
         // Guard against `self.output()` without `self.cmd` being set.
-        if self.cmd.is_none() {
+        if self.pending_input.is_none() {
             panic!("Expect an input before an output")
         }
 
-        let cmd = std::mem::replace(&mut self.cmd, None).unwrap();
-        self.sequence
-            .push((cmd, out.iter().map(|s| s.to_string()).collect()));
+        let cmd = std::mem::replace(&mut self.pending_input, None).unwrap();
+        self.sequence.push((cmd, out));
         self
     }
 
     pub fn run(&self, verbose: bool) {
-        let try_match = |out: &str, patterns: &[String]| {
+        let try_match = |out: &str, patterns: &[&str]| {
             patterns
                 .iter()
                 .map(|p| (p, regex::Regex::new(p).unwrap()))
@@ -59,15 +79,17 @@ impl Test {
             panic!("Test sequence not yet configured")
         }
 
-        for (kws, patterns) in &self.sequence {
+        for (input, patterns) in &self.sequence {
             // got = cmd.run()
             // if not matches_all(got, patterns):
             //     raise MatchError(some_msg)
             let mode = if verbose { Mode::CheckAll } else { Mode::Mute };
-            let kws: Vec<&str> = kws.iter().map(|s| s.as_ref()).collect();
-            let got_bytes = exec::exec(EXE, SUBCMD, &kws, mode).unwrap();
+            let got_bytes: Vec<u8> = match input {
+                &Input::Pacaptr { args } => exec::exec(CARGO, RUN, args, mode).unwrap(),
+                &Input::Exec { cmd, subcmd, kws } => exec::exec(cmd, subcmd, kws, mode).unwrap(),
+            };
             let got = String::from_utf8(got_bytes).unwrap();
-            try_match(&got, &patterns);
+            try_match(&got, patterns);
         }
     }
 }
