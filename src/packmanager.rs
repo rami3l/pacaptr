@@ -7,10 +7,10 @@ use crate::error::Error;
 use crate::exec::{self, Mode};
 
 macro_rules! make_pm {
-    ($( $(#[$mt:meta])* $method:ident ), *) => {
-        $($(#[$mt])*
+    ($( $(#[$meta:meta])* $method:ident ), *) => {
+        $($(#[$meta])*
         fn $method(&self, _kws: &[&str]) -> Result<(), Error> {
-            Err(format!("\"{}\" unimplemented", stringify!($method)).into())
+            Err(format!("`{}` unimplemented", stringify!($method)).into())
         })*
     };
 }

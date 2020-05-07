@@ -286,7 +286,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "should run: sw [\"curl\", \"wget\"]")]
+    #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
     fn simple_si() {
         let opt = dbg!(Opt::from_iter(&["pacaptr", "-Sw", "curl", "wget"]));
 
@@ -296,7 +296,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "should run: s [\"docker\"]")]
+    #[should_panic(expected = r#"should run: s ["docker"]"#)]
     fn additional_flags() {
         let opt = dbg!(Opt::from_iter(&[
             "pacaptr", "-S", "--dryrun", "--yes", "docker", "--cask"
