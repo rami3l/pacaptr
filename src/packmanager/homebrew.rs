@@ -132,16 +132,6 @@ impl PackManager for Homebrew {
         Ok(())
     }
 
-    /// Rn removes a package and skips the generation of configuration backup files.
-    fn rn(&self, kws: &[&str]) -> Result<(), Error> {
-        todo!()
-    }
-
-    /// Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
-    fn rns(&self, kws: &[&str]) -> Result<(), Error> {
-        todo!()
-    }
-
     /// Rs removes a package and its dependencies which are not required by any other installed package.
     fn rs(&self, kws: &[&str]) -> Result<(), Error> {
         let subcmd: &[&str] = if self.dry_run {
@@ -194,12 +184,6 @@ impl PackManager for Homebrew {
         } else {
             self.just_run("brew", &["cleanup", "-s"], kws)
         }
-    }
-
-    /// Sccc ...
-    // ! What is this?
-    fn sccc(&self, kws: &[&str]) -> Result<(), Error> {
-        todo!()
     }
 
     /// Si displays remote package information: name, version, description, etc.
