@@ -1,4 +1,5 @@
 use crate::error::Error;
+use crate::exec::is_exe;
 use crate::packmanager::*;
 use structopt::StructOpt;
 
@@ -116,20 +117,6 @@ impl Opt {
     /// Detect the PackManager implementation in question.
     // TODO: Implement this function.
     pub fn detect_pm(&self) -> Box<dyn PackManager> {
-        /// is_exe checks if an executable exists by name (consult the PATH) or by path.
-        /// To check by name (or path) only, pass `""` as path (or name).
-        fn is_exe(name: &str, path: &str) -> bool {
-            if !name.is_empty() && which::which(name).is_ok() {
-                return true;
-            }
-
-            if !path.is_empty() && std::path::Path::new(path).exists() {
-                return true;
-            }
-
-            false
-        }
-
         let dry_run = self.dry_run;
         let no_confirm = self.no_confirm;
         let force_cask = self.force_cask;
