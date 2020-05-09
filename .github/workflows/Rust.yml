@@ -39,3 +39,21 @@ jobs:
         run: cargo test dpkg --verbose
       - name: Run heavy tests
         run: cargo test dpkg --verbose -- --ignored
+
+  alpine-build:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://rust:alpine
+
+    steps:
+      - uses: actions/checkout@v2
+      # - uses: dtolnay/rust-toolchain@stable
+      - run: apk add -U build-base
+      - name: Build
+        run: RUSTFLAGS="-C target-feature=-crt-static" cargo build --verbose
+      - name: Run unit tests
+        run: RUSTFLAGS="-C target-feature=-crt-static" cargo test tests --verbose
+      - name: Run smoke tests
+        run: RUSTFLAGS="-C target-feature=-crt-static" cargo test apk --verbose
+      - name: Run heavy tests
+        run: RUSTFLAGS="-C target-feature=-crt-static" cargo test apk --verbose -- --ignored

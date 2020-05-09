@@ -76,6 +76,16 @@ impl PackManager for Homebrew {
         Ok(())
     }
 
+    /// Q generates a list of installed packages.
+    fn q(&self, kws: &[&str]) -> Result<(), Error> {
+        if kws.is_empty() {
+            self.just_run("brew", &["list"], &[])?;
+            self.just_run("brew", &["cask", "list"], &[])
+        } else {
+            self.qs(kws)
+        }
+    }
+
     /// Qc shows the changelog of a package.
     fn qc(&self, kws: &[&str]) -> Result<(), Error> {
         self.just_run("brew", &["log"], kws)
