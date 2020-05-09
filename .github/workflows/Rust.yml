@@ -35,7 +35,7 @@ jobs:
         run: cargo build --verbose
       - name: Run unit tests
         run: cargo test tests --verbose
-      - name: Run integration tests
+      - name: Run smoke tests
         run: cargo test dpkg --verbose
       - name: Run heavy tests
         run: cargo test dpkg --verbose -- --ignored
