@@ -49,10 +49,10 @@ jobs:
       - uses: actions/checkout@v2
       # - uses: dtolnay/rust-toolchain@stable
       - name: Build
-        run: cargo build --verbose
+        run: RUSTFLAGS="-C target-feature=-crt-static" cargo build --verbose
       - name: Run unit tests
-        run: cargo test tests --verbose
+        run: RUSTFLAGS="-C target-feature=-crt-static" cargo test tests --verbose
       - name: Run smoke tests
-        run: cargo test apk --verbose
+        run: RUSTFLAGS="-C target-feature=-crt-static" cargo test apk --verbose
       - name: Run heavy tests
-        run: cargo test apk --verbose -- --ignored
+        run: RUSTFLAGS="-C target-feature=-crt-static" cargo test apk --verbose -- --ignored
