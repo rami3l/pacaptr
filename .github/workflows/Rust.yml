@@ -39,3 +39,20 @@ jobs:
         run: cargo test dpkg --verbose
       - name: Run heavy tests
         run: cargo test dpkg --verbose -- --ignored
+
+  alpine-build:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://rust:alpine
+
+    steps:
+      - uses: actions/checkout@v2
+      # - uses: dtolnay/rust-toolchain@stable
+      - name: Build
+        run: cargo build --verbose
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test apk --verbose
+      - name: Run heavy tests
+        run: cargo test apk --verbose -- --ignored

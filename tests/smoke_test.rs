@@ -132,3 +132,25 @@ mod dpkg {
             .run(false)
     }
 }
+
+#[cfg(target_os = "linux")]
+mod apk {
+    use super::Test;
+
+    #[test]
+    fn si_ok() {
+        Test::new()
+            .pacaptr(&["-Si", "wget"])
+            .output(&["A network utility to retrieve files from the Web"])
+            .run(false)
+    }
+
+    #[test]
+    #[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
+    fn si_fail() {
+        Test::new()
+            .pacaptr(&["-Si", "wget"])
+            .output(&["Why not use curl instead?"])
+            .run(false)
+    }
+}

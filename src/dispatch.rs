@@ -150,6 +150,13 @@ impl Opt {
                     dry_run,
                     no_confirm,
                 })
+            }
+            // Apk for Alpine
+            else if is_exe("apk", "/sbin/apk") {
+                Box::new(apk::Apk {
+                    dry_run,
+                    no_confirm,
+                })
             } else {
                 unknown
             }

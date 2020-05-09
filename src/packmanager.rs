@@ -1,3 +1,4 @@
+pub mod apk;
 pub mod chocolatey;
 pub mod dpkg;
 pub mod homebrew;
