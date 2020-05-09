@@ -4,13 +4,20 @@
   - [Introduction](#introduction)
   - [Warning: WIP](#warning-wip)
   - [Running & Building](#running--building)
-  - [Implemented Features](#implemented-features)
+  - [Tips](#tips)
 
 ## Introduction
 
 `pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
 
-_Note: As a Mac user, I choose to focus on `homebrew` to start with. Support for more package managers will be added Soon™._
+`pacaptr` currently supports the following package managers:
+
+- macOS/homebrew
+- Windows/chocolatey
+- Debian/dpkg
+- Alpine/apk
+
+Support for more package managers will be added Soon™.
 
 ## Warning: WIP
 
@@ -40,7 +47,7 @@ cargo install --path .
 cargo uninstall pacaptr
 ```
 
-## Implemented Features
+## Tips
 
 - `Homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
   
@@ -65,8 +72,6 @@ cargo uninstall pacaptr
 - `Chocolatey` support: Experimental.
 
   - Tips: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
-
-- `Dpkg/Apt` support: Experimental.
 
 - `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
