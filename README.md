@@ -17,6 +17,8 @@
 - Debian/dpkg
 - Alpine/apk
 
+(Don't miss the [tips](#tips) below!)
+
 Support for more package managers will be added Soon™.
 
 ## Warning: WIP
@@ -69,9 +71,7 @@ cargo uninstall pacaptr
     brew tap beeftornado/rmtree
     ```
 
-- `Chocolatey` support: Experimental.
-
-  - Tips: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
+- `Chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
 - `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
@@ -81,7 +81,7 @@ cargo uninstall pacaptr
 
     ```bash
     # Nothing will be installed,
-    # as `brew install curl` won't be run:
+    # as `brew install curl` won't run:
     pacaptr -S curl --dryrun
     #> brew install curl
 
