@@ -48,6 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       # - uses: dtolnay/rust-toolchain@stable
+      - run: apk add -U build-base
       - name: Build
         run: RUSTFLAGS="-C target-feature=-crt-static" cargo build --verbose
       - name: Run unit tests
