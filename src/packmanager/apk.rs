@@ -152,4 +152,9 @@ impl PackManager for Apk {
     fn sy(&self, _kws: &[&str]) -> Result<(), Error> {
         self.just_run("apk", &["update"], &[])
     }
+
+    /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
+    fn u(&self, kws: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["add", "--allow-untrusted"], kws)
+    }
 }
