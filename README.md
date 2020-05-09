@@ -3,60 +3,46 @@
 - [pacaptr](#pacaptr)
   - [Introduction](#introduction)
   - [Warning: WIP](#warning-wip)
-  - [Building](#building)
+  - [Running & Building](#running--building)
   - [Implemented Features](#implemented-features)
 
 ## Introduction
 
-`pacapt` is a wrapper for many package managers with pacman-style command syntax.
+`pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
 
-_Note: To start with, we choose to focus on `homebrew`. Support for more package managers will be added Soon™._
-
-Use one syntax to rule them all!
+_Note: As a Mac user, I choose to focus on `homebrew` to start with. Support for more package managers will be added Soon™._
 
 ## Warning: WIP
 
-This is an experimental port of [icy/pacapt] in Rust.
-
-We choose Rust for better readability, better testing, and hopefully without loss of portability.
+I choose Rust for better readability, better testing, and hopefully without loss of portability.
 
 Now the implementations of different package managers are all placed in `./src/packmanager` folder, with names like `homebrew.rs`.
 
-To play along at home:
-
-```bash
-git clone https://github.com/rami3l/pacaptr.git
-cd pacaptr
-```
-
-... and then try something like:
-
-```bash
-cargo run -- -S curl
-```
-
-## Building
-
-Suppose you have cloned and `cd`'d into the `pacaptr` folder.
-
-To install:
-
-```bash
-cargo install --path .
-```
-
-To uninstall:
-
-```bash
-cargo uninstall pacaptr
-```
+## Running & Building
 
 We currently provide `cargo install` only.
 PPAs might be added when appropriate.
 
+To play along at home:
+
+```bash
+# First you'll need to download the source:
+git clone https://github.com/rami3l/pacaptr.git
+cd pacaptr
+
+# To run:
+cargo run -- -S curl
+
+# To install:
+cargo install --path .
+
+# To uninstall:
+cargo uninstall pacaptr
+```
+
 ## Implemented Features
 
-- `Homebrew` support: Experimental.
+- `Homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
   
   - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
   
@@ -84,23 +70,32 @@ PPAs might be added when appropriate.
 
 - `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
-  - `#>` means that the following command will not be run, while `>>` means that it will be.
+  - `#>` means that the following command will not be run, while `>>` means that it is being run.
 
   - Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation. For instance:
 
     ```bash
-    # Nothing will be deleted here:
+    # Nothing will be installed,
+    # as `brew install curl` won't be run:
+    pacaptr -S curl --dryrun
+    #> brew install curl
+
+    # Nothing will be deleted here,
+    # but `brew cleanup --dry-run` is actually running:
     pacaptr -Sc --dryrun
-    #> brew cleanup --dry-run
+    >> brew cleanup --dry-run
     .. (showing the files to be removed)
 
-    # Without `--dryrun`, the forementioned files will be removed:
+    # To remove the forementioned files,
+    # run the command above again without `--dryrun`:
     pacaptr -Sc
     >> brew cleanup
     .. (cleaning up)
     ```
 
-- `--yes`, `--noconfirm`, `--no-confirm`: Use this flag to trigger the corresponding flag of your package manager (if possible) in order to answer "yes" to every incoming question. Potentially dangerous if you don't know what you're doing!
+- `--yes`, `--noconfirm`, `--no-confirm`: Use this flag to trigger the corresponding flag of your package manager (if possible) in order to answer "yes" to every incoming question.
+  - This option is useful when you don't want to be asked during installation, for example.
+  - ... But it can be potentially dangerous if you don't know what you're doing!
 
 [icy/pacapt]: https://github.com/icy/pacapt
 [rmtree]: https://github.com/beeftornado/homebrew-rmtree

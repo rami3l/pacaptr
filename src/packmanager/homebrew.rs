@@ -45,9 +45,12 @@ impl Homebrew {
     /// With the exception of `self.force_cask`,
     /// this function will use `self.search()` to see if we need `brew cask` for a certain package,
     /// and then try to execute the corresponding command.
-    fn auto_cask_do(&self, subcmd: &str, pack: &str) -> Result<(), Error> {
-        let brew_do = || self.just_run("brew", &[subcmd], &[pack]);
-        let brew_cask_do = || self.just_run("brew", &["cask", subcmd], &[pack]);
+    fn auto_cask_do(&self, subcmd: &[&str], pack: &str) -> Result<(), Error> {
+        let brew_do = || self.just_run("brew", subcmd, &[pack]);
+        let brew_cask_do = || {
+            let subcmd: Vec<&str> = ["cask"].iter().chain(subcmd).map(|&s| s).collect();
+            self.just_run("brew", &subcmd, &[pack])
+        };
 
         if self.force_cask {
             return brew_cask_do();
@@ -124,19 +127,9 @@ impl PackManager for Homebrew {
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str]) -> Result<(), Error> {
         for &pack in kws {
-            self.auto_cask_do("uninstall", pack)?;
+            self.auto_cask_do(&["uninstall"], pack)?;
         }
         Ok(())
-    }
-
-    /// Rn removes a package and skips the generation of configuration backup files.
-    fn rn(&self, kws: &[&str]) -> Result<(), Error> {
-        todo!()
-    }
-
-    /// Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
-    fn rns(&self, kws: &[&str]) -> Result<(), Error> {
-        todo!()
     }
 
     /// Rs removes a package and its dependencies which are not required by any other installed package.
@@ -168,7 +161,7 @@ impl PackManager for Homebrew {
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str]) -> Result<(), Error> {
         for &pack in kws {
-            self.auto_cask_do("install", pack)?;
+            self.auto_cask_do(&["install"], pack)?;
         }
         Ok(())
     }
@@ -193,12 +186,6 @@ impl PackManager for Homebrew {
         }
     }
 
-    /// Sccc ...
-    // ! What is this?
-    fn sccc(&self, kws: &[&str]) -> Result<(), Error> {
-        todo!()
-    }
-
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str]) -> Result<(), Error> {
         self.just_run("brew", &["info"], kws)
@@ -221,7 +208,7 @@ impl PackManager for Homebrew {
             self.just_run("brew", &["cask", "upgrade"], kws)
         } else {
             for &pack in kws {
-                self.auto_cask_do("upgrade", pack)?;
+                self.auto_cask_do(&["upgrade"], pack)?;
             }
             Ok(())
         }

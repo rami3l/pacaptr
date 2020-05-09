@@ -119,3 +119,10 @@ pub fn print_msg(msg: &str, prompt: &str) {
 pub fn print_err(err: impl std::error::Error, prompt: &str) {
     eprintln!("{}", format!("{} {}", prompt, err).red());
 }
+
+/// Check if an executable exists by name (consult `$PATH`) or by path.
+/// To check by one parameter only, pass `""` as another.
+pub fn is_exe(name: &str, path: &str) -> bool {
+    (!path.is_empty() && std::path::Path::new(path).exists())
+        || (!name.is_empty() && which::which(name).is_ok())
+}

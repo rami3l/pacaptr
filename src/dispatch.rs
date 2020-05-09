@@ -1,13 +1,14 @@
 use crate::error::Error;
+use crate::exec::is_exe;
 use crate::packmanager::*;
 use structopt::StructOpt;
 
+/// The command line options to be collected.
 #[derive(Debug, StructOpt)]
 #[structopt(
     name = "pacpat-ng",
     about = "A pacman-like wrapper for many package managers."
 )]
-/// The command line options to be collected
 pub struct Opt {
     // Operations include Q(uery), R(emove), and S(ync).
     #[structopt(short = "Q", long)]
@@ -116,61 +117,44 @@ impl Opt {
     /// Detect the PackManager implementation in question.
     // TODO: Implement this function.
     pub fn detect_pm(&self) -> Box<dyn PackManager> {
-        /// is_exe checks if an executable exists by name (consult the PATH) or by path.
-        /// To check by name (or path) only, pass `""` as path (or name).
-        fn is_exe(name: &str, path: &str) -> bool {
-            if !name.is_empty() && which::which(name).is_ok() {
-                return true;
-            }
-
-            if !path.is_empty() && std::path::Path::new(path).exists() {
-                return true;
-            }
-
-            false
-        }
-
         let dry_run = self.dry_run;
         let no_confirm = self.no_confirm;
         let force_cask = self.force_cask;
 
         let unknown = Box::new(unknown::Unknown {});
 
-        match () {
-            // Windows
-            _ if cfg!(target_os = "windows") => match () {
-                // Chocolatey
-                _ if is_exe("choco", "") => Box::new(chocolatey::Chocolatey {
+        if cfg!(target_os = "windows") {
+            // Chocolatey
+            if is_exe("choco", "") {
+                Box::new(chocolatey::Chocolatey {
                     dry_run,
                     no_confirm,
-                }),
-
-                _ => unknown,
-            },
-
-            // macOS
-            _ if cfg!(target_os = "macos") => match () {
-                // Homebrew
-                _ if is_exe("brew", "/usr/local/bin/brew") => Box::new(homebrew::Homebrew {
+                })
+            } else {
+                unknown
+            }
+        } else if cfg!(target_os = "macos") {
+            // Homebrew
+            if is_exe("brew", "/usr/local/bin/brew") {
+                Box::new(homebrew::Homebrew {
                     dry_run,
                     force_cask,
-                }),
-
-                _ => unknown,
-            },
-
-            // Linux
-            _ if cfg!(target_os = "linux") => match () {
-                // Apt/Dpkg for Debian/Ubuntu/Termux
-                _ if is_exe("apt-get", "/usr/bin/apt-get") => Box::new(dpkg::Dpkg {
+                })
+            } else {
+                unknown
+            }
+        } else if cfg!(target_os = "linux") {
+            // Apt/Dpkg for Debian/Ubuntu/Termux
+            if is_exe("apt-get", "/usr/bin/apt-get") {
+                Box::new(dpkg::Dpkg {
                     dry_run,
                     no_confirm,
-                }),
-
-                _ => unknown,
-            },
-
-            _ => unknown,
+                })
+            } else {
+                unknown
+            }
+        } else {
+            unknown
         }
     }
 
@@ -289,7 +273,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "should run: sw [\"curl\", \"wget\"]")]
+    #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
     fn simple_si() {
         let opt = dbg!(Opt::from_iter(&["pacaptr", "-Sw", "curl", "wget"]));
 
@@ -299,7 +283,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "should run: s [\"docker\"]")]
+    #[should_panic(expected = r#"should run: s ["docker"]"#)]
     fn additional_flags() {
         let opt = dbg!(Opt::from_iter(&[
             "pacaptr", "-S", "--dryrun", "--yes", "docker", "--cask"
