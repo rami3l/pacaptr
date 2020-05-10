@@ -53,11 +53,11 @@ mod homebrew {
     #[ignore]
     fn r() {
         Test::new()
-            .pacaptr(&["-S", "wget"])
+            .pacaptr(&["-S", "wget", "--yes"])
             .output(&["brew install wget"])
-            .pacaptr(&["-S", "wget"])
-            .output(&["brew install wget", "is already installed"])
-            .pacaptr(&["-R", "wget"])
+            .exec("wget", &["-V"], &[])
+            .output(&["GNU Wget"])
+            .pacaptr(&["-R", "wget", "--yes"])
             .output(&["brew uninstall wget", "Uninstalling /usr/local/Cellar/wget"])
             .run(false)
     }
@@ -151,6 +151,19 @@ mod apk {
         Test::new()
             .pacaptr(&["-Si", "wget"])
             .output(&["Why not use curl instead?"])
+            .run(false)
+    }
+
+    #[test]
+    #[ignore]
+    fn r() {
+        Test::new()
+            .pacaptr(&["-S", "wget", "--yes"])
+            .output(&["Installing wget"])
+            .exec("wget", &["-V"], &[])
+            .output("GNU Wget")
+            .pacaptr(&["-R", "wget", "--yes"])
+            .output(&["Purging wget"])
             .run(false)
     }
 }
