@@ -57,10 +57,10 @@ cargo uninstall pacaptr
   
     ```bash
     pacaptr -S curl --dryrun
-    #> brew install curl
+    >| brew install curl
 
     pacaptr -S gimp --dryrun
-    #> brew cask install gimp
+    >| brew cask install gimp
     ```
 
   - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
@@ -75,7 +75,7 @@ cargo uninstall pacaptr
 
 - `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
-  - `#>` means that the following command will not be run, while `>>` means that it is being run.
+  - `>|` means that the following command will not be run, while `>>` means that it is being run.
 
   - Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation. For instance:
 
@@ -83,7 +83,7 @@ cargo uninstall pacaptr
     # Nothing will be installed,
     # as `brew install curl` won't run:
     pacaptr -S curl --dryrun
-    #> brew install curl
+    >| brew install curl
 
     # Nothing will be deleted here,
     # but `brew cleanup --dry-run` is actually running:
