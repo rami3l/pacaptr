@@ -54,7 +54,7 @@ mod homebrew {
     fn r() {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"])
-            .output(&["brew install wget"])
+            .output(&["brew (re)?install wget"])
             .exec("wget", &["-V"], &[])
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"])
