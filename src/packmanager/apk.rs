@@ -8,6 +8,21 @@ pub struct Apk {
     pub no_confirm: bool,
 }
 
+impl Apk {
+    /// A helper method to simplify prompted command invocation.
+    fn prompt_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
+        let mode = if self.dry_run {
+            Mode::DryRun
+        } else if self.no_confirm {
+            Mode::CheckErr
+        } else {
+            Mode::Prompt
+        };
+        exec::exec(cmd, subcmd, kws, mode)?;
+        Ok(())
+    }
+}
+
 impl PackManager for Apk {
     /// A helper method to simplify direct command invocation.
     fn just_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
@@ -97,12 +112,12 @@ impl PackManager for Apk {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["add"], kws)
+        self.prompt_run("apk", &["add"], kws)
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, _kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["cache", "-v", "clean"], &[])
+        self.prompt_run("apk", &["cache", "-v", "clean"], &[])
     }
 
     /// Si displays remote package information: name, version, description, etc.
@@ -128,24 +143,24 @@ impl PackManager for Apk {
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.just_run("apk", &["upgrade"], &[])
+            self.prompt_run("apk", &["upgrade"], &[])
         } else {
-            self.just_run("apk", &["add", "-u"], kws)
+            self.prompt_run("apk", &["add", "-u"], kws)
         }
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
     fn suy(&self, kws: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.just_run("apk", &["upgrade", "-U", "-a"], &[])
+            self.prompt_run("apk", &["upgrade", "-U", "-a"], &[])
         } else {
-            self.just_run("apk", &["add", "-U", "-u"], kws)
+            self.prompt_run("apk", &["add", "-U", "-u"], kws)
         }
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     fn sw(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["fetch"], kws)
+        self.prompt_run("apk", &["fetch"], kws)
     }
 
     /// Sy refreshes the local package database.
@@ -155,6 +170,6 @@ impl PackManager for Apk {
 
     /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
     fn u(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["add", "--allow-untrusted"], kws)
+        self.prompt_run("apk", &["add", "--allow-untrusted"], kws)
     }
 }

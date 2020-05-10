@@ -6,6 +6,8 @@ use regex::Regex;
 pub struct Homebrew {
     pub dry_run: bool,
     pub force_cask: bool,
+    pub no_confirm: bool,
+    pub needed: bool,
 }
 
 enum CaskState {
@@ -46,10 +48,10 @@ impl Homebrew {
     /// this function will use `self.search()` to see if we need `brew cask` for a certain package,
     /// and then try to execute the corresponding command.
     fn auto_cask_do(&self, subcmd: &[&str], pack: &str) -> Result<(), Error> {
-        let brew_do = || self.just_run("brew", subcmd, &[pack]);
+        let brew_do = || self.prompt_run("brew", subcmd, &[pack]);
         let brew_cask_do = || {
             let subcmd: Vec<&str> = ["cask"].iter().chain(subcmd).map(|&s| s).collect();
-            self.just_run("brew", &subcmd, &[pack])
+            self.prompt_run("brew", &subcmd, &[pack])
         };
 
         if self.force_cask {
@@ -61,6 +63,19 @@ impl Homebrew {
             CaskState::NotFound | CaskState::Unneeded => brew_do(),
             CaskState::Needed => brew_cask_do(),
         }
+    }
+
+    /// A helper method to simplify prompted command invocation.
+    fn prompt_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
+        let mode = if self.dry_run {
+            Mode::DryRun
+        } else if self.no_confirm {
+            Mode::CheckErr
+        } else {
+            Mode::Prompt
+        };
+        exec::exec(cmd, subcmd, kws, mode)?;
+        Ok(())
     }
 }
 
@@ -170,9 +185,28 @@ impl PackManager for Homebrew {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str]) -> Result<(), Error> {
-        for &pack in kws {
-            self.auto_cask_do(&["install"], pack)?;
+        lazy_static! {
+            static ref NOT_INSTALLED: Regex = Regex::new(r"Error: No such keg").unwrap();
         }
+
+        let is_installed = |pack: &str| -> Result<bool, Error> {
+            let err_bytes = exec::exec("brew", &["list"], &[pack], Mode::Mute)?;
+            let err_msg = String::from_utf8(err_bytes)?;
+            Ok(NOT_INSTALLED.find(&err_msg).is_none())
+        };
+
+        for &pack in kws {
+            let is_installed = is_installed(pack)?;
+            match () {
+                _ if is_installed && self.needed => print_msg(
+                    &format!("Skipping installation of installed package `{}`", pack),
+                    PROMPT_INFO,
+                ),
+                _ if is_installed => self.auto_cask_do(&["reinstall"], pack)?,
+                _ => self.auto_cask_do(&["install"], pack)?,
+            }
+        }
+
         Ok(())
     }
 
@@ -182,7 +216,7 @@ impl PackManager for Homebrew {
             exec::exec("brew", &["cleanup", "--dry-run"], kws, Mode::CheckErr)?;
             Ok(())
         } else {
-            self.just_run("brew", &["cleanup"], kws)
+            self.prompt_run("brew", &["cleanup"], kws)
         }
     }
 
@@ -192,7 +226,7 @@ impl PackManager for Homebrew {
             exec::exec("brew", &["cleanup", "-s", "--dry-run"], kws, Mode::CheckErr)?;
             Ok(())
         } else {
-            self.just_run("brew", &["cleanup", "-s"], kws)
+            self.prompt_run("brew", &["cleanup", "-s"], kws)
         }
     }
 
@@ -214,8 +248,8 @@ impl PackManager for Homebrew {
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.just_run("brew", &["upgrade"], kws)?;
-            self.just_run("brew", &["cask", "upgrade"], kws)
+            self.prompt_run("brew", &["upgrade"], kws)?;
+            self.prompt_run("brew", &["cask", "upgrade"], kws)
         } else {
             for &pack in kws {
                 self.auto_cask_do(&["upgrade"], pack)?;
@@ -232,7 +266,7 @@ impl PackManager for Homebrew {
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     fn sw(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["fetch"], kws)
+        self.prompt_run("brew", &["fetch"], kws)
     }
 
     /// Sy refreshes the local package database.

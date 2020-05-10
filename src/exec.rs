@@ -1,13 +1,12 @@
 use crate::error::Error;
 use colored::Colorize;
-use std::io::BufReader;
-use std::io::{Read, Write};
+use std::io::{BufReader, Read, Write};
 use subprocess::{Exec, Redirection};
 
-pub static PROMPT_DRYRUN: &str = "#>";
+pub static PROMPT_DRYRUN: &str = ":: Will run:";
 pub static PROMPT_RUN: &str = ">>";
 pub static PROMPT_INFO: &str = "::";
-pub static PROMPT_ERROR: &str = "xx";
+pub static PROMPT_ERROR: &str = ":: Error:";
 
 /// Different ways in which a command shall be dealt with.
 pub enum Mode {
@@ -24,6 +23,9 @@ pub enum Mode {
     /// Print out the command which should be executed, run it and collect its `stderr`.
     /// This will work with a colored `stdout`.
     CheckErr,
+
+    /// Like `CheckErr`, but will ask for confirmation before proceeding.
+    Prompt,
 }
 
 /// Execute a command and return a `Result<Vec<u8>, _>`.
@@ -45,6 +47,7 @@ pub fn exec(cmd: &str, subcmd: &[&str], kws: &[&str], mode: Mode) -> Result<Vec<
             print_cmd(cmd, subcmd, kws, PROMPT_RUN);
             exec_checkerr(cmd, subcmd, kws, false)
         }
+        Mode::Prompt => exec_prompt(cmd, subcmd, kws, false),
     }
 }
 
@@ -101,14 +104,47 @@ fn exec_checkerr(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
     Ok(out)
 }
 
+fn exec_prompt(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<Vec<u8>, Error> {
+    println!("{} `{}`", PROMPT_DRYRUN, cmd_str(cmd, subcmd, kws));
+    let proceed: bool = loop {
+        let mut answer = String::new();
+        print!("{} Proceed? [Y/n]: ", PROMPT_INFO);
+        let _ = std::io::stdout().flush();
+        let read = std::io::stdin().read_line(&mut answer);
+        if read.is_ok() {
+            if let Some('\n') = answer.chars().next_back() {
+                answer.pop();
+            }
+            if let Some('\r') = answer.chars().next_back() {
+                answer.pop();
+            }
+            match answer.as_ref() {
+                "Y" | "y" | "" => break true,
+                "N" | "n" => break false,
+                _ => (),
+            }
+        }
+    };
+    if !proceed {
+        return Ok(Vec::new());
+    }
+    print_cmd(cmd, subcmd, kws, PROMPT_RUN);
+    exec_checkerr(cmd, subcmd, kws, mute)
+}
+
+/// Get the String representation of a particular command.
+pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str]) -> String {
+    let mut res: String = cmd.into();
+    for &w in subcmd.iter().chain(kws) {
+        res.push(' ');
+        res.push_str(w);
+    }
+    res
+}
+
 /// Print out the command after the given prompt.
 pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], prompt: &str) {
-    let mut cmd_str: String = cmd.into();
-    for &w in subcmd.iter().chain(kws) {
-        cmd_str.push(' ');
-        cmd_str.push_str(w);
-    }
-    println!("{} {}", prompt, cmd_str);
+    println!("{} {}", prompt, cmd_str(cmd, subcmd, kws));
 }
 
 /// Print out a message after the given prompt.

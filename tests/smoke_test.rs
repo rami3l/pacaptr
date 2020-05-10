@@ -27,7 +27,7 @@ mod homebrew {
     fn s_auto_cask() {
         Test::new()
             .pacaptr(&["-S", "curl", "gimp", "--dryrun"])
-            .output(&["brew install curl", "brew cask install gimp"])
+            .output(&["brew (re)?install curl", "brew cask (re)?install gimp"])
             .run(false)
     }
 
@@ -35,9 +35,9 @@ mod homebrew {
     fn s_force_cask() {
         Test::new()
             .pacaptr(&["-S", "docker", "--dryrun"])
-            .output(&["brew install docker"])
+            .output(&["brew (re)?install docker"])
             .pacaptr(&["-S", "docker", "--cask", "--dryrun"])
-            .output(&["brew cask install docker"])
+            .output(&["brew cask (re)?install docker"])
             .run(false)
     }
 
@@ -53,11 +53,11 @@ mod homebrew {
     #[ignore]
     fn r() {
         Test::new()
-            .pacaptr(&["-S", "wget"])
-            .output(&["brew install wget"])
-            .pacaptr(&["-S", "wget"])
-            .output(&["brew install wget", "is already installed"])
-            .pacaptr(&["-R", "wget"])
+            .pacaptr(&["-S", "wget", "--yes"])
+            .output(&["brew (re)?install wget"])
+            .exec("wget", &["-V"], &[])
+            .output(&["GNU Wget"])
+            .pacaptr(&["-R", "wget", "--yes"])
             .output(&["brew uninstall wget", "Uninstalling /usr/local/Cellar/wget"])
             .run(false)
     }
@@ -151,6 +151,19 @@ mod apk {
         Test::new()
             .pacaptr(&["-Si", "wget"])
             .output(&["Why not use curl instead?"])
+            .run(false)
+    }
+
+    #[test]
+    #[ignore]
+    fn r() {
+        Test::new()
+            .pacaptr(&["-S", "wget", "--yes"])
+            .output(&["Installing wget"])
+            .exec("wget", &["-V"], &[])
+            .output(&["GNU Wget"])
+            .pacaptr(&["-R", "wget", "--yes"])
+            .output(&["Purging wget"])
             .run(false)
     }
 }

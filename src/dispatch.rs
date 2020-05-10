@@ -79,6 +79,9 @@ pub struct Opt {
     #[structopt(long = "dryrun", alias = "dry-run", help = "Perform a dry run")]
     dry_run: bool,
 
+    #[structopt(long = "needed", help = "Prevent reinstalling installed packages")]
+    needed: bool,
+
     #[structopt(
         long = "yes",
         alias = "noconfirm",
@@ -118,6 +121,7 @@ impl Opt {
     // TODO: Implement this function.
     pub fn detect_pm(&self) -> Box<dyn PackManager> {
         let dry_run = self.dry_run;
+        let needed = self.needed;
         let no_confirm = self.no_confirm;
         let force_cask = self.force_cask;
 
@@ -139,6 +143,8 @@ impl Opt {
                 Box::new(homebrew::Homebrew {
                     dry_run,
                     force_cask,
+                    needed,
+                    no_confirm,
                 })
             } else {
                 unknown
