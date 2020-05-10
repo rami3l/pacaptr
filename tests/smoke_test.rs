@@ -27,7 +27,7 @@ mod homebrew {
     fn s_auto_cask() {
         Test::new()
             .pacaptr(&["-S", "curl", "gimp", "--dryrun"])
-            .output(&["brew install curl", "brew cask install gimp"])
+            .output(&["brew (re)?install curl", "brew cask (re)?install gimp"])
             .run(false)
     }
 
@@ -35,9 +35,9 @@ mod homebrew {
     fn s_force_cask() {
         Test::new()
             .pacaptr(&["-S", "docker", "--dryrun"])
-            .output(&["brew install docker"])
+            .output(&["brew (re)?install docker"])
             .pacaptr(&["-S", "docker", "--cask", "--dryrun"])
-            .output(&["brew cask install docker"])
+            .output(&["brew cask (re)?install docker"])
             .run(false)
     }
 
