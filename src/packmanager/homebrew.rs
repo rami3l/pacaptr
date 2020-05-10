@@ -212,8 +212,8 @@ impl PackManager for Homebrew {
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, kws: &[&str]) -> Result<(), Error> {
-        exec::exec("brew", &["cleanup", "--dry-run"], kws, Mode::CheckErr)?;
         if self.dry_run {
+            exec::exec("brew", &["cleanup", "--dry-run"], kws, Mode::CheckErr)?;
             Ok(())
         } else {
             self.prompt_run("brew", &["cleanup"], kws)
@@ -222,8 +222,8 @@ impl PackManager for Homebrew {
 
     /// Scc removes all files from the cache.
     fn scc(&self, kws: &[&str]) -> Result<(), Error> {
-        exec::exec("brew", &["cleanup", "-s", "--dry-run"], kws, Mode::CheckErr)?;
         if self.dry_run {
+            exec::exec("brew", &["cleanup", "-s", "--dry-run"], kws, Mode::CheckErr)?;
             Ok(())
         } else {
             self.prompt_run("brew", &["cleanup", "-s"], kws)
