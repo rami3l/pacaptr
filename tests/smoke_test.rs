@@ -161,7 +161,7 @@ mod apk {
             .pacaptr(&["-S", "wget", "--yes"])
             .output(&["Installing wget"])
             .exec("wget", &["-V"], &[])
-            .output("GNU Wget")
+            .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"])
             .output(&["Purging wget"])
             .run(false)
