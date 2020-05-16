@@ -75,7 +75,7 @@ pub struct Opt {
     #[structopt(short, long = "refresh", help = "(-S) refresh")]
     y: bool,
 
-    // Other flags
+    // Other Pacaptr flags
     #[structopt(long = "dryrun", alias = "dry-run", help = "Perform a dry run")]
     dry_run: bool,
 
@@ -101,6 +101,14 @@ pub struct Opt {
     // Keywords
     #[structopt(name = "KEYWORDS", help = "Package names (sometimes also regex)")]
     keywords: Vec<String>,
+
+    // Additional Non-Pacaptr Flags
+    #[structopt(
+        last = true,
+        name = "ADDITIONAL_FLAGS",
+        help = "Additional Flags passed directly to the underlying package manager"
+    )]
+    additional_flags: Vec<String>,
 }
 
 impl Opt {
@@ -174,7 +182,12 @@ impl Opt {
     /// Execute the job according to the flags received and the package manager detected.
     pub fn dispatch_from(&self, pm: Box<dyn PackManager>) -> Result<(), Error> {
         self.check()?;
-        let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
+        let kws: Vec<&str> = self
+            .keywords
+            .iter()
+            .chain(self.additional_flags.iter())
+            .map(|s| s.as_ref())
+            .collect();
 
         match () {
             _ if self.query => match () {
@@ -297,7 +310,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected = r#"should run: s ["docker"]"#)]
-    fn additional_flags() {
+    fn other_flags() {
         let opt = dbg!(Opt::from_iter(&[
             "pacaptr", "-S", "--dryrun", "--yes", "docker", "--cask"
         ]));
@@ -306,6 +319,26 @@ mod tests {
         assert!(opt.dry_run);
         assert!(opt.no_confirm);
         assert!(opt.force_cask);
+        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
+    fn additional_flags() {
+        let opt = dbg!(Opt::from_iter(&[
+            "pacaptr",
+            "-S",
+            "--yes",
+            "docker",
+            "--",
+            "--proxy=localhost:1234"
+        ]));
+
+        assert!(opt.sync);
+        assert!(opt.no_confirm);
+        let mut flags = opt.additional_flags.iter();
+        assert_eq!(flags.next(), Some(&String::from("--proxy=localhost:1234")));
+        assert_eq!(flags.next(), None);
         opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
     }
 

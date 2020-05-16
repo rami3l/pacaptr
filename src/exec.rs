@@ -104,11 +104,10 @@ fn exec_checkerr(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
     Ok(out)
 }
 
-fn exec_prompt(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<Vec<u8>, Error> {
-    println!("{} `{}`", PROMPT_DRYRUN, cmd_str(cmd, subcmd, kws));
-    let proceed: bool = loop {
+pub fn prompt(msg: &str, expected: &[&str]) -> String {
+    loop {
         let mut answer = String::new();
-        print!("{} Proceed? [Y/n]: ", PROMPT_INFO);
+        print!("{}", msg);
         let _ = std::io::stdout().flush();
         let read = std::io::stdin().read_line(&mut answer);
         if read.is_ok() {
@@ -118,11 +117,21 @@ fn exec_prompt(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<V
             if let Some('\r') = answer.chars().next_back() {
                 answer.pop();
             }
-            match answer.as_ref() {
-                "Y" | "y" | "" => break true,
-                "N" | "n" => break false,
-                _ => (),
+            if expected.iter().find(|&&x| x == &answer).is_some() {
+                break answer;
             }
+        }
+    }
+}
+
+fn exec_prompt(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<Vec<u8>, Error> {
+    println!("{} `{}`", PROMPT_DRYRUN, cmd_str(cmd, subcmd, kws));
+    let proceed: bool = {
+        let expected = vec!["", "Y", "y", "N", "n"];
+        match prompt(&format!("{} Proceed? [Y/n]: ", PROMPT_INFO), &expected).as_ref() {
+            "Y" | "y" | "" => true,
+            "N" | "n" => false,
+            _ => unreachable!(),
         }
     };
     if !proceed {
