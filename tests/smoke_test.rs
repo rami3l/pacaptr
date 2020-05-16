@@ -9,7 +9,7 @@ mod homebrew {
     #[test]
     fn si_ok() {
         Test::new()
-            .pacaptr(&["-Si", "curl"])
+            .pacaptr(&["-Si", "curl"], &[])
             .output(&["curl is keg-only"])
             .run(false)
     }
@@ -18,7 +18,7 @@ mod homebrew {
     #[should_panic(expected = "Failed with pattern `curl is not keg-only`")]
     fn si_fail() {
         Test::new()
-            .pacaptr(&["-Si", "curl"])
+            .pacaptr(&["-Si", "curl"], &[])
             .output(&["curl is not keg-only"])
             .run(false)
     }
@@ -26,7 +26,7 @@ mod homebrew {
     #[test]
     fn s_auto_cask() {
         Test::new()
-            .pacaptr(&["-S", "curl", "gimp", "--dryrun"])
+            .pacaptr(&["-S", "curl", "gimp", "--dryrun"], &[])
             .output(&["brew (re)?install curl", "brew cask (re)?install gimp"])
             .run(false)
     }
@@ -34,9 +34,9 @@ mod homebrew {
     #[test]
     fn s_force_cask() {
         Test::new()
-            .pacaptr(&["-S", "docker", "--dryrun"])
+            .pacaptr(&["-S", "docker", "--dryrun"], &[])
             .output(&["brew (re)?install docker"])
-            .pacaptr(&["-S", "docker", "--cask", "--dryrun"])
+            .pacaptr(&["-S", "docker", "--cask", "--dryrun"], &[])
             .output(&["brew cask (re)?install docker"])
             .run(false)
     }
@@ -44,7 +44,7 @@ mod homebrew {
     #[test]
     fn r_cask() {
         Test::new()
-            .pacaptr(&["-R", "curl", "gimp", "--dryrun"])
+            .pacaptr(&["-R", "curl", "gimp", "--dryrun"], &[])
             .output(&["brew uninstall curl", "brew cask uninstall gimp"])
             .run(false)
     }
@@ -53,11 +53,11 @@ mod homebrew {
     #[ignore]
     fn r() {
         Test::new()
-            .pacaptr(&["-S", "wget", "--yes"])
+            .pacaptr(&["-S", "wget", "--yes"], &[])
             .output(&["brew (re)?install wget"])
             .exec("wget", &["-V"], &[])
             .output(&["GNU Wget"])
-            .pacaptr(&["-R", "wget", "--yes"])
+            .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["brew uninstall wget", "Uninstalling /usr/local/Cellar/wget"])
             .run(false)
     }
@@ -70,7 +70,7 @@ mod chocolatey {
     #[test]
     fn si_ok() {
         Test::new()
-            .pacaptr(&["-Si", "wget"])
+            .pacaptr(&["-Si", "wget"], &[])
             .output(&["GNU Wget is a free software package"])
             .run(false)
     }
@@ -79,7 +79,7 @@ mod chocolatey {
     #[should_panic(expected = "Failed with pattern `GNU Wget is not a free software package`")]
     fn si_fail() {
         Test::new()
-            .pacaptr(&["-Si", "wget"])
+            .pacaptr(&["-Si", "wget"], &[])
             .output(&["GNU Wget is not a free software package"])
             .run(false)
     }
@@ -88,9 +88,9 @@ mod chocolatey {
     #[ignore]
     fn r() {
         Test::new()
-            .pacaptr(&["-S", "wget", "--yes"])
+            .pacaptr(&["-S", "wget", "--yes"], &[])
             .output(&["The install of wget was successful."])
-            .pacaptr(&["-R", "wget", "--yes"])
+            .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["Wget has been successfully uninstalled."])
             .run(false)
     }
@@ -103,7 +103,7 @@ mod dpkg {
     #[test]
     fn si_ok() {
         Test::new()
-            .pacaptr(&["-Si", "screen"])
+            .pacaptr(&["-Si", "screen"], &[])
             .output(&["Package: screen"])
             .run(false)
     }
@@ -112,7 +112,7 @@ mod dpkg {
     #[should_panic(expected = "Failed with pattern `Package: wget`")]
     fn si_fail() {
         Test::new()
-            .pacaptr(&["-Si", "screen"])
+            .pacaptr(&["-Si", "screen"], &[])
             .output(&["Package: wget"])
             .run(false)
     }
@@ -121,13 +121,13 @@ mod dpkg {
     #[ignore]
     fn r() {
         Test::new()
-            .pacaptr(&["-S", "screen", "--yes"])
+            .pacaptr(&["-S", "screen", "--yes"], &[])
             .output(&["apt-get install --yes screen"])
-            .pacaptr(&["-Qi", "screen"])
+            .pacaptr(&["-Qi", "screen"], &[])
             .output(&["Status: install"])
-            .pacaptr(&["-R", "screen", "--yes"])
+            .pacaptr(&["-R", "screen", "--yes"], &[])
             .output(&["apt-get remove --yes screen"])
-            .pacaptr(&["-Qi", "screen"])
+            .pacaptr(&["-Qi", "screen"], &[])
             .output(&["Status: deinstall"])
             .run(false)
     }
@@ -140,7 +140,7 @@ mod apk {
     #[test]
     fn si_ok() {
         Test::new()
-            .pacaptr(&["-Si", "wget"])
+            .pacaptr(&["-Si", "wget"], &[])
             .output(&["A network utility to retrieve files from the Web"])
             .run(false)
     }
@@ -149,7 +149,7 @@ mod apk {
     #[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
     fn si_fail() {
         Test::new()
-            .pacaptr(&["-Si", "wget"])
+            .pacaptr(&["-Si", "wget"], &[])
             .output(&["Why not use curl instead?"])
             .run(false)
     }
@@ -158,11 +158,11 @@ mod apk {
     #[ignore]
     fn r() {
         Test::new()
-            .pacaptr(&["-S", "wget", "--yes"])
+            .pacaptr(&["-S", "wget", "--yes"], &[])
             .output(&["Installing wget"])
             .exec("wget", &["-V"], &[])
             .output(&["GNU Wget"])
-            .pacaptr(&["-R", "wget", "--yes"])
+            .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["Purging wget"])
             .run(false)
     }

@@ -10,7 +10,7 @@ use crate::exec::{self, Mode};
 macro_rules! make_pm {
     ($( $(#[$meta:meta])* $method:ident ), *) => {
         $($(#[$meta])*
-        fn $method(&self, _kws: &[&str]) -> Result<(), Error> {
+        fn $method(&self, _kws: &[&str], _flags: &[&str]) -> Result<(), Error> {
             Err(format!("`{}` unimplemented", stringify!($method)).into())
         })*
     };
@@ -22,8 +22,14 @@ macro_rules! make_pm {
 pub trait PackManager {
     /// A helper method to simplify direct command invocation.
     /// Override this to implement features such as `dryrun`.
-    fn just_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
-        exec::exec(cmd, subcmd, kws, Mode::CheckErr)?;
+    fn just_run(
+        &self,
+        cmd: &str,
+        subcmd: &[&str],
+        kws: &[&str],
+        flags: &[&str],
+    ) -> Result<(), Error> {
+        exec::exec(cmd, subcmd, kws, flags, Mode::CheckErr)?;
         Ok(())
     }
 
