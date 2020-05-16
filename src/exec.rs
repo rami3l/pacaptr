@@ -32,22 +32,28 @@ pub enum Mode {
 /// The exact behavior depends on the `mode` passed in. See `exec::Mode`'s documentation for more info.
 /// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
 /// If there is no subcommand, just pass `&[]`.
-pub fn exec(cmd: &str, subcmd: &[&str], kws: &[&str], mode: Mode) -> Result<Vec<u8>, Error> {
+pub fn exec(
+    cmd: &str,
+    subcmd: &[&str],
+    kws: &[&str],
+    flags: &[&str],
+    mode: Mode,
+) -> Result<Vec<u8>, Error> {
     match mode {
         Mode::DryRun => {
-            print_cmd(cmd, subcmd, kws, PROMPT_DRYRUN);
+            print_cmd(cmd, subcmd, kws, flags, PROMPT_DRYRUN);
             Ok(Vec::new())
         }
-        Mode::Mute => exec_checkall(cmd, subcmd, kws, true),
+        Mode::Mute => exec_checkall(cmd, subcmd, kws, flags, true),
         Mode::CheckAll => {
-            print_cmd(cmd, subcmd, kws, PROMPT_RUN);
-            exec_checkall(cmd, subcmd, kws, false)
+            print_cmd(cmd, subcmd, kws, flags, PROMPT_RUN);
+            exec_checkall(cmd, subcmd, kws, flags, false)
         }
         Mode::CheckErr => {
-            print_cmd(cmd, subcmd, kws, PROMPT_RUN);
-            exec_checkerr(cmd, subcmd, kws, false)
+            print_cmd(cmd, subcmd, kws, flags, PROMPT_RUN);
+            exec_checkerr(cmd, subcmd, kws, flags, false)
         }
-        Mode::Prompt => exec_prompt(cmd, subcmd, kws, false),
+        Mode::Prompt => exec_prompt(cmd, subcmd, kws, flags, false),
     }
 }
 
@@ -55,10 +61,17 @@ pub fn exec(cmd: &str, subcmd: &[&str], kws: &[&str], mode: Mode) -> Result<Vec<
 /// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
 /// If there is no subcommand, just pass `&[]`.
 /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
-fn exec_checkall(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<Vec<u8>, Error> {
+fn exec_checkall(
+    cmd: &str,
+    subcmd: &[&str],
+    kws: &[&str],
+    flags: &[&str],
+    mute: bool,
+) -> Result<Vec<u8>, Error> {
     let stdout_reader = Exec::cmd(cmd)
         .args(subcmd)
         .args(kws)
+        .args(flags)
         .stderr(Redirection::Merge)
         .stream_stdout()
         .map_err(|_| Error::from("Could not capture stdout"))
@@ -82,10 +95,17 @@ fn exec_checkall(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result
 /// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
 /// If there is no subcommand, just pass `&[]`.
 /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
-fn exec_checkerr(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<Vec<u8>, Error> {
+fn exec_checkerr(
+    cmd: &str,
+    subcmd: &[&str],
+    kws: &[&str],
+    flags: &[&str],
+    mute: bool,
+) -> Result<Vec<u8>, Error> {
     let stderr_reader = Exec::cmd(cmd)
         .args(subcmd)
         .args(kws)
+        .args(flags)
         .stream_stderr()
         .map_err(|_| Error::from("Could not capture stderr"))
         .and_then(|stream| Ok(BufReader::new(stream)))?;
@@ -124,8 +144,14 @@ pub fn prompt(msg: &str, expected: &[&str]) -> String {
     }
 }
 
-fn exec_prompt(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<Vec<u8>, Error> {
-    println!("{} `{}`", PROMPT_DRYRUN, cmd_str(cmd, subcmd, kws));
+fn exec_prompt(
+    cmd: &str,
+    subcmd: &[&str],
+    kws: &[&str],
+    flags: &[&str],
+    mute: bool,
+) -> Result<Vec<u8>, Error> {
+    println!("{} `{}`", PROMPT_DRYRUN, cmd_str(cmd, subcmd, kws, flags));
     let proceed: bool = {
         let expected = vec!["", "Y", "y", "N", "n"];
         match prompt(&format!("{} Proceed? [Y/n]: ", PROMPT_INFO), &expected).as_ref() {
@@ -137,14 +163,14 @@ fn exec_prompt(cmd: &str, subcmd: &[&str], kws: &[&str], mute: bool) -> Result<V
     if !proceed {
         return Ok(Vec::new());
     }
-    print_cmd(cmd, subcmd, kws, PROMPT_RUN);
-    exec_checkerr(cmd, subcmd, kws, mute)
+    print_cmd(cmd, subcmd, kws, flags, PROMPT_RUN);
+    exec_checkerr(cmd, subcmd, kws, flags, mute)
 }
 
 /// Get the String representation of a particular command.
-pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str]) -> String {
+pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str]) -> String {
     let mut res: String = cmd.into();
-    for &w in subcmd.iter().chain(kws) {
+    for &w in subcmd.iter().chain(kws).chain(flags) {
         res.push(' ');
         res.push_str(w);
     }
@@ -152,8 +178,8 @@ pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str]) -> String {
 }
 
 /// Print out the command after the given prompt.
-pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], prompt: &str) {
-    println!("{} {}", prompt, cmd_str(cmd, subcmd, kws));
+pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
+    println!("{} {}", prompt, cmd_str(cmd, subcmd, kws, flags));
 }
 
 /// Print out a message after the given prompt.

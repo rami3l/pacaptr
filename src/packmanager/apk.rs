@@ -10,7 +10,13 @@ pub struct Apk {
 
 impl Apk {
     /// A helper method to simplify prompted command invocation.
-    fn prompt_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
+    fn prompt_run(
+        &self,
+        cmd: &str,
+        subcmd: &[&str],
+        kws: &[&str],
+        flags: &[&str],
+    ) -> Result<(), Error> {
         let mode = if self.dry_run {
             Mode::DryRun
         } else if self.no_confirm {
@@ -18,51 +24,57 @@ impl Apk {
         } else {
             Mode::Prompt
         };
-        exec::exec(cmd, subcmd, kws, mode)?;
+        exec::exec(cmd, subcmd, kws, flags, mode)?;
         Ok(())
     }
 }
 
 impl PackManager for Apk {
     /// A helper method to simplify direct command invocation.
-    fn just_run(&self, cmd: &str, subcmd: &[&str], kws: &[&str]) -> Result<(), Error> {
+    fn just_run(
+        &self,
+        cmd: &str,
+        subcmd: &[&str],
+        kws: &[&str],
+        flags: &[&str],
+    ) -> Result<(), Error> {
         let mode = if self.dry_run {
             Mode::DryRun
         } else {
             Mode::CheckErr
         };
-        exec::exec(cmd, subcmd, kws, mode)?;
+        exec::exec(cmd, subcmd, kws, flags, mode)?;
         Ok(())
     }
 
     /// Q generates a list of installed packages.
-    fn q(&self, kws: &[&str]) -> Result<(), Error> {
+    fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.just_run("apk", &["info"], &[])
+            self.just_run("apk", &["info"], &[], flags)
         } else {
-            self.qs(kws)
+            self.qs(kws, flags)
         }
     }
 
     /// Qi displays local package information: name, version, description, etc.
-    fn qi(&self, kws: &[&str]) -> Result<(), Error> {
-        self.si(kws)
+    fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.si(kws, flags)
     }
 
     /// Ql displays files provided by local package.
-    fn ql(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["info", "-L"], kws)
+    fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["info", "-L"], kws, flags)
     }
 
     /// Qo queries the package which provides FILE.
-    fn qo(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["info", "--who-owns"], kws)
+    fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["info", "--who-owns"], kws, flags)
     }
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
-    fn qs(&self, kws: &[&str]) -> Result<(), Error> {
+    fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let search = |contents: String| {
             let rs: Vec<Regex> = kws.iter().map(|kw| Regex::new(kw).unwrap()).collect();
             for line in contents.lines() {
@@ -75,8 +87,8 @@ impl PackManager for Apk {
         };
 
         let search_output = |cmd, subcmd| {
-            exec::print_cmd(cmd, subcmd, &[], PROMPT_RUN);
-            let out_bytes = exec::exec(cmd, subcmd, &[], Mode::Mute)?;
+            exec::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
+            let out_bytes = exec::exec(cmd, subcmd, &[], flags, Mode::Mute)?;
             search(String::from_utf8(out_bytes)?);
             Ok(())
         };
@@ -86,90 +98,90 @@ impl PackManager for Apk {
 
     /// Qu lists packages which have an update available.
     //? Is that the right way to input '<'?
-    fn qu(&self, _kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["version", "-l"], &["'<'"])
+    fn qu(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["version", "-l"], &["'<'"], flags)
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
-    fn r(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["del"], kws)
+    fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["del"], kws, flags)
     }
 
     /// Rn removes a package and skips the generation of configuration backup files.
-    fn rn(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["del", "--purge"], kws)
+    fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["del", "--purge"], kws, flags)
     }
 
     /// Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
-    fn rns(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["del", "--purge", "-r"], kws)
+    fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["del", "--purge", "-r"], kws, flags)
     }
 
     /// Rs removes a package and its dependencies which are not required by any other installed package.
-    fn rs(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["del", "-r"], kws)
+    fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["del", "-r"], kws, flags)
     }
 
     /// S installs one or more packages by name.
-    fn s(&self, kws: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apk", &["add"], kws)
+    fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.prompt_run("apk", &["add"], kws, flags)
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
-    fn sc(&self, _kws: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apk", &["cache", "-v", "clean"], &[])
+    fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.prompt_run("apk", &["cache", "-v", "clean"], &[], flags)
     }
 
     /// Si displays remote package information: name, version, description, etc.
-    fn si(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["info", "-a"], kws)
+    fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["info", "-a"], kws, flags)
     }
 
     /// Sii displays packages which require X to be installed, aka reverse dependencies.
-    fn sii(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["info", "-r"], kws)
+    fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["info", "-r"], kws, flags)
     }
 
     /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
-    fn sl(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["search"], kws)
+    fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["search"], kws, flags)
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
-    fn ss(&self, kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["search", "-v"], kws)
+    fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["search", "-v"], kws, flags)
     }
 
     /// Su updates outdated packages.
-    fn su(&self, kws: &[&str]) -> Result<(), Error> {
+    fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.prompt_run("apk", &["upgrade"], &[])
+            self.prompt_run("apk", &["upgrade"], &[], flags)
         } else {
-            self.prompt_run("apk", &["add", "-u"], kws)
+            self.prompt_run("apk", &["add", "-u"], kws, flags)
         }
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
-    fn suy(&self, kws: &[&str]) -> Result<(), Error> {
+    fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.prompt_run("apk", &["upgrade", "-U", "-a"], &[])
+            self.prompt_run("apk", &["upgrade", "-U", "-a"], &[], flags)
         } else {
-            self.prompt_run("apk", &["add", "-U", "-u"], kws)
+            self.prompt_run("apk", &["add", "-U", "-u"], kws, flags)
         }
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
-    fn sw(&self, kws: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apk", &["fetch"], kws)
+    fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.prompt_run("apk", &["fetch"], kws, flags)
     }
 
     /// Sy refreshes the local package database.
-    fn sy(&self, _kws: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["update"], &[])
+    fn sy(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["update"], &[], flags)
     }
 
     /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
-    fn u(&self, kws: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apk", &["add", "--allow-untrusted"], kws)
+    fn u(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.prompt_run("apk", &["add", "--allow-untrusted"], kws, flags)
     }
 }

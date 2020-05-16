@@ -182,56 +182,52 @@ impl Opt {
     /// Execute the job according to the flags received and the package manager detected.
     pub fn dispatch_from(&self, pm: Box<dyn PackManager>) -> Result<(), Error> {
         self.check()?;
-        let kws: Vec<&str> = self
-            .keywords
-            .iter()
-            .chain(self.additional_flags.iter())
-            .map(|s| s.as_ref())
-            .collect();
+        let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
+        let flags: Vec<&str> = self.additional_flags.iter().map(|s| s.as_ref()).collect();
 
         match () {
             _ if self.query => match () {
-                _ if self.c == 1 => pm.qc(&kws),
+                _ if self.c == 1 => pm.qc(&kws, &flags),
                 _ if self.c >= 2 => unimplemented!(),
-                _ if self.e => pm.qe(&kws),
-                _ if self.i == 1 => pm.qi(&kws),
+                _ if self.e => pm.qe(&kws, &flags),
+                _ if self.i == 1 => pm.qi(&kws, &flags),
                 _ if self.i >= 2 => unimplemented!(),
-                _ if self.k => pm.qk(&kws),
-                _ if self.l => pm.ql(&kws),
-                _ if self.m => pm.qm(&kws),
-                _ if self.o => pm.qo(&kws),
-                _ if self.p => pm.qp(&kws),
-                _ if self.s => pm.qs(&kws),
-                _ if self.u => pm.qu(&kws),
-                _ => pm.q(&kws),
+                _ if self.k => pm.qk(&kws, &flags),
+                _ if self.l => pm.ql(&kws, &flags),
+                _ if self.m => pm.qm(&kws, &flags),
+                _ if self.o => pm.qo(&kws, &flags),
+                _ if self.p => pm.qp(&kws, &flags),
+                _ if self.s => pm.qs(&kws, &flags),
+                _ if self.u => pm.qu(&kws, &flags),
+                _ => pm.q(&kws, &flags),
             },
 
             _ if self.remove => match () {
-                _ if self.n && self.s => pm.rns(&kws),
-                _ if self.n => pm.rn(&kws),
-                _ if self.s => pm.rs(&kws),
-                _ => pm.r(&kws),
+                _ if self.n && self.s => pm.rns(&kws, &flags),
+                _ if self.n => pm.rn(&kws, &flags),
+                _ if self.s => pm.rs(&kws, &flags),
+                _ => pm.r(&kws, &flags),
             },
 
             _ if self.sync => match () {
-                _ if self.c == 1 => pm.sc(&kws),
-                _ if self.c == 2 => pm.scc(&kws),
-                _ if self.c == 3 => pm.sccc(&kws),
+                _ if self.c == 1 => pm.sc(&kws, &flags),
+                _ if self.c == 2 => pm.scc(&kws, &flags),
+                _ if self.c == 3 => pm.sccc(&kws, &flags),
                 _ if self.c >= 4 => unimplemented!(),
-                _ if self.g => pm.sg(&kws),
-                _ if self.i == 1 => pm.si(&kws),
-                _ if self.i == 2 => pm.sii(&kws),
+                _ if self.g => pm.sg(&kws, &flags),
+                _ if self.i == 1 => pm.si(&kws, &flags),
+                _ if self.i == 2 => pm.sii(&kws, &flags),
                 _ if self.i >= 3 => unimplemented!(),
-                _ if self.l => pm.sl(&kws),
-                _ if self.s => pm.ss(&kws),
-                _ if self.u && self.y => pm.suy(&kws),
-                _ if self.u => pm.su(&kws),
-                _ if self.y => pm.sy(&kws),
-                _ if self.w => pm.sw(&kws),
-                _ => pm.s(&kws),
+                _ if self.l => pm.sl(&kws, &flags),
+                _ if self.s => pm.ss(&kws, &flags),
+                _ if self.u && self.y => pm.suy(&kws, &flags),
+                _ if self.u => pm.su(&kws, &flags),
+                _ if self.y => pm.sy(&kws, &flags),
+                _ if self.w => pm.sw(&kws, &flags),
+                _ => pm.s(&kws, &flags),
             },
 
-            _ if self.update => pm.u(&kws),
+            _ if self.update => pm.u(&kws, &flags),
 
             _ => Err("Invalid flag".into()),
         }
@@ -248,8 +244,9 @@ mod tests {
 
     macro_rules! make_mock_pm {
         ($( $method:ident ), *) => {
-            $(fn $method(&self, kws: &[&str]) -> Result<(), Error> {
-                    panic!("should run: {} {:?}", stringify!($method), kws)
+            $(fn $method(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+                    let kws: Vec<_> = kws.iter().chain(flags).collect();
+                    panic!("should run: {} {:?}", stringify!($method), &kws)
             })*
         };
     }

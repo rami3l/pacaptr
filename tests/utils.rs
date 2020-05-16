@@ -8,6 +8,7 @@ static RUN: &[&str] = &["run", "--"];
 enum Input<'i> {
     Pacaptr {
         args: &'i [&'i str],
+        flags: &'i [&'i str],
     },
     Exec {
         cmd: &'i str,
@@ -29,12 +30,12 @@ impl<'t> Test<'t> {
         }
     }
 
-    pub fn pacaptr(mut self, args: &'t [&str]) -> Self {
+    pub fn pacaptr(mut self, args: &'t [&str], flags: &'t [&str]) -> Self {
         // Guard against consecutive inputs without calling `self.output()`.
         if let Some(_) = self.pending_input {
             panic!("Unexpected consecutive inputs")
         } else {
-            self.pending_input = Some(Input::Pacaptr { args });
+            self.pending_input = Some(Input::Pacaptr { args, flags });
         }
         self
     }
@@ -83,8 +84,12 @@ impl<'t> Test<'t> {
             //     raise MatchError(some_msg)
             let mode = if verbose { Mode::CheckAll } else { Mode::Mute };
             let got_bytes: Vec<u8> = match input {
-                &Input::Pacaptr { args } => exec::exec(CARGO, RUN, args, mode).unwrap(),
-                &Input::Exec { cmd, subcmd, kws } => exec::exec(cmd, subcmd, kws, mode).unwrap(),
+                &Input::Pacaptr { args, flags } => {
+                    exec::exec(CARGO, RUN, args, flags, mode).unwrap()
+                }
+                &Input::Exec { cmd, subcmd, kws } => {
+                    exec::exec(cmd, subcmd, kws, &[], mode).unwrap()
+                }
             };
             let got = String::from_utf8(got_bytes).unwrap();
             try_match(&got, *patterns);
