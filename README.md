@@ -10,7 +10,7 @@
 
 `pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
 
-`pacaptr` currently supports the following package managers:
+It currently supports the following package managers:
 
 - macOS/homebrew
 - Windows/chocolatey
@@ -23,7 +23,7 @@ Support for more package managers will be added Soon™.
 
 ## Warning: WIP
 
-I choose Rust for better readability, better testing, and hopefully without loss of portability.
+We choose Rust for better readability, better testing, and hopefully without loss of portability.
 
 Now the implementations of different package managers are all placed in `./src/packmanager` folder, with names like `homebrew.rs`.
 
@@ -51,39 +51,36 @@ cargo uninstall pacaptr
 
 ## Tips
 
-- `Homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
-  
-  - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
-  
-    ```bash
-    pacaptr -S curl --dryrun
-    >| brew install curl
-
-    pacaptr -S gimp --dryrun
-    >| brew cask install gimp
-    ```
-
-  - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
-  
-  - To use `-Rs`, you need to install [rmtree] first:
+- Additional flags support:
+  - The flags after a `--` will be passed directly to the underlying package manager:
 
     ```bash
-    brew tap beeftornado/rmtree
+    pacaptr -h
+    # USAGE:
+    #     pacaptr [FLAGS] [KEYWORDS]... [-- <ADDITIONAL_FLAGS>...]
+
+    pacaptr -S curl docker --dryrun -- --proxy=localhost:1234
+    # :: Will run: foo install curl --proxy=localhost:1234
+    # :: Will run: foo install docker --proxy=localhost:1234
     ```
 
-- `Chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
+    Here `foo` is the name of your package manager.
+    (The actual output is platform-specific, which largely depends on if `foo` can actually read the flags given.)
 
-- `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed (sometimes with a --dry-run flag to activate the package manager's dryrun option).
+- `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed
+  (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
-  - `>|` means that the following command will not be run, while `>>` means that it is being run.
+  - `:: Will run:` means that the command execution is blocked (a dry run or prompted to continue),
+  while `>>` means that it is being run.
 
-  - Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation. For instance:
+  - Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
+    For instance:
 
     ```bash
     # Nothing will be installed,
     # as `brew install curl` won't run:
     pacaptr -S curl --dryrun
-    >| brew install curl
+    :: Will run: brew install curl
 
     # Nothing will be deleted here,
     # but `brew cleanup --dry-run` is actually running:
@@ -98,9 +95,33 @@ cargo uninstall pacaptr
     .. (cleaning up)
     ```
 
-- `--yes`, `--noconfirm`, `--no-confirm`: Use this flag to trigger the corresponding flag of your package manager (if possible) in order to answer "yes" to every incoming question.
+- `--yes`, `--noconfirm`, `--no-confirm`:
+  Use this flag to trigger the corresponding flag of your package manager (if possible) in order to answer "yes" to every incoming question.
   - This option is useful when you don't want to be asked during installation, for example.
   - ... But it can be potentially dangerous if you don't know what you're doing!
+
+- Platform-specific tips:
+  - `Homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
+  
+    - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
+  
+      ```bash
+      pacaptr -S curl --dryrun
+      # :: Will run: brew install curl
+
+      pacaptr -S gimp --dryrun
+      # :: Will run: brew cask install gimp
+      ```
+
+    - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
+
+    - To use `-Rs`, you need to install [rmtree] first:
+
+      ```bash
+      brew tap beeftornado/rmtree
+      ```
+
+  - `Chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
 [icy/pacapt]: https://github.com/icy/pacapt
 [rmtree]: https://github.com/beeftornado/homebrew-rmtree
