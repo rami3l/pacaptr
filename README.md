@@ -21,7 +21,7 @@ It currently supports the following package managers:
 - Debian/dpkg
 - Alpine/apk
 
-(Don't miss the [general](#platform-specific-tips) & [platform-specific](#platform-specific-tips) tips below!)
+(Don't miss the [general](#general-tips) & [platform-specific](#platform-specific-tips) tips below!)
 
 Support for more package managers will be added Soon™.
 
