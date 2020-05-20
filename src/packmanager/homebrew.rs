@@ -198,13 +198,17 @@ impl PackManager for Homebrew {
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         lazy_static! {
-            static ref NOT_INSTALLED: Regex = Regex::new(r"Error: No such keg").unwrap();
+            static ref NO_SUCH_KEG: Regex = Regex::new(r"Error: No such keg").unwrap();
+            static ref CASK_NOT_INSTALLED: Regex = Regex::new(r"is not installed.").unwrap();
         }
 
         let is_installed = |pack: &str| -> Result<bool, Error> {
-            let err_bytes = exec::exec("brew", &["list"], &[pack], flags, Mode::Mute)?;
-            let err_msg = String::from_utf8(err_bytes)?;
-            Ok(NOT_INSTALLED.find(&err_msg).is_none())
+            let mut contents = exec::exec("brew", &["list"], &[pack], flags, Mode::Mute)?;
+            contents
+                .extend(exec::exec("brew", &["cask", "list"], &[pack], flags, Mode::Mute)?.iter());
+            let contents = String::from_utf8(contents)?;
+            Ok(NO_SUCH_KEG.find(&contents).is_none()
+                || CASK_NOT_INSTALLED.find(&contents).is_none())
         };
 
         for &pack in kws {
