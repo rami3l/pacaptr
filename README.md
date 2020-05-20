@@ -1,10 +1,14 @@
 # pacaptr
 
+## Contents
+
 - [pacaptr](#pacaptr)
+  - [Contents](#contents)
   - [Introduction](#introduction)
   - [Warning: WIP](#warning-wip)
   - [Running & Building](#running--building)
-  - [Tips](#tips)
+  - [General Tips](#general-tips)
+  - [Platform-specific Tips](#platform-specific-tips)
 
 ## Introduction
 
@@ -17,7 +21,7 @@ It currently supports the following package managers:
 - Debian/dpkg
 - Alpine/apk
 
-(Don't miss the [tips](#tips) below!)
+(Don't miss the [general](#platform-specific-tips) & [platform-specific](#platform-specific-tips) tips below!)
 
 Support for more package managers will be added Soon™.
 
@@ -49,7 +53,7 @@ cargo install --path .
 cargo uninstall pacaptr
 ```
 
-## Tips
+## General Tips
 
 - Additional flags support:
   - The flags after a `--` will be passed directly to the underlying package manager:
@@ -80,19 +84,19 @@ cargo uninstall pacaptr
     # Nothing will be installed,
     # as `brew install curl` won't run:
     pacaptr -S curl --dryrun
-    :: Will run: brew install curl
+    # :: Will run: brew install curl
 
     # Nothing will be deleted here,
     # but `brew cleanup --dry-run` is actually running:
     pacaptr -Sc --dryrun
-    >> brew cleanup --dry-run
-    .. (showing the files to be removed)
+    # >> brew cleanup --dry-run
+    # .. (showing the files to be removed)
 
     # To remove the forementioned files,
     # run the command above again without `--dryrun`:
     pacaptr -Sc
-    >> brew cleanup
-    .. (cleaning up)
+    # >> brew cleanup
+    # .. (cleaning up)
     ```
 
 - `--yes`, `--noconfirm`, `--no-confirm`:
@@ -100,28 +104,29 @@ cargo uninstall pacaptr
   - This option is useful when you don't want to be asked during installation, for example.
   - ... But it can be potentially dangerous if you don't know what you're doing!
 
-- Platform-specific tips:
-  - `Homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
-  
-    - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
-  
-      ```bash
-      pacaptr -S curl --dryrun
-      # :: Will run: brew install curl
+## Platform-specific Tips
 
-      pacaptr -S gimp --dryrun
-      # :: Will run: brew cask install gimp
-      ```
+- `Homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
 
-    - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
+  - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
 
-    - To use `-Rs`, you need to install [rmtree] first:
+    ```bash
+    pacaptr -S curl --dryrun
+    # :: Will run: brew install curl
 
-      ```bash
-      brew tap beeftornado/rmtree
-      ```
+    pacaptr -S gimp --dryrun
+    # :: Will run: brew cask install gimp
+    ```
 
-  - `Chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
+  - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
+
+  - To use `-Rs`, you need to install [rmtree] first:
+
+    ```bash
+    brew tap beeftornado/rmtree
+    ```
+
+- `Chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
 [icy/pacapt]: https://github.com/icy/pacapt
 [rmtree]: https://github.com/beeftornado/homebrew-rmtree
