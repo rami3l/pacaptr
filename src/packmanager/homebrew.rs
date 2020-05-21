@@ -134,11 +134,10 @@ impl PackManager for Homebrew {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let search = |contents: String| {
+        let search = |contents: &str| {
             let rs: Vec<Regex> = kws.iter().map(|kw| Regex::new(kw).unwrap()).collect();
             for line in contents.lines() {
                 let matches_all = rs.iter().all(|regex| regex.find(line).is_some());
-
                 if matches_all {
                     println!("{}", line);
                 }
@@ -148,7 +147,7 @@ impl PackManager for Homebrew {
         let search_output = |cmd, subcmd| {
             exec::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
             let out_bytes = exec::exec(cmd, subcmd, &[], flags, Mode::Mute)?;
-            search(String::from_utf8(out_bytes)?);
+            search(&String::from_utf8(out_bytes)?);
             Ok(())
         };
 
@@ -197,18 +196,18 @@ impl PackManager for Homebrew {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        lazy_static! {
-            static ref NO_SUCH_KEG: Regex = Regex::new(r"Error: No such keg").unwrap();
-            static ref CASK_NOT_INSTALLED: Regex = Regex::new(r"is not installed.").unwrap();
-        }
-
         let is_installed = |pack: &str| -> Result<bool, Error> {
-            let mut contents = exec::exec("brew", &["list"], &[pack], flags, Mode::Mute)?;
-            contents
-                .extend(exec::exec("brew", &["cask", "list"], &[pack], flags, Mode::Mute)?.iter());
+            let r = Regex::new(&format!(r"^{}$", pack)).unwrap();
+            let mut contents = exec::exec("brew", &["list"], &[], flags, Mode::Mute)?;
+            contents.extend(exec::exec("brew", &["cask", "list"], &[], flags, Mode::Mute)?.iter());
             let contents = String::from_utf8(contents)?;
-            Ok(NO_SUCH_KEG.find(&contents).is_none()
-                || CASK_NOT_INSTALLED.find(&contents).is_none())
+            for line in contents.lines() {
+                let matches = r.find(line).is_some();
+                if matches {
+                    return Ok(true);
+                }
+            }
+            Ok(false)
         };
 
         for &pack in kws {
