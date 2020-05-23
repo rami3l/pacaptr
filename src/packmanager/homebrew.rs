@@ -73,12 +73,10 @@ impl Homebrew {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mode = if self.dry_run {
-            Mode::DryRun
-        } else if self.no_confirm {
-            Mode::CheckErr
-        } else {
-            Mode::Prompt
+        let mode = match () {
+            _ if self.dry_run => Mode::DryRun,
+            _ if self.no_confirm => Mode::CheckErr,
+            _ => Mode::Prompt,
         };
         exec::exec(cmd, subcmd, kws, flags, mode)?;
         Ok(())
@@ -196,29 +194,13 @@ impl PackManager for Homebrew {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let is_installed = |pack: &str| -> Result<bool, Error> {
-            let r = Regex::new(&format!(r"^{}$", pack)).unwrap();
-            let mut contents = exec::exec("brew", &["list"], &[], flags, Mode::Mute)?;
-            contents.extend(exec::exec("brew", &["cask", "list"], &[], flags, Mode::Mute)?.iter());
-            let contents = String::from_utf8(contents)?;
-            for line in contents.lines() {
-                let matches = r.find(line).is_some();
-                if matches {
-                    return Ok(true);
-                }
-            }
-            Ok(false)
-        };
-
         for &pack in kws {
-            let is_installed = is_installed(pack)?;
-            match () {
-                _ if is_installed && self.needed => print_msg(
-                    &format!("Skipping installation of installed package `{}`", pack),
-                    PROMPT_INFO,
-                ),
-                _ if is_installed => self.auto_cask_do(&["reinstall"], pack, flags)?,
-                _ => self.auto_cask_do(&["install"], pack, flags)?,
+            if self.needed {
+                self.auto_cask_do(&["install"], pack, flags)?
+            } else {
+                // If the package is not installed, `brew reinstall` behaves just like `brew install`,
+                // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
+                self.auto_cask_do(&["reinstall"], pack, flags)?
             }
         }
 
