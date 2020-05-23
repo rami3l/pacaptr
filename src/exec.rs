@@ -1,6 +1,7 @@
 use crate::error::Error;
 use colored::Colorize;
 use std::io::{BufReader, Read, Write};
+use std::sync::Mutex;
 use subprocess::{Exec, Redirection};
 
 pub static PROMPT_DRYRUN: &str = ":: Will run:";
@@ -155,11 +156,32 @@ fn exec_prompt(
     flags: &[&str],
     mute: bool,
 ) -> Result<Vec<u8>, Error> {
+    lazy_static! {
+        static ref ALL_YES: Mutex<bool> = Mutex::new(false);
+    }
+
     println!("{} `{}`", PROMPT_DRYRUN, cmd_str(cmd, subcmd, kws, flags));
-    let proceed: bool = {
-        let expected = vec!["", "Y", "y", "N", "n"];
-        match prompt(&format!("{} Proceed? [Y/n]: ", PROMPT_INFO), &expected).as_ref() {
+
+    let mut all_yes = ALL_YES.lock().unwrap();
+    let proceed: bool = if *all_yes {
+        true
+    } else {
+        match prompt(
+            &format!("{} Proceed? [Y/a/n]: ", PROMPT_INFO),
+            &["", "Y", "y", "A", "a", "N", "n"],
+        )
+        .as_ref()
+        {
+            // The default answer is `Yes`
             "Y" | "y" | "" => true,
+
+            // You can also say `All` to answer `Yes` to all the other questions that follow.
+            "A" | "a" => {
+                *all_yes = true;
+                true
+            }
+
+            // Or you can say `No`.
             "N" | "n" => false,
             _ => unreachable!(),
         }
