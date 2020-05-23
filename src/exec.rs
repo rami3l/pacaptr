@@ -160,12 +160,11 @@ fn exec_prompt(
         static ref ALL_YES: Mutex<bool> = Mutex::new(false);
     }
 
-    print_dryrun(cmd, subcmd, kws, flags, PROMPT_DRYRUN);
-
     let mut all_yes = ALL_YES.lock().unwrap();
     let proceed: bool = if *all_yes {
         true
     } else {
+        print_dryrun(cmd, subcmd, kws, flags, PROMPT_DRYRUN);
         match prompt("Proceed", "[Y/a/n]", &["", "Y", "y", "A", "a", "N", "n"]).as_ref() {
             // The default answer is `Yes`
             "Y" | "y" | "" => true,
