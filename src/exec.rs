@@ -91,7 +91,7 @@ fn exec_checkall(
     Ok(out)
 }
 
-/// Execute a command and collect it's `stderr`.
+/// Execute a command and collect its `stderr`.
 /// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
 /// If there is no subcommand, just pass `&[]`.
 /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
@@ -144,6 +144,10 @@ pub fn prompt(msg: &str, expected: &[&str]) -> String {
     }
 }
 
+/// Execute a command, collect its `stderr` and print its output to the console.
+/// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
+/// If there is no subcommand, just pass `&[]`.
+/// The user will be prompted if (s)he wishes to continue with the command execution.
 fn exec_prompt(
     cmd: &str,
     subcmd: &[&str],
