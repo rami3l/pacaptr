@@ -64,8 +64,8 @@ cargo uninstall pacaptr
     #     pacaptr [FLAGS] [KEYWORDS]... [-- <ADDITIONAL_FLAGS>...]
 
     pacaptr -S curl docker --dryrun -- --proxy=localhost:1234
-    # :: Will run: foo install curl --proxy=localhost:1234
-    # :: Will run: foo install docker --proxy=localhost:1234
+    # Pending: foo install curl --proxy=localhost:1234
+    # Pending: foo install docker --proxy=localhost:1234
     ```
 
     Here `foo` is the name of your package manager.
@@ -74,8 +74,8 @@ cargo uninstall pacaptr
 - `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed
   (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
-  - `:: Will run:` means that the command execution is blocked (a dry run or prompted to continue),
-  while `>>` means that it is being run.
+  - `Pending` means that the command execution is blocked (a dry run or prompted to continue),
+  while `Running` means that it is running.
 
   - Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
     For instance:
@@ -84,18 +84,18 @@ cargo uninstall pacaptr
     # Nothing will be installed,
     # as `brew install curl` won't run:
     pacaptr -S curl --dryrun
-    # :: Will run: brew install curl
+    # Pending: brew install curl
 
     # Nothing will be deleted here,
     # but `brew cleanup --dry-run` is actually running:
     pacaptr -Sc --dryrun
-    # >> brew cleanup --dry-run
+    # Running: brew cleanup --dry-run
     # .. (showing the files to be removed)
 
     # To remove the forementioned files,
     # run the command above again without `--dryrun`:
     pacaptr -Sc
-    # >> brew cleanup
+    # Running: brew cleanup
     # .. (cleaning up)
     ```
 
@@ -112,10 +112,10 @@ cargo uninstall pacaptr
 
     ```bash
     pacaptr -S curl --dryrun
-    # :: Will run: brew install curl
+    # Pending: brew install curl
 
     pacaptr -S gimp --dryrun
-    # :: Will run: brew cask install gimp
+    # Pending: brew cask install gimp
     ```
 
   - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
