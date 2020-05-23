@@ -73,12 +73,10 @@ impl Homebrew {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mode = if self.dry_run {
-            Mode::DryRun
-        } else if self.no_confirm {
-            Mode::CheckErr
-        } else {
-            Mode::Prompt
+        let mode = match () {
+            _ if self.dry_run => Mode::DryRun,
+            _ if self.no_confirm => Mode::CheckErr,
+            _ => Mode::Prompt,
         };
         exec::exec(cmd, subcmd, kws, flags, mode)?;
         Ok(())
@@ -200,6 +198,8 @@ impl PackManager for Homebrew {
             if self.needed {
                 self.auto_cask_do(&["install"], pack, flags)?
             } else {
+                // If the package is not installed, `brew reinstall` behaves just like `brew install`,
+                // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
                 self.auto_cask_do(&["reinstall"], pack, flags)?
             }
         }
