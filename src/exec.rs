@@ -4,10 +4,10 @@ use std::io::{BufReader, Read, Write};
 use std::sync::Mutex;
 use subprocess::{Exec, Redirection};
 
-pub static PROMPT_DRYRUN: &str = ":: Will run:";
-pub static PROMPT_RUN: &str = ">>";
-pub static PROMPT_INFO: &str = "::";
-pub static PROMPT_ERROR: &str = ":: Error:";
+pub static PROMPT_DRYRUN: &str = "Pending";
+pub static PROMPT_RUN: &str = "Running";
+pub static PROMPT_INFO: &str = "Info";
+pub static PROMPT_ERROR: &str = "Error";
 
 /// Different ways in which a command shall be dealt with.
 pub enum Mode {
@@ -42,7 +42,7 @@ pub fn exec(
 ) -> Result<Vec<u8>, Error> {
     match mode {
         Mode::DryRun => {
-            print_cmd(cmd, subcmd, kws, flags, PROMPT_DRYRUN);
+            print_dryrun(cmd, subcmd, kws, flags, PROMPT_DRYRUN);
             Ok(Vec::new())
         }
         Mode::Mute => exec_checkall(cmd, subcmd, kws, flags, true),
@@ -125,10 +125,10 @@ fn exec_checkerr(
     Ok(out)
 }
 
-pub fn prompt(msg: &str, expected: &[&str]) -> String {
+pub fn prompt(question: &str, options: &str, expected: &[&str]) -> String {
     loop {
         let mut answer = String::new();
-        print!("{}", msg);
+        print!("{:>8} {}? ", question.yellow(), options.underline());
         let _ = std::io::stdout().flush();
         let read = std::io::stdin().read_line(&mut answer);
         if read.is_ok() {
@@ -160,18 +160,13 @@ fn exec_prompt(
         static ref ALL_YES: Mutex<bool> = Mutex::new(false);
     }
 
-    println!("{} `{}`", PROMPT_DRYRUN, cmd_str(cmd, subcmd, kws, flags));
+    print_dryrun(cmd, subcmd, kws, flags, PROMPT_DRYRUN);
 
     let mut all_yes = ALL_YES.lock().unwrap();
     let proceed: bool = if *all_yes {
         true
     } else {
-        match prompt(
-            &format!("{} Proceed? [Y/a/n]: ", PROMPT_INFO),
-            &["", "Y", "y", "A", "a", "N", "n"],
-        )
-        .as_ref()
-        {
+        match prompt("Proceed", "[Y/a/n]", &["", "Y", "y", "A", "a", "N", "n"]).as_ref() {
             // The default answer is `Yes`
             "Y" | "y" | "" => true,
 
@@ -205,16 +200,21 @@ pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str]) -> Stri
 
 /// Print out the command after the given prompt.
 pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
-    println!("{} {}", prompt, cmd_str(cmd, subcmd, kws, flags));
+    println!("{:>8} {}", prompt.green(), cmd_str(cmd, subcmd, kws, flags));
+}
+
+/// Print out the command after the given prompt (dry run version).
+pub fn print_dryrun(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
+    println!("{:>8} {}", prompt.green(), cmd_str(cmd, subcmd, kws, flags));
 }
 
 /// Print out a message after the given prompt.
 pub fn print_msg(msg: &str, prompt: &str) {
-    println!("{} {}", prompt, msg);
+    println!("{:>8} {}", prompt.green(), msg);
 }
 
 pub fn print_err(err: impl std::error::Error, prompt: &str) {
-    eprintln!("{}", format!("{} {}", prompt, err).red());
+    eprintln!("{:>8} {}", prompt.red(), err);
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.
