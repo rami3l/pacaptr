@@ -1,12 +1,13 @@
 use crate::error::Error;
 use colored::Colorize;
 use std::io::{BufReader, Read, Write};
+use std::sync::Mutex;
 use subprocess::{Exec, Redirection};
 
-pub static PROMPT_DRYRUN: &str = ":: Will run:";
-pub static PROMPT_RUN: &str = ">>";
-pub static PROMPT_INFO: &str = "::";
-pub static PROMPT_ERROR: &str = ":: Error:";
+pub static PROMPT_DRYRUN: &str = "Pending";
+pub static PROMPT_RUN: &str = "Running";
+pub static PROMPT_INFO: &str = "Info";
+pub static PROMPT_ERROR: &str = "Error";
 
 /// Different ways in which a command shall be dealt with.
 pub enum Mode {
@@ -41,7 +42,7 @@ pub fn exec(
 ) -> Result<Vec<u8>, Error> {
     match mode {
         Mode::DryRun => {
-            print_cmd(cmd, subcmd, kws, flags, PROMPT_DRYRUN);
+            print_dryrun(cmd, subcmd, kws, flags, PROMPT_DRYRUN);
             Ok(Vec::new())
         }
         Mode::Mute => exec_checkall(cmd, subcmd, kws, flags, true),
@@ -91,7 +92,7 @@ fn exec_checkall(
     Ok(out)
 }
 
-/// Execute a command and collect it's `stderr`.
+/// Execute a command and collect its `stderr`.
 /// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
 /// If there is no subcommand, just pass `&[]`.
 /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
@@ -124,10 +125,10 @@ fn exec_checkerr(
     Ok(out)
 }
 
-pub fn prompt(msg: &str, expected: &[&str]) -> String {
+pub fn prompt(question: &str, options: &str, expected: &[&str]) -> String {
     loop {
         let mut answer = String::new();
-        print!("{}", msg);
+        print!("{:>8} {}? ", question.yellow(), options.underline());
         let _ = std::io::stdout().flush();
         let read = std::io::stdin().read_line(&mut answer);
         if read.is_ok() {
@@ -144,6 +145,10 @@ pub fn prompt(msg: &str, expected: &[&str]) -> String {
     }
 }
 
+/// Execute a command, collect its `stderr` and print its output to the console.
+/// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
+/// If there is no subcommand, just pass `&[]`.
+/// The user will be prompted if (s)he wishes to continue with the command execution.
 fn exec_prompt(
     cmd: &str,
     subcmd: &[&str],
@@ -151,11 +156,26 @@ fn exec_prompt(
     flags: &[&str],
     mute: bool,
 ) -> Result<Vec<u8>, Error> {
-    println!("{} `{}`", PROMPT_DRYRUN, cmd_str(cmd, subcmd, kws, flags));
-    let proceed: bool = {
-        let expected = vec!["", "Y", "y", "N", "n"];
-        match prompt(&format!("{} Proceed? [Y/n]: ", PROMPT_INFO), &expected).as_ref() {
+    lazy_static! {
+        static ref ALL_YES: Mutex<bool> = Mutex::new(false);
+    }
+
+    let mut all_yes = ALL_YES.lock().unwrap();
+    let proceed: bool = if *all_yes {
+        true
+    } else {
+        print_dryrun(cmd, subcmd, kws, flags, PROMPT_DRYRUN);
+        match prompt("Proceed", "[Y/a/n]", &["", "Y", "y", "A", "a", "N", "n"]).as_ref() {
+            // The default answer is `Yes`
             "Y" | "y" | "" => true,
+
+            // You can also say `All` to answer `Yes` to all the other questions that follow.
+            "A" | "a" => {
+                *all_yes = true;
+                true
+            }
+
+            // Or you can say `No`.
             "N" | "n" => false,
             _ => unreachable!(),
         }
@@ -179,16 +199,21 @@ pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str]) -> Stri
 
 /// Print out the command after the given prompt.
 pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
-    println!("{} {}", prompt, cmd_str(cmd, subcmd, kws, flags));
+    println!("{:>8} {}", prompt.green(), cmd_str(cmd, subcmd, kws, flags));
+}
+
+/// Print out the command after the given prompt (dry run version).
+pub fn print_dryrun(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
+    println!("{:>8} {}", prompt.green(), cmd_str(cmd, subcmd, kws, flags));
 }
 
 /// Print out a message after the given prompt.
 pub fn print_msg(msg: &str, prompt: &str) {
-    println!("{} {}", prompt, msg);
+    println!("{:>8} {}", prompt.green(), msg);
 }
 
 pub fn print_err(err: impl std::error::Error, prompt: &str) {
-    eprintln!("{}", format!("{} {}", prompt, err).red());
+    eprintln!("{:>8} {}", prompt.red(), err);
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.

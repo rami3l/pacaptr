@@ -17,12 +17,10 @@ impl Apk {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mode = if self.dry_run {
-            Mode::DryRun
-        } else if self.no_confirm {
-            Mode::CheckErr
-        } else {
-            Mode::Prompt
+        let mode = match () {
+            _ if self.dry_run => Mode::DryRun,
+            _ if self.no_confirm => Mode::CheckErr,
+            _ => Mode::Prompt,
         };
         exec::exec(cmd, subcmd, kws, flags, mode)?;
         Ok(())
