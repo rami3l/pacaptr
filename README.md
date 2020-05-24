@@ -5,7 +5,7 @@
 - [pacaptr](#pacaptr)
   - [Contents](#contents)
   - [Introduction](#introduction)
-  - [Warning: WIP](#warning-wip)
+  - [Motivation & Current Status](#motivation--current-status)
   - [Running & Building](#running--building)
   - [General Tips](#general-tips)
   - [Platform-specific Tips](#platform-specific-tips)
@@ -16,18 +16,21 @@
 
 It currently supports the following package managers:
 
-- macOS/homebrew
-- Windows/chocolatey
-- Debian/dpkg
-- Alpine/apk
+- `macOS/homebrew`
+- `Windows/chocolatey`
+- `Debian/dpkg`
+- `Alpine/apk`
 
-(Don't miss the [general](#general-tips) & [platform-specific](#platform-specific-tips) tips below!)
+Notes:
 
-Support for more package managers will be added Soon™.
+- Support for more package managers will be added Soon™.
+- Don't miss the [general](#general-tips) & [platform-specific](#platform-specific-tips) tips below!
 
-## Warning: WIP
+## Motivation & Current Status
 
-We choose Rust for better readability, better testing, and hopefully without loss of portability.
+This project was initially to provide better `brew cask` support for `macOS/homebrew`. See [pacapt/#117].
+
+After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
 
 Now the implementations of different package managers are all placed in `./src/packmanager` folder, with names like `homebrew.rs`.
 
@@ -129,6 +132,8 @@ cargo uninstall pacaptr
 - `Chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
 [icy/pacapt]: https://github.com/icy/pacapt
+[pacapt/#117]: https://github.com/icy/pacapt/issues/117
+[pacapt/#126]: https://github.com/icy/pacapt/issues/126
 [rmtree]: https://github.com/beeftornado/homebrew-rmtree
 [gsudo]: https://github.com/gerardog/gsudo
 [rs-dev]: https://github.com/rami3l/pacaptr/tree/rs-dev
