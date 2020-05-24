@@ -97,7 +97,7 @@ impl PackManager for Apk {
     /// Qu lists packages which have an update available.
     //? Is that the right way to input '<'?
     fn qu(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["version", "-l"], &["'<'"], flags)
+        self.just_run("apk", &["version", "-l"], &["<"], flags)
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
