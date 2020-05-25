@@ -125,7 +125,8 @@ impl PackManager for Homebrew {
     fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         // TODO: it seems that the output of `brew list python` in fish has a mechanism against duplication:
         // /usr/local/Cellar/python/3.6.0/Frameworks/Python.framework/ (1234 files)
-        self.just_run("brew", &["list"], kws, flags)
+        self.just_run("brew", &["list"], kws, flags)?;
+        self.just_run("brew", &["cask", "list"], kws, flags)
     }
 
     /// Qs searches locally installed package for names or descriptions.
