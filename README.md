@@ -28,7 +28,7 @@ Notes:
 
 ## Motivation & Current Status
 
-This project was initially to provide better `brew cask` support for `macOS/homebrew`. See [pacapt/#117].
+Initially, I made this project to improve `pacapt`'s `homebrew` (especially `cask`) support. See [pacapt/#117].
 
 After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
 
