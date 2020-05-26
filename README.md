@@ -1,20 +1,20 @@
 # pacaptr
 
+`pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
+
+Run `pacaptr -Syu` on the distro of your choice!
+
 ## Contents
 
 - [pacaptr](#pacaptr)
   - [Contents](#contents)
-  - [Introduction](#introduction)
+  - [Supported Package Managers](#supported-package-managers)
   - [Motivation & Current Status](#motivation--current-status)
   - [Running & Building](#running--building)
   - [General Tips](#general-tips)
   - [Platform-specific Tips](#platform-specific-tips)
 
-## Introduction
-
-`pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
-
-It currently supports the following package managers:
+## Supported Package Managers
 
 - `macOS/homebrew`
 - `Windows/chocolatey`
@@ -28,7 +28,9 @@ Notes:
 
 ## Motivation & Current Status
 
-Initially, I made this project to improve `pacapt`'s `homebrew` (especially `cask`) support. See [pacapt/#117].
+Coming from `Arch Linux` to `macOS`, I really like the idea of having an automated version of [Pacman Rosetta] for making common package managing tasks less of a travail thanks to the concise `pacman` syntax.
+
+Initially, I found [icy/pacapt] which does just that, and I made this project to improve `pacapt`'s `homebrew` (especially `cask`) support. (See [pacapt/#117].)
 
 After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
 
@@ -131,6 +133,7 @@ cargo uninstall pacaptr
 
 - `Chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
+[Pacman Rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt
 [pacapt/#117]: https://github.com/icy/pacapt/issues/117
 [pacapt/#126]: https://github.com/icy/pacapt/issues/126
