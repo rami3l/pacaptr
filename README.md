@@ -4,8 +4,6 @@
 
 Run `pacaptr -Syu` on the distro of your choice!
 
-___
-
 ## Contents
 
 - [pacaptr](#pacaptr)
@@ -15,8 +13,6 @@ ___
   - [Running & Building](#running--building)
   - [General Tips](#general-tips)
   - [Platform-specific Tips](#platform-specific-tips)
-
-___
 
 ## Supported Operating Systems
 
