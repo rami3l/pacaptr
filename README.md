@@ -8,15 +8,13 @@ Run `pacaptr -Syu` on the distro of your choice!
 
 - [pacaptr](#pacaptr)
   - [Contents](#contents)
-  - [Supported Operating Systems](#supported-operating-systems)
+  - [Supported Package Managers](#supported-package-managers)
   - [Motivation & Current Status](#motivation--current-status)
   - [Running & Building](#running--building)
   - [General Tips](#general-tips)
   - [Platform-specific Tips](#platform-specific-tips)
 
-## Supported Operating Systems
-
-It currently supports the following package managers:
+## Supported Package Managers
 
 - `macOS/homebrew`
 - `Windows/chocolatey`
