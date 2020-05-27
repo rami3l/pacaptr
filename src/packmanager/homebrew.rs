@@ -161,10 +161,9 @@ impl PackManager for Homebrew {
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        for &pack in kws {
-            self.auto_cask_do(&["uninstall"], pack, flags)?;
-        }
-        Ok(())
+        kws.iter()
+            .map(|&pack| self.auto_cask_do(&["uninstall"], pack, flags))
+            .collect()
     }
 
     /// Rs removes a package and its dependencies which are not required by any other installed package.
@@ -195,17 +194,17 @@ impl PackManager for Homebrew {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        for &pack in kws {
-            if self.needed {
-                self.auto_cask_do(&["install"], pack, flags)?
-            } else {
-                // If the package is not installed, `brew reinstall` behaves just like `brew install`,
-                // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
-                self.auto_cask_do(&["reinstall"], pack, flags)?
-            }
-        }
-
-        Ok(())
+        kws.iter()
+            .map(|&pack| {
+                if self.needed {
+                    self.auto_cask_do(&["install"], pack, flags)
+                } else {
+                    // If the package is not installed, `brew reinstall` behaves just like `brew install`,
+                    // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
+                    self.auto_cask_do(&["reinstall"], pack, flags)
+                }
+            })
+            .collect()
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
@@ -261,10 +260,9 @@ impl PackManager for Homebrew {
             self.prompt_run("brew", &["upgrade"], kws, flags)?;
             self.prompt_run("brew", &["cask", "upgrade"], kws, flags)
         } else {
-            for &pack in kws {
-                self.auto_cask_do(&["upgrade"], pack, flags)?;
-            }
-            Ok(())
+            kws.iter()
+                .map(|&pack| self.auto_cask_do(&["upgrade"], pack, flags))
+                .collect()
         }
     }
 
