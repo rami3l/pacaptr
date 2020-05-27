@@ -5,10 +5,7 @@ use structopt::StructOpt;
 
 /// The command line options to be collected.
 #[derive(Debug, StructOpt)]
-#[structopt(
-    name = "pacpat-ng",
-    about = "A pacman-like wrapper for many package managers."
-)]
+#[structopt(about = "A pacman-like wrapper for many package managers.")]
 pub struct Opt {
     // Operations include Q(uery), R(emove), and S(ync).
     #[structopt(short = "Q", long)]
@@ -133,8 +130,9 @@ impl Opt {
         let no_confirm = self.no_confirm;
         let force_cask = self.force_cask;
 
-        let unknown = Box::new(unknown::Unknown {});
+        let unknown = || Box::new(unknown::Unknown {});
 
+        // Windows
         if cfg!(target_os = "windows") {
             // Chocolatey
             if is_exe("choco", "") {
@@ -143,9 +141,11 @@ impl Opt {
                     no_confirm,
                 })
             } else {
-                unknown
+                unknown()
             }
-        } else if cfg!(target_os = "macos") {
+        }
+        // macOS
+        else if cfg!(target_os = "macos") {
             // Homebrew
             if is_exe("brew", "/usr/local/bin/brew") {
                 Box::new(homebrew::Homebrew {
@@ -155,9 +155,11 @@ impl Opt {
                     no_confirm,
                 })
             } else {
-                unknown
+                unknown()
             }
-        } else if cfg!(target_os = "linux") {
+        }
+        // Linux
+        else if cfg!(target_os = "linux") {
             // Apt/Dpkg for Debian/Ubuntu/Termux
             if is_exe("apt-get", "/usr/bin/apt-get") {
                 Box::new(dpkg::Dpkg {
@@ -172,10 +174,12 @@ impl Opt {
                     no_confirm,
                 })
             } else {
-                unknown
+                unknown()
             }
-        } else {
-            unknown
+        }
+        // Unknown OS
+        else {
+            unknown()
         }
     }
 
