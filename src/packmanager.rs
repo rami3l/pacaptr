@@ -11,7 +11,7 @@ macro_rules! make_pm {
     ($( $(#[$meta:meta])* $method:ident ), *) => {
         $($(#[$meta])*
         fn $method(&self, _kws: &[&str], _flags: &[&str]) -> std::result::Result<(), crate::error::Error> {
-            std::result::Result::Err(format!("`{}` unimplemented", stringify!($method)).into())
+            std::result::Result::Err(format!("Operation `{}` unimplemented", stringify!($method)).into())
         })*
     };
 }

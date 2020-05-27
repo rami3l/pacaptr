@@ -199,21 +199,29 @@ pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str]) -> Stri
 
 /// Print out the command after the given prompt.
 pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
-    println!("{:>8} {}", prompt.green(), cmd_str(cmd, subcmd, kws, flags));
+    println!(
+        "{:>8} `{}`",
+        prompt.green().bold(),
+        cmd_str(cmd, subcmd, kws, flags)
+    );
 }
 
 /// Print out the command after the given prompt (dry run version).
 pub fn print_dryrun(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
-    println!("{:>8} {}", prompt.green(), cmd_str(cmd, subcmd, kws, flags));
+    println!(
+        "{:>8} `{}`",
+        prompt.green().bold(),
+        cmd_str(cmd, subcmd, kws, flags)
+    );
 }
 
 /// Print out a message after the given prompt.
 pub fn print_msg(msg: &str, prompt: &str) {
-    println!("{:>8} {}", prompt.green(), msg);
+    println!("{:>8} {}", prompt.green().bold(), msg);
 }
 
 pub fn print_err(err: impl std::error::Error, prompt: &str) {
-    eprintln!("{:>8} {}", prompt.red(), err);
+    eprintln!("{:>8} {}", prompt.bright_red().bold(), err);
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.

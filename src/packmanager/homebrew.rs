@@ -182,10 +182,10 @@ impl PackManager for Homebrew {
 
         if RMTREE_MISSING.find(&err_msg).is_some() {
             print_msg(
-                "`rmtree` is not installed. You may try installing it with the following command:",
+                "`rmtree` is not installed. You may install it with the following command:",
                 PROMPT_INFO,
             );
-            print_msg("brew tap beeftornado/rmtree", PROMPT_INFO);
+            print_msg("`brew tap beeftornado/rmtree`", PROMPT_INFO);
             return Err("`rmtree` required".into());
         }
 
