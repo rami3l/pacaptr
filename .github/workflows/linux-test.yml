@@ -1,4 +1,4 @@
-name: Rust
+name: linux-test
 
 on:
   push:
@@ -7,21 +7,6 @@ on:
     branches: [master, rs-dev]
 
 jobs:
-  win-mac-build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, macOS-latest]
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: cargo build --verbose
-      - name: Run tests
-        run: cargo test --verbose
-      - name: Run heavy tests
-        run: cargo test --verbose -- --ignored
-
   debian-build:
     runs-on: ubuntu-latest
     container:
