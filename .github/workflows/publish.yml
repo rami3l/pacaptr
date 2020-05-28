@@ -1,0 +1,38 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    name: Publish binaries
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Common Build Tools
+        run: apt-get update && apt-get install -y build-essential
+
+      - name: Rust Environment Setup
+        uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
+
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Build
+        run: cross build --release --target x86_64-apple-darwin --target-dir "./binaries/x86_64-apple-darwin/"
+
+      - name: Zip
+        run: tar czvf "pacaptr-x86_64-apple-darwin.tar.gz" -C "./binaries/x86_64-apple-darwin/" .
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: pacaptr-x86_64-apple-darwin.tar.gz
+          asset_name: pacaptr-x86_64-apple-darwin.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
