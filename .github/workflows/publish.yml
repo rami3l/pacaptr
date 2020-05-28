@@ -19,6 +19,9 @@ jobs:
       - name: Rust Environment Setup
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Cross Environment Setup
+        run: cargo install cross
+
       - name: Checkout
         uses: actions/checkout@v1
 
