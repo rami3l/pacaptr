@@ -9,6 +9,8 @@ jobs:
   build:
     name: Publish binaries
     runs-on: ubuntu-latest
+    container:
+      image: docker://debian:testing
 
     steps:
       - name: Setup Common Build Tools
