@@ -12,7 +12,7 @@ Run `pacaptr -Syu` on the distro of your choice!
   - [Motivation & Current Status](#motivation--current-status)
   - [Running & Building](#running--building)
   - [General Tips](#general-tips)
-  - [Platform-specific Tips](#platform-specific-tips)
+  - [Platform-Specific Tips](#platform-specific-tips)
 
 ## Supported Package Managers
 
@@ -109,7 +109,7 @@ cargo uninstall pacaptr
   - This option is useful when you don't want to be asked during installation, for example.
   - ... But it can be potentially dangerous if you don't know what you're doing!
 
-## Platform-specific Tips
+## Platform-Specific Tips
 
 - `Homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
 
