@@ -40,7 +40,7 @@ Now the implementations of different package managers are all placed in `./src/p
 
 PPAs might be added when appropriate.
 
-- Homebrew install:
+- `macOS/homebrew` install:
 
   ```bash
   brew tap rami3l/pacaptr
