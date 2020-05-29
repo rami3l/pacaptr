@@ -10,7 +10,7 @@ Run `pacaptr -Syu` on the distro of your choice!
   - [Contents](#contents)
   - [Supported Package Managers](#supported-package-managers)
   - [Motivation & Current Status](#motivation--current-status)
-  - [Running & Building](#running--building)
+  - [Building & Installation](#building--installation)
   - [General Tips](#general-tips)
   - [Platform-Specific Tips](#platform-specific-tips)
 
@@ -36,27 +36,33 @@ After some discussions in [pacapt/#126], I decided to rewrite the project in Rus
 
 Now the implementations of different package managers are all placed in `./src/packmanager` folder, with names like `homebrew.rs`.
 
-## Running & Building
+## Building & Installation
 
-We currently provide `cargo install` only.
 PPAs might be added when appropriate.
 
-To play along at home:
+- Homebrew install:
 
-```bash
-# First you'll need to download the source:
-git clone https://github.com/rami3l/pacaptr.git
-cd pacaptr
+  ```bash
+  brew tap rami3l/pacaptr
+  brew install pacaptr
+  ```
 
-# To run:
-cargo run -- -S curl
+- Build from source:
 
-# To install:
-cargo install --path .
+  ```bash
+  # First you'll need to download the source:
+  git clone https://github.com/rami3l/pacaptr.git
+  cd pacaptr
 
-# To uninstall:
-cargo uninstall pacaptr
-```
+  # To run:
+  cargo run -- -S curl
+
+  # To install:
+  cargo install --path .
+
+  # To uninstall:
+  cargo uninstall pacaptr
+  ```
 
 ## General Tips
 
