@@ -24,6 +24,11 @@ impl Chocolatey {
 }
 
 impl PackManager for Chocolatey {
+    /// Get the name of the package manager.
+    fn name(&self) -> String {
+        "choco".into()
+    }
+
     /// A helper method to simplify direct command invocation.
     fn just_run(
         &self,

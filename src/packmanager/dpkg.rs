@@ -24,6 +24,11 @@ impl Dpkg {
 }
 
 impl PackManager for Dpkg {
+    /// Get the name of the package manager.
+    fn name(&self) -> String {
+        "dpkg".into()
+    }
+
     /// A helper method to simplify direct command invocation.
     fn just_run(
         &self,

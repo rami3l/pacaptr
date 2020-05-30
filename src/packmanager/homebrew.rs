@@ -84,6 +84,11 @@ impl Homebrew {
 }
 
 impl PackManager for Homebrew {
+    /// Get the name of the package manager.
+    fn name(&self) -> String {
+        "brew".into()
+    }
+
     /// A helper method to simplify direct command invocation.
     fn just_run(
         &self,

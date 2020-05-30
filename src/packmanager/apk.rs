@@ -28,6 +28,11 @@ impl Apk {
 }
 
 impl PackManager for Apk {
+    /// Get the name of the package manager.
+    fn name(&self) -> String {
+        "apk".into()
+    }
+
     /// A helper method to simplify direct command invocation.
     fn just_run(
         &self,

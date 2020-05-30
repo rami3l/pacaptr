@@ -77,6 +77,14 @@ pub struct Opt {
     y: bool,
 
     // Other Pacaptr flags
+    #[structopt(
+        long = "using",
+        alias = "package-manager",
+        alias = "pm",
+        help = "Specify the package manager to be invoked"
+    )]
+    using: Option<String>,
+
     #[structopt(long = "dryrun", alias = "dry-run", help = "Perform a dry run")]
     dry_run: bool,
 
@@ -160,8 +168,13 @@ impl Opt {
         let needed = self.needed;
         let no_confirm = self.no_confirm;
         let force_cask = self.force_cask;
+        let pack_manager: &str = if let Some(pm) = &self.using {
+            pm
+        } else {
+            Opt::detect_pm()
+        };
 
-        match Opt::detect_pm() {
+        match pack_manager {
             // Chocolatey
             "choco" => Box::new(chocolatey::Chocolatey {
                 dry_run,
@@ -172,8 +185,8 @@ impl Opt {
             "brew" => Box::new(homebrew::Homebrew {
                 dry_run,
                 force_cask,
-                needed,
                 no_confirm,
+                needed,
             }),
 
             // Apt/Dpkg for Debian/Ubuntu/Termux
@@ -188,7 +201,7 @@ impl Opt {
                 no_confirm,
             }),
 
-            _ => Box::new(unknown::Unknown {}),
+            x => Box::new(unknown::Unknown { name: x.into() }),
         }
     }
 
@@ -267,6 +280,11 @@ mod tests {
     struct MockPM {}
 
     impl PackManager for MockPM {
+        /// Get the name of the package manager.
+        fn name(&self) -> String {
+            "mockpm".into()
+        }
+
         make_mock_pm!(
             q, qc, qe, qi, qk, ql, qm, qo, qp, qs, qu, r, rn, rns, rs, s, sc, scc, sccc, sg, si,
             sii, sl, ss, su, suy, sw, sy, u
