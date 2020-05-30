@@ -1,11 +1,15 @@
 use crate::error::Error;
 use crate::exec::is_exe;
 use crate::packmanager::*;
-use structopt::StructOpt;
+use structopt::{clap, StructOpt};
 
 /// The command line options to be collected.
 #[derive(Debug, StructOpt)]
-#[structopt(about = "A pacman-like wrapper for many package managers.")]
+#[structopt(
+    about = clap::crate_description!(),
+    version = clap::crate_version!(),
+    author = clap::crate_authors!()
+)]
 pub struct Opt {
     // Operations include Q(uery), R(emove), and S(ync).
     #[structopt(short = "Q", long)]
@@ -122,64 +126,69 @@ impl Opt {
         }
     }
 
-    /// Detect the PackManager implementation in question.
-    // TODO: Implement this function.
-    pub fn detect_pm(&self) -> Box<dyn PackManager> {
+    /// Automatically detect the name of the package manager in question.
+    #[cfg(target_os = "windows")]
+    pub fn detect_pm<'s>() -> &'s str {
+        match () {
+            _ if is_exe("choco", "") => "choco",
+            _ => "unknown",
+        }
+    }
+
+    /// Automatically detect the name of the package manager in question.
+    #[cfg(target_os = "macos")]
+    pub fn detect_pm<'s>() -> &'s str {
+        match () {
+            _ if is_exe("brew", "/usr/local/bin/brew") => "brew",
+            _ => "unknown",
+        }
+    }
+
+    /// Automatically detect the name of the package manager in question.
+    #[cfg(target_os = "linux")]
+    pub fn detect_pm<'s>() -> &'s str {
+        match () {
+            _ if is_exe("apt-get", "/usr/bin/apt-get") => "dpkg",
+            _ if is_exe("apk", "/sbin/apk") => "apk",
+            _ => "unknown",
+        }
+    }
+
+    /// Generate the PackManager instance according it's name.
+    pub fn gen_pm(&self) -> Box<dyn PackManager> {
         let dry_run = self.dry_run;
         let needed = self.needed;
         let no_confirm = self.no_confirm;
         let force_cask = self.force_cask;
 
-        let unknown = || Box::new(unknown::Unknown {});
-
-        // Windows
-        if cfg!(target_os = "windows") {
+        match Opt::detect_pm() {
             // Chocolatey
-            if is_exe("choco", "") {
-                Box::new(chocolatey::Chocolatey {
-                    dry_run,
-                    no_confirm,
-                })
-            } else {
-                unknown()
-            }
-        }
-        // macOS
-        else if cfg!(target_os = "macos") {
+            "choco" => Box::new(chocolatey::Chocolatey {
+                dry_run,
+                no_confirm,
+            }),
+
             // Homebrew
-            if is_exe("brew", "/usr/local/bin/brew") {
-                Box::new(homebrew::Homebrew {
-                    dry_run,
-                    force_cask,
-                    needed,
-                    no_confirm,
-                })
-            } else {
-                unknown()
-            }
-        }
-        // Linux
-        else if cfg!(target_os = "linux") {
+            "brew" => Box::new(homebrew::Homebrew {
+                dry_run,
+                force_cask,
+                needed,
+                no_confirm,
+            }),
+
             // Apt/Dpkg for Debian/Ubuntu/Termux
-            if is_exe("apt-get", "/usr/bin/apt-get") {
-                Box::new(dpkg::Dpkg {
-                    dry_run,
-                    no_confirm,
-                })
-            }
+            "dpkg" | "apt" => Box::new(dpkg::Dpkg {
+                dry_run,
+                no_confirm,
+            }),
+
             // Apk for Alpine
-            else if is_exe("apk", "/sbin/apk") {
-                Box::new(apk::Apk {
-                    dry_run,
-                    no_confirm,
-                })
-            } else {
-                unknown()
-            }
-        }
-        // Unknown OS
-        else {
-            unknown()
+            "apk" => Box::new(apk::Apk {
+                dry_run,
+                no_confirm,
+            }),
+
+            _ => Box::new(unknown::Unknown {}),
         }
     }
 
@@ -238,7 +247,7 @@ impl Opt {
     }
 
     pub fn dispatch(&self) -> Result<(), Error> {
-        self.dispatch_from(self.detect_pm())
+        self.dispatch_from(self.gen_pm())
     }
 }
 
