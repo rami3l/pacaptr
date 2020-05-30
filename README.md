@@ -66,6 +66,15 @@ PPAs might be added when appropriate.
 
 ## General Tips
 
+- `--using`, `--pm`: Use this flag to explicitly specify the underlying package manager to be invoked.
+
+  ```bash
+  # Here we force the use of `choco`,
+  # So the following output is platform-independent:
+  pacaptr -Su --pm choco --dryrun
+  # Pending: `choco upgrade all`
+  ```
+
 - Additional flags support:
   - The flags after a `--` will be passed directly to the underlying package manager:
 
@@ -117,7 +126,7 @@ PPAs might be added when appropriate.
 
 ## Platform-Specific Tips
 
-- `Homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
+- `macOS/homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
 
   - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
 
@@ -137,7 +146,7 @@ PPAs might be added when appropriate.
     brew tap beeftornado/rmtree
     ```
 
-- `Chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
+- `Windows/chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
 [Pacman Rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt
