@@ -64,6 +64,10 @@ PPAs might be added when appropriate.
   cargo uninstall pacaptr
   ```
 
+Notes:
+
+- For `Alpine/apk` users: If `cargo build` doesn't work, please try `RUSTFLAGS="-C target-feature=-crt-static" cargo build` instead.
+
 ## General Tips
 
 - `--using`, `--pm`: Use this flag to explicitly specify the underlying package manager to be invoked.
@@ -123,6 +127,10 @@ PPAs might be added when appropriate.
   Use this flag to trigger the corresponding flag of your package manager (if possible) in order to answer "yes" to every incoming question.
   - This option is useful when you don't want to be asked during installation, for example.
   - ... But it can be potentially dangerous if you don't know what you're doing!
+
+- `--nocache`, `--no-cache`:
+  Use this flag to remove cache after package installation.
+  - This option is useful when you want to reduce `Docker` image size, for example.
 
 ## Platform-Specific Tips
 
