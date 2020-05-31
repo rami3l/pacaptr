@@ -8,6 +8,7 @@ pub struct Homebrew {
     pub force_cask: bool,
     pub no_confirm: bool,
     pub needed: bool,
+    pub no_cache: bool,
 }
 
 enum CaskState {
@@ -50,7 +51,7 @@ impl Homebrew {
     fn auto_cask_do(&self, subcmd: &[&str], pack: &str, flags: &[&str]) -> Result<(), Error> {
         let brew_do = || self.prompt_run("brew", subcmd, &[pack], flags);
         let brew_cask_do = || {
-            let subcmd: Vec<&str> = ["cask"].iter().chain(subcmd).map(|&s| s).collect();
+            let subcmd: Vec<&str> = ["cask"].iter().chain(subcmd).cloned().collect();
             self.prompt_run("brew", &subcmd, &[pack], flags)
         };
 
@@ -139,7 +140,7 @@ impl PackManager for Homebrew {
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let search = |contents: &str| {
-            let rs: Vec<Regex> = kws.iter().map(|kw| Regex::new(kw).unwrap()).collect();
+            let rs: Vec<Regex> = kws.iter().map(|&kw| Regex::new(kw).unwrap()).collect();
             for line in contents.lines() {
                 let matches_all = rs.iter().all(|regex| regex.find(line).is_some());
                 if matches_all {
@@ -199,17 +200,19 @@ impl PackManager for Homebrew {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        kws.iter()
-            .map(|&pack| {
-                if self.needed {
-                    self.auto_cask_do(&["install"], pack, flags)
-                } else {
-                    // If the package is not installed, `brew reinstall` behaves just like `brew install`,
-                    // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
-                    self.auto_cask_do(&["reinstall"], pack, flags)
-                }
-            })
-            .collect()
+        for &pack in kws {
+            if self.needed {
+                self.auto_cask_do(&["install"], pack, flags)?;
+            } else {
+                // If the package is not installed, `brew reinstall` behaves just like `brew install`,
+                // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
+                self.auto_cask_do(&["reinstall"], pack, flags)?;
+            }
+        }
+        if self.no_cache {
+            self.scc(kws, flags)?;
+        }
+        Ok(())
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
@@ -263,11 +266,19 @@ impl PackManager for Homebrew {
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
             self.prompt_run("brew", &["upgrade"], kws, flags)?;
-            self.prompt_run("brew", &["cask", "upgrade"], kws, flags)
+            self.prompt_run("brew", &["cask", "upgrade"], kws, flags)?;
+            if self.no_cache {
+                self.scc(kws, flags)?;
+            }
+            Ok(())
         } else {
-            kws.iter()
-                .map(|&pack| self.auto_cask_do(&["upgrade"], pack, flags))
-                .collect()
+            for &pack in kws {
+                self.auto_cask_do(&["upgrade"], pack, flags)?;
+            }
+            if self.no_cache {
+                self.scc(kws, flags)?;
+            }
+            Ok(())
         }
     }
 

@@ -70,9 +70,9 @@ PPAs might be added when appropriate.
 
   ```bash
   # Here we force the use of `choco`,
-  # So the following output is platform-independent:
+  # so the following output is platform-independent:
   pacaptr -Su --pm choco --dryrun
-  # Pending: `choco upgrade all`
+  # Pending: choco upgrade all
   ```
 
 - Additional flags support:

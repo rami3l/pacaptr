@@ -107,6 +107,13 @@ pub struct Opt {
     )]
     force_cask: bool,
 
+    #[structopt(
+        long = "nocache",
+        alias = "no-cache",
+        help = "Remove cache after installation"
+    )]
+    no_cache: bool,
+
     // Keywords
     #[structopt(name = "KEYWORDS", help = "Package names (sometimes also regex)")]
     keywords: Vec<String>,
@@ -168,6 +175,7 @@ impl Opt {
         let needed = self.needed;
         let no_confirm = self.no_confirm;
         let force_cask = self.force_cask;
+        let no_cache = self.no_cache;
         let pack_manager: &str = if let Some(pm) = &self.using {
             pm
         } else {
@@ -187,20 +195,24 @@ impl Opt {
                 force_cask,
                 no_confirm,
                 needed,
+                no_cache,
             }),
 
             // Apt/Dpkg for Debian/Ubuntu/Termux
             "dpkg" | "apt" => Box::new(dpkg::Dpkg {
                 dry_run,
                 no_confirm,
+                no_cache,
             }),
 
             // Apk for Alpine
             "apk" => Box::new(apk::Apk {
                 dry_run,
                 no_confirm,
+                no_cache,
             }),
 
+            // Unknown package manager X
             x => Box::new(unknown::Unknown { name: x.into() }),
         }
     }

@@ -5,10 +5,12 @@ use crate::exec::{self, Mode};
 pub struct Dpkg {
     pub dry_run: bool,
     pub no_confirm: bool,
+    pub no_cache: bool,
 }
 
 impl Dpkg {
-    fn check_no_confirm(
+    /// A helper method to simplify prompted command invocation.
+    fn prompt_run(
         &self,
         cmd: &str,
         subcmd: &[&str],
@@ -73,37 +75,41 @@ impl PackManager for Dpkg {
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("apt-get", &["remove"], kws, flags)
+        self.prompt_run("apt-get", &["remove"], kws, flags)
     }
 
     /// Rn removes a package and skips the generation of configuration backup files.
     fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("apt-get", &["purge"], kws, flags)
+        self.prompt_run("apt-get", &["purge"], kws, flags)
     }
 
     /// Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
     fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("apt-get", &["autoremove", "--purge"], kws, flags)
+        self.prompt_run("apt-get", &["autoremove", "--purge"], kws, flags)
     }
 
     /// Rs removes a package and its dependencies which are not required by any other installed package.
     fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("apt-get", &["autoremove"], kws, flags)
+        self.prompt_run("apt-get", &["autoremove"], kws, flags)
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("apt-get", &["install"], kws, flags)
+        self.prompt_run("apt-get", &["install"], kws, flags)?;
+        if self.no_cache {
+            self.scc(kws, flags)?;
+        }
+        Ok(())
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("apt-get", &["clean"], kws, flags)
+        self.prompt_run("apt-get", &["clean"], kws, flags)
     }
 
     /// Scc removes all files from the cache.
     fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("apt-get", &["autoclean"], kws, flags)
+        self.prompt_run("apt-get", &["autoclean"], kws, flags)
     }
 
     /// Si displays remote package information: name, version, description, etc.
@@ -124,8 +130,12 @@ impl PackManager for Dpkg {
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.check_no_confirm("apt-get", &["upgrade"], &[], flags)?;
-            self.check_no_confirm("apt-get", &["dist-upgrade"], &[], flags)
+            self.prompt_run("apt-get", &["upgrade"], &[], flags)?;
+            self.prompt_run("apt-get", &["dist-upgrade"], &[], flags)?;
+            if self.no_cache {
+                self.scc(kws, flags)?;
+            }
+            Ok(())
         } else {
             self.s(kws, flags)
         }
@@ -139,7 +149,7 @@ impl PackManager for Dpkg {
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("apt-get", &["install", "--download-only"], kws, flags)
+        self.prompt_run("apt-get", &["install", "--download-only"], kws, flags)
     }
 
     /// Sy refreshes the local package database.

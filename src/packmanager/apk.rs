@@ -6,6 +6,7 @@ use regex::Regex;
 pub struct Apk {
     pub dry_run: bool,
     pub no_confirm: bool,
+    pub no_cache: bool,
 }
 
 impl Apk {
@@ -79,7 +80,7 @@ impl PackManager for Apk {
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let search = |contents: String| {
-            let rs: Vec<Regex> = kws.iter().map(|kw| Regex::new(kw).unwrap()).collect();
+            let rs: Vec<Regex> = kws.iter().map(|&kw| Regex::new(kw).unwrap()).collect();
             for line in contents.lines() {
                 let matches_all = rs.iter().all(|regex| regex.find(line).is_some());
 
@@ -127,12 +128,21 @@ impl PackManager for Apk {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apk", &["add"], kws, flags)
+        let mut flags: Vec<&str> = flags.iter().cloned().collect();
+        if self.no_cache {
+            flags.push("--no-cache");
+        }
+        self.prompt_run("apk", &["add"], kws, &flags)
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.prompt_run("apk", &["cache", "-v", "clean"], &[], flags)
+    }
+
+    /// Scc removes all files from the cache.
+    fn scc(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.prompt_run("rm", &["-vrf", "/var/cache/apk/*"], &[], flags)
     }
 
     /// Si displays remote package information: name, version, description, etc.
@@ -157,19 +167,27 @@ impl PackManager for Apk {
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        let mut flags: Vec<&str> = flags.iter().cloned().collect();
+        if self.no_cache {
+            flags.push("--no-cache");
+        }
         if kws.is_empty() {
-            self.prompt_run("apk", &["upgrade"], &[], flags)
+            self.prompt_run("apk", &["upgrade"], &[], &flags)
         } else {
-            self.prompt_run("apk", &["add", "-u"], kws, flags)
+            self.prompt_run("apk", &["add", "-u"], kws, &flags)
         }
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
     fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        let mut flags: Vec<&str> = flags.iter().cloned().collect();
+        if self.no_cache {
+            flags.push("--no-cache");
+        }
         if kws.is_empty() {
-            self.prompt_run("apk", &["upgrade", "-U", "-a"], &[], flags)
+            self.prompt_run("apk", &["upgrade", "-U", "-a"], &[], &flags)
         } else {
-            self.prompt_run("apk", &["add", "-U", "-u"], kws, flags)
+            self.prompt_run("apk", &["add", "-U", "-u"], kws, &flags)
         }
     }
 
@@ -185,6 +203,10 @@ impl PackManager for Apk {
 
     /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
     fn u(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apk", &["add", "--allow-untrusted"], kws, flags)
+        let mut flags: Vec<&str> = flags.iter().cloned().collect();
+        if self.no_cache {
+            flags.push("--no-cache");
+        }
+        self.prompt_run("apk", &["add", "--allow-untrusted"], kws, &flags)
     }
 }
