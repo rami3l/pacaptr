@@ -52,12 +52,7 @@ impl PackManager for Dnf {
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.just_run(
-                "rpm",
-                &["-qa", "--qf"],
-                &[r#"%{NAME} %{VERSION}\\n"#],
-                flags,
-            )
+            self.just_run("rpm", &["-qa", "--qf"], &["%{NAME} %{VERSION}\\n"], flags)
         } else {
             self.qs(kws, flags)
         }
@@ -121,7 +116,7 @@ impl PackManager for Dnf {
             Ok(())
         };
 
-        search_output("rpm", &["-a"])
+        search_output("rpm", &["-qa"])
     }
 
     /// Qu lists packages which have an update available.
