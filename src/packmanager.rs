@@ -1,5 +1,6 @@
 pub mod apk;
 pub mod chocolatey;
+pub mod dnf;
 pub mod dpkg;
 pub mod homebrew;
 pub mod unknown;

@@ -165,6 +165,7 @@ impl Opt {
         match () {
             _ if is_exe("apt-get", "/usr/bin/apt-get") => "dpkg",
             _ if is_exe("apk", "/sbin/apk") => "apk",
+            _ if is_exe("dnf", "/usr/bin/dnf") => "dnf",
             _ => "unknown",
         }
     }
@@ -207,6 +208,13 @@ impl Opt {
 
             // Apk for Alpine
             "apk" => Box::new(apk::Apk {
+                dry_run,
+                no_confirm,
+                no_cache,
+            }),
+
+            // Dnf for RedHat
+            "dnf" => Box::new(dnf::Dnf {
                 dry_run,
                 no_confirm,
                 no_cache,
