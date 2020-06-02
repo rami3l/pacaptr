@@ -20,6 +20,7 @@ Run `pacaptr -Syu` on the distro of your choice!
 - `Windows/chocolatey`
 - `Debian/apt`
 - `Alpine/apk`
+- `RedHat/dnf`
 
 Notes:
 

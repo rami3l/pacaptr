@@ -167,3 +167,38 @@ mod apk {
             .run(false)
     }
 }
+
+#[cfg(target_os = "linux")]
+mod dnf {
+    use super::Test;
+
+    #[test]
+    fn si_ok() {
+        Test::new()
+            .pacaptr(&["-Si", "curl"], &[])
+            .output(&["A utility for getting files from remote servers"])
+            .run(false)
+    }
+
+    #[test]
+    #[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
+    fn si_fail() {
+        Test::new()
+            .pacaptr(&["-Si", "wget"], &[])
+            .output(&["Why not use curl instead?"])
+            .run(false)
+    }
+
+    #[test]
+    #[ignore]
+    fn r() {
+        Test::new()
+            .pacaptr(&["-S", "wget", "--yes"], &[])
+            .output(&["dnf install -y wget", "Installed:", "wget", "Complete!"])
+            .exec("wget", &["-V"], &[])
+            .output(&["GNU Wget"])
+            .pacaptr(&["-R", "wget", "--yes"], &[])
+            .output(&["dnf remove -y wget", "Removed:", "wget", "Complete!"])
+            .run(false)
+    }
+}

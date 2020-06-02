@@ -49,6 +49,24 @@ jobs:
       - name: Run heavy tests
         run: cargo test apt --verbose -- --ignored
 
+  fedora-test:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://fedora:latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: dnf install -y make automake gcc gcc-c++ kernel-devel
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build
+        run: cargo build --verbose
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test dnf --verbose
+      - name: Run heavy tests
+        run: cargo test dnf --verbose -- --ignored
+
   alpine-test:
     runs-on: ubuntu-latest
     container:
