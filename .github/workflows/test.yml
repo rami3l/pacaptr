@@ -45,9 +45,9 @@ jobs:
       - name: Run unit tests
         run: cargo test tests --verbose
       - name: Run smoke tests
-        run: cargo test dpkg --verbose
+        run: cargo test apt --verbose
       - name: Run heavy tests
-        run: cargo test dpkg --verbose -- --ignored
+        run: cargo test apt --verbose -- --ignored
 
   alpine-test:
     runs-on: ubuntu-latest

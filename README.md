@@ -18,7 +18,7 @@ Run `pacaptr -Syu` on the distro of your choice!
 
 - `macOS/homebrew`
 - `Windows/chocolatey`
-- `Debian/dpkg`
+- `Debian/apt`
 - `Alpine/apk`
 
 Notes:

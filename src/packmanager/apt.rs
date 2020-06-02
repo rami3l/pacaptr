@@ -2,13 +2,13 @@ use super::PackManager;
 use crate::error::Error;
 use crate::exec::{self, Mode};
 
-pub struct Dpkg {
+pub struct Apt {
     pub dry_run: bool,
     pub no_confirm: bool,
     pub no_cache: bool,
 }
 
-impl Dpkg {
+impl Apt {
     /// A helper method to simplify prompted command invocation.
     fn prompt_run(
         &self,
@@ -25,10 +25,10 @@ impl Dpkg {
     }
 }
 
-impl PackManager for Dpkg {
+impl PackManager for Apt {
     /// Get the name of the package manager.
     fn name(&self) -> String {
-        "dpkg".into()
+        "apt".into()
     }
 
     /// A helper method to simplify direct command invocation.

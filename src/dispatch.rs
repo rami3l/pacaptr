@@ -163,7 +163,7 @@ impl Opt {
     #[cfg(target_os = "linux")]
     pub fn detect_pm<'s>() -> &'s str {
         match () {
-            _ if is_exe("apt-get", "/usr/bin/apt-get") => "dpkg",
+            _ if is_exe("apt-get", "/usr/bin/apt-get") => "apt",
             _ if is_exe("apk", "/sbin/apk") => "apk",
             _ if is_exe("dnf", "/usr/bin/dnf") => "dnf",
             _ => "unknown",
@@ -200,7 +200,7 @@ impl Opt {
             }),
 
             // Apt/Dpkg for Debian/Ubuntu/Termux
-            "dpkg" | "apt" => Box::new(dpkg::Dpkg {
+            "dpkg" | "apt" => Box::new(apt::Apt {
                 dry_run,
                 no_confirm,
                 no_cache,

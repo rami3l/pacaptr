@@ -97,7 +97,7 @@ mod chocolatey {
 }
 
 #[cfg(target_os = "linux")]
-mod dpkg {
+mod apt {
     use super::Test;
 
     #[test]
