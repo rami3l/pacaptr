@@ -94,8 +94,8 @@ jobs:
 
       - name: Get files
         run: |
-          curl -x -O ${{ steps.url.outputs.mac }}
-          curl -x -O ${{ steps.url.outputs.linux }}
+          curl -O ${{ steps.url.outputs.mac }}
+          curl -O ${{ steps.url.outputs.linux }}
 
       - name: Replace variables in template
         uses: rami3l/bumper@master
