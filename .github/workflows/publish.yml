@@ -102,16 +102,25 @@ jobs:
         id: replace
         with:
           template: "tap/template.rb"
-          out: "newtap.rb"
+          out: "pacaptr.rb"
 
           rules: |
             {
-              "version": ${{ steps.ver.outputs.tag }},
-              "url_mac": ${{ steps.url.outputs.mac }},
-              "sha256_mac": hashFiles(${{ steps.binaries.outputs.mac }}),
-              "url_linux": ${{ steps.url.outputs.linux }},
-              "sha256_linux": hashFiles(${{ steps.binaries.outputs.linux }})
+              "version": "${{ steps.ver.outputs.tag }}",
+              "url_mac": "${{ steps.url.outputs.mac }}",
+              "sha256_mac": "${{ hashFiles(steps.binaries.outputs.mac) }}",
+              "url_linux": "${{ steps.url.outputs.linux }}",
+              "sha256_linux": "${{ hashFiles(steps.binaries.outputs.linux) }}"
             }
 
       - name: Get the output script
-        run: cat newtap.rb
+        run: cat pacaptr.rb
+
+      - name: Upload the script to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: "pacaptr.rb"
+          asset_name: "pacaptr.rb"
+          tag: ${{ github.ref }}
+          overwrite: true
