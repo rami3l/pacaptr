@@ -48,7 +48,7 @@ jobs:
           echo ::set-output name=name::$NAME
 
       - name: Zip
-        run: tar czvf ${{ steps.binaries.outputs.name }} -C ./target/release/ ${{ matrix.artifact_name }}
+        run: tar czvf ${{ steps.binaries.outputs.name }} -C ./target/release/${{ matrix.artifact_name }}
 
       - name: Generate sha256
         run: openssl dgst -r -sha256 ${{ steps.binaries.outputs.name }} > ${{ steps.binaries.outputs.name }}.sha256
@@ -66,8 +66,8 @@ jobs:
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.binaries.outputs.name }}
-          asset_name: ${{ steps.binaries.outputs.name }}
+          file: ${{ steps.binaries.outputs.name }}.sha256
+          asset_name: ${{ steps.binaries.outputs.name }}.sha256
           tag: ${{ github.ref }}
           overwrite: true
 
