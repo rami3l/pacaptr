@@ -29,36 +29,18 @@ jobs:
       - name: Build
         run: cargo build --release --locked
 
-      - name: Get version
-        id: ver
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
-      - name: Check version
-        env:
-          RELEASE_VERSION: ${{ steps.ver.outputs.tag }}
-        run: |
-          echo "Detected version:"
-          echo $RELEASE_VERSION
-
-      - name: Get tarball file name
-        id: binaries
-        env:
-          NAME: ${{ matrix.asset_name }}-${{ steps.ver.outputs.tag }}.tar.gz
-        run: |
-          echo ::set-output name=name::$NAME
-
       - name: Zip
-        run: tar czvf ${{ steps.binaries.outputs.name }} -C ./target/release/${{ matrix.artifact_name }}
+        run: tar czvf ${{ matrix.asset_name }}.tar.gz -C ./target/release/ ${{ matrix.artifact_name }}
 
       - name: Generate sha256
-        run: openssl dgst -r -sha256 ${{ steps.binaries.outputs.name }} > ${{ steps.binaries.outputs.name }}.sha256
+        run: openssl dgst -r -sha256 ${{ matrix.asset_name }}.tar.gz > ${{ matrix.asset_name }}.tar.gz.sha256
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.binaries.outputs.name }}
-          asset_name: ${{ steps.binaries.outputs.name }}
+          file: ${{ matrix.asset_name }}.tar.gz
+          asset_name: ${{ matrix.asset_name }}.tar.gz
           tag: ${{ github.ref }}
           overwrite: true
 
@@ -66,8 +48,8 @@ jobs:
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.binaries.outputs.name }}.sha256
-          asset_name: ${{ steps.binaries.outputs.name }}.sha256
+          file: ${{ matrix.asset_name }}.tar.gz.sha256
+          asset_name: ${{ matrix.asset_name }}.tar.gz.sha256
           tag: ${{ github.ref }}
           overwrite: true
 
@@ -95,8 +77,8 @@ jobs:
       - name: Get tarball file name
         id: binaries
         env:
-          BIN_MAC: pacaptr-macos-amd64-${{ steps.ver.outputs.tag }}.tar.gz
-          BIN_LINUX: pacaptr-linux-amd64-${{ steps.ver.outputs.tag }}.tar.gz
+          BIN_MAC: pacaptr-macos-amd64.tar.gz
+          BIN_LINUX: pacaptr-linux-amd64.tar.gz
         run: |
           echo ::set-output name=mac::$BIN_MAC
           echo ::set-output name=linux::$BIN_LINUX
