@@ -56,3 +56,66 @@ jobs:
           asset_name: ${{ matrix.asset_name }}-${{ steps.ver.outputs.tag }}.tar.gz.sha256
           tag: ${{ github.ref }}
           overwrite: true
+
+  bump-tap-version:
+    name: Generate new ruby script for homebrew tap
+    needs: publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - run: npm i @actions/core @actions/github
+
+      - name: Get "version"
+        id: ver
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
+      - name: Check "version"
+        env:
+          RELEASE_VERSION: ${{ steps.ver.outputs.tag }}
+        run: |
+          echo "Detected version:"
+          echo $RELEASE_VERSION
+
+      - name: Get tarball file name
+        id: binaries
+        env:
+          BIN_MAC: pacaptr-macos-amd64-${{ steps.ver.outputs.tag }}.tar.gz
+          BIN_LINUX: pacaptr-linux-amd64-${{ steps.ver.outputs.tag }}.tar.gz
+        run: |
+          echo ::set-output name=mac::$URL_MAC
+          echo ::set-output name=linux::$URL_LINUX
+
+      - name: Get url
+        id: url
+        env:
+          URL_MAC: "https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.mac }}"
+          URL_LINUX: "https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.linux }}"
+        run: |
+          echo ::set-output name=mac::$URL_MAC
+          echo ::set-output name=linux::$URL_LINUX
+
+      - name: Get files
+        run: |
+          curl -x -o ${{ steps.binaries.outputs.mac }} ${{ steps.url.outputs.mac }}
+          curl -x -o ${{ steps.binaries.outputs.linux }} ${{ steps.url.outputs.linux }}
+
+      - name: Replace variables in template
+        uses: rami3l/bumper
+        id: replace
+        with:
+          template: "tap/template.rb"
+          out: "newtap.rb"
+
+          rules: |
+            {
+              "version": ${{ steps.ver.outputs.tag }},
+              "url_mac": ${{ steps.url.outputs.mac }},
+              "sha256_mac": hashFiles(${{ steps.binaries.outputs.mac }}),
+              "url_linux": ${{ steps.url.outputs.linux }},
+              "sha256_linux": hashFiles(${{ steps.binaries.outputs.mac }})
+            }
+
+      - name: Get the output script
+        run: cat newtap.rb
