@@ -92,10 +92,13 @@ jobs:
           echo ::set-output name=mac::$URL_MAC
           echo ::set-output name=linux::$URL_LINUX
 
-      - name: Get files
+      - name: Get files and checksums
+        id: checksums
         run: |
           curl -O ${{ steps.url.outputs.mac }}
           curl -O ${{ steps.url.outputs.linux }}
+          echo ::set-output name=mac::$(openssl dgst -r -sha256 ${{ steps.binaries.outputs.mac }} | awk '{ print $1 }')
+          echo ::set-output name=linux::$(openssl dgst -r -sha256 ${{ steps.binaries.outputs.linux }} | awk '{ print $1 }')
 
       - name: Replace variables in template
         uses: rami3l/bumper@master
@@ -108,9 +111,9 @@ jobs:
             {
               "version": "${{ steps.ver.outputs.tag }}",
               "url_mac": "${{ steps.url.outputs.mac }}",
-              "sha256_mac": "${{ hashFiles(steps.binaries.outputs.mac) }}",
+              "sha256_mac": "${{ steps.checksums.outputs.mac }}",
               "url_linux": "${{ steps.url.outputs.linux }}",
-              "sha256_linux": "${{ hashFiles(steps.binaries.outputs.linux) }}"
+              "sha256_linux": "${{ steps.checksums.outputs.linux }}"
             }
 
       - name: Get the output script
