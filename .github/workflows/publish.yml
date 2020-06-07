@@ -86,8 +86,8 @@ jobs:
       - name: Get url
         id: url
         env:
-          URL_MAC: "https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.mac }}"
-          URL_LINUX: "https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.linux }}"
+          URL_MAC: https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.mac }}
+          URL_LINUX: https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.linux }}
         run: |
           echo ::set-output name=mac::$URL_MAC
           echo ::set-output name=linux::$URL_LINUX
@@ -95,8 +95,8 @@ jobs:
       - name: Get files and checksums
         id: checksums
         run: |
-          curl -O ${{ steps.url.outputs.mac }}.sha256
-          curl -O ${{ steps.url.outputs.linux }}.sha256
+          curl -LO ${{ steps.url.outputs.mac }}.sha256
+          curl -LO ${{ steps.url.outputs.linux }}.sha256
           echo ::set-output name=mac::$(cat ${{ steps.binaries.outputs.mac }}.sha256 | awk '{ print $1 }')
           echo ::set-output name=linux::$(cat ${{ steps.binaries.outputs.linux }}.sha256 | awk '{ print $1 }')
 
