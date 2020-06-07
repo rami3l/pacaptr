@@ -95,10 +95,10 @@ jobs:
       - name: Get files and checksums
         id: checksums
         run: |
-          curl -O ${{ steps.url.outputs.mac }}
-          curl -O ${{ steps.url.outputs.linux }}
-          echo ::set-output name=mac::$(openssl dgst -r -sha256 ${{ steps.binaries.outputs.mac }} | awk '{ print $1 }')
-          echo ::set-output name=linux::$(openssl dgst -r -sha256 ${{ steps.binaries.outputs.linux }} | awk '{ print $1 }')
+          curl -O ${{ steps.url.outputs.mac }}.sha256
+          curl -O ${{ steps.url.outputs.linux }}.sha256
+          echo ::set-output name=mac::$(echo ${{ steps.binaries.outputs.mac }}.sha256 | awk '{ print $1 }')
+          echo ::set-output name=linux::$(echo ${{ steps.binaries.outputs.linux }}.sha256 | awk '{ print $1 }')
 
       - name: Replace variables in template
         uses: rami3l/bumper@master
