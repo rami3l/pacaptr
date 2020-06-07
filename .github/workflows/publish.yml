@@ -97,8 +97,8 @@ jobs:
         run: |
           curl -O ${{ steps.url.outputs.mac }}.sha256
           curl -O ${{ steps.url.outputs.linux }}.sha256
-          echo ::set-output name=mac::$(echo ${{ steps.binaries.outputs.mac }}.sha256 | awk '{ print $1 }')
-          echo ::set-output name=linux::$(echo ${{ steps.binaries.outputs.linux }}.sha256 | awk '{ print $1 }')
+          echo ::set-output name=mac::$(cat ${{ steps.binaries.outputs.mac }}.sha256 | awk '{ print $1 }')
+          echo ::set-output name=linux::$(cat ${{ steps.binaries.outputs.linux }}.sha256 | awk '{ print $1 }')
 
       - name: Replace variables in template
         uses: rami3l/bumper@master
