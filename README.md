@@ -4,6 +4,8 @@
 
 Run `pacaptr -Syu` on the distro of your choice!
 
+![demo](https://user-images.githubusercontent.com/33851577/83972815-eaaf0480-a914-11ea-8285-377df5c628a9.png)
+
 ## Contents
 
 - [pacaptr](#pacaptr)
