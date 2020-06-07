@@ -29,18 +29,22 @@ jobs:
       - name: Build
         run: cargo build --release --locked
 
+      - name: Get version
+        id: ver
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
       - name: Zip
-        run: tar czvf ${{ matrix.asset_name }}.tar.gz -C ./target/release/ ${{ matrix.artifact_name }}
+        run: tar czvf ${{ matrix.asset_name }}-${{ steps.ver.outputs.tag }}.tar.gz -C ./target/release/ ${{ matrix.artifact_name }}
 
       - name: Generate sha256
-        run: openssl dgst -r -sha256 ${{ matrix.asset_name }}.tar.gz > ${{ matrix.asset_name }}.tar.gz.sha256
+        run: openssl dgst -r -sha256 ${{ matrix.asset_name }}-${{ steps.ver.outputs.tag }}.tar.gz > ${{ matrix.asset_name }}-${{ steps.ver.outputs.tag }}.tar.gz.sha256
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.asset_name }}.tar.gz
-          asset_name: ${{ matrix.asset_name }}.tar.gz
+          file: ${{ matrix.asset_name }}-${{ steps.ver.outputs.tag }}.tar.gz
+          asset_name: ${{ matrix.asset_name }}-${{ steps.ver.outputs.tag }}.tar.gz
           tag: ${{ github.ref }}
           overwrite: true
 
@@ -48,7 +52,7 @@ jobs:
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.asset_name }}.tar.gz.sha256
-          asset_name: ${{ matrix.asset_name }}.tar.gz.sha256
+          file: ${{ matrix.asset_name }}-${{ steps.ver.outputs.tag }}.tar.gz.sha256
+          asset_name: ${{ matrix.asset_name }}-${{ steps.ver.outputs.tag }}.tar.gz.sha256
           tag: ${{ github.ref }}
           overwrite: true
