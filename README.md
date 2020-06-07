@@ -4,7 +4,7 @@
 
 Run `pacaptr -Syu` on the distro of your choice!
 
-![demo](https://user-images.githubusercontent.com/33851577/83972815-eaaf0480-a914-11ea-8285-377df5c628a9.png)
+<img alt="demo" src="https://user-images.githubusercontent.com/33851577/83973021-2f876b00-a916-11ea-9c7e-9cb76ca27a0e.png">
 
 ## Contents
 
