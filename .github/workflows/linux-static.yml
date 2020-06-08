@@ -1,0 +1,44 @@
+name: publish-musl-static
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish-musl-static:
+    name: publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install cross
+      - run: sudo systemctl start docker
+
+      - name: Build
+        run: RUSTFLAGS="-C target-feature=+crt-static" cross build --release --locked --target x86_64-unknown-linux-musl
+
+      - name: Zip
+        run: tar czvf pacaptr-linux-musl-amd64.tar.gz -C target/x86_64-unknown-linux-musl/release/ pacaptr
+
+      - name: Generate sha256
+        run: openssl dgst -r -sha256 pacaptr-linux-musl-amd64.tar.gz > pacaptr-linux-musl-amd64.tar.gz.sha256
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: pacaptr-linux-musl-amd64.tar.gz
+          asset_name: pacaptr-linux-musl-amd64.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
+
+      - name: Upload sha256 to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: pacaptr-linux-musl-amd64.tar.gz.sha256
+          asset_name: pacaptr-linux-musl-amd64.tar.gz.sha256
+          tag: ${{ github.ref }}
+          overwrite: true
