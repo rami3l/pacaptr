@@ -115,14 +115,14 @@ pub struct Opt {
     no_cache: bool,
 
     // Keywords
-    #[structopt(name = "KEYWORDS", help = "Package names (sometimes also regex)")]
+    #[structopt(name = "KEYWORDS", help = "Package name or (sometimes) regex")]
     keywords: Vec<String>,
 
     // Additional Non-Pacaptr Flags
     #[structopt(
         last = true,
         name = "ADDITIONAL_FLAGS",
-        help = "Additional Flags passed directly to the underlying package manager"
+        help = "Additional Flags passed directly to backend"
     )]
     additional_flags: Vec<String>,
 }
