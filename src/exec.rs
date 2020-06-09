@@ -125,12 +125,18 @@ fn exec_checkerr(
     Ok(out)
 }
 
-pub fn prompt(question: &str, options: &str, expected: &[&str]) -> String {
+/// Prompt and get the output string.
+/// This action won't end until an expected answer is found.
+/// If `case_sensitive == false`, then `expected` should be all lower case patterns.
+pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
     loop {
         let mut answer = String::new();
         print!("{:>8} {}? ", question.yellow(), options.underline());
         let _ = std::io::stdout().flush();
         let read = std::io::stdin().read_line(&mut answer);
+        if !case_sensitive {
+            answer = answer.to_lowercase();
+        }
         if read.is_ok() {
             if let Some('\n') = answer.chars().next_back() {
                 answer.pop();
@@ -165,18 +171,26 @@ fn exec_prompt(
         true
     } else {
         print_dryrun(cmd, subcmd, kws, flags, PROMPT_DRYRUN);
-        match prompt("Proceed", "[Y/a/n]", &["", "Y", "y", "A", "a", "N", "n"]).as_ref() {
+        match prompt(
+            "Proceed",
+            "[Yes/all/no]",
+            &["", "y", "yes", "a", "all", "n", "no"],
+            false,
+        )
+        .to_lowercase()
+        .as_ref()
+        {
             // The default answer is `Yes`
-            "Y" | "y" | "" => true,
+            "y" | "yes" | "" => true,
 
             // You can also say `All` to answer `Yes` to all the other questions that follow.
-            "A" | "a" => {
+            "a" | "all" => {
                 *all_yes = true;
                 true
             }
 
             // Or you can say `No`.
-            "N" | "n" => false,
+            "n" | "no" => false,
             _ => unreachable!(),
         }
     };
@@ -189,12 +203,14 @@ fn exec_prompt(
 
 /// Get the String representation of a particular command.
 pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str]) -> String {
-    let mut res: String = cmd.into();
-    for &w in subcmd.iter().chain(kws).chain(flags) {
-        res.push(' ');
-        res.push_str(w);
-    }
-    res
+    [cmd]
+        .iter()
+        .chain(subcmd)
+        .chain(kws)
+        .chain(flags)
+        .cloned()
+        .collect::<Vec<&str>>()
+        .join(" ")
 }
 
 /// Print out the command after the given prompt.
