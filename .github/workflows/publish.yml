@@ -6,15 +6,15 @@ on:
       - "*"
 
 jobs:
-  publish:
+  publish-non-linux:
     name: Publish for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            artifact_name: pacaptr
-            asset_name: pacaptr-linux-amd64
+          # - os: ubuntu-latest
+          #  artifact_name: pacaptr
+          #  asset_name: pacaptr-linux-amd64
           - os: windows-latest
             artifact_name: pacaptr.exe
             asset_name: pacaptr-windows-amd64
@@ -53,9 +53,53 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
 
+  publish-linux:
+    name: Publish for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: pacaptr
+            asset_name: pacaptr-linux-amd64
+            target_name: x86_64-unknown-linux-musl
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@stable
+
+      - run: rustup target add ${{ matrix.target_name }}
+
+      - name: Build
+        run: cargo build --release --locked --target=${{ matrix.target_name }}
+
+      - name: Zip
+        run: tar czvf ${{ matrix.asset_name }}.tar.gz -C ./target/${{ matrix.target_name }}/release/ ${{ matrix.artifact_name }}
+
+      - name: Generate sha256
+        run: openssl dgst -r -sha256 ${{ matrix.asset_name }}.tar.gz > ${{ matrix.asset_name }}.tar.gz.sha256
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.asset_name }}.tar.gz
+          asset_name: ${{ matrix.asset_name }}.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
+
+      - name: Upload sha256 to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.asset_name }}.tar.gz.sha256
+          asset_name: ${{ matrix.asset_name }}.tar.gz.sha256
+          tag: ${{ github.ref }}
+          overwrite: true
+
   bump-tap-version:
     name: Generate new ruby script for homebrew tap
-    needs: publish
+    needs: [publish-linux, publish-non-linux]
     runs-on: ubuntu-latest
 
     steps:
