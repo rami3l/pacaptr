@@ -191,9 +191,17 @@ impl Opt {
             }),
 
             // Homebrew
-            "brew" => Box::new(homebrew::Homebrew {
+            "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew {
                 dry_run,
                 force_cask,
+                no_confirm,
+                needed,
+                no_cache,
+            }),
+
+            // Linuxbrew
+            "brew" => Box::new(linuxbrew::Linuxbrew {
+                dry_run,
                 no_confirm,
                 needed,
                 no_cache,

@@ -3,6 +3,7 @@ pub mod apt;
 pub mod chocolatey;
 pub mod dnf;
 pub mod homebrew;
+pub mod linuxbrew;
 pub mod unknown;
 
 use crate::error::Error;
