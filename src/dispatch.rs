@@ -1,11 +1,12 @@
 use crate::error::Error;
 use crate::exec::is_exe;
 use crate::packmanager::*;
-use structopt::{clap, StructOpt};
+use clap::{self, Clap};
+// use structopt::{clap, StructOpt};
 
 /// The command line options to be collected.
-#[derive(Debug, StructOpt)]
-#[structopt(
+#[derive(Debug, Clap)]
+#[clap(
     about = clap::crate_description!(),
     version = clap::crate_version!(),
     author = clap::crate_authors!(),
@@ -14,16 +15,16 @@ use structopt::{clap, StructOpt};
 )]
 pub struct Opt {
     // Operations include Q(uery), R(emove), and S(ync).
-    #[structopt(short = "Q", long)]
+    #[clap(short = "Q", long)]
     query: bool,
 
-    #[structopt(short = "R", long)]
+    #[clap(short = "R", long)]
     remove: bool,
 
-    #[structopt(short = "S", long)]
+    #[clap(short = "S", long)]
     sync: bool,
 
-    #[structopt(short = "U", long)]
+    #[clap(short = "U", long)]
     update: bool,
 
     // Main flags and flagcounters
@@ -31,102 +32,103 @@ pub struct Opt {
     // ! Some long flag names are completely different for different operations,
     // ! but I think mose of us just use the shorthand form anyway...
     // see: https://www.archlinux.org/pacman/pacman.8.html
-    #[structopt(short, long = "clean", help = "(-S) clean", parse(from_occurrences))]
+    #[clap(short, long = "clean", about = "(-S) clean", parse(from_occurrences))]
     c: u32,
 
-    #[structopt(short, long = "explicit", help = "(-Q) explicit")]
+    #[clap(short, long = "explicit", about = "(-Q) explicit")]
     e: bool,
 
-    #[structopt(short, long = "groups", help = "(-Q/S) groups")]
+    #[clap(short, long = "groups", about = "(-Q/S) groups")]
     g: bool,
 
-    #[structopt(short, long = "info", help = "(-Q/S) info", parse(from_occurrences))]
+    #[clap(short, long = "info", about = "(-Q/S) info", parse(from_occurrences))]
     i: u32,
 
-    #[structopt(short, long = "check", help = "(-Q) check")]
+    #[clap(short, long = "check", about = "(-Q) check")]
     k: bool,
 
-    #[structopt(short, long = "list", help = "(-Q) list")]
+    #[clap(short, long = "list", about = "(-Q) list")]
     l: bool,
 
-    #[structopt(short, long = "foreign", help = "(-Q) foreign")]
+    #[clap(short, long = "foreign", about = "(-Q) foreign")]
     m: bool,
 
-    #[structopt(short, long = "nosave", help = "(-R) nosave")]
+    #[clap(short, long = "nosave", about = "(-R) nosave")]
     n: bool,
 
-    #[structopt(short, long = "owns", help = "(-Q) owns")]
+    #[clap(short, long = "owns", about = "(-Q) owns")]
     o: bool,
 
-    #[structopt(short, long = "print", help = "(-Q/R/S) print")]
+    #[clap(short, long = "print", about = "(-Q/R/S) print")]
     p: bool,
 
-    #[structopt(
+    #[clap(
         short,
         long = "search",
         alias = "recursive",
-        help = "(-S) search | (-R) recursive"
+        about = "(-S) search | (-R) recursive"
     )]
     s: bool,
 
-    #[structopt(short, long = "sysupgrade", help = "(-S) sysupgrade")]
+    #[clap(short, long = "sysupgrade", about = "(-S) sysupgrade")]
     u: bool,
 
-    #[structopt(short, long = "downloadonly", help = "(-S) downloadonly")]
+    #[clap(short, long = "downloadonly", about = "(-S) downloadonly")]
     w: bool,
 
-    #[structopt(short, long = "refresh", help = "(-S) refresh")]
+    #[clap(short, long = "refresh", about = "(-S) refresh")]
     y: bool,
 
     // Other Pacaptr flags
-    #[structopt(
+    #[clap(
         long = "using",
         alias = "package-manager",
         alias = "pm",
-        help = "Specify the package manager to be invoked"
+        value_name = "pm",
+        about = "Specify the package manager to be invoked"
     )]
     using: Option<String>,
 
-    #[structopt(long = "dryrun", alias = "dry-run", help = "Perform a dry run")]
+    #[clap(long = "dryrun", alias = "dry-run", about = "Perform a dry run")]
     dry_run: bool,
 
-    #[structopt(long = "needed", help = "Prevent reinstalling installed packages")]
+    #[clap(long = "needed", about = "Prevent reinstalling installed packages")]
     needed: bool,
 
-    #[structopt(
+    #[clap(
         long = "yes",
         alias = "noconfirm",
         alias = "no-confirm",
-        help = "Answer yes to every question"
+        about = "Answer yes to every question"
     )]
     no_confirm: bool,
 
-    #[structopt(
+    #[clap(
         long = "cask",
         alias = "forcecask",
         alias = "force-cask",
-        help = "Force the use of `brew cask` in some commands"
+        about = "Force the use of `brew cask` in some commands"
     )]
     force_cask: bool,
 
-    #[structopt(
+    #[clap(
         long = "nocache",
         alias = "no-cache",
-        help = "Remove cache after installation"
+        about = "Remove cache after installation"
     )]
     no_cache: bool,
 
     // Keywords
-    #[structopt(name = "KEYWORDS", help = "Package name or (sometimes) regex")]
+    #[clap(name = "KEYWORDS", about = "Package name or (sometimes) regex")]
     keywords: Vec<String>,
 
-    // Additional Non-Pacaptr Flags
-    #[structopt(
+    // Extra Non-Pacaptr Flags
+    #[clap(
         last = true,
-        name = "ADDITIONAL_FLAGS",
-        help = "Additional Flags passed directly to backend"
+        name = "EXTRA_FLAGS",
+        about = "Extra Flags passed directly to backend"
     )]
-    additional_flags: Vec<String>,
+    extra_flags: Vec<String>,
 }
 
 impl Opt {
@@ -239,7 +241,7 @@ impl Opt {
     pub fn dispatch_from(&self, pm: Box<dyn PackManager>) -> Result<(), Error> {
         self.check()?;
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
-        let flags: Vec<&str> = self.additional_flags.iter().map(|s| s.as_ref()).collect();
+        let flags: Vec<&str> = self.extra_flags.iter().map(|s| s.as_ref()).collect();
 
         match () {
             _ if self.query => match () {
@@ -382,7 +384,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
-    fn additional_flags() {
+    fn extra_flags() {
         let opt = dbg!(Opt::from_iter(&[
             "pacaptr",
             "-S",
@@ -394,7 +396,7 @@ mod tests {
 
         assert!(opt.sync);
         assert!(opt.no_confirm);
-        let mut flags = opt.additional_flags.iter();
+        let mut flags = opt.extra_flags.iter();
         assert_eq!(flags.next(), Some(&String::from("--proxy=localhost:1234")));
         assert_eq!(flags.next(), None);
         opt.dispatch_from(Box::new(opt.make_mock())).unwrap();

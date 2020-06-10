@@ -82,13 +82,13 @@ Notes:
   # Pending: choco upgrade all
   ```
 
-- Additional flags support:
+- Extra flags support:
   - The flags after a `--` will be passed directly to the underlying package manager:
 
     ```bash
     pacaptr -h
     # USAGE:
-    #     pacaptr [FLAGS] [KEYWORDS]... [-- <ADDITIONAL_FLAGS>...]
+    #     pacaptr [FLAGS] [KEYWORDS]... [-- <EXTRA_FLAGS>...]
 
     pacaptr -S curl docker --dryrun -- --proxy=localhost:1234
     # Pending: foo install curl --proxy=localhost:1234
