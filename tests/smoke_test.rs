@@ -122,7 +122,7 @@ mod apt {
     fn r() {
         Test::new()
             .pacaptr(&["-S", "screen", "--yes"], &[])
-            .output(&["apt-get install --yes screen"])
+            .output(&["apt-get install --reinstall --yes screen"])
             .pacaptr(&["-Qi", "screen"], &[])
             .output(&["Status: install"])
             .pacaptr(&["-R", "screen", "--yes"], &[])
