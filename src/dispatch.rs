@@ -8,7 +8,9 @@ use structopt::{clap, StructOpt};
 #[structopt(
     about = clap::crate_description!(),
     version = clap::crate_version!(),
-    author = clap::crate_authors!()
+    author = clap::crate_authors!(),
+    setting = clap::AppSettings::ColoredHelp,
+    setting = clap::AppSettings::ArgRequiredElseHelp,
 )]
 pub struct Opt {
     // Operations include Q(uery), R(emove), and S(ync).
