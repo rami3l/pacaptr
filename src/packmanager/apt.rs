@@ -5,6 +5,7 @@ use crate::exec::{self, Mode};
 pub struct Apt {
     pub dry_run: bool,
     pub no_confirm: bool,
+    pub needed: bool,
     pub no_cache: bool,
 }
 
@@ -95,7 +96,12 @@ impl PackManager for Apt {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apt-get", &["install"], kws, flags)?;
+        let subcmd: &[&str] = if self.needed {
+            &["install"]
+        } else {
+            &["install", "--reinstall"]
+        };
+        self.prompt_run("apt-get", subcmd, kws, flags)?;
         if self.no_cache {
             self.scc(kws, flags)?;
         }

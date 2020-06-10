@@ -192,6 +192,7 @@ impl Opt {
             "choco" => Box::new(chocolatey::Chocolatey {
                 dry_run,
                 no_confirm,
+                needed,
             }),
 
             // Homebrew
@@ -215,6 +216,7 @@ impl Opt {
             "dpkg" | "apt" => Box::new(apt::Apt {
                 dry_run,
                 no_confirm,
+                needed,
                 no_cache,
             }),
 
