@@ -14,7 +14,7 @@ use clap::{self, Clap};
     setting = clap::AppSettings::ArgRequiredElseHelp,
 )]
 pub struct Opt {
-    // Operations include Q(uery), R(emove), and S(ync).
+    // Operations include Query, Remove, Sync, etc.
     #[clap(short = "Q", long)]
     query: bool,
 

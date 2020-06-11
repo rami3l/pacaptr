@@ -4,7 +4,10 @@
 
 Run `pacaptr -Syu` on the distro of your choice!
 
-<img alt="demo" src="https://user-images.githubusercontent.com/33851577/83973021-2f876b00-a916-11ea-9c7e-9cb76ca27a0e.png">
+![Interface Concept](https://user-images.githubusercontent.com/33851577/83973021-2f876b00-a916-11ea-9c7e-9cb76ca27a0e.png)
+
+> \- It's nice, but wait, why `reinstall`?
+> \- To be more like `pacman`! Use `-S --needed` to `install`.
 
 ## Contents
 
@@ -18,11 +21,14 @@ Run `pacaptr -Syu` on the distro of your choice!
 
 ## Supported Package Managers
 
-- `macOS/homebrew`
 - `Windows/chocolatey`
+- `macOS/homebrew`¹
+- `Linux/linuxbrew`
 - `Debian/apt`
 - `Alpine/apk`
 - `RedHat/dnf`
+
+¹: [Featured™](#platform-specific-tips)
 
 Notes:
 
@@ -43,7 +49,7 @@ Now the implementations of different package managers are all placed in `./src/p
 
 PPAs might be added when appropriate.
 
-- `macOS/homebrew` or `linux/Linuxbrew` install:
+- `macOS/homebrew` or `Linux/Linuxbrew` install:
 
   ```bash
   brew tap rami3l/pacaptr
@@ -81,6 +87,8 @@ Notes:
   pacaptr -Su --pm choco --dryrun
   # Pending: choco upgrade all
   ```
+
+  This can be useful when you are running Linux and you want to use `linuxbrew`, for example. In that case, you can `--using brew`.
 
 - Extra flags support:
   - The flags after a `--` will be passed directly to the underlying package manager:
@@ -137,7 +145,7 @@ Notes:
 
 ## Platform-Specific Tips
 
-- `macOS/homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
+- `macOS/homebrew` & `Linux/linuxbrew` support: Please note that `cask` is for macOS only.
 
   - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
 
