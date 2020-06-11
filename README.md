@@ -6,7 +6,7 @@ Run `pacaptr -Syu` on the distro of your choice!
 
 ![Interface Concept](https://user-images.githubusercontent.com/33851577/83973021-2f876b00-a916-11ea-9c7e-9cb76ca27a0e.png)
 
-> \- It's nice, but wait, why `reinstall`?
+> \- It's nice, but wait, why `reinstall`?  
 > \- To be more like `pacman`! Use `-S --needed` to `install`.
 
 ## Contents
