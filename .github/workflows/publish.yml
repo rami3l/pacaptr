@@ -178,18 +178,11 @@ jobs:
     runs-on: windows-latest
     needs: [publish-non-linux]
     steps:
-      - name: Get "version"
-        id: ver
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
-      - name: Check "version"
-        env:
-          RELEASE_VERSION: ${{ steps.ver.outputs.tag }}
-        run: |
-          echo "Detected version:"
+      - name: Checkout
+        uses: actions/checkout@v2
 
       - name: Download release
-        run: iwr https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/pacaptr-windows-amd64.tar.gz -OutFile ./release.tar.gz
+        run: iwr https://github.com/rami3l/pacaptr/releases/download/${{ github.ref }}/pacaptr-windows-amd64.tar.gz -OutFile ./release.tar.gz
 
       - name: Extract release
         run: tar xvf ./release.tar.gz ./dist/choco/tools/
