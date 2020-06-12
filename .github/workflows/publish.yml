@@ -181,8 +181,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Get "version"
+        id: ver
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
+      - name: Check "version"
+        env:
+          RELEASE_VERSION: ${{ steps.ver.outputs.tag }}
+        run: |
+          echo "Detected version:"
+          echo $RELEASE_VERSION
+
       - name: Download release
-        run: iwr https://github.com/rami3l/pacaptr/releases/download/${{ github.ref }}/pacaptr-windows-amd64.tar.gz -OutFile ./release.tar.gz
+        run: iwr https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/pacaptr-windows-amd64.tar.gz -OutFile ./release.tar.gz
 
       - name: Extract release
         run: tar xvf ./release.tar.gz ./dist/choco/tools/
