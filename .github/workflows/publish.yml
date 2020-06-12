@@ -181,9 +181,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Get "version"
-        id: ver
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        shell: bash
 
       - name: Check "version"
         env:
