@@ -146,26 +146,20 @@ impl Opt {
     }
 
     /// Automatically detect the name of the package manager in question.
-    #[cfg(target_os = "windows")]
     pub fn detect_pm<'s>() -> &'s str {
+        #[cfg(target_os = "windows")]
         match () {
             _ if is_exe("choco", "") => "choco",
             _ => "unknown",
         }
-    }
 
-    /// Automatically detect the name of the package manager in question.
-    #[cfg(target_os = "macos")]
-    pub fn detect_pm<'s>() -> &'s str {
+        #[cfg(target_os = "macos")]
         match () {
             _ if is_exe("brew", "/usr/local/bin/brew") => "brew",
             _ => "unknown",
         }
-    }
 
-    /// Automatically detect the name of the package manager in question.
-    #[cfg(target_os = "linux")]
-    pub fn detect_pm<'s>() -> &'s str {
+        #[cfg(target_os = "linux")]
         match () {
             _ if is_exe("apt-get", "/usr/bin/apt-get") => "apt",
             _ if is_exe("apk", "/sbin/apk") => "apk",
