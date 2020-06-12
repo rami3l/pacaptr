@@ -178,10 +178,6 @@ jobs:
     runs-on: windows-latest
     needs: [publish-non-linux]
     steps:
-      - name: Copy data to choco template
-        id: choco-data
-        run: cp ./target/release/${{ matrix.artifact_name }} ./dist/choco/tools
-
       - name: Get "version"
         id: ver
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
@@ -191,6 +187,12 @@ jobs:
           RELEASE_VERSION: ${{ steps.ver.outputs.tag }}
         run: |
           echo "Detected version:"
+
+      - name: Download release
+        run: iwr https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/pacaptr-windows-amd64.tar.gz -OutFile ./release.tar.gz
+
+      - name: Extract release
+        run: tar xvf ./release.tar.gz ./dist/choco/tools/
 
       - name: Add license
         run: cp LICENSE dist/choco/tools/
