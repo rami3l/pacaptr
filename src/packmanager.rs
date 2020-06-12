@@ -1,7 +1,9 @@
 pub mod apk;
+pub mod apt;
 pub mod chocolatey;
-pub mod dpkg;
+pub mod dnf;
 pub mod homebrew;
+pub mod linuxbrew;
 pub mod unknown;
 
 use crate::error::Error;
@@ -11,7 +13,7 @@ macro_rules! make_pm {
     ($( $(#[$meta:meta])* $method:ident ), *) => {
         $($(#[$meta])*
         fn $method(&self, _kws: &[&str], _flags: &[&str]) -> std::result::Result<(), crate::error::Error> {
-            std::result::Result::Err(format!("Operation `{}` unimplemented", stringify!($method)).into())
+            std::result::Result::Err(format!("Operation `{}` unimplemented for `{}`", stringify!($method), self.name()).into())
         })*
     };
 }
@@ -20,6 +22,9 @@ macro_rules! make_pm {
 /// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 /// and https://wiki.archlinux.org/index.php/Pacman
 pub trait PackManager {
+    /// Get the name of the package manager.
+    fn name(&self) -> String;
+
     /// A helper method to simplify direct command invocation.
     /// Override this to implement features such as `dryrun`.
     fn just_run(

@@ -1,23 +1,30 @@
 use crate::error::Error;
 use crate::exec::is_exe;
 use crate::packmanager::*;
-use structopt::StructOpt;
+use clap::{self, Clap};
+// use structopt::{clap, StructOpt};
 
 /// The command line options to be collected.
-#[derive(Debug, StructOpt)]
-#[structopt(about = "A pacman-like wrapper for many package managers.")]
+#[derive(Debug, Clap)]
+#[clap(
+    about = clap::crate_description!(),
+    version = clap::crate_version!(),
+    author = clap::crate_authors!(),
+    setting = clap::AppSettings::ColoredHelp,
+    setting = clap::AppSettings::ArgRequiredElseHelp,
+)]
 pub struct Opt {
-    // Operations include Q(uery), R(emove), and S(ync).
-    #[structopt(short = "Q", long)]
+    // Operations include Query, Remove, Sync, etc.
+    #[clap(short = "Q", long)]
     query: bool,
 
-    #[structopt(short = "R", long)]
+    #[clap(short = "R", long)]
     remove: bool,
 
-    #[structopt(short = "S", long)]
+    #[clap(short = "S", long)]
     sync: bool,
 
-    #[structopt(short = "U", long)]
+    #[clap(short = "U", long)]
     update: bool,
 
     // Main flags and flagcounters
@@ -25,87 +32,103 @@ pub struct Opt {
     // ! Some long flag names are completely different for different operations,
     // ! but I think mose of us just use the shorthand form anyway...
     // see: https://www.archlinux.org/pacman/pacman.8.html
-    #[structopt(short, long = "clean", help = "(-S) clean", parse(from_occurrences))]
+    #[clap(short, long = "clean", about = "(-S) clean", parse(from_occurrences))]
     c: u32,
 
-    #[structopt(short, long = "explicit", help = "(-Q) explicit")]
+    #[clap(short, long = "explicit", about = "(-Q) explicit")]
     e: bool,
 
-    #[structopt(short, long = "groups", help = "(-Q/S) groups")]
+    #[clap(short, long = "groups", about = "(-Q/S) groups")]
     g: bool,
 
-    #[structopt(short, long = "info", help = "(-Q/S) info", parse(from_occurrences))]
+    #[clap(short, long = "info", about = "(-Q/S) info", parse(from_occurrences))]
     i: u32,
 
-    #[structopt(short, long = "check", help = "(-Q) check")]
+    #[clap(short, long = "check", about = "(-Q) check")]
     k: bool,
 
-    #[structopt(short, long = "list", help = "(-Q) list")]
+    #[clap(short, long = "list", about = "(-Q) list")]
     l: bool,
 
-    #[structopt(short, long = "foreign", help = "(-Q) foreign")]
+    #[clap(short, long = "foreign", about = "(-Q) foreign")]
     m: bool,
 
-    #[structopt(short, long = "nosave", help = "(-R) nosave")]
+    #[clap(short, long = "nosave", about = "(-R) nosave")]
     n: bool,
 
-    #[structopt(short, long = "owns", help = "(-Q) owns")]
+    #[clap(short, long = "owns", about = "(-Q) owns")]
     o: bool,
 
-    #[structopt(short, long = "print", help = "(-Q/R/S) print")]
+    #[clap(short, long = "print", about = "(-Q/R/S) print")]
     p: bool,
 
-    #[structopt(
+    #[clap(
         short,
         long = "search",
         alias = "recursive",
-        help = "(-S) search | (-R) recursive"
+        about = "(-S) search | (-R) recursive"
     )]
     s: bool,
 
-    #[structopt(short, long = "sysupgrade", help = "(-S) sysupgrade")]
+    #[clap(short, long = "sysupgrade", about = "(-S) sysupgrade")]
     u: bool,
 
-    #[structopt(short, long = "downloadonly", help = "(-S) downloadonly")]
+    #[clap(short, long = "downloadonly", about = "(-S) downloadonly")]
     w: bool,
 
-    #[structopt(short, long = "refresh", help = "(-S) refresh")]
+    #[clap(short, long = "refresh", about = "(-S) refresh")]
     y: bool,
 
     // Other Pacaptr flags
-    #[structopt(long = "dryrun", alias = "dry-run", help = "Perform a dry run")]
+    #[clap(
+        long = "using",
+        alias = "package-manager",
+        alias = "pm",
+        value_name = "pm",
+        about = "Specify the package manager to be invoked"
+    )]
+    using: Option<String>,
+
+    #[clap(long = "dryrun", alias = "dry-run", about = "Perform a dry run")]
     dry_run: bool,
 
-    #[structopt(long = "needed", help = "Prevent reinstalling installed packages")]
+    #[clap(long = "needed", about = "Prevent reinstalling installed packages")]
     needed: bool,
 
-    #[structopt(
+    #[clap(
         long = "yes",
         alias = "noconfirm",
         alias = "no-confirm",
-        help = "Answer yes to every question"
+        about = "Answer yes to every question"
     )]
     no_confirm: bool,
 
-    #[structopt(
+    #[clap(
         long = "cask",
         alias = "forcecask",
         alias = "force-cask",
-        help = "Force the use of `brew cask` in some commands"
+        about = "Force the use of `brew cask` in some commands"
     )]
     force_cask: bool,
 
+    #[clap(
+        long = "nocache",
+        alias = "no-cache",
+        about = "Remove cache after installation"
+    )]
+    no_cache: bool,
+
     // Keywords
-    #[structopt(name = "KEYWORDS", help = "Package names (sometimes also regex)")]
+    #[clap(name = "KEYWORDS", about = "Package name or (sometimes) regex")]
     keywords: Vec<String>,
 
-    // Additional Non-Pacaptr Flags
-    #[structopt(
+    // Extra Non-Pacaptr Flags
+    #[clap(
         last = true,
-        name = "ADDITIONAL_FLAGS",
-        help = "Additional Flags passed directly to the underlying package manager"
+        name = "EXTRA_FLAGS",
+        about = "Extra Flags passed directly to backend"
     )]
-    additional_flags: Vec<String>,
+    extra_flags: Vec<String>,
 }
 
 impl Opt {
@@ -122,64 +145,97 @@ impl Opt {
         }
     }
 
-    /// Detect the PackManager implementation in question.
-    // TODO: Implement this function.
-    pub fn detect_pm(&self) -> Box<dyn PackManager> {
+    /// Automatically detect the name of the package manager in question.
+    #[cfg(target_os = "windows")]
+    pub fn detect_pm<'s>() -> &'s str {
+        match () {
+            _ if is_exe("choco", "") => "choco",
+            _ => "unknown",
+        }
+    }
+
+    /// Automatically detect the name of the package manager in question.
+    #[cfg(target_os = "macos")]
+    pub fn detect_pm<'s>() -> &'s str {
+        match () {
+            _ if is_exe("brew", "/usr/local/bin/brew") => "brew",
+            _ => "unknown",
+        }
+    }
+
+    /// Automatically detect the name of the package manager in question.
+    #[cfg(target_os = "linux")]
+    pub fn detect_pm<'s>() -> &'s str {
+        match () {
+            _ if is_exe("apt-get", "/usr/bin/apt-get") => "apt",
+            _ if is_exe("apk", "/sbin/apk") => "apk",
+            _ if is_exe("dnf", "/usr/bin/dnf") => "dnf",
+            _ => "unknown",
+        }
+    }
+
+    /// Generate the PackManager instance according it's name.
+    pub fn gen_pm(&self) -> Box<dyn PackManager> {
         let dry_run = self.dry_run;
         let needed = self.needed;
         let no_confirm = self.no_confirm;
         let force_cask = self.force_cask;
+        let no_cache = self.no_cache;
+        let pack_manager: &str = if let Some(pm) = &self.using {
+            pm
+        } else {
+            Opt::detect_pm()
+        };
 
-        let unknown = || Box::new(unknown::Unknown {});
-
-        // Windows
-        if cfg!(target_os = "windows") {
+        match pack_manager {
             // Chocolatey
-            if is_exe("choco", "") {
-                Box::new(chocolatey::Chocolatey {
-                    dry_run,
-                    no_confirm,
-                })
-            } else {
-                unknown()
-            }
-        }
-        // macOS
-        else if cfg!(target_os = "macos") {
+            "choco" => Box::new(chocolatey::Chocolatey {
+                dry_run,
+                no_confirm,
+                needed,
+            }),
+
             // Homebrew
-            if is_exe("brew", "/usr/local/bin/brew") {
-                Box::new(homebrew::Homebrew {
-                    dry_run,
-                    force_cask,
-                    needed,
-                    no_confirm,
-                })
-            } else {
-                unknown()
-            }
-        }
-        // Linux
-        else if cfg!(target_os = "linux") {
+            "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew {
+                dry_run,
+                force_cask,
+                no_confirm,
+                needed,
+                no_cache,
+            }),
+
+            // Linuxbrew
+            "brew" => Box::new(linuxbrew::Linuxbrew {
+                dry_run,
+                no_confirm,
+                needed,
+                no_cache,
+            }),
+
             // Apt/Dpkg for Debian/Ubuntu/Termux
-            if is_exe("apt-get", "/usr/bin/apt-get") {
-                Box::new(dpkg::Dpkg {
-                    dry_run,
-                    no_confirm,
-                })
-            }
+            "dpkg" | "apt" => Box::new(apt::Apt {
+                dry_run,
+                no_confirm,
+                needed,
+                no_cache,
+            }),
+
             // Apk for Alpine
-            else if is_exe("apk", "/sbin/apk") {
-                Box::new(apk::Apk {
-                    dry_run,
-                    no_confirm,
-                })
-            } else {
-                unknown()
-            }
-        }
-        // Unknown OS
-        else {
-            unknown()
+            "apk" => Box::new(apk::Apk {
+                dry_run,
+                no_confirm,
+                no_cache,
+            }),
+
+            // Dnf for RedHat
+            "dnf" => Box::new(dnf::Dnf {
+                dry_run,
+                no_confirm,
+                no_cache,
+            }),
+
+            // Unknown package manager X
+            x => Box::new(unknown::Unknown { name: x.into() }),
         }
     }
 
@@ -187,7 +243,7 @@ impl Opt {
     pub fn dispatch_from(&self, pm: Box<dyn PackManager>) -> Result<(), Error> {
         self.check()?;
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
-        let flags: Vec<&str> = self.additional_flags.iter().map(|s| s.as_ref()).collect();
+        let flags: Vec<&str> = self.extra_flags.iter().map(|s| s.as_ref()).collect();
 
         match () {
             _ if self.query => match () {
@@ -238,7 +294,7 @@ impl Opt {
     }
 
     pub fn dispatch(&self) -> Result<(), Error> {
-        self.dispatch_from(self.detect_pm())
+        self.dispatch_from(self.gen_pm())
     }
 }
 
@@ -258,6 +314,11 @@ mod tests {
     struct MockPM {}
 
     impl PackManager for MockPM {
+        /// Get the name of the package manager.
+        fn name(&self) -> String {
+            "mockpm".into()
+        }
+
         make_mock_pm!(
             q, qc, qe, qi, qk, ql, qm, qo, qp, qs, qu, r, rn, rns, rs, s, sc, scc, sccc, sg, si,
             sii, sl, ss, su, suy, sw, sy, u
@@ -273,7 +334,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "should run: suy")]
     fn simple_syu() {
-        let opt = dbg!(Opt::from_iter(&["pacaptr", "-Syu"]));
+        let opt = dbg!(Opt::parse_from(&["pacaptr", "-Syu"]));
 
         assert!(opt.keywords.is_empty());
         assert!(opt.sync);
@@ -285,7 +346,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "should run: suy")]
     fn long_syu() {
-        let opt = dbg!(Opt::from_iter(&[
+        let opt = dbg!(Opt::parse_from(&[
             "pacaptr",
             "--sync",
             "--refresh",
@@ -302,7 +363,7 @@ mod tests {
     #[test]
     #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
     fn simple_si() {
-        let opt = dbg!(Opt::from_iter(&["pacaptr", "-Sw", "curl", "wget"]));
+        let opt = dbg!(Opt::parse_from(&["pacaptr", "-Sw", "curl", "wget"]));
 
         assert!(opt.sync);
         assert!(opt.w);
@@ -312,7 +373,7 @@ mod tests {
     #[test]
     #[should_panic(expected = r#"should run: s ["docker"]"#)]
     fn other_flags() {
-        let opt = dbg!(Opt::from_iter(&[
+        let opt = dbg!(Opt::parse_from(&[
             "pacaptr", "-S", "--dryrun", "--yes", "docker", "--cask"
         ]));
 
@@ -325,8 +386,8 @@ mod tests {
 
     #[test]
     #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
-    fn additional_flags() {
-        let opt = dbg!(Opt::from_iter(&[
+    fn extra_flags() {
+        let opt = dbg!(Opt::parse_from(&[
             "pacaptr",
             "-S",
             "--yes",
@@ -337,7 +398,7 @@ mod tests {
 
         assert!(opt.sync);
         assert!(opt.no_confirm);
-        let mut flags = opt.additional_flags.iter();
+        let mut flags = opt.extra_flags.iter();
         assert_eq!(flags.next(), Some(&String::from("--proxy=localhost:1234")));
         assert_eq!(flags.next(), None);
         opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
@@ -346,7 +407,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "exactly 1 operation expected")]
     fn too_many_ops() {
-        let opt = dbg!(Opt::from_iter(&["pacaptr", "-SQns", "docker", "--cask"]));
+        let opt = dbg!(Opt::parse_from(&["pacaptr", "-SQns", "docker", "--cask"]));
 
         assert!(opt.sync);
         assert!(opt.query);

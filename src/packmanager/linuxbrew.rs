@@ -3,69 +3,14 @@ use crate::error::Error;
 use crate::exec::{self, print_msg, Mode, PROMPT_INFO, PROMPT_RUN};
 use regex::Regex;
 
-pub struct Homebrew {
+pub struct Linuxbrew {
     pub dry_run: bool,
-    pub force_cask: bool,
     pub no_confirm: bool,
     pub needed: bool,
     pub no_cache: bool,
 }
 
-enum CaskState {
-    NotFound,
-    Unneeded,
-    Needed,
-}
-
-impl Homebrew {
-    /// Search the output of `brew info` to see if we need `brew cask` for a certain package.
-    fn search(&self, pack: &str, flags: &[&str]) -> Result<CaskState, Error> {
-        let out_bytes = exec::exec("brew", &["info"], &[pack], flags, Mode::Mute)?;
-        let out = String::from_utf8(out_bytes)?;
-
-        let code = {
-            lazy_static! {
-                static ref RE_BOTTLE: Regex =
-                    Regex::new(r"No available formula with the name").unwrap();
-                static ref RE_CASK: Regex = Regex::new(r"Found a cask named").unwrap();
-            }
-
-            if RE_BOTTLE.find(&out).is_some() {
-                if RE_CASK.find(&out).is_some() {
-                    CaskState::Needed
-                } else {
-                    CaskState::NotFound
-                }
-            } else {
-                CaskState::Unneeded
-            }
-        };
-
-        Ok(code)
-    }
-
-    /// The common logic behind functions like S and R to use `brew cask` commands automatically.
-    /// With the exception of `self.force_cask`,
-    /// this function will use `self.search()` to see if we need `brew cask` for a certain package,
-    /// and then try to execute the corresponding command.
-    fn auto_cask_do(&self, subcmd: &[&str], pack: &str, flags: &[&str]) -> Result<(), Error> {
-        let brew_do = || self.prompt_run("brew", subcmd, &[pack], flags);
-        let brew_cask_do = || {
-            let subcmd: Vec<&str> = ["cask"].iter().chain(subcmd).cloned().collect();
-            self.prompt_run("brew", &subcmd, &[pack], flags)
-        };
-
-        if self.force_cask {
-            return brew_cask_do();
-        }
-
-        let code = self.search(pack, flags)?;
-        match code {
-            CaskState::NotFound | CaskState::Unneeded => brew_do(),
-            CaskState::Needed => brew_cask_do(),
-        }
-    }
-
+impl Linuxbrew {
     /// A helper method to simplify prompted command invocation.
     fn prompt_run(
         &self,
@@ -84,7 +29,7 @@ impl Homebrew {
     }
 }
 
-impl PackManager for Homebrew {
+impl PackManager for Linuxbrew {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "brew".into()
@@ -110,8 +55,7 @@ impl PackManager for Homebrew {
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.just_run("brew", &["list"], &[], flags)?;
-            self.just_run("brew", &["cask", "list"], &[], flags)
+            self.just_run("brew", &["list"], &[], flags)
         } else {
             self.qs(kws, flags)
         }
@@ -131,8 +75,7 @@ impl PackManager for Homebrew {
     fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         // TODO: it seems that the output of `brew list python` in fish has a mechanism against duplication:
         // /usr/local/Cellar/python/3.6.0/Frameworks/Python.framework/ (1234 files)
-        self.just_run("brew", &["list"], kws, flags)?;
-        self.just_run("brew", &["cask", "list"], kws, flags)
+        self.just_run("brew", &["list"], kws, flags)
     }
 
     /// Qs searches locally installed package for names or descriptions.
@@ -156,8 +99,7 @@ impl PackManager for Homebrew {
             Ok(())
         };
 
-        search_output("brew", &["list"])?;
-        search_output("brew", &["cask", "list"])
+        search_output("brew", &["list"])
     }
 
     /// Qu lists packages which have an update available.
@@ -167,9 +109,7 @@ impl PackManager for Homebrew {
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        kws.iter()
-            .map(|&pack| self.auto_cask_do(&["uninstall"], pack, flags))
-            .collect()
+        self.just_run("brew", &["uninstall"], kws, flags)
     }
 
     /// Rs removes a package and its dependencies which are not required by any other installed package.
@@ -200,14 +140,12 @@ impl PackManager for Homebrew {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        for &pack in kws {
-            if self.needed {
-                self.auto_cask_do(&["install"], pack, flags)?;
-            } else {
-                // If the package is not installed, `brew reinstall` behaves just like `brew install`,
-                // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
-                self.auto_cask_do(&["reinstall"], pack, flags)?;
-            }
+        if self.needed {
+            self.just_run("brew", &["install"], kws, flags)?;
+        } else {
+            // If the package is not installed, `brew reinstall` behaves just like `brew install`,
+            // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
+            self.just_run("brew", &["reinstall"], kws, flags)?;
         }
         if self.no_cache {
             self.scc(kws, flags)?;
@@ -264,22 +202,11 @@ impl PackManager for Homebrew {
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if kws.is_empty() {
-            self.prompt_run("brew", &["upgrade"], kws, flags)?;
-            self.prompt_run("brew", &["cask", "upgrade"], kws, flags)?;
-            if self.no_cache {
-                self.scc(kws, flags)?;
-            }
-            Ok(())
-        } else {
-            for &pack in kws {
-                self.auto_cask_do(&["upgrade"], pack, flags)?;
-            }
-            if self.no_cache {
-                self.scc(kws, flags)?;
-            }
-            Ok(())
+        self.just_run("brew", &["upgrade"], kws, flags)?;
+        if self.no_cache {
+            self.scc(kws, flags)?;
         }
+        Ok(())
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.

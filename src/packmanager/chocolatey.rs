@@ -5,10 +5,11 @@ use crate::exec::{self, Mode};
 pub struct Chocolatey {
     pub dry_run: bool,
     pub no_confirm: bool,
+    pub needed: bool,
 }
 
 impl Chocolatey {
-    fn check_no_confirm(
+    fn prompt_run(
         &self,
         cmd: &str,
         subcmd: &[&str],
@@ -24,6 +25,11 @@ impl Chocolatey {
 }
 
 impl PackManager for Chocolatey {
+    /// Get the name of the package manager.
+    fn name(&self) -> String {
+        "choco".into()
+    }
+
     /// A helper method to simplify direct command invocation.
     fn just_run(
         &self,
@@ -32,12 +38,11 @@ impl PackManager for Chocolatey {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mode = if self.dry_run {
-            Mode::DryRun
-        } else {
-            Mode::CheckErr
-        };
-        exec::exec(cmd, subcmd, kws, flags, mode)?;
+        let mut flags: Vec<&str> = flags.iter().cloned().collect();
+        if self.dry_run {
+            flags.push("--what-if");
+        }
+        exec::exec(cmd, subcmd, kws, &flags, Mode::CheckErr)?;
         Ok(())
     }
 
@@ -58,17 +63,22 @@ impl PackManager for Chocolatey {
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("choco", &["uninstall"], kws, flags)
+        self.prompt_run("choco", &["uninstall"], kws, flags)
     }
 
     /// Rs removes a package and its dependencies which are not required by any other installed package.
     fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("choco", &["uninstall", "--removedependencies"], kws, flags)
+        self.prompt_run("choco", &["uninstall", "--removedependencies"], kws, flags)
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_no_confirm("choco", &["install"], kws, flags)
+        let subcmd: &[&str] = if self.needed {
+            &["install"]
+        } else {
+            &["install", "--force"]
+        };
+        self.prompt_run("choco", subcmd, kws, flags)
     }
 
     /// Si displays remote package information: name, version, description, etc.
@@ -84,9 +94,9 @@ impl PackManager for Chocolatey {
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.check_no_confirm("choco", &["upgrade"], &["all"], flags)
+            self.prompt_run("choco", &["upgrade"], &["all"], flags)
         } else {
-            self.check_no_confirm("choco", &["upgrade"], kws, flags)
+            self.prompt_run("choco", &["upgrade"], kws, flags)
         }
     }
 

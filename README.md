@@ -4,6 +4,11 @@
 
 Run `pacaptr -Syu` on the distro of your choice!
 
+![Interface Concept](https://user-images.githubusercontent.com/33851577/83973021-2f876b00-a916-11ea-9c7e-9cb76ca27a0e.png)
+
+> \- It's nice, but wait, why `reinstall`?  
+> \- To be more like `pacman`! Use `-S --needed` to `install`.
+
 ## Contents
 
 - [pacaptr](#pacaptr)
@@ -16,10 +21,14 @@ Run `pacaptr -Syu` on the distro of your choice!
 
 ## Supported Package Managers
 
-- `macOS/homebrew`
 - `Windows/chocolatey`
-- `Debian/dpkg`
+- `macOS/homebrew`¹
+- `Linux/linuxbrew`
+- `Debian/apt`
 - `Alpine/apk`
+- `RedHat/dnf`
+
+¹: [Featured™](#platform-specific-tips)
 
 Notes:
 
@@ -40,7 +49,7 @@ Now the implementations of different package managers are all placed in `./src/p
 
 PPAs might be added when appropriate.
 
-- `macOS/homebrew` install:
+- `macOS/homebrew` or `Linux/Linuxbrew` install:
 
   ```bash
   brew tap rami3l/pacaptr
@@ -64,15 +73,30 @@ PPAs might be added when appropriate.
   cargo uninstall pacaptr
   ```
 
+Notes:
+
+- For `Alpine/apk` users: If `cargo build` doesn't work, please try `RUSTFLAGS="-C target-feature=-crt-static" cargo build` instead.
+
 ## General Tips
 
-- Additional flags support:
+- `--using`, `--pm`: Use this flag to explicitly specify the underlying package manager to be invoked.
+
+  ```bash
+  # Here we force the use of `choco`,
+  # so the following output is platform-independent:
+  pacaptr -Su --pm choco --dryrun
+  # Pending: choco upgrade all
+  ```
+
+  This can be useful when you are running Linux and you want to use `linuxbrew`, for example. In that case, you can `--using brew`.
+
+- Extra flags support:
   - The flags after a `--` will be passed directly to the underlying package manager:
 
     ```bash
     pacaptr -h
     # USAGE:
-    #     pacaptr [FLAGS] [KEYWORDS]... [-- <ADDITIONAL_FLAGS>...]
+    #     pacaptr [FLAGS] [KEYWORDS]... [-- <EXTRA_FLAGS>...]
 
     pacaptr -S curl docker --dryrun -- --proxy=localhost:1234
     # Pending: foo install curl --proxy=localhost:1234
@@ -115,9 +139,13 @@ PPAs might be added when appropriate.
   - This option is useful when you don't want to be asked during installation, for example.
   - ... But it can be potentially dangerous if you don't know what you're doing!
 
+- `--nocache`, `--no-cache`:
+  Use this flag to remove cache after package installation.
+  - This option is useful when you want to reduce `Docker` image size, for example.
+
 ## Platform-Specific Tips
 
-- `Homebrew` support: Please note that this is for macOS only, `Linuxbrew` is currently not supported.
+- `macOS/homebrew` & `Linux/linuxbrew` support: Please note that `cask` is for macOS only.
 
   - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
 
@@ -137,7 +165,7 @@ PPAs might be added when appropriate.
     brew tap beeftornado/rmtree
     ```
 
-- `Chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
+- `Windows/chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
 [Pacman Rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt

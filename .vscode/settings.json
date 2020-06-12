@@ -6,13 +6,18 @@
         "Tazpkg",
         "Zypper",
         "choco",
+        "distro",
         "gsudo",
+        "macos",
+        "mockpm",
+        "nocache",
         "noconfirm",
         "pacaptr",
         "rdepends",
         "rmtree",
         "structopt",
         "subcmd",
-        "sysupgrade"
+        "sysupgrade",
+        "untrusted"
     ]
 }
