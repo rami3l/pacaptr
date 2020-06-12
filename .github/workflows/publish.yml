@@ -171,3 +171,47 @@ jobs:
           asset_name: "pacaptr.rb"
           tag: ${{ github.ref }}
           overwrite: true
+
+  # this scripts packs up a Chocolatey package and pushes it to Choco repository
+  publish-choco:
+    name: Publish app on Chocolatey
+    runs-on: windows-latest
+    needs: [publish-non-linux]
+    steps:
+      - name: Copy data to choco template
+        id: choco-data
+        run: cp ./target/release/${{ matrix.artifact_name }} ./dist/choco/tools
+
+      - name: Get "version"
+        id: ver
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
+      - name: Check "version"
+        env:
+          RELEASE_VERSION: ${{ steps.ver.outputs.tag }}
+        run: |
+          echo "Detected version:"
+
+      - name: Add license
+        run: cp LICENSE dist/choco/tools/
+
+      - name: Replace variables in template
+        uses: rami3l/bumper@master
+        id: replace
+        with:
+          template: "dist/choco/pacaptr.template.nuspec"
+          out: "dist/choco/pacaptr.nuspec"
+
+          rules: |
+            {
+              "version": "${{ steps.ver.outputs.tag }}",
+            }
+
+      - name: Set choco api key
+        run: choco apikey --key ${{ secrets.CHOCO_API_KEY }} --source https://push.chocolatey.org
+
+      - name: Pack up NuGet package
+        run: choco pack dist/choco/pacaptr.nuspec
+
+      - name: Push to choco repository
+        run: choco push pacaptr.${{ steps.ver.outputs.tag }} --source https://push.chocolatey.org
