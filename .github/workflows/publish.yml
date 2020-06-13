@@ -177,6 +177,7 @@ jobs:
     name: Publish app on Chocolatey
     runs-on: windows-latest
     needs: [publish-non-linux]
+    if: secrets.CHOCO_API_KEY
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -190,7 +191,7 @@ jobs:
         run: iwr https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/pacaptr-windows-amd64.tar.gz -OutFile ./release.tar.gz
 
       - name: Extract release
-        run: tar xvf ./release.tar.gz ./dist/choco/tools/
+        run: tar xvf ./release.tar.gz -C ./dist/choco/tools/
 
       - name: Add license
         run: cp LICENSE dist/choco/tools/
