@@ -201,7 +201,7 @@ jobs:
         shell: python
         run: |
           import re
-          from xml.sax.saxutils import quoteattr
+          from xml.sax.saxutils import escape
           version = re.sub('refs/\w+/', '', '${{ github.ref }}')
           with open('README.md', 'r', encoding='utf8') as desc_file:
               description = desc_file.read()
@@ -209,8 +209,8 @@ jobs:
                   'dist/choco/pacaptr.template.nuspec', 'r',
                   encoding='utf8') as template_file:
               template = template_file.read()
-          template = re.sub('\{version\}', quoteattr(version), template)
-          template = re.sub('\{description\}', quoteattr(description), template)
+          template = re.sub('\{version\}', escape(version), template)
+          template = re.sub('\{description\}', escape(description), template)
           with open('dist/choco/pacaptr.nuspec', 'w', encoding='utf8') as output:
               output.write(template)
 
