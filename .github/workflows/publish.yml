@@ -130,8 +130,8 @@ jobs:
       - name: Get url
         id: url
         env:
-          URL_MAC: https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.mac }}
-          URL_LINUX: https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.linux }}
+          URL_MAC: https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.mac }}
+          URL_LINUX: https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.linux }}
         run: |
           echo ::set-output name=mac::$URL_MAC
           echo ::set-output name=linux::$URL_LINUX
@@ -187,7 +187,7 @@ jobs:
         shell: python
 
       - name: Download release
-        run: iwr https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/pacaptr-windows-amd64.tar.gz -OutFile ./release.tar.gz
+        run: iwr https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/pacaptr-windows-amd64.tar.gz -OutFile ./release.tar.gz
 
       - name: Extract release
         run: tar xvf ./release.tar.gz ./dist/choco/tools/
