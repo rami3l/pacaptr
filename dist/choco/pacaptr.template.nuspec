@@ -25,7 +25,7 @@
     <bugTrackerUrl>https://github.com/rami3l/pacaptr/issues</bugTrackerUrl>
     <tags>pacaptr pacman</tags>
     <summary>Pacman syntax wrapper for homebrew, chocolatey, apt, and more.</summary>
-    <!-- <description>${description}</description> -->
+    <description>${description}</description>
     <!-- <releaseNotes>__REPLACE_OR_REMOVE__MarkDown_Okay</releaseNotes> -->
     <!-- =============================== -->
 
