@@ -177,7 +177,7 @@ jobs:
     name: Publish app on Chocolatey
     runs-on: windows-latest
     needs: [publish-non-linux]
-    if: secrets.CHOCO_API_KEY
+    if: ${{ secrets.CHOCO_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
