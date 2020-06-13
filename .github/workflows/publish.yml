@@ -214,7 +214,9 @@ jobs:
           with open('dist/choco/pacaptr.nuspec', 'w', encoding='utf8') as output:
               output.write(template)
           print('Output file:')
-          print(template)
+
+      - name: Check nuget template
+        run: cat dist/choco/pacaptr.nuspec
 
       - name: Set choco api key
         run: choco apikey --key ${{ secrets.CHOCO_API_KEY }} --source https://push.chocolatey.org --verbose
