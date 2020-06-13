@@ -203,8 +203,8 @@ jobs:
           import re
           from xml.sax.saxutils import escape
           version = re.sub('refs/\w+/', '', '${{ github.ref }}')
-          with open('README.md', 'r', encoding='utf8') as desc_file:
-              description = desc_file.read()
+          # with open('README.md', 'r', encoding='utf8') as desc_file:
+          #     description = desc_file.read()
           with open(
                   'dist/choco/pacaptr.template.nuspec', 'r',
                   encoding='utf8') as template_file:

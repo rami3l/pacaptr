@@ -25,7 +25,18 @@
     <bugTrackerUrl>https://github.com/rami3l/pacaptr/issues</bugTrackerUrl>
     <tags>pacaptr pacman</tags>
     <summary>Pacman syntax wrapper for homebrew, chocolatey, apt, and more.</summary>
-    <description>${description}</description>
+    <description>
+      # pacaptr
+
+      `pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
+
+      Run `pacaptr -Syu` on the distro of your choice!
+
+      ![Interface Concept](https://user-images.githubusercontent.com/33851577/83973021-2f876b00-a916-11ea-9c7e-9cb76ca27a0e.png)
+
+      > \- It's nice, but wait, why `reinstall`?  
+      > \- To be more like `pacman`! Use `-S --needed` to `install`.
+    </description>
     <!-- <releaseNotes>__REPLACE_OR_REMOVE__MarkDown_Okay</releaseNotes> -->
     <!-- =============================== -->
 
