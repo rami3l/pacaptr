@@ -213,12 +213,14 @@ jobs:
           template = re.sub('\{description\}', escape(description), template)
           with open('dist/choco/pacaptr.nuspec', 'w', encoding='utf8') as output:
               output.write(template)
+          print('Output file:')
+          print(template)
 
       - name: Set choco api key
-        run: choco apikey --key ${{ secrets.CHOCO_API_KEY }} --source https://push.chocolatey.org
+        run: choco apikey --key ${{ secrets.CHOCO_API_KEY }} --source https://push.chocolatey.org --verbose
 
       - name: Pack up NuGet package
-        run: choco pack dist/choco/pacaptr.nuspec
+        run: choco pack dist/choco/pacaptr.nuspec --verbose
 
       - name: Push to choco repository
-        run: choco push pacaptr.${{ steps.ver.outputs.tag }} --source https://push.chocolatey.org
+        run: choco push pacaptr.${{ steps.ver.outputs.tag }}.nupkg --source https://push.chocolatey.org --verbose
