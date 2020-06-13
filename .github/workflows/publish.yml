@@ -184,7 +184,14 @@ jobs:
 
       - name: Get the version
         id: ver
-        run: import re; print('::set-output name=tag::{}'.format(re.sub('refs/\w+/', '' ,'${{ github.ref }}')))
+        run: |
+          import re
+          version = re.sub('refs/\w+/', '' ,'${{ github.ref }}')
+          print('::set-output name=tag::{}'.format(version))
+          # Pop off the leading 'v' in the tag
+          if version[0] == 'v': version = version[1:]
+          print('::set-output name=ver::{}'.format(version))
+
         shell: python
 
       - name: Download release
@@ -205,7 +212,6 @@ jobs:
           version = re.sub('refs/\w+/', '', '${{ github.ref }}')
           # Pop off the leading 'v' in the tag
           if version[0] == 'v': version = version[1:]
-          print('::set-output name=tag::{}'.format(version))
           # with open('README.md', 'r', encoding='utf8') as desc_file:
           #     description = desc_file.read()
           with open(
@@ -229,4 +235,4 @@ jobs:
         run: choco pack dist/choco/pacaptr.nuspec --verbose
 
       - name: Push to choco repository
-        run: choco push pacaptr.${{ steps.ver.replace.tag }}.nupkg --source https://push.chocolatey.org --verbose
+        run: choco push pacaptr.${{ steps.ver.replace.ver }}.nupkg --source https://push.chocolatey.org --verbose
