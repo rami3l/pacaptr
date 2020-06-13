@@ -196,7 +196,6 @@ jobs:
         run: cp LICENSE dist/choco/tools/
 
       - name: Replace variables in template
-        uses: rami3l/bumper@master
         id: replace
         shell: python
         run: |
