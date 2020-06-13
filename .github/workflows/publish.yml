@@ -210,13 +210,14 @@ jobs:
                   encoding='utf8') as template_file:
               template = template_file.read()
           template = re.sub('\{version\}', escape(version), template)
-          template = re.sub('\{description\}', escape(description), template)
+          # template = re.sub('\{description\}', escape(description), template)
           with open('dist/choco/pacaptr.nuspec', 'w', encoding='utf8') as output:
               output.write(template)
-          print('Output file:')
 
       - name: Check nuget template
-        run: cat dist/choco/pacaptr.nuspec
+        run: |
+          echo "NuGet spec file:"
+          cat dist/choco/pacaptr.nuspec
 
       - name: Set choco api key
         run: choco apikey --key ${{ secrets.CHOCO_API_KEY }} --source https://push.chocolatey.org --verbose
