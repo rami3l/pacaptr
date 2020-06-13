@@ -191,7 +191,6 @@ jobs:
           # Pop off the leading 'v' in the tag
           if version[0] == 'v': version = version[1:]
           print('::set-output name=ver::{}'.format(version))
-
         shell: python
 
       - name: Download release
@@ -235,4 +234,4 @@ jobs:
         run: choco pack dist/choco/pacaptr.nuspec --verbose
 
       - name: Push to choco repository
-        run: choco push pacaptr.${{ steps.ver.replace.ver }}.nupkg --source https://push.chocolatey.org --verbose
+        run: choco push pacaptr.${{ steps.ver.outputs.ver }}.nupkg --source https://push.chocolatey.org --verbose
