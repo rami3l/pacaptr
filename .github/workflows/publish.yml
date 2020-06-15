@@ -202,7 +202,7 @@ jobs:
       - name: Add license
         run: cp LICENSE dist/choco/tools/
 
-      - name: Replace variables in template
+      - name: Generate Nuspec from template
         id: replace
         shell: python
         run: |
@@ -221,6 +221,42 @@ jobs:
           # template = re.sub('\{description\}', escape(description), template)
           with open('dist/choco/pacaptr.nuspec', 'w', encoding='utf8') as output:
               output.write(template)
+
+      - name: Generate verification.txt
+        shell: python
+        run: |
+          import re
+          from hashlib import sha1, sha256, sha3_256, blake2b
+
+          repository = 'https://github.com/${{ github.repository }}'
+          release_uri = repository + '/releases/download/${{ steps.ver.outputs.tag }}/pacaptr-windows-amd64.tar.gz'
+          file_path = 'dist/choco/tools/pacaptr.exe'
+
+          hash_algorithms = [sha1(), sha256(), sha3_256(), blake2b()]
+          hash_result = ""
+
+          chunk_size = 64 * 1024
+          with open(file_path, 'rb') as f:
+              while True:
+                  buf = f.read(chunk_size)
+                  if len(buf) == 0: break
+                  for a in hash_algorithms:
+                      a.update(buf)
+              for a in hash_algorithms:
+                  hash_result += "{}: {}\n".format(a.name, a.hexdigest())
+
+          with open(
+                  'dist/choco/tools/VERIFICATION.template.txt', 'r',
+                  encoding='utf8') as template_file:
+              template = template_file.read()
+          template = re.sub('\{repository\}', repository, template)
+          template = re.sub('\{release_file\}', release_uri, template)
+          template = re.sub('\{checksums\}', hash_result, template)
+
+          with open('dist/choco/tools/VERIFICATION.txt', 'w', encoding='utf8') as output:
+              output.write(template)
+
+      - run: rm dist/choco/tools/VERIFICATION.template.txt
 
       - name: Check nuget template
         run: |
