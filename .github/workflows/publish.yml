@@ -223,6 +223,7 @@ jobs:
               output.write(template)
 
       - name: Generate verification.txt
+        shell: python
         run: |
           import re
           from hashlib import sha1, sha256, sha3_256, blake2b
