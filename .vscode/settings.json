@@ -12,6 +12,7 @@
         "mockpm",
         "nocache",
         "noconfirm",
+        "nuget",
         "pacaptr",
         "rdepends",
         "rmtree",

@@ -56,6 +56,12 @@ PPAs might be added when appropriate.
   brew install pacaptr
   ```
 
+- `Windows/chocolatey` install:
+  
+  ```powershell
+  choco install pacaptr
+  ```
+
 - Build from source:
 
   ```bash

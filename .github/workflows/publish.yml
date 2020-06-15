@@ -130,8 +130,8 @@ jobs:
       - name: Get url
         id: url
         env:
-          URL_MAC: https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.mac }}
-          URL_LINUX: https://github.com/rami3l/pacaptr/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.linux }}
+          URL_MAC: https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.mac }}
+          URL_LINUX: https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.linux }}
         run: |
           echo ::set-output name=mac::$URL_MAC
           echo ::set-output name=linux::$URL_LINUX
@@ -148,7 +148,7 @@ jobs:
         uses: rami3l/bumper@master
         id: replace
         with:
-          template: "tap/template.rb"
+          template: "dist/brew/template.rb"
           out: "pacaptr.rb"
 
           rules: |
@@ -171,3 +171,67 @@ jobs:
           asset_name: "pacaptr.rb"
           tag: ${{ github.ref }}
           overwrite: true
+
+  # this scripts packs up a Chocolatey package and pushes it to Choco repository
+  publish-choco:
+    name: Publish app on Chocolatey
+    runs-on: windows-latest
+    needs: [publish-non-linux]
+    # if: ${{ secrets.CHOCO_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get the version
+        id: ver
+        run: |
+          import re
+          version = re.sub('refs/\w+/', '' ,'${{ github.ref }}')
+          print('::set-output name=tag::{}'.format(version))
+          # Pop off the leading 'v' in the tag
+          if version[0] == 'v': version = version[1:]
+          print('::set-output name=ver::{}'.format(version))
+        shell: python
+
+      - name: Download release
+        run: iwr https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/pacaptr-windows-amd64.tar.gz -OutFile ./release.tar.gz
+
+      - name: Extract release
+        run: tar xvf ./release.tar.gz -C ./dist/choco/tools/
+
+      - name: Add license
+        run: cp LICENSE dist/choco/tools/
+
+      - name: Replace variables in template
+        id: replace
+        shell: python
+        run: |
+          import re
+          from xml.sax.saxutils import escape
+          version = re.sub('refs/\w+/', '', '${{ github.ref }}')
+          # Pop off the leading 'v' in the tag
+          if version[0] == 'v': version = version[1:]
+          # with open('README.md', 'r', encoding='utf8') as desc_file:
+          #     description = desc_file.read()
+          with open(
+                  'dist/choco/pacaptr.template.nuspec', 'r',
+                  encoding='utf8') as template_file:
+              template = template_file.read()
+          template = re.sub('\{version\}', escape(version), template)
+          # template = re.sub('\{description\}', escape(description), template)
+          with open('dist/choco/pacaptr.nuspec', 'w', encoding='utf8') as output:
+              output.write(template)
+
+      - name: Check nuget template
+        run: |
+          echo "NuGet spec file:"
+          cat dist/choco/pacaptr.nuspec
+
+      - name: Set choco api key
+        run: choco apikey --key ${{ secrets.CHOCO_API_KEY }} --source https://push.chocolatey.org --verbose
+
+      - name: Pack up NuGet package
+        run: choco pack dist/choco/pacaptr.nuspec --verbose
+
+      - name: Push to choco repository
+        run: choco push pacaptr.${{ steps.ver.outputs.ver }}.nupkg --source https://push.chocolatey.org --verbose
