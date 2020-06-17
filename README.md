@@ -59,7 +59,7 @@ PPAs might be added when appropriate.
 - `Windows/chocolatey` install:
   
   ```powershell
-  choco install pacaptr
+  choco install pacaptr --pre
   ```
 
 - Build from source:
