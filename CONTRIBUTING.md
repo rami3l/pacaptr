@@ -1,13 +1,12 @@
 # Contributing to `pacaptr`
 
-## Welcome to `pacaptr`
+Welcome to `pacaptr`!
 
 Please note that this project is in a very early stage, and the conventions and the APIs could be changed. Some discussions concerning certain crucial design choices haven't been made yet.
 
 ## Contents
 
 - [Contributing to `pacaptr`](#contributing-to-pacaptr)
-  - [Welcome to `pacaptr`](#welcome-to-pacaptr)
   - [Contents](#contents)
   - [Style Conventions](#style-conventions)
   - [Project Structure](#project-structure)
