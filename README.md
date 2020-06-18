@@ -43,8 +43,6 @@ Initially, I found [icy/pacapt] which does just that, and I made this project to
 
 After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
 
-Now the implementations of different package managers are all placed in `./src/packmanager` folder, with names like `homebrew.rs`.
-
 ## Building & Installation
 
 PPAs might be added when appropriate.
@@ -52,6 +50,10 @@ PPAs might be added when appropriate.
 - `macOS/homebrew` or `Linux/Linuxbrew` install:
 
   ```bash
+  # Short version:
+  brew install rami3l/pacaptr/pacaptr
+
+  # Which is equivalent to this:
   brew tap rami3l/pacaptr
   brew install pacaptr
   ```
@@ -59,6 +61,7 @@ PPAs might be added when appropriate.
 - `Windows/chocolatey` install:
   
   ```powershell
+  # Yes, now we are still in the prerelease stage...
   choco install pacaptr --pre
   ```
 
@@ -88,7 +91,11 @@ PPAs might be added when appropriate.
 
 Notes:
 
-- For `Alpine/apk` users: If `cargo build` doesn't work, please try `RUSTFLAGS="-C target-feature=-crt-static" cargo build` instead.
+- For `Alpine/apk` users: `cargo build` won't just work, please try this instead:
+  
+  ```bash
+  RUSTFLAGS="-C target-feature=-crt-static" cargo build
+  ```
 
 ## General Tips
 
