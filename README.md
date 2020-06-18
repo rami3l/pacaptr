@@ -79,6 +79,13 @@ PPAs might be added when appropriate.
   cargo uninstall pacaptr
   ```
 
+- Packaging for Debian:
+
+  ```bash
+  cargo install cargo-deb
+  cargo deb
+  ```
+
 Notes:
 
 - For `Alpine/apk` users: If `cargo build` doesn't work, please try `RUSTFLAGS="-C target-feature=-crt-static" cargo build` instead.
