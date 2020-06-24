@@ -1,5 +1,5 @@
 class Pacaptr < Formula
-    desc "Pacman syntax wrapper for many package managers"
+    desc "Pacman syntax wrapper for homebrew, chocolatey, apt, and more."
     homepage "https://github.com/rami3l/pacaptr"
     version "{version}"
     url "{url_mac}"
