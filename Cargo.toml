@@ -14,7 +14,7 @@ lazy_static = "1.4.0"
 # structopt = "0.3"
 clap = "3.0.0-beta.1"
 colored = "1.9.3"
-which = "4.0.0"
+which = "4.0.1"
 # bus_writer = "0.1"
 
 [package.metadata.deb]
