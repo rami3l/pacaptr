@@ -2,14 +2,14 @@ use super::PackManager;
 use crate::error::Error;
 use crate::exec::{self, Mode};
 
-pub struct Apt {
+pub struct AptGet {
     pub dry_run: bool,
     pub no_confirm: bool,
     pub needed: bool,
     pub no_cache: bool,
 }
 
-impl Apt {
+impl AptGet {
     /// A helper method to simplify prompted command invocation.
     fn prompt_run(
         &self,
@@ -26,10 +26,10 @@ impl Apt {
     }
 }
 
-impl PackManager for Apt {
+impl PackManager for AptGet {
     /// Get the name of the package manager.
     fn name(&self) -> String {
-        "apt".into()
+        "apt-get".into()
     }
 
     /// A helper method to simplify direct command invocation.
@@ -51,7 +51,7 @@ impl PackManager for Apt {
 
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("apt", &["list"], kws, flags)
+        self.just_run("dpkg", &["-l"], kws, flags)
     }
 
     /// Qi displays local package information: name, version, description, etc.
@@ -71,27 +71,27 @@ impl PackManager for Apt {
 
     /// Qu lists packages which have an update available.
     fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("apt", &["upgrade", "--trivial-only"], kws, flags)
+        self.just_run("apt-get", &["upgrade", "--trivial-only"], kws, flags)
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apt", &["remove"], kws, flags)
+        self.prompt_run("apt-get", &["remove"], kws, flags)
     }
 
     /// Rn removes a package and skips the generation of configuration backup files.
     fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apt", &["purge"], kws, flags)
+        self.prompt_run("apt-get", &["purge"], kws, flags)
     }
 
     /// Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
     fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apt", &["autoremove", "--purge"], kws, flags)
+        self.prompt_run("apt-get", &["autoremove", "--purge"], kws, flags)
     }
 
     /// Rs removes a package and its dependencies which are not required by any other installed package.
     fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apt", &["autoremove"], kws, flags)
+        self.prompt_run("apt-get", &["autoremove"], kws, flags)
     }
 
     /// S installs one or more packages by name.
@@ -101,7 +101,7 @@ impl PackManager for Apt {
         } else {
             &["install", "--reinstall"]
         };
-        self.prompt_run("apt", subcmd, kws, flags)?;
+        self.prompt_run("apt-get", subcmd, kws, flags)?;
         if self.no_cache {
             self.scc(kws, flags)?;
         }
@@ -110,34 +110,34 @@ impl PackManager for Apt {
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apt", &["clean"], kws, flags)
+        self.prompt_run("apt-get", &["clean"], kws, flags)
     }
 
     /// Scc removes all files from the cache.
     fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apt", &["autoclean"], kws, flags)
+        self.prompt_run("apt-get", &["autoclean"], kws, flags)
     }
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("apt", &["show"], kws, flags)
+        self.just_run("apt-cache", &["show"], kws, flags)
     }
 
     /// Sii displays packages which require X to be installed, aka reverse dependencies.
     fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("apt", &["rdepends"], kws, flags)
+        self.just_run("apt-cache", &["rdepends"], kws, flags)
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("apt", &["search"], kws, flags)
+        self.just_run("apt-cache", &["search"], kws, flags)
     }
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.prompt_run("apt", &["upgrade"], &[], flags)?;
-            self.prompt_run("apt", &["dist-upgrade"], &[], flags)?;
+            self.prompt_run("apt-get", &["upgrade", "--with-new-pkgs"], &[], flags)?;
+            self.prompt_run("apt-get", &["dist-upgrade"], &[], flags)?;
             if self.no_cache {
                 self.scc(kws, flags)?;
             }
@@ -155,11 +155,11 @@ impl PackManager for Apt {
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("apt", &["install", "--download-only"], kws, flags)
+        self.prompt_run("apt-get", &["install", "--download-only"], kws, flags)
     }
 
     /// Sy refreshes the local package database.
     fn sy(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("apt", &["update"], &[], flags)
+        self.just_run("apt-get", &["update"], &[], flags)
     }
 }

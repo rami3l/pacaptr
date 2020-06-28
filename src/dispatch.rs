@@ -161,7 +161,8 @@ impl Opt {
 
         #[cfg(target_os = "linux")]
         match () {
-            _ if is_exe("apt-get", "/usr/bin/apt-get") => "apt",
+            _ if is_exe("apt", "/usr/bin/apt") => "apt",
+            _ if is_exe("apt-get", "/usr/bin/apt-get") => "apt-get",
             _ if is_exe("apk", "/sbin/apk") => "apk",
             _ if is_exe("dnf", "/usr/bin/dnf") => "dnf",
             _ => "unknown",
@@ -206,8 +207,16 @@ impl Opt {
                 no_cache,
             }),
 
-            // Apt/Dpkg for Debian/Ubuntu/Termux
-            "dpkg" | "apt" => Box::new(apt::Apt {
+            // Apt for Debian/Ubuntu/Termux (new versions)
+            "apt" => Box::new(apt::Apt {
+                dry_run,
+                no_confirm,
+                needed,
+                no_cache,
+            }),
+
+            // Apt-Get/Dpkg for Debian/Ubuntu/Termux
+            "apt-get" | "dpkg" => Box::new(aptget::AptGet {
                 dry_run,
                 no_confirm,
                 needed,
