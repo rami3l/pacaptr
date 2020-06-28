@@ -97,6 +97,32 @@ mod chocolatey {
 }
 
 #[cfg(target_os = "linux")]
+mod linuxbrew {
+    use super::Test;
+
+    #[test]
+    fn si_ok() {
+        Test::new()
+            .pacaptr(&["-Si", "curl"], &[])
+            .output(&["Get a file from an HTTP, HTTPS or FTP server"])
+            .run(false)
+    }
+
+    #[test]
+    #[ignore]
+    fn r() {
+        Test::new()
+            .pacaptr(&["-S", "wget", "--yes"], &[])
+            .output(&["brew (re)?install wget"])
+            .exec("wget", &["-V"], &[])
+            .output(&["GNU Wget"])
+            .pacaptr(&["-R", "wget", "--yes"], &[])
+            .output(&["brew uninstall wget"])
+            .run(false)
+    }
+}
+
+#[cfg(target_os = "linux")]
 mod apt {
     use super::Test;
 
