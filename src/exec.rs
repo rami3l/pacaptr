@@ -1,5 +1,6 @@
 use crate::error::Error;
 use colored::Colorize;
+use regex::Regex;
 use std::io::{BufReader, Read, Write};
 use std::sync::Mutex;
 use subprocess::{Exec, Redirection};
@@ -199,6 +200,18 @@ fn exec_prompt(
     }
     print_cmd(cmd, subcmd, kws, flags, PROMPT_RUN);
     exec_checkerr(cmd, subcmd, kws, flags, mute)
+}
+
+/// Find all lines in the given `text` that matches all the `patterns`.
+pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
+    let rs: Vec<Regex> = patterns
+        .iter()
+        .map(|&pat| Regex::new(pat).unwrap())
+        .collect();
+    text.lines()
+        .filter(|&line| rs.iter().all(|regex| regex.find(line).is_some()))
+        .map(|s| s.to_owned())
+        .collect()
 }
 
 /// Get the String representation of a particular command.

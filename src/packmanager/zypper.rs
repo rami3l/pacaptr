@@ -1,7 +1,6 @@
 use super::PackManager;
 use crate::error::Error;
 use crate::exec::{self, Mode};
-use regex::Regex;
 
 pub struct Zypper {
     pub dry_run: bool,
@@ -75,22 +74,16 @@ impl PackManager for Zypper {
 
     /// Qm lists packages that are installed but are not available in any installation source (anymore).
     fn qm(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let search = |contents: &str, regex: &Regex| {
-            for line in contents.lines() {
-                if let Some(_) = regex.find(line) {
-                    println!("{}", line);
-                }
-            }
+        let search = |contents: &str, pattern: &str| {
+            exec::grep(contents, &[pattern])
+                .iter()
+                .for_each(|ln| println!("{}", ln))
         };
 
         let out_bytes = exec::exec("zypper", &["search", "-si"], kws, flags, Mode::Mute)?;
         let out = String::from_utf8(out_bytes)?;
 
-        lazy_static! {
-            static ref SYSTEM_PACKAGES: Regex = Regex::new(r"System Packages").unwrap();
-        }
-
-        search(&out, &*SYSTEM_PACKAGES);
+        search(&out, "System Packages");
         Ok(())
     }
 

@@ -1,7 +1,6 @@
 use super::PackManager;
 use crate::error::Error;
 use crate::exec::{self, Mode, PROMPT_RUN};
-use regex::Regex;
 
 pub struct Dnf {
     pub dry_run: bool,
@@ -98,21 +97,16 @@ impl PackManager for Dnf {
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     // TODO: Is this right?
     fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let search = |contents: String| {
-            let rs: Vec<Regex> = kws.iter().map(|&kw| Regex::new(kw).unwrap()).collect();
-            for line in contents.lines() {
-                let matches_all = rs.iter().all(|regex| regex.find(line).is_some());
-
-                if matches_all {
-                    println!("{}", line);
-                }
-            }
+        let search = |contents: &str| {
+            exec::grep(contents, kws)
+                .iter()
+                .for_each(|ln| println!("{}", ln))
         };
 
         let search_output = |cmd, subcmd| {
             exec::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
             let out_bytes = exec::exec(cmd, subcmd, &[], flags, Mode::Mute)?;
-            search(String::from_utf8(out_bytes)?);
+            search(&String::from_utf8(out_bytes)?);
             Ok(())
         };
 

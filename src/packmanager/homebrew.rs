@@ -1,7 +1,6 @@
 use super::PackManager;
 use crate::error::Error;
 use crate::exec::{self, print_msg, Mode, PROMPT_INFO, PROMPT_RUN};
-use regex::Regex;
 
 pub struct Homebrew {
     pub dry_run: bool,
@@ -24,20 +23,20 @@ impl Homebrew {
         let out = String::from_utf8(out_bytes)?;
 
         let code = {
-            lazy_static! {
-                static ref RE_BOTTLE: Regex =
-                    Regex::new(r"No available formula with the name").unwrap();
-                static ref RE_CASK: Regex = Regex::new(r"Found a cask named").unwrap();
-            }
+            let no_formula = "No available formula with the name";
+            let found_cask = "Found a cask named";
 
-            if RE_BOTTLE.find(&out).is_some() {
-                if RE_CASK.find(&out).is_some() {
+            if exec::grep(&out, &[no_formula]).is_empty() {
+                // Found a formula
+                CaskState::Unneeded
+            } else {
+                // Found no formula
+                if !exec::grep(&out, &[found_cask]).is_empty() {
+                    // Found a cask
                     CaskState::Needed
                 } else {
                     CaskState::NotFound
                 }
-            } else {
-                CaskState::Unneeded
             }
         };
 
@@ -140,13 +139,9 @@ impl PackManager for Homebrew {
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let search = |contents: &str| {
-            let rs: Vec<Regex> = kws.iter().map(|&kw| Regex::new(kw).unwrap()).collect();
-            for line in contents.lines() {
-                let matches_all = rs.iter().all(|regex| regex.find(line).is_some());
-                if matches_all {
-                    println!("{}", line);
-                }
-            }
+            exec::grep(contents, kws)
+                .iter()
+                .for_each(|ln| println!("{}", ln))
         };
 
         let search_output = |cmd, subcmd| {
@@ -182,11 +177,8 @@ impl PackManager for Homebrew {
         let err_bytes = exec::exec("brew", subcmd, kws, flags, Mode::CheckErr)?;
         let err_msg = String::from_utf8(err_bytes)?;
 
-        lazy_static! {
-            static ref RMTREE_MISSING: Regex = Regex::new(r"Unknown command: rmtree").unwrap();
-        }
-
-        if RMTREE_MISSING.find(&err_msg).is_some() {
+        let pattern = "Unknown command: rmtree";
+        if !exec::grep(&err_msg, &[pattern]).is_empty() {
             print_msg(
                 "`rmtree` is not installed. You may install it with the following command:",
                 PROMPT_INFO,

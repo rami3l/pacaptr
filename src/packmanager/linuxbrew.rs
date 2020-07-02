@@ -1,7 +1,6 @@
 use super::PackManager;
 use crate::error::Error;
 use crate::exec::{self, print_msg, Mode, PROMPT_INFO, PROMPT_RUN};
-use regex::Regex;
 
 pub struct Linuxbrew {
     pub dry_run: bool,
@@ -83,13 +82,9 @@ impl PackManager for Linuxbrew {
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let search = |contents: &str| {
-            let rs: Vec<Regex> = kws.iter().map(|&kw| Regex::new(kw).unwrap()).collect();
-            for line in contents.lines() {
-                let matches_all = rs.iter().all(|regex| regex.find(line).is_some());
-                if matches_all {
-                    println!("{}", line);
-                }
-            }
+            exec::grep(contents, kws)
+                .iter()
+                .for_each(|ln| println!("{}", ln))
         };
 
         let search_output = |cmd, subcmd| {
@@ -122,11 +117,8 @@ impl PackManager for Linuxbrew {
         let err_bytes = exec::exec("brew", subcmd, kws, flags, Mode::CheckErr)?;
         let err_msg = String::from_utf8(err_bytes)?;
 
-        lazy_static! {
-            static ref RMTREE_MISSING: Regex = Regex::new(r"Unknown command: rmtree").unwrap();
-        }
-
-        if RMTREE_MISSING.find(&err_msg).is_some() {
+        let pattern = "Unknown command: rmtree";
+        if !exec::grep(&err_msg, &[pattern]).is_empty() {
             print_msg(
                 "`rmtree` is not installed. You may install it with the following command:",
                 PROMPT_INFO,
