@@ -161,10 +161,12 @@ impl Opt {
 
         #[cfg(target_os = "linux")]
         match () {
+            _ if is_exe("apk", "/sbin/apk") => "apk",
             _ if is_exe("apt", "/usr/bin/apt") => "apt",
             _ if is_exe("apt-get", "/usr/bin/apt-get") => "apt-get",
-            _ if is_exe("apk", "/sbin/apk") => "apk",
             _ if is_exe("dnf", "/usr/bin/dnf") => "dnf",
+            _ if is_exe("zypper", "/usr/bin/zypper") => "zypper",
+
             _ => "unknown",
         }
     }
@@ -207,6 +209,13 @@ impl Opt {
                 no_cache,
             }),
 
+            // Apk for Alpine
+            "apk" => Box::new(apk::Apk {
+                dry_run,
+                no_confirm,
+                no_cache,
+            }),
+
             // Apt for Debian/Ubuntu/Termux (new versions)
             "apt" => Box::new(apt::Apt {
                 dry_run,
@@ -216,22 +225,22 @@ impl Opt {
             }),
 
             // Apt-Get/Dpkg for Debian/Ubuntu/Termux
-            "apt-get" | "dpkg" => Box::new(aptget::AptGet {
+            "apt-get" => Box::new(aptget::AptGet {
                 dry_run,
                 no_confirm,
                 needed,
                 no_cache,
             }),
 
-            // Apk for Alpine
-            "apk" => Box::new(apk::Apk {
+            // Dnf for RedHat
+            "dnf" => Box::new(dnf::Dnf {
                 dry_run,
                 no_confirm,
                 no_cache,
             }),
 
-            // Dnf for RedHat
-            "dnf" => Box::new(dnf::Dnf {
+            // Zypper for SUSE
+            "zypper" => Box::new(zypper::Zypper {
                 dry_run,
                 no_confirm,
                 no_cache,

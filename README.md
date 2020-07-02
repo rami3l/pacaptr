@@ -23,12 +23,14 @@ Run `pacaptr -Syu` on the distro of your choice!
 
 - `Windows/chocolatey`
 - `macOS/homebrew`¹
-- `Linux/linuxbrew`
+- `Linux/linuxbrew`²
 - `Debian/apt`
 - `Alpine/apk`
 - `RedHat/dnf`
+- `SUSE/zypper`
 
 ¹: [Featured™](#platform-specific-tips)
+²: Require `pacaptr --using <name>` to invocate (see [general tips](#general-tips)).
 
 Notes:
 
@@ -104,7 +106,7 @@ Notes:
   ```bash
   # Here we force the use of `choco`,
   # so the following output is platform-independent:
-  pacaptr -Su --pm choco --dryrun
+  pacaptr --using choco -Su --dryrun
   # Pending: choco upgrade all
   ```
 

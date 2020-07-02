@@ -6,6 +6,7 @@ pub mod dnf;
 pub mod homebrew;
 pub mod linuxbrew;
 pub mod unknown;
+pub mod zypper;
 
 use crate::error::Error;
 use crate::exec::{self, Mode};
