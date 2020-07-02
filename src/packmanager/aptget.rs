@@ -159,7 +159,11 @@ impl PackManager for AptGet {
     }
 
     /// Sy refreshes the local package database.
-    fn sy(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("apt-get", &["update"], &[], flags)
+    fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apt-get", &["update"], &[], flags)?;
+        if !kws.is_empty() {
+            self.s(kws, flags)?;
+        }
+        Ok(())
     }
 }

@@ -197,8 +197,12 @@ impl PackManager for Apk {
     }
 
     /// Sy refreshes the local package database.
-    fn sy(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["update"], &[], flags)
+    fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("apk", &["update"], &[], flags)?;
+        if !kws.is_empty() {
+            self.s(kws, flags)?;
+        }
+        Ok(())
     }
 
     /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.

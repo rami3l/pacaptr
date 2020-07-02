@@ -294,7 +294,11 @@ impl PackManager for Homebrew {
     }
 
     /// Sy refreshes the local package database.
-    fn sy(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["update"], &[], flags)
+    fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("brew", &["update"], &[], flags)?;
+        if !kws.is_empty() {
+            self.s(kws, flags)?;
+        }
+        Ok(())
     }
 }

@@ -198,9 +198,13 @@ impl PackManager for Dnf {
     }
 
     /// Sy refreshes the local package database.
-    fn sy(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.sc(&[], flags)?;
-        self.just_run("dnf", &["check-update"], &[], flags)
+        self.just_run("dnf", &["check-update"], &[], flags)?;
+        if !kws.is_empty() {
+            self.s(kws, flags)?;
+        }
+        Ok(())
     }
 
     /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
