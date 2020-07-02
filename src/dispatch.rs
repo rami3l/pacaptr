@@ -66,9 +66,10 @@ pub struct Opt {
         short,
         long = "search",
         alias = "recursive",
-        about = "(-S) search | (-R) recursive"
+        about = "(-S) search | (-R) recursive",
+        parse(from_occurrences)
     )]
-    s: bool,
+    s: u32,
 
     #[clap(short, long = "sysupgrade", about = "(-S) sysupgrade")]
     u: bool,
@@ -269,15 +270,18 @@ impl Opt {
                 _ if self.m => pm.qm(&kws, &flags),
                 _ if self.o => pm.qo(&kws, &flags),
                 _ if self.p => pm.qp(&kws, &flags),
-                _ if self.s => pm.qs(&kws, &flags),
+                _ if self.s == 1 => pm.qs(&kws, &flags),
+                _ if self.s >= 2 => unimplemented!(),
                 _ if self.u => pm.qu(&kws, &flags),
                 _ => pm.q(&kws, &flags),
             },
 
             _ if self.remove => match () {
-                _ if self.n && self.s => pm.rns(&kws, &flags),
+                _ if self.n && (self.s == 1) => pm.rns(&kws, &flags),
                 _ if self.n => pm.rn(&kws, &flags),
-                _ if self.s => pm.rs(&kws, &flags),
+                _ if self.s == 1 => pm.rs(&kws, &flags),
+                _ if self.s == 2 => pm.rss(&kws, &flags),
+                _ if self.s >= 3 => unimplemented!(),
                 _ => pm.r(&kws, &flags),
             },
 
@@ -291,7 +295,8 @@ impl Opt {
                 _ if self.i == 2 => pm.sii(&kws, &flags),
                 _ if self.i >= 3 => unimplemented!(),
                 _ if self.l => pm.sl(&kws, &flags),
-                _ if self.s => pm.ss(&kws, &flags),
+                _ if self.s == 1 => pm.ss(&kws, &flags),
+                _ if self.s >= 2 => unimplemented!(),
                 _ if self.u && self.y => pm.suy(&kws, &flags),
                 _ if self.u => pm.su(&kws, &flags),
                 _ if self.y => pm.sy(&kws, &flags),
@@ -424,7 +429,7 @@ mod tests {
         assert!(opt.sync);
         assert!(opt.query);
         assert!(opt.n);
-        assert!(opt.s);
+        assert_eq!(opt.s, 1);
         opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
     }
 }
