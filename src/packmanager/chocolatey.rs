@@ -66,8 +66,8 @@ impl PackManager for Chocolatey {
         self.prompt_run("choco", &["uninstall"], kws, flags)
     }
 
-    /// Rs removes a package and its dependencies which are not required by any other installed package.
-    fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    /// Rss removes a package and its dependencies which are not required by any other installed package.
+    fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.prompt_run("choco", &["uninstall", "--removedependencies"], kws, flags)
     }
 

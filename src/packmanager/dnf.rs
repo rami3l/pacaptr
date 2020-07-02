@@ -90,7 +90,7 @@ impl PackManager for Dnf {
 
     /// Qp queries a package supplied on the command line rather than an entry in the package management database.
     fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("rpm", &["-qp"], kws, flags)
+        self.just_run("rpm", &["-qip"], kws, flags)
     }
 
     /// Qs searches locally installed package for names or descriptions.
@@ -121,7 +121,7 @@ impl PackManager for Dnf {
 
     /// Qu lists packages which have an update available.
     fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("dnf", &["list", " updates"], kws, flags)
+        self.just_run("dnf", &["list", "updates"], kws, flags)
     }
 
     /// R removes a single package, leaving all of its dependencies installed.

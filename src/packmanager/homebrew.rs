@@ -172,8 +172,8 @@ impl PackManager for Homebrew {
             .collect()
     }
 
-    /// Rs removes a package and its dependencies which are not required by any other installed package.
-    fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    /// Rss removes a package and its dependencies which are not required by any other installed package.
+    fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let subcmd: &[&str] = if self.dry_run {
             &["rmtree", "--dry-run"]
         } else {

@@ -121,9 +121,10 @@ impl PackManager for Apk {
         self.just_run("apk", &["del", "--purge", "-r"], kws, flags)
     }
 
-    /// Rs removes a package and its dependencies which are not required by any other installed package.
+    /// Rs removes a package and its dependencies which are not required by any other installed package,
+    /// and not explicitly installed by the user.
     fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("apk", &["del", "-r"], kws, flags)
+        self.r(kws, flags)
     }
 
     /// S installs one or more packages by name.

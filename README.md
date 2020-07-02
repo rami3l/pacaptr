@@ -179,7 +179,7 @@ Notes:
 
   - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
 
-  - To use `-Rs`, you need to install [rmtree] first:
+  - To use `-Rss`, you need to install [rmtree] first:
 
     ```bash
     brew tap beeftornado/rmtree

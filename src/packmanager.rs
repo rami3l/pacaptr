@@ -69,8 +69,11 @@ pub trait PackManager {
         /// Rns removes a package and its dependencies which are not required by any other installed package,
         /// and skips the generation of configuration backup files.
         rns,
-        /// Rs removes a package and its dependencies which are not required by any other installed package.
+        /// Rs removes a package and its dependencies which are not required by any other installed package,
+        /// and not explicitly installed by the user.
         rs,
+        /// Rss removes a package and its dependencies which are not required by any other installed package.
+        rss,
         /// S installs one or more packages by name.
         s,
         /// Sc removes all the cached packages that are not currently installed, and the unused sync database.

@@ -89,7 +89,8 @@ impl PackManager for AptGet {
         self.prompt_run("apt-get", &["autoremove", "--purge"], kws, flags)
     }
 
-    /// Rs removes a package and its dependencies which are not required by any other installed package.
+    /// Rs removes a package and its dependencies which are not required by any other installed package,
+    /// and not explicitly installed by the user.
     fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.prompt_run("apt-get", &["autoremove"], kws, flags)
     }
