@@ -29,7 +29,7 @@ Run `pacaptr -Syu` on the distro of your choice!
 - `RedHat/dnf`
 - `SUSE/zypper`
 
-¹: [Featured™](#platform-specific-tips)
+¹: [Featured™](#platform-specific-tips)  
 ²: Require `pacaptr --using <name>` to invocate (see [general tips](#general-tips)).
 
 Notes:
