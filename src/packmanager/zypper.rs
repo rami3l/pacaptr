@@ -21,7 +21,11 @@ impl Zypper {
         if self.no_confirm {
             subcmd.push("-y");
         }
-        self.just_run(cmd, &subcmd, kws, flags)
+        if self.dry_run {
+            subcmd.push("--dry-run")
+        }
+        exec::exec(cmd, &subcmd, kws, flags, Mode::CheckErr)?;
+        Ok(())
     }
 }
 
@@ -121,12 +125,7 @@ impl PackManager for Zypper {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let subcmd: &[&str] = if self.dry_run {
-            &["install", "--dry-run"]
-        } else {
-            &["install"]
-        };
-        exec::exec("zypper", subcmd, kws, flags, Mode::CheckErr)?;
+        self.prompt_run("zypper", &["install"], kws, flags)?;
         if self.no_cache {
             self.scc(kws, flags)?;
         }
