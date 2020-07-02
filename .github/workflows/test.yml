@@ -67,6 +67,29 @@ jobs:
       - name: Run heavy tests
         run: cargo test dnf --verbose -- --ignored
 
+  opensuse-test:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://opensuse/leap:latest
+    defaults:
+      run:
+        shell: sh
+
+    steps:
+      - run: zypper install -y tar gzip curl gcc
+      - uses: actions/checkout@v2
+      - name: Set up Rust environment manually
+        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+      # - run: echo "::add-path::$HOME/.cargo/bin"
+      - name: Build
+        run: $HOME/.cargo/bin/cargo build --verbose
+      - name: Run unit tests
+        run: $HOME/.cargo/bin/cargo test tests --verbose
+      - name: Run smoke tests
+        run: $HOME/.cargo/bin/cargo test zypper --verbose -- --test-threads=1
+      - name: Run heavy tests
+        run: $HOME/.cargo/bin/cargo test zypper --verbose -- --ignored --test-threads=1
+
   alpine-test:
     runs-on: ubuntu-latest
     container:
