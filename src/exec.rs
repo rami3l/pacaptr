@@ -145,7 +145,7 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
             if let Some('\r') = answer.chars().next_back() {
                 answer.pop();
             }
-            if expected.iter().find(|&&x| x == &answer).is_some() {
+            if expected.iter().any(|&x| x == answer) {
                 break answer;
             }
         }
