@@ -23,7 +23,7 @@ macro_rules! make_pm {
 /// The behaviors of a Pack(age)Manager.
 /// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 /// and https://wiki.archlinux.org/index.php/Pacman
-pub trait PackManager {
+pub trait PackageManager {
     /// Get the name of the package manager.
     fn name(&self) -> String;
 

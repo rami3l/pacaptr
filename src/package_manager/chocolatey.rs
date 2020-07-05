@@ -1,4 +1,4 @@
-use super::PackManager;
+use super::PackageManager;
 use crate::error::Error;
 use crate::exec::{self, Mode};
 
@@ -24,7 +24,7 @@ impl Chocolatey {
     }
 }
 
-impl PackManager for Chocolatey {
+impl PackageManager for Chocolatey {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "choco".into()

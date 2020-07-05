@@ -1,4 +1,4 @@
-use super::PackManager;
+use super::PackageManager;
 use crate::error::Error;
 use crate::exec::{self, print_msg, Mode, PROMPT_INFO, PROMPT_RUN};
 
@@ -28,7 +28,7 @@ impl Linuxbrew {
     }
 }
 
-impl PackManager for Linuxbrew {
+impl PackageManager for Linuxbrew {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "brew".into()

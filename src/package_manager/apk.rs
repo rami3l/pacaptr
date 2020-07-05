@@ -1,4 +1,4 @@
-use super::PackManager;
+use super::PackageManager;
 use crate::error::Error;
 use crate::exec::{self, Mode, PROMPT_RUN};
 
@@ -27,7 +27,7 @@ impl Apk {
     }
 }
 
-impl PackManager for Apk {
+impl PackageManager for Apk {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "apk".into()

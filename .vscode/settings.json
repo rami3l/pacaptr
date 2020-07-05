@@ -16,12 +16,17 @@
         "nocache",
         "noconfirm",
         "nuget",
+        "nupkg",
         "pacaptr",
         "rdepends",
         "repoquery",
         "rmtree",
+        "rustfmt",
+        "saxutils",
+        "struct",
         "structopt",
         "subcmd",
+        "svenstaro",
         "sysupgrade",
         "untrusted"
     ]

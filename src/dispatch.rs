@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::exec::is_exe;
-use crate::packmanager::*;
+use crate::package_manager::*;
 use clap::{self, Clap};
 // use structopt::{clap, StructOpt};
 
@@ -172,8 +172,8 @@ impl Opt {
         }
     }
 
-    /// Generate the PackManager instance according it's name.
-    pub fn gen_pm(&self) -> Box<dyn PackManager> {
+    /// Generate the PackageManager instance according it's name.
+    pub fn gen_pm(&self) -> Box<dyn PackageManager> {
         let dry_run = self.dry_run;
         let needed = self.needed;
         let no_confirm = self.no_confirm;
@@ -253,7 +253,7 @@ impl Opt {
     }
 
     /// Execute the job according to the flags received and the package manager detected.
-    pub fn dispatch_from(&self, pm: Box<dyn PackManager>) -> Result<(), Error> {
+    pub fn dispatch_from(&self, pm: Box<dyn PackageManager>) -> Result<(), Error> {
         self.check()?;
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
         let flags: Vec<&str> = self.extra_flags.iter().map(|s| s.as_ref()).collect();
@@ -330,7 +330,7 @@ mod tests {
 
     struct MockPM {}
 
-    impl PackManager for MockPM {
+    impl PackageManager for MockPM {
         /// Get the name of the package manager.
         fn name(&self) -> String {
             "mockpm".into()
