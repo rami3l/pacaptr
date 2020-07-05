@@ -89,6 +89,15 @@ impl PackageManager for Pip {
         self.just_run(&self.cmd, &["search"], kws, flags)
     }
 
+    /// Su updates outdated packages.
+    fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        if !kws.is_empty() {
+            self.just_run(&self.cmd, &["install", "--upgrade"], kws, flags)
+        } else {
+            todo!()
+        }
+    }
+
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.just_run(&self.cmd, &["download"], kws, flags)
