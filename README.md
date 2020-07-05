@@ -22,15 +22,15 @@ Run `pacaptr -Syu` on the distro of your choice!
 ## Supported Package Managers
 
 - `Windows/chocolatey`
-- `macOS/homebrew`¹
-- `Linux/linuxbrew`²
+- `macOS/homebrew` ([Featured™](#platform-specific-tips))
+- `Linux/linuxbrew`¹
 - `Debian/apt`
 - `Alpine/apk`
 - `RedHat/dnf`
 - `SUSE/zypper`
+- `External/conda`¹
 
-¹: [Featured™](#platform-specific-tips)  
-²: Require `pacaptr --using <name>` to invocate (see [general tips](#general-tips)).
+¹: Require `pacaptr --using <name>` to invocate (see [general tips](#general-tips)).
 
 Notes:
 
@@ -49,7 +49,7 @@ After some discussions in [pacapt/#126], I decided to rewrite the project in Rus
 
 PPAs might be added when appropriate.
 
-- `macOS/homebrew` or `Linux/Linuxbrew` install:
+- `macOS/homebrew` & `Linux/linuxbrew` install:
 
   ```bash
   # Short version:

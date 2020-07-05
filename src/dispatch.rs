@@ -250,7 +250,7 @@ impl Opt {
             // * External Package Managers *
 
             // Conda
-            "conda" => Box::new(conda::Conda {}),
+            "conda" => Box::new(conda::Conda { no_confirm }),
 
             // Unknown package manager X
             x => Box::new(unknown::Unknown { name: x.into() }),

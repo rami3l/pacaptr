@@ -2,7 +2,26 @@ use super::PackageManager;
 use crate::error::Error;
 use crate::exec::{self, Mode, PROMPT_RUN};
 
-pub struct Conda {}
+pub struct Conda {
+    pub no_confirm: bool,
+}
+
+impl Conda {
+    /// A helper method to simplify prompted command invocation.
+    fn prompt_run(
+        &self,
+        cmd: &str,
+        subcmd: &[&str],
+        kws: &[&str],
+        flags: &[&str],
+    ) -> Result<(), Error> {
+        let mut subcmd: Vec<&str> = subcmd.iter().cloned().collect();
+        if self.no_confirm {
+            subcmd.push("-y");
+        }
+        self.just_run(cmd, &subcmd, kws, flags)
+    }
+}
 
 impl PackageManager for Conda {
     /// Get the name of the package manager.
@@ -41,17 +60,17 @@ impl PackageManager for Conda {
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("conda", &["remove"], kws, flags)
+        self.prompt_run("conda", &["remove"], kws, flags)
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("conda", &["install"], kws, flags)
+        self.prompt_run("conda", &["install"], kws, flags)
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("conda", &["clean", "--all"], &[], flags)
+        self.prompt_run("conda", &["clean", "--all"], &[], flags)
     }
 
     /// Si displays remote package information: name, version, description, etc.
@@ -69,7 +88,7 @@ impl PackageManager for Conda {
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("conda", &["update", "--all"], kws, flags)
+        self.prompt_run("conda", &["update", "--all"], kws, flags)
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
