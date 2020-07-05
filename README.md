@@ -29,6 +29,7 @@ Run `pacaptr -Syu` on the distro of your choice!
 - `RedHat/dnf`
 - `SUSE/zypper`
 - `External/conda`¹
+- `External/pip`¹
 
 ¹: Require `pacaptr --using <name>` to invocate (see [general tips](#general-tips)).
 
@@ -188,6 +189,8 @@ Notes:
     ```
 
 - `Windows/chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
+
+- `External/pip` support: Use `pacaptr --using pip3` if you want to run the `pip3` command.
 
 [Pacman Rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt

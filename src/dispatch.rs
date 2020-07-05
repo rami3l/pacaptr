@@ -252,6 +252,16 @@ impl Opt {
             // Conda
             "conda" => Box::new(conda::Conda { no_confirm }),
 
+            // Pip
+            "pip" => Box::new(pip::Pip {
+                cmd: "pip".into(),
+                no_confirm,
+            }),
+            "pip3" => Box::new(pip::Pip {
+                cmd: "pip3".into(),
+                no_confirm,
+            }),
+
             // Unknown package manager X
             x => Box::new(unknown::Unknown { name: x.into() }),
         }
