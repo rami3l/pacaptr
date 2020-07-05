@@ -247,6 +247,11 @@ impl Opt {
                 no_cache,
             }),
 
+            // * External Package Managers *
+
+            // Conda
+            "conda" => Box::new(conda::Conda {}),
+
             // Unknown package manager X
             x => Box::new(unknown::Unknown { name: x.into() }),
         }

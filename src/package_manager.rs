@@ -2,6 +2,7 @@ pub mod apk;
 pub mod apt;
 pub mod aptget;
 pub mod chocolatey;
+pub mod conda;
 pub mod dnf;
 pub mod homebrew;
 pub mod linuxbrew;
