@@ -16,7 +16,7 @@ impl Chocolatey {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mut subcmd: Vec<&str> = subcmd.iter().cloned().collect();
+        let mut subcmd: Vec<&str> = subcmd.to_vec();
         if self.no_confirm {
             subcmd.push("--yes");
         }
@@ -38,7 +38,7 @@ impl PackageManager for Chocolatey {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mut flags: Vec<&str> = flags.iter().cloned().collect();
+        let mut flags: Vec<&str> = flags.to_vec();
         if self.dry_run {
             flags.push("--what-if");
         }

@@ -123,7 +123,7 @@ impl PackageManager for Apk {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let mut flags: Vec<&str> = flags.iter().cloned().collect();
+        let mut flags: Vec<&str> = flags.to_vec();
         if self.no_cache {
             flags.push("--no-cache");
         }
@@ -162,7 +162,7 @@ impl PackageManager for Apk {
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let mut flags: Vec<&str> = flags.iter().cloned().collect();
+        let mut flags: Vec<&str> = flags.to_vec();
         if self.no_cache {
             flags.push("--no-cache");
         }
@@ -175,7 +175,7 @@ impl PackageManager for Apk {
 
     /// Suy refreshes the local package database, then updates outdated packages.
     fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let mut flags: Vec<&str> = flags.iter().cloned().collect();
+        let mut flags: Vec<&str> = flags.to_vec();
         if self.no_cache {
             flags.push("--no-cache");
         }
@@ -202,7 +202,7 @@ impl PackageManager for Apk {
 
     /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
     fn u(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let mut flags: Vec<&str> = flags.iter().cloned().collect();
+        let mut flags: Vec<&str> = flags.to_vec();
         if self.no_cache {
             flags.push("--no-cache");
         }
