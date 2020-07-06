@@ -1,5 +1,4 @@
 use pacaptr::exec::{self, Mode};
-use regex;
 
 static CARGO: &str = "cargo";
 static RUN: &[&str] = &["run", "--"];
@@ -32,7 +31,7 @@ impl<'t> Test<'t> {
 
     pub fn pacaptr(mut self, args: &'t [&str], flags: &'t [&str]) -> Self {
         // Guard against consecutive inputs without calling `self.output()`.
-        if let Some(_) = self.pending_input {
+        if self.pending_input.is_some() {
             panic!("Unexpected consecutive inputs")
         } else {
             self.pending_input = Some(Input::Pacaptr { args, flags });
@@ -42,7 +41,7 @@ impl<'t> Test<'t> {
 
     pub fn exec(mut self, cmd: &'t str, subcmd: &'t [&str], kws: &'t [&str]) -> Self {
         // Guard against consecutive inputs without calling `self.output()`.
-        if let Some(_) = self.pending_input {
+        if self.pending_input.is_some() {
             panic!("Unexpected consecutive inputs")
         } else {
             self.pending_input = Some(Input::Exec { cmd, subcmd, kws });
@@ -83,11 +82,11 @@ impl<'t> Test<'t> {
             // if not matches_all(got, patterns):
             //     raise MatchError(some_msg)
             let mode = if verbose { Mode::CheckAll } else { Mode::Mute };
-            let got_bytes: Vec<u8> = match input {
-                &Input::Pacaptr { args, flags } => {
+            let got_bytes: Vec<u8> = match *input {
+                Input::Pacaptr { args, flags } => {
                     exec::exec(CARGO, RUN, args, flags, mode).unwrap()
                 }
-                &Input::Exec { cmd, subcmd, kws } => {
+                Input::Exec { cmd, subcmd, kws } => {
                     exec::exec(cmd, subcmd, kws, &[], mode).unwrap()
                 }
             };

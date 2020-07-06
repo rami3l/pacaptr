@@ -77,7 +77,7 @@ fn exec_checkall(
         .stderr(Redirection::Merge)
         .stream_stdout()
         .map_err(|_| Error::from("Could not capture stdout"))
-        .and_then(|stream| Ok(BufReader::new(stream)))?;
+        .map(BufReader::new)?;
 
     let mut out = Vec::<u8>::new();
     let mut stdout = std::io::stdout();
@@ -110,7 +110,7 @@ fn exec_checkerr(
         .args(flags)
         .stream_stderr()
         .map_err(|_| Error::from("Could not capture stderr"))
-        .and_then(|stream| Ok(BufReader::new(stream)))?;
+        .map(BufReader::new)?;
 
     let mut out = Vec::<u8>::new();
     let mut stderr = std::io::stderr();
