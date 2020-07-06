@@ -17,7 +17,7 @@ impl Dnf {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mut subcmd: Vec<&str> = subcmd.iter().cloned().collect();
+        let mut subcmd: Vec<&str> = subcmd.to_vec();
         if self.no_confirm {
             subcmd.push("-y");
         }
