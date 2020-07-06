@@ -6,6 +6,7 @@
         "Tazpkg",
         "Zypper",
         "choco",
+        "clippy",
         "conda",
         "deinstall",
         "devel",

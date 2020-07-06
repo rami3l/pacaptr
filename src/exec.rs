@@ -156,6 +156,7 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
 /// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
 /// If there is no subcommand, just pass `&[]`.
 /// The user will be prompted if (s)he wishes to continue with the command execution.
+#[allow(clippy::mutex_atomic)]
 fn exec_prompt(
     cmd: &str,
     subcmd: &[&str],
@@ -249,6 +250,7 @@ pub fn print_msg(msg: &str, prompt: &str) {
     println!("{:>8} {}", prompt.green().bold(), msg);
 }
 
+/// Print out an error after the given prompt.
 pub fn print_err(err: impl std::error::Error, prompt: &str) {
     eprintln!("{:>8} {}", prompt.bright_red().bold(), err);
 }

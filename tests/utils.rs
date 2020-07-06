@@ -95,3 +95,9 @@ impl<'t> Test<'t> {
         }
     }
 }
+
+impl<'t> Default for Test<'t> {
+    fn default() -> Self {
+        Test::new()
+    }
+}
