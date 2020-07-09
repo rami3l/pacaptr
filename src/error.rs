@@ -1,33 +1,41 @@
 #[derive(Debug)]
 pub struct Error {
-    msg: String,
+    pub msg: String,
 }
 
-impl std::convert::From<&str> for Error {
+impl Error {
     fn from(msg: &str) -> Self {
         Error { msg: msg.into() }
     }
 }
 
+impl std::convert::From<&str> for Error {
+    fn from(msg: &str) -> Self {
+        Error::from(msg)
+    }
+}
+
 impl std::convert::From<String> for Error {
     fn from(msg: String) -> Self {
-        Error { msg }
+        Error::from(&msg)
     }
 }
 
 impl std::convert::From<std::io::Error> for Error {
     fn from(io_err: std::io::Error) -> Self {
-        Error {
-            msg: format!("{}", io_err),
-        }
+        Error::from(&format!("{}", io_err))
     }
 }
 
 impl std::convert::From<std::string::FromUtf8Error> for Error {
     fn from(err: std::string::FromUtf8Error) -> Self {
-        Error {
-            msg: format!("{}", err),
-        }
+        Error::from(&format!("{}", err))
+    }
+}
+
+impl std::convert::From<confy::ConfyError> for Error {
+    fn from(err: confy::ConfyError) -> Self {
+        Error::from(&format!("{}", err))
     }
 }
 

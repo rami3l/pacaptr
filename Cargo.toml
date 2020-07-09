@@ -1,3 +1,5 @@
+# cargo-features = ["strip"]
+
 [package]
 name = "pacaptr"
 description = "A pacman-like wrapper for many package managers."
@@ -15,9 +17,12 @@ lazy_static = "1.4.0"
 clap = "3.0.0-beta.1"
 colored = "1.9.3"
 which = "4.0.1"
-serde = "1.0.114"
-serde_derive = "1.0.114"
-# bus_writer = "0.1"
+serde = { version = "1.0.114", features = ["derive"] }
+confy = "0.4.0"
+dirs = "3.0.0"
+
+[profile.release]
+# strip = "symbols"
 
 [package.metadata.deb]
 maintainer = "Rami3L <rami3l@outlook.com>"

@@ -1,4 +1,5 @@
-use serde_derive::{Deserialize, Serialize};
+use crate::error::Error;
+use serde::{Deserialize, Serialize};
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -18,4 +19,19 @@ pub struct Config {
     pub no_cache: bool,
 }
 
-impl Config {}
+impl Config {
+    pub fn load() -> Result<Self, Error> {
+        let crate_name = clap::crate_name!();
+        let config = dirs::home_dir()
+            .ok_or(Error {
+                msg: "$HOME path not found".into(),
+            })?
+            .join(".config")
+            .join(crate_name)
+            .join(&format!("{}.toml", crate_name));
+        // dbg!(&config);
+        let res = confy::load_path(config)?;
+        // dbg!(&res);
+        Ok(res)
+    }
+}

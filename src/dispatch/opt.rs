@@ -174,22 +174,24 @@ impl Opt {
     }
 
     /// Generate the PackageManager instance according it's name.
-    pub fn gen_pm(&self) -> Box<dyn PackageManager> {
+    pub fn gen_pm(&self, cfg: Config) -> Box<dyn PackageManager> {
         let cfg = {
-            let &Opt {
-                dry_run,
-                needed,
-                no_confirm,
-                force_cask,
-                no_cache,
-                ..
-            } = self;
-            Config {
-                dry_run,
-                needed,
-                no_confirm,
-                force_cask,
-                no_cache,
+            macro_rules! make_actual_cfg {
+                ($other:ident, ($( $field:ident ), *)) => {{
+                    Config {
+                        $($field: self.$field || $other.$field,)*
+                    }
+                }};
+            }
+            make_actual_cfg! {
+                cfg,
+                (
+                    dry_run,
+                    needed,
+                    no_confirm,
+                    force_cask,
+                    no_cache
+                )
             }
         };
 
@@ -299,7 +301,7 @@ impl Opt {
     }
 
     pub fn dispatch(&self) -> Result<(), Error> {
-        self.dispatch_from(self.gen_pm())
+        self.dispatch_from(self.gen_pm(Config::load()?))
     }
 }
 
