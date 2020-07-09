@@ -16,6 +16,7 @@ Run `pacaptr -Syu` on the distro of your choice!
   - [Supported Package Managers](#supported-package-managers)
   - [Motivation & Current Status](#motivation--current-status)
   - [Building & Installation](#building--installation)
+  - [Configuration](#configuration)
   - [General Tips](#general-tips)
   - [Platform-Specific Tips](#platform-specific-tips)
 
@@ -99,6 +100,26 @@ Notes:
   ```bash
   RUSTFLAGS="-C target-feature=-crt-static" cargo build
   ```
+
+## Configuration
+
+The configuration file is `$HOME/.config/pacaptr/pacaptr.toml`.
+
+An example:
+
+```toml
+# This enforces the use of `install` instead of
+# `reinstall` in `pacaptr -S`
+needed = true
+
+# Explicitly set the default package manager
+default_pm = "choco"
+
+# dry_run = false
+# no_confirm = false
+# force_cask = false
+# no_cache = false
+```
 
 ## General Tips
 
