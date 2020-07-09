@@ -132,7 +132,7 @@ fn exec_checkerr(
 pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
     loop {
         let mut answer = String::new();
-        print!("{:>8} {}? ", question.yellow(), options.underline());
+        print!("{:>9} {}? ", question.yellow(), options.underline());
         let _ = std::io::stdout().flush();
         let read = std::io::stdin().read_line(&mut answer);
         if !case_sensitive {
@@ -230,7 +230,7 @@ pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str]) -> Stri
 /// Print out the command after the given prompt.
 pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
     println!(
-        "{:>8} `{}`",
+        "{:>9} `{}`",
         prompt.green().bold(),
         cmd_str(cmd, subcmd, kws, flags)
     );
@@ -239,7 +239,7 @@ pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], promp
 /// Print out the command after the given prompt (dry run version).
 pub fn print_dryrun(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
     println!(
-        "{:>8} `{}`",
+        "{:>9} `{}`",
         prompt.green().bold(),
         cmd_str(cmd, subcmd, kws, flags)
     );
@@ -247,12 +247,12 @@ pub fn print_dryrun(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], pr
 
 /// Print out a message after the given prompt.
 pub fn print_msg(msg: &str, prompt: &str) {
-    println!("{:>8} {}", prompt.green().bold(), msg);
+    println!("{:>9} {}", prompt.green().bold(), msg);
 }
 
 /// Print out an error after the given prompt.
 pub fn print_err(err: impl std::error::Error, prompt: &str) {
-    eprintln!("{:>8} {}", prompt.bright_red().bold(), err);
+    eprintln!("{:>9} {}", prompt.bright_red().bold(), err);
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.
