@@ -17,6 +17,9 @@ pub struct Config {
 
     #[serde(default)]
     pub no_cache: bool,
+
+    #[serde(default)]
+    pub default_pm: Option<String>,
 }
 
 impl Config {

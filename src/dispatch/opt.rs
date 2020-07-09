@@ -177,9 +177,14 @@ impl Opt {
     pub fn gen_pm(&self, cfg: Config) -> Box<dyn PackageManager> {
         let cfg = {
             macro_rules! make_actual_cfg {
-                ($other:ident, ($( $field:ident ), *)) => {{
+                (
+                    $other:ident,
+                    ($( $bool_field:ident ), *),
+                    ($( $retain_field:ident ), *)
+                ) => {{
                     Config {
-                        $($field: self.$field || $other.$field,)*
+                        $($bool_field: self.$bool_field || $other.$bool_field,)*
+                        $($retain_field: $other.$retain_field,)*
                     }
                 }};
             }
@@ -191,11 +196,18 @@ impl Opt {
                     no_confirm,
                     force_cask,
                     no_cache
+                ),
+                (
+                    default_pm
                 )
             }
         };
 
-        let package_manager: &str = self.using.as_deref().unwrap_or_else(Opt::detect_pm);
+        let package_manager: &str = match (&self.using, &cfg.default_pm) {
+            (Some(pm), _) => pm,
+            (_, Some(pm)) => pm,
+            _ => Opt::detect_pm(),
+        };
 
         match package_manager {
             // Chocolatey
