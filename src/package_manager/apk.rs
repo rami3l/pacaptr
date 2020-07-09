@@ -1,11 +1,10 @@
 use super::PackageManager;
+use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Mode, PROMPT_RUN};
 
 pub struct Apk {
-    pub dry_run: bool,
-    pub no_confirm: bool,
-    pub no_cache: bool,
+    pub cfg: Config,
 }
 
 impl Apk {
@@ -18,8 +17,8 @@ impl Apk {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mode = match () {
-            _ if self.dry_run => Mode::DryRun,
-            _ if self.no_confirm => Mode::CheckErr,
+            _ if self.cfg.dry_run => Mode::DryRun,
+            _ if self.cfg.no_confirm => Mode::CheckErr,
             _ => Mode::Prompt,
         };
         exec::exec(cmd, subcmd, kws, flags, mode)?;
@@ -41,7 +40,7 @@ impl PackageManager for Apk {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mode = if self.dry_run {
+        let mode = if self.cfg.dry_run {
             Mode::DryRun
         } else {
             Mode::CheckErr
@@ -124,7 +123,7 @@ impl PackageManager for Apk {
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let mut flags: Vec<&str> = flags.to_vec();
-        if self.no_cache {
+        if self.cfg.no_cache {
             flags.push("--no-cache");
         }
         self.prompt_run("apk", &["add"], kws, &flags)
@@ -163,7 +162,7 @@ impl PackageManager for Apk {
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let mut flags: Vec<&str> = flags.to_vec();
-        if self.no_cache {
+        if self.cfg.no_cache {
             flags.push("--no-cache");
         }
         if kws.is_empty() {
@@ -176,7 +175,7 @@ impl PackageManager for Apk {
     /// Suy refreshes the local package database, then updates outdated packages.
     fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let mut flags: Vec<&str> = flags.to_vec();
-        if self.no_cache {
+        if self.cfg.no_cache {
             flags.push("--no-cache");
         }
         if kws.is_empty() {
@@ -203,7 +202,7 @@ impl PackageManager for Apk {
     /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
     fn u(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let mut flags: Vec<&str> = flags.to_vec();
-        if self.no_cache {
+        if self.cfg.no_cache {
             flags.push("--no-cache");
         }
         self.prompt_run("apk", &["add", "--allow-untrusted"], kws, &flags)

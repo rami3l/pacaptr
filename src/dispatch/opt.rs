@@ -1,3 +1,4 @@
+use super::config::Config;
 use crate::error::Error;
 use crate::exec::is_exe;
 use crate::package_manager::*;
@@ -174,92 +175,64 @@ impl Opt {
 
     /// Generate the PackageManager instance according it's name.
     pub fn gen_pm(&self) -> Box<dyn PackageManager> {
-        let &Opt {
-            dry_run,
-            needed,
-            no_confirm,
-            force_cask,
-            no_cache,
-            ..
-        } = self;
+        let cfg = {
+            let &Opt {
+                dry_run,
+                needed,
+                no_confirm,
+                force_cask,
+                no_cache,
+                ..
+            } = self;
+            Config {
+                dry_run,
+                needed,
+                no_confirm,
+                force_cask,
+                no_cache,
+            }
+        };
 
         let package_manager: &str = self.using.as_deref().unwrap_or_else(Opt::detect_pm);
 
         match package_manager {
             // Chocolatey
-            "choco" => Box::new(chocolatey::Chocolatey {
-                dry_run,
-                no_confirm,
-                needed,
-            }),
+            "choco" => Box::new(chocolatey::Chocolatey { cfg }),
 
             // Homebrew
-            "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew {
-                dry_run,
-                force_cask,
-                no_confirm,
-                needed,
-                no_cache,
-            }),
+            "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew { cfg }),
 
             // Linuxbrew
-            "brew" => Box::new(linuxbrew::Linuxbrew {
-                dry_run,
-                no_confirm,
-                needed,
-                no_cache,
-            }),
+            "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
 
             // Apk for Alpine
-            "apk" => Box::new(apk::Apk {
-                dry_run,
-                no_confirm,
-                no_cache,
-            }),
+            "apk" => Box::new(apk::Apk { cfg }),
 
             // Apt for Debian/Ubuntu/Termux (new versions)
-            "apt" => Box::new(apt::Apt {
-                dry_run,
-                no_confirm,
-                needed,
-                no_cache,
-            }),
+            "apt" => Box::new(apt::Apt { cfg }),
 
             // Apt-Get/Dpkg for Debian/Ubuntu/Termux
-            "apt-get" => Box::new(aptget::AptGet {
-                dry_run,
-                no_confirm,
-                needed,
-                no_cache,
-            }),
+            "apt-get" => Box::new(aptget::AptGet { cfg }),
 
             // Dnf for RedHat
-            "dnf" => Box::new(dnf::Dnf {
-                dry_run,
-                no_confirm,
-                no_cache,
-            }),
+            "dnf" => Box::new(dnf::Dnf { cfg }),
 
             // Zypper for SUSE
-            "zypper" => Box::new(zypper::Zypper {
-                dry_run,
-                no_confirm,
-                no_cache,
-            }),
+            "zypper" => Box::new(zypper::Zypper { cfg }),
 
             // * External Package Managers *
 
             // Conda
-            "conda" => Box::new(conda::Conda { no_confirm }),
+            "conda" => Box::new(conda::Conda { cfg }),
 
             // Pip
             "pip" => Box::new(pip::Pip {
                 cmd: "pip".into(),
-                no_confirm,
+                cfg,
             }),
             "pip3" => Box::new(pip::Pip {
                 cmd: "pip3".into(),
-                no_confirm,
+                cfg,
             }),
 
             // Unknown package manager X

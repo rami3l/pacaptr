@@ -1,11 +1,10 @@
 use super::PackageManager;
+use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Mode};
 
 pub struct Chocolatey {
-    pub dry_run: bool,
-    pub no_confirm: bool,
-    pub needed: bool,
+    pub cfg: Config,
 }
 
 impl Chocolatey {
@@ -17,7 +16,7 @@ impl Chocolatey {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mut subcmd: Vec<&str> = subcmd.to_vec();
-        if self.no_confirm {
+        if self.cfg.no_confirm {
             subcmd.push("--yes");
         }
         self.just_run(cmd, &subcmd, kws, flags)
@@ -39,7 +38,7 @@ impl PackageManager for Chocolatey {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mut flags: Vec<&str> = flags.to_vec();
-        if self.dry_run {
+        if self.cfg.dry_run {
             flags.push("--what-if");
         }
         exec::exec(cmd, subcmd, kws, &flags, Mode::CheckErr)?;
@@ -73,7 +72,7 @@ impl PackageManager for Chocolatey {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let subcmd: &[&str] = if self.needed {
+        let subcmd: &[&str] = if self.cfg.needed {
             &["install"]
         } else {
             &["install", "--force"]

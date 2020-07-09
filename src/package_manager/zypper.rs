@@ -1,11 +1,10 @@
 use super::PackageManager;
+use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Mode};
 
 pub struct Zypper {
-    pub dry_run: bool,
-    pub no_confirm: bool,
-    pub no_cache: bool,
+    pub cfg: Config,
 }
 
 impl Zypper {
@@ -18,10 +17,10 @@ impl Zypper {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mut subcmd: Vec<&str> = subcmd.to_vec();
-        if self.no_confirm {
+        if self.cfg.no_confirm {
             subcmd.push("-y");
         }
-        if self.dry_run {
+        if self.cfg.dry_run {
             subcmd.push("--dry-run")
         }
         exec::exec(cmd, &subcmd, kws, flags, Mode::CheckErr)?;
@@ -43,7 +42,7 @@ impl PackageManager for Zypper {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mode = if self.dry_run {
+        let mode = if self.cfg.dry_run {
             Mode::DryRun
         } else {
             Mode::CheckErr
@@ -126,7 +125,7 @@ impl PackageManager for Zypper {
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.prompt_run("zypper", &["install"], kws, flags)?;
-        if self.no_cache {
+        if self.cfg.no_cache {
             self.scc(kws, flags)?;
         }
         Ok(())
@@ -164,7 +163,7 @@ impl PackageManager for Zypper {
     /// Su updates outdated packages.
     fn su(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.just_run("zypper", &["--no-refresh", "dist-upgrade"], &[], flags)?;
-        if self.no_cache {
+        if self.cfg.no_cache {
             self.sccc(_kws, flags)?;
         }
         Ok(())
@@ -173,7 +172,7 @@ impl PackageManager for Zypper {
     /// Suy refreshes the local package database, then updates outdated packages.
     fn suy(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.prompt_run("zypper", &["dist-upgrade"], &[], flags)?;
-        if self.no_cache {
+        if self.cfg.no_cache {
             self.sccc(_kws, flags)?;
         }
         Ok(())

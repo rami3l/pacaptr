@@ -1,11 +1,10 @@
 use super::PackageManager;
+use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Mode, PROMPT_RUN};
 
 pub struct Dnf {
-    pub dry_run: bool,
-    pub no_confirm: bool,
-    pub no_cache: bool,
+    pub cfg: Config,
 }
 
 impl Dnf {
@@ -18,7 +17,7 @@ impl Dnf {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mut subcmd: Vec<&str> = subcmd.to_vec();
-        if self.no_confirm {
+        if self.cfg.no_confirm {
             subcmd.push("-y");
         }
         self.just_run(cmd, &subcmd, kws, flags)
@@ -39,7 +38,7 @@ impl PackageManager for Dnf {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mode = if self.dry_run {
+        let mode = if self.cfg.dry_run {
             Mode::DryRun
         } else {
             Mode::CheckErr
@@ -126,7 +125,7 @@ impl PackageManager for Dnf {
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.prompt_run("dnf", &["install"], kws, flags)?;
-        if self.no_cache {
+        if self.cfg.no_cache {
             self.sccc(kws, flags)?;
         }
         Ok(())
@@ -175,7 +174,7 @@ impl PackageManager for Dnf {
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.prompt_run("dnf", &["upgrade"], kws, flags)?;
-        if self.no_cache {
+        if self.cfg.no_cache {
             self.sccc(kws, flags)?;
         }
         Ok(())

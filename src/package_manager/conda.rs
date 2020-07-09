@@ -1,9 +1,10 @@
 use super::PackageManager;
+use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Mode, PROMPT_RUN};
 
 pub struct Conda {
-    pub no_confirm: bool,
+    pub cfg: Config,
 }
 
 impl Conda {
@@ -16,7 +17,7 @@ impl Conda {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mut subcmd: Vec<&str> = subcmd.to_vec();
-        if self.no_confirm {
+        if self.cfg.no_confirm {
             subcmd.push("-y");
         }
         self.just_run(cmd, &subcmd, kws, flags)

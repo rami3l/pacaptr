@@ -1,12 +1,10 @@
 use super::PackageManager;
+use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, print_msg, Mode, PROMPT_INFO, PROMPT_RUN};
 
 pub struct Linuxbrew {
-    pub dry_run: bool,
-    pub no_confirm: bool,
-    pub needed: bool,
-    pub no_cache: bool,
+    pub cfg: Config,
 }
 
 impl Linuxbrew {
@@ -19,8 +17,8 @@ impl Linuxbrew {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mode = match () {
-            _ if self.dry_run => Mode::DryRun,
-            _ if self.no_confirm => Mode::CheckErr,
+            _ if self.cfg.dry_run => Mode::DryRun,
+            _ if self.cfg.no_confirm => Mode::CheckErr,
             _ => Mode::Prompt,
         };
         exec::exec(cmd, subcmd, kws, flags, mode)?;
@@ -42,7 +40,7 @@ impl PackageManager for Linuxbrew {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mode = if self.dry_run {
+        let mode = if self.cfg.dry_run {
             Mode::DryRun
         } else {
             Mode::CheckErr
@@ -109,7 +107,7 @@ impl PackageManager for Linuxbrew {
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
     fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let subcmd: &[&str] = if self.dry_run {
+        let subcmd: &[&str] = if self.cfg.dry_run {
             &["rmtree", "--dry-run"]
         } else {
             &["rmtree"]
@@ -132,14 +130,14 @@ impl PackageManager for Linuxbrew {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if self.needed {
+        if self.cfg.needed {
             self.just_run("brew", &["install"], kws, flags)?;
         } else {
             // If the package is not installed, `brew reinstall` behaves just like `brew install`,
             // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
             self.just_run("brew", &["reinstall"], kws, flags)?;
         }
-        if self.no_cache {
+        if self.cfg.no_cache {
             self.scc(kws, flags)?;
         }
         Ok(())
@@ -147,7 +145,7 @@ impl PackageManager for Linuxbrew {
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if self.dry_run {
+        if self.cfg.dry_run {
             exec::exec(
                 "brew",
                 &["cleanup", "--dry-run"],
@@ -163,7 +161,7 @@ impl PackageManager for Linuxbrew {
 
     /// Scc removes all files from the cache.
     fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if self.dry_run {
+        if self.cfg.dry_run {
             exec::exec(
                 "brew",
                 &["cleanup", "-s", "--dry-run"],
@@ -195,7 +193,7 @@ impl PackageManager for Linuxbrew {
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.just_run("brew", &["upgrade"], kws, flags)?;
-        if self.no_cache {
+        if self.cfg.no_cache {
             self.scc(kws, flags)?;
         }
         Ok(())

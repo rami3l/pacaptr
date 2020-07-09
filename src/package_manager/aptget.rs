@@ -1,12 +1,10 @@
 use super::PackageManager;
+use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Mode};
 
 pub struct AptGet {
-    pub dry_run: bool,
-    pub no_confirm: bool,
-    pub needed: bool,
-    pub no_cache: bool,
+    pub cfg: Config,
 }
 
 impl AptGet {
@@ -19,7 +17,7 @@ impl AptGet {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mut subcmd: Vec<&str> = subcmd.to_vec();
-        if self.no_confirm {
+        if self.cfg.no_confirm {
             subcmd.push("--yes");
         }
         self.just_run(cmd, &subcmd, kws, flags)
@@ -40,7 +38,7 @@ impl PackageManager for AptGet {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mode = if self.dry_run {
+        let mode = if self.cfg.dry_run {
             Mode::DryRun
         } else {
             Mode::CheckErr
@@ -97,13 +95,13 @@ impl PackageManager for AptGet {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let subcmd: &[&str] = if self.needed {
+        let subcmd: &[&str] = if self.cfg.needed {
             &["install"]
         } else {
             &["install", "--reinstall"]
         };
         self.prompt_run("apt-get", subcmd, kws, flags)?;
-        if self.no_cache {
+        if self.cfg.no_cache {
             self.scc(kws, flags)?;
         }
         Ok(())
@@ -139,7 +137,7 @@ impl PackageManager for AptGet {
         if kws.is_empty() {
             self.prompt_run("apt-get", &["upgrade", "--with-new-pkgs"], &[], flags)?;
             self.prompt_run("apt-get", &["dist-upgrade"], &[], flags)?;
-            if self.no_cache {
+            if self.cfg.no_cache {
                 self.scc(kws, flags)?;
             }
             Ok(())
