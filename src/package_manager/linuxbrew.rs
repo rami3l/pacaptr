@@ -1,7 +1,8 @@
 use super::PackageManager;
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, print_message, Mode, PROMPT_INFO, PROMPT_RUN};
+use crate::exec::{self, Mode};
+use crate::print::{self, PROMPT_INFO, PROMPT_RUN};
 
 pub struct Linuxbrew {
     pub cfg: Config,
@@ -86,7 +87,7 @@ impl PackageManager for Linuxbrew {
         };
 
         let search_output = |cmd, subcmd| {
-            exec::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
+            print::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
             let out_bytes = exec::exec(cmd, subcmd, &[], flags, Mode::Mute)?;
             search(&String::from_utf8(out_bytes)?);
             Ok(())
@@ -117,11 +118,11 @@ impl PackageManager for Linuxbrew {
 
         let pattern = "Unknown command: rmtree";
         if !exec::grep(&err_msg, &[pattern]).is_empty() {
-            print_message(
+            print::print_msg(
                 "`rmtree` is not installed. You may install it with the following command:",
                 PROMPT_INFO,
             );
-            print_message("`brew tap beeftornado/rmtree`", PROMPT_INFO);
+            print::print_msg("`brew tap beeftornado/rmtree`", PROMPT_INFO);
             return Err("`rmtree` required".into());
         }
 

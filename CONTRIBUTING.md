@@ -55,7 +55,10 @@ Please note that this is subject to change.
     }
     ```
 
-- `packagemanager`:
+- `print`:  
+  This module handles output format.
+
+- `package_manager`:
   Here is where the things really happen. If you want to add package manager support, please declare submodules here.
 
     ```rust

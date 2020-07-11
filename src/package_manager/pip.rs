@@ -1,7 +1,8 @@
 use super::PackageManager;
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Mode, PROMPT_RUN};
+use crate::exec::{self, Mode};
+use crate::print::{self, PROMPT_RUN};
 
 pub struct Pip {
     pub cmd: String,
@@ -51,7 +52,7 @@ impl PackageManager for Pip {
         };
 
         let search_output = |cmd, subcmd| {
-            exec::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
+            print::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
             let out_bytes = exec::exec(cmd, subcmd, &[], flags, Mode::Mute)?;
             search(&String::from_utf8(out_bytes)?);
             Ok(())

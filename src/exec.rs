@@ -1,14 +1,9 @@
 use crate::error::Error;
-use colored::Colorize;
+use crate::print::*;
 use regex::Regex;
 use std::io::{BufReader, Read, Write};
 use std::sync::Mutex;
 use subprocess::{Exec, Redirection};
-
-pub static PROMPT_DRYRUN: &str = "Pending";
-pub static PROMPT_RUN: &str = "Running";
-pub static PROMPT_INFO: &str = "Info";
-pub static PROMPT_ERROR: &str = "Error";
 
 /// Different ways in which a command shall be dealt with.
 pub enum Mode {
@@ -213,51 +208,6 @@ pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
         .filter(|&line| rs.iter().all(|regex| regex.find(line).is_some()))
         .map(|s| s.to_owned())
         .collect()
-}
-
-/// Get the String representation of a particular command.
-pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str]) -> String {
-    [cmd]
-        .iter()
-        .chain(subcmd)
-        .chain(kws)
-        .chain(flags)
-        .cloned()
-        .collect::<Vec<&str>>()
-        .join(" ")
-}
-
-/// Print out the command after the given prompt.
-pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
-    println!(
-        "{:>9} `{}`",
-        prompt.green().bold(),
-        cmd_str(cmd, subcmd, kws, flags)
-    );
-}
-
-/// Print out the command after the given prompt (dry run version).
-pub fn print_dryrun(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
-    println!(
-        "{:>9} `{}`",
-        prompt.green().bold(),
-        cmd_str(cmd, subcmd, kws, flags)
-    );
-}
-
-/// Print out a message after the given prompt.
-pub fn print_message(msg: &str, prompt: &str) {
-    println!("{:>9} {}", prompt.green().bold(), msg);
-}
-
-/// Print out an error after the given prompt.
-pub fn print_error(err: impl std::error::Error, prompt: &str) {
-    eprintln!("{:>9} {}", prompt.bright_red().bold(), err);
-}
-
-/// Print out a question after the given prompt.
-pub fn print_question(question: &str, options: &str) {
-    print!("{:>9} {}? ", question.yellow(), options.underline());
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.
