@@ -135,7 +135,7 @@ pub struct Opt {
 
 impl Opt {
     /// Check if an Opt object is malformed.
-    pub fn check(&self) -> Result<(), Error> {
+    fn check(&self) -> Result<(), Error> {
         let count = [self.query, self.remove, self.sync, self.update]
             .iter()
             .filter(|&&x| x)
@@ -148,7 +148,7 @@ impl Opt {
     }
 
     /// Automatically detect the name of the package manager in question.
-    pub fn detect_pm<'s>() -> &'s str {
+    pub fn detect_pm_str<'s>() -> &'s str {
         #[cfg(target_os = "windows")]
         match () {
             _ if is_exe("choco", "") => "choco",
@@ -174,13 +174,13 @@ impl Opt {
     }
 
     /// Generate the PackageManager instance according it's name.
-    pub fn gen_pm(&self, cfg: Config) -> Box<dyn PackageManager> {
+    pub fn make_pm(&self, cfg: Config) -> Box<dyn PackageManager> {
         let cfg = {
             macro_rules! make_actual_cfg {
                 (
-                    $other:ident,
-                    ($( $bool_field:ident ), *),
-                    ($( $retain_field:ident ), *)
+                    $other: ident,
+                    bool: ($( $bool_field:ident ), *),
+                    retain: ($( $retain_field:ident ), *),
                 ) => {{
                     Config {
                         $($bool_field: self.$bool_field || $other.$bool_field,)*
@@ -190,26 +190,26 @@ impl Opt {
             }
             make_actual_cfg! {
                 cfg,
-                (
+                bool: (
                     dry_run,
                     needed,
                     no_confirm,
                     force_cask,
                     no_cache
                 ),
-                (
+                retain: (
                     default_pm
-                )
+                ),
             }
         };
 
-        let package_manager: &str = match (&self.using, &cfg.default_pm) {
+        let pm_str: &str = match (&self.using, &cfg.default_pm) {
             (Some(pm), _) => pm,
             (_, Some(pm)) => pm,
-            _ => Opt::detect_pm(),
+            _ => Opt::detect_pm_str(),
         };
 
-        match package_manager {
+        match pm_str {
             // Chocolatey
             "choco" => Box::new(chocolatey::Chocolatey { cfg }),
 
@@ -313,7 +313,7 @@ impl Opt {
     }
 
     pub fn dispatch(&self) -> Result<(), Error> {
-        self.dispatch_from(self.gen_pm(Config::load()?))
+        self.dispatch_from(self.make_pm(Config::load()?))
     }
 }
 

@@ -132,7 +132,7 @@ fn exec_checkerr(
 pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
     loop {
         let mut answer = String::new();
-        print!("{:>9} {}? ", question.yellow(), options.underline());
+        print_question(question, options);
         let _ = std::io::stdout().flush();
         let read = std::io::stdin().read_line(&mut answer);
         if !case_sensitive {
@@ -246,13 +246,18 @@ pub fn print_dryrun(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], pr
 }
 
 /// Print out a message after the given prompt.
-pub fn print_msg(msg: &str, prompt: &str) {
+pub fn print_message(msg: &str, prompt: &str) {
     println!("{:>9} {}", prompt.green().bold(), msg);
 }
 
 /// Print out an error after the given prompt.
-pub fn print_err(err: impl std::error::Error, prompt: &str) {
+pub fn print_error(err: impl std::error::Error, prompt: &str) {
     eprintln!("{:>9} {}", prompt.bright_red().bold(), err);
+}
+
+/// Print out a question after the given prompt.
+pub fn print_question(question: &str, options: &str) {
+    print!("{:>9} {}? ", question.yellow(), options.underline());
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.

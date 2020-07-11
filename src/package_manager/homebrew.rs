@@ -1,7 +1,7 @@
 use super::PackageManager;
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, print_msg, Mode, PROMPT_INFO, PROMPT_RUN};
+use crate::exec::{self, print_message, Mode, PROMPT_INFO, PROMPT_RUN};
 
 pub struct Homebrew {
     pub cfg: Config,
@@ -176,11 +176,11 @@ impl PackageManager for Homebrew {
 
         let pattern = "Unknown command: rmtree";
         if !exec::grep(&err_msg, &[pattern]).is_empty() {
-            print_msg(
+            print_message(
                 "`rmtree` is not installed. You may install it with the following command:",
                 PROMPT_INFO,
             );
-            print_msg("`brew tap beeftornado/rmtree`", PROMPT_INFO);
+            print_message("`brew tap beeftornado/rmtree`", PROMPT_INFO);
             return Err("`rmtree` required".into());
         }
 
