@@ -23,13 +23,13 @@ Run `pacaptr -Syu` on the distro of your choice!
 ## Supported Package Managers
 
 - `Windows/chocolatey`
-- `macOS/homebrew` ([Featured™](#platform-specific-tips))
-- `Linux/linuxbrew`¹
+- `macOS/homebrew` (with [auto `cask` invocation](#platform-specific-tips))
 - `Debian/apt`
 - `Alpine/apk`
 - `RedHat/dnf`
 - `SUSE/zypper`
 - `External/conda`¹
+- `External/linuxbrew`¹
 - `External/pip`¹
 - `External/tlmgr`¹
 
@@ -52,7 +52,7 @@ After some discussions in [pacapt/#126], I decided to rewrite the project in Rus
 
 PPAs might be added when appropriate.
 
-- `macOS/homebrew` & `Linux/linuxbrew` install:
+- `macOS/homebrew` & `External/linuxbrew` install:
 
   ```bash
   # Short version:
@@ -190,7 +190,7 @@ default_pm = "choco"
 
 ## Platform-Specific Tips
 
-- `macOS/homebrew` & `Linux/linuxbrew` support: Please note that `cask` is for macOS only.
+- `macOS/homebrew` & `External/linuxbrew` support: Please note that `cask` is for macOS only.
 
   - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
 
