@@ -32,6 +32,23 @@ impl PackageManager for Pip {
         "pip".into()
     }
 
+    /// A helper method to simplify direct command invocation.
+    fn just_run(
+        &self,
+        cmd: &str,
+        subcmd: &[&str],
+        kws: &[&str],
+        flags: &[&str],
+    ) -> Result<(), Error> {
+        let mode = if self.cfg.dry_run {
+            Mode::DryRun
+        } else {
+            Mode::CheckErr
+        };
+        exec::exec(cmd, subcmd, kws, flags, mode)?;
+        Ok(())
+    }
+
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {

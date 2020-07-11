@@ -4,6 +4,7 @@
         "Pkgng",
         "Swupd",
         "Tazpkg",
+        "Tlmgr",
         "Zypper",
         "choco",
         "clippy",

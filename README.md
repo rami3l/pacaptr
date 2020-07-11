@@ -31,6 +31,7 @@ Run `pacaptr -Syu` on the distro of your choice!
 - `SUSE/zypper`
 - `External/conda`¹
 - `External/pip`¹
+- `External/tlmgr`¹
 
 ¹: Require `pacaptr --using <name>` to invocate (see [general tips](#general-tips)).
 

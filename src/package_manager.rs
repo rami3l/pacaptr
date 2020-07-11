@@ -7,6 +7,7 @@ pub mod dnf;
 pub mod homebrew;
 pub mod linuxbrew;
 pub mod pip;
+pub mod tlmgr;
 pub mod unknown;
 pub mod zypper;
 

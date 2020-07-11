@@ -249,6 +249,9 @@ impl Opt {
                 cfg,
             }),
 
+            // Tlmgr
+            "tlmgr" => Box::new(tlmgr::Tlmgr { cfg }),
+
             // Unknown package manager X
             x => Box::new(unknown::Unknown { name: x.into() }),
         }
