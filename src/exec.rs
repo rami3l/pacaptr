@@ -6,6 +6,7 @@ use std::sync::Mutex;
 use subprocess::{Exec, Redirection};
 
 /// Different ways in which a command shall be dealt with.
+#[derive(Copy, Clone, Debug)]
 pub enum Mode {
     /// Solely print out the command that should be executed, and stop.
     DryRun,
