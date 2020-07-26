@@ -187,11 +187,12 @@ jobs:
         run: |
           import re
           version = re.sub('refs/\w+/', '' ,'${{ github.ref }}')
+          print('::set-output name=tag::{}'.format(version))
           # Remove suffix '-take.X' in the tag
           version = re.sub('-take\.\d+$', '', version)
           # Pop off the leading 'v' in the tag
           version = re.sub('^v', '', version)
-          print('::set-output name=tag::{}'.format(version))
+          print('::set-output name=ver::{}'.format(version))
         shell: python
 
       - name: Download release
