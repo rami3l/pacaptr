@@ -1,11 +1,10 @@
-use super::PackManager;
+use super::PackageManager;
+use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Mode};
 
 pub struct Chocolatey {
-    pub dry_run: bool,
-    pub no_confirm: bool,
-    pub needed: bool,
+    pub cfg: Config,
 }
 
 impl Chocolatey {
@@ -16,15 +15,15 @@ impl Chocolatey {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mut subcmd: Vec<&str> = subcmd.iter().cloned().collect();
-        if self.no_confirm {
+        let mut subcmd: Vec<&str> = subcmd.to_vec();
+        if self.cfg.no_confirm {
             subcmd.push("--yes");
         }
         self.just_run(cmd, &subcmd, kws, flags)
     }
 }
 
-impl PackManager for Chocolatey {
+impl PackageManager for Chocolatey {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "choco".into()
@@ -38,8 +37,8 @@ impl PackManager for Chocolatey {
         kws: &[&str],
         flags: &[&str],
     ) -> Result<(), Error> {
-        let mut flags: Vec<&str> = flags.iter().cloned().collect();
-        if self.dry_run {
+        let mut flags: Vec<&str> = flags.to_vec();
+        if self.cfg.dry_run {
             flags.push("--what-if");
         }
         exec::exec(cmd, subcmd, kws, &flags, Mode::CheckErr)?;
@@ -66,14 +65,14 @@ impl PackManager for Chocolatey {
         self.prompt_run("choco", &["uninstall"], kws, flags)
     }
 
-    /// Rs removes a package and its dependencies which are not required by any other installed package.
-    fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    /// Rss removes a package and its dependencies which are not required by any other installed package.
+    fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         self.prompt_run("choco", &["uninstall", "--removedependencies"], kws, flags)
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let subcmd: &[&str] = if self.needed {
+        let subcmd: &[&str] = if self.cfg.needed {
             &["install"]
         } else {
             &["install", "--force"]

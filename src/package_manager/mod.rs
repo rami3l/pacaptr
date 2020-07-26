@@ -1,10 +1,15 @@
 pub mod apk;
 pub mod apt;
+pub mod aptget;
 pub mod chocolatey;
+pub mod conda;
 pub mod dnf;
 pub mod homebrew;
 pub mod linuxbrew;
+pub mod pip;
+pub mod tlmgr;
 pub mod unknown;
+pub mod zypper;
 
 use crate::error::Error;
 use crate::exec::{self, Mode};
@@ -21,7 +26,7 @@ macro_rules! make_pm {
 /// The behaviors of a Pack(age)Manager.
 /// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 /// and https://wiki.archlinux.org/index.php/Pacman
-pub trait PackManager {
+pub trait PackageManager {
     /// Get the name of the package manager.
     fn name(&self) -> String;
 
@@ -68,8 +73,11 @@ pub trait PackManager {
         /// Rns removes a package and its dependencies which are not required by any other installed package,
         /// and skips the generation of configuration backup files.
         rns,
-        /// Rs removes a package and its dependencies which are not required by any other installed package.
+        /// Rs removes a package and its dependencies which are not required by any other installed package,
+        /// and not explicitly installed by the user.
         rs,
+        /// Rss removes a package and its dependencies which are not required by any other installed package.
+        rss,
         /// S installs one or more packages by name.
         s,
         /// Sc removes all the cached packages that are not currently installed, and the unused sync database.

@@ -1,7 +1,9 @@
+# cargo-features = ["strip"]
+
 [package]
 name = "pacaptr"
 description = "A pacman-like wrapper for many package managers."
-version = "0.2.0"
+version = "0.4.0"
 authors = ["Rami3L <rami3l@outlook.com>"]
 edition = "2018"
 
@@ -13,6 +15,26 @@ subprocess = "0.2.4"
 lazy_static = "1.4.0"
 # structopt = "0.3"
 clap = "3.0.0-beta.1"
-colored = "1.9.3"
-which = "4.0.0"
-# bus_writer = "0.1"
+colored = "2.0.0"
+which = "4.0.1"
+serde = { version = "1.0.114", features = ["derive"] }
+confy = "0.4.0"
+dirs = "3.0.0"
+
+[profile.release]
+# strip = "symbols"
+
+[package.metadata.deb]
+maintainer = "Rami3L <rami3l@outlook.com>"
+copyright = "2020, Rami3L"
+# license-file = ["LICENSE", "4"]
+extended-description = """\
+A Rust port of icy/pacapt, a wrapper for many package managers with \
+pacman-style command syntax."""
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+    ["target/release/pacaptr", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/pacaptr/README", "644"],
+]

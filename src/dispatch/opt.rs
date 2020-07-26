@@ -1,6 +1,7 @@
+use super::config::Config;
 use crate::error::Error;
 use crate::exec::is_exe;
-use crate::packmanager::*;
+use crate::package_manager::*;
 use clap::{self, Clap};
 // use structopt::{clap, StructOpt};
 
@@ -66,9 +67,10 @@ pub struct Opt {
         short,
         long = "search",
         alias = "recursive",
-        about = "(-S) search | (-R) recursive"
+        about = "(-S) search | (-R) recursive",
+        parse(from_occurrences)
     )]
-    s: bool,
+    s: u32,
 
     #[clap(short, long = "sysupgrade", about = "(-S) sysupgrade")]
     u: bool,
@@ -133,7 +135,7 @@ pub struct Opt {
 
 impl Opt {
     /// Check if an Opt object is malformed.
-    pub fn check(&self) -> Result<(), Error> {
+    fn check(&self) -> Result<(), Error> {
         let count = [self.query, self.remove, self.sync, self.update]
             .iter()
             .filter(|&&x| x)
@@ -146,7 +148,7 @@ impl Opt {
     }
 
     /// Automatically detect the name of the package manager in question.
-    pub fn detect_pm<'s>() -> &'s str {
+    pub fn detect_pm_str<'s>() -> &'s str {
         #[cfg(target_os = "windows")]
         match () {
             _ if is_exe("choco", "") => "choco",
@@ -161,72 +163,94 @@ impl Opt {
 
         #[cfg(target_os = "linux")]
         match () {
-            _ if is_exe("apt-get", "/usr/bin/apt-get") => "apt",
             _ if is_exe("apk", "/sbin/apk") => "apk",
+            _ if is_exe("apt", "/usr/bin/apt") => "apt",
+            _ if is_exe("apt-get", "/usr/bin/apt-get") => "apt-get",
             _ if is_exe("dnf", "/usr/bin/dnf") => "dnf",
+            _ if is_exe("zypper", "/usr/bin/zypper") => "zypper",
+
             _ => "unknown",
         }
     }
 
-    /// Generate the PackManager instance according it's name.
-    pub fn gen_pm(&self) -> Box<dyn PackManager> {
-        let dry_run = self.dry_run;
-        let needed = self.needed;
-        let no_confirm = self.no_confirm;
-        let force_cask = self.force_cask;
-        let no_cache = self.no_cache;
-        let pack_manager: &str = if let Some(pm) = &self.using {
-            pm
-        } else {
-            Opt::detect_pm()
+    /// Generate the PackageManager instance according it's name.
+    pub fn make_pm(&self, cfg: Config) -> Box<dyn PackageManager> {
+        let cfg = {
+            macro_rules! make_actual_cfg {
+                (
+                    $other: ident,
+                    bool: ($( $bool_field:ident ), *),
+                    retain: ($( $retain_field:ident ), *),
+                ) => {{
+                    Config {
+                        $($bool_field: self.$bool_field || $other.$bool_field,)*
+                        $($retain_field: $other.$retain_field,)*
+                    }
+                }};
+            }
+            make_actual_cfg! {
+                cfg,
+                bool: (
+                    dry_run,
+                    needed,
+                    no_confirm,
+                    force_cask,
+                    no_cache
+                ),
+                retain: (
+                    default_pm
+                ),
+            }
         };
 
-        match pack_manager {
+        let pm_str: &str = match (&self.using, &cfg.default_pm) {
+            (Some(pm), _) => pm,
+            (_, Some(pm)) => pm,
+            _ => Opt::detect_pm_str(),
+        };
+
+        match pm_str {
             // Chocolatey
-            "choco" => Box::new(chocolatey::Chocolatey {
-                dry_run,
-                no_confirm,
-                needed,
-            }),
+            "choco" => Box::new(chocolatey::Chocolatey { cfg }),
 
             // Homebrew
-            "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew {
-                dry_run,
-                force_cask,
-                no_confirm,
-                needed,
-                no_cache,
-            }),
+            "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew { cfg }),
 
             // Linuxbrew
-            "brew" => Box::new(linuxbrew::Linuxbrew {
-                dry_run,
-                no_confirm,
-                needed,
-                no_cache,
-            }),
-
-            // Apt/Dpkg for Debian/Ubuntu/Termux
-            "dpkg" | "apt" => Box::new(apt::Apt {
-                dry_run,
-                no_confirm,
-                needed,
-                no_cache,
-            }),
+            "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
 
             // Apk for Alpine
-            "apk" => Box::new(apk::Apk {
-                dry_run,
-                no_confirm,
-                no_cache,
-            }),
+            "apk" => Box::new(apk::Apk { cfg }),
+
+            // Apt for Debian/Ubuntu/Termux (new versions)
+            "apt" => Box::new(apt::Apt { cfg }),
+
+            // Apt-Get/Dpkg for Debian/Ubuntu/Termux
+            "apt-get" => Box::new(aptget::AptGet { cfg }),
 
             // Dnf for RedHat
-            "dnf" => Box::new(dnf::Dnf {
-                dry_run,
-                no_confirm,
-                no_cache,
+            "dnf" => Box::new(dnf::Dnf { cfg }),
+
+            // Zypper for SUSE
+            "zypper" => Box::new(zypper::Zypper { cfg }),
+
+            // * External Package Managers *
+
+            // Conda
+            "conda" => Box::new(conda::Conda { cfg }),
+
+            // Pip
+            "pip" => Box::new(pip::Pip {
+                cmd: "pip".into(),
+                cfg,
             }),
+            "pip3" => Box::new(pip::Pip {
+                cmd: "pip3".into(),
+                cfg,
+            }),
+
+            // Tlmgr
+            "tlmgr" => Box::new(tlmgr::Tlmgr { cfg }),
 
             // Unknown package manager X
             x => Box::new(unknown::Unknown { name: x.into() }),
@@ -234,7 +258,7 @@ impl Opt {
     }
 
     /// Execute the job according to the flags received and the package manager detected.
-    pub fn dispatch_from(&self, pm: Box<dyn PackManager>) -> Result<(), Error> {
+    pub fn dispatch_from(&self, pm: Box<dyn PackageManager>) -> Result<(), Error> {
         self.check()?;
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
         let flags: Vec<&str> = self.extra_flags.iter().map(|s| s.as_ref()).collect();
@@ -251,15 +275,18 @@ impl Opt {
                 _ if self.m => pm.qm(&kws, &flags),
                 _ if self.o => pm.qo(&kws, &flags),
                 _ if self.p => pm.qp(&kws, &flags),
-                _ if self.s => pm.qs(&kws, &flags),
+                _ if self.s == 1 => pm.qs(&kws, &flags),
+                _ if self.s >= 2 => unimplemented!(),
                 _ if self.u => pm.qu(&kws, &flags),
                 _ => pm.q(&kws, &flags),
             },
 
             _ if self.remove => match () {
-                _ if self.n && self.s => pm.rns(&kws, &flags),
+                _ if self.n && (self.s == 1) => pm.rns(&kws, &flags),
                 _ if self.n => pm.rn(&kws, &flags),
-                _ if self.s => pm.rs(&kws, &flags),
+                _ if self.s == 1 => pm.rs(&kws, &flags),
+                _ if self.s == 2 => pm.rss(&kws, &flags),
+                _ if self.s >= 3 => unimplemented!(),
                 _ => pm.r(&kws, &flags),
             },
 
@@ -273,7 +300,8 @@ impl Opt {
                 _ if self.i == 2 => pm.sii(&kws, &flags),
                 _ if self.i >= 3 => unimplemented!(),
                 _ if self.l => pm.sl(&kws, &flags),
-                _ if self.s => pm.ss(&kws, &flags),
+                _ if self.s == 1 => pm.ss(&kws, &flags),
+                _ if self.s >= 2 => unimplemented!(),
                 _ if self.u && self.y => pm.suy(&kws, &flags),
                 _ if self.u => pm.su(&kws, &flags),
                 _ if self.y => pm.sy(&kws, &flags),
@@ -288,7 +316,7 @@ impl Opt {
     }
 
     pub fn dispatch(&self) -> Result<(), Error> {
-        self.dispatch_from(self.gen_pm())
+        self.dispatch_from(self.make_pm(Config::load()?))
     }
 }
 
@@ -307,7 +335,7 @@ mod tests {
 
     struct MockPM {}
 
-    impl PackManager for MockPM {
+    impl PackageManager for MockPM {
         /// Get the name of the package manager.
         fn name(&self) -> String {
             "mockpm".into()
@@ -406,7 +434,7 @@ mod tests {
         assert!(opt.sync);
         assert!(opt.query);
         assert!(opt.n);
-        assert!(opt.s);
+        assert_eq!(opt.s, 1);
         opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
     }
 }

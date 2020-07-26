@@ -16,19 +16,24 @@ Run `pacaptr -Syu` on the distro of your choice!
   - [Supported Package Managers](#supported-package-managers)
   - [Motivation & Current Status](#motivation--current-status)
   - [Building & Installation](#building--installation)
+  - [Configuration](#configuration)
   - [General Tips](#general-tips)
   - [Platform-Specific Tips](#platform-specific-tips)
 
 ## Supported Package Managers
 
 - `Windows/chocolatey`
-- `macOS/homebrew`¹
-- `Linux/linuxbrew`
+- `macOS/homebrew` (with [auto `cask` invocation](#platform-specific-tips))
 - `Debian/apt`
 - `Alpine/apk`
 - `RedHat/dnf`
+- `SUSE/zypper`
+- `External/conda`¹
+- `External/linuxbrew`¹
+- `External/pip`¹
+- `External/tlmgr`¹
 
-¹: [Featured™](#platform-specific-tips)
+¹: Require `pacaptr --using <name>` to invocate (see [general tips](#general-tips)).
 
 Notes:
 
@@ -43,15 +48,17 @@ Initially, I found [icy/pacapt] which does just that, and I made this project to
 
 After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
 
-Now the implementations of different package managers are all placed in `./src/packmanager` folder, with names like `homebrew.rs`.
-
 ## Building & Installation
 
 PPAs might be added when appropriate.
 
-- `macOS/homebrew` or `Linux/Linuxbrew` install:
+- `macOS/homebrew` & `External/linuxbrew` install:
 
   ```bash
+  # Short version:
+  brew install rami3l/pacaptr/pacaptr
+
+  # Which is equivalent to this:
   brew tap rami3l/pacaptr
   brew install pacaptr
   ```
@@ -59,7 +66,8 @@ PPAs might be added when appropriate.
 - `Windows/chocolatey` install:
   
   ```powershell
-  choco install pacaptr
+  # Yes, now we are still in the prerelease stage...
+  choco install pacaptr --pre
   ```
 
 - Build from source:
@@ -79,9 +87,40 @@ PPAs might be added when appropriate.
   cargo uninstall pacaptr
   ```
 
+- Packaging for Debian:
+
+  ```bash
+  cargo install cargo-deb
+  cargo deb
+  ```
+
 Notes:
 
-- For `Alpine/apk` users: If `cargo build` doesn't work, please try `RUSTFLAGS="-C target-feature=-crt-static" cargo build` instead.
+- For `Alpine/apk` users: `cargo build` won't just work, please try this instead:
+  
+  ```bash
+  RUSTFLAGS="-C target-feature=-crt-static" cargo build
+  ```
+
+## Configuration
+
+The configuration file is `$HOME/.config/pacaptr/pacaptr.toml`.
+
+An example:
+
+```toml
+# This enforces the use of `install` instead of
+# `reinstall` in `pacaptr -S`
+needed = true
+
+# Explicitly set the default package manager
+default_pm = "choco"
+
+# dry_run = false
+# no_confirm = false
+# force_cask = false
+# no_cache = false
+```
 
 ## General Tips
 
@@ -90,7 +129,7 @@ Notes:
   ```bash
   # Here we force the use of `choco`,
   # so the following output is platform-independent:
-  pacaptr -Su --pm choco --dryrun
+  pacaptr --using choco -Su --dryrun
   # Pending: choco upgrade all
   ```
 
@@ -151,7 +190,7 @@ Notes:
 
 ## Platform-Specific Tips
 
-- `macOS/homebrew` & `Linux/linuxbrew` support: Please note that `cask` is for macOS only.
+- `macOS/homebrew` & `External/linuxbrew` support: Please note that `cask` is for macOS only.
 
   - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
 
@@ -165,13 +204,15 @@ Notes:
 
   - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
 
-  - To use `-Rs`, you need to install [rmtree] first:
+  - To use `-Rss`, you need to install [rmtree] first:
 
     ```bash
     brew tap beeftornado/rmtree
     ```
 
 - `Windows/chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
+
+- `External/pip` support: Use `pacaptr --using pip3` if you want to run the `pip3` command.
 
 [Pacman Rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt

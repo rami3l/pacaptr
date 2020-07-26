@@ -1,15 +1,12 @@
 use crate::error::Error;
-use colored::Colorize;
+use crate::print::*;
+use regex::Regex;
 use std::io::{BufReader, Read, Write};
 use std::sync::Mutex;
 use subprocess::{Exec, Redirection};
 
-pub static PROMPT_DRYRUN: &str = "Pending";
-pub static PROMPT_RUN: &str = "Running";
-pub static PROMPT_INFO: &str = "Info";
-pub static PROMPT_ERROR: &str = "Error";
-
 /// Different ways in which a command shall be dealt with.
+#[derive(Copy, Clone, Debug)]
 pub enum Mode {
     /// Solely print out the command that should be executed, and stop.
     DryRun,
@@ -76,16 +73,16 @@ fn exec_checkall(
         .stderr(Redirection::Merge)
         .stream_stdout()
         .map_err(|_| Error::from("Could not capture stdout"))
-        .and_then(|stream| Ok(BufReader::new(stream)))?;
+        .map(BufReader::new)?;
 
     let mut out = Vec::<u8>::new();
     let mut stdout = std::io::stdout();
 
     for mb in stdout_reader.bytes() {
         let b = mb?;
-        out.write(&[b])?;
+        out.write_all(&[b])?;
         if !mute {
-            stdout.write(&[b])?;
+            stdout.write_all(&[b])?;
         }
     }
 
@@ -109,16 +106,16 @@ fn exec_checkerr(
         .args(flags)
         .stream_stderr()
         .map_err(|_| Error::from("Could not capture stderr"))
-        .and_then(|stream| Ok(BufReader::new(stream)))?;
+        .map(BufReader::new)?;
 
     let mut out = Vec::<u8>::new();
     let mut stderr = std::io::stderr();
 
     for mb in stderr_reader.bytes() {
         let b = mb?;
-        out.write(&[b])?;
+        out.write_all(&[b])?;
         if !mute {
-            stderr.write(&[b])?;
+            stderr.write_all(&[b])?;
         }
     }
 
@@ -131,7 +128,7 @@ fn exec_checkerr(
 pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
     loop {
         let mut answer = String::new();
-        print!("{:>8} {}? ", question.yellow(), options.underline());
+        print_question(question, options);
         let _ = std::io::stdout().flush();
         let read = std::io::stdin().read_line(&mut answer);
         if !case_sensitive {
@@ -144,7 +141,7 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
             if let Some('\r') = answer.chars().next_back() {
                 answer.pop();
             }
-            if expected.iter().find(|&&x| x == &answer).is_some() {
+            if expected.iter().any(|&x| x == answer) {
                 break answer;
             }
         }
@@ -155,6 +152,7 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
 /// The command is provided in `command-subcommand-keywords` form (for example, `brew-[install]-[curl fish]`).
 /// If there is no subcommand, just pass `&[]`.
 /// The user will be prompted if (s)he wishes to continue with the command execution.
+#[allow(clippy::mutex_atomic)]
 fn exec_prompt(
     cmd: &str,
     subcmd: &[&str],
@@ -201,43 +199,16 @@ fn exec_prompt(
     exec_checkerr(cmd, subcmd, kws, flags, mute)
 }
 
-/// Get the String representation of a particular command.
-pub fn cmd_str(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str]) -> String {
-    [cmd]
+/// Find all lines in the given `text` that matches all the `patterns`.
+pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
+    let rs: Vec<Regex> = patterns
         .iter()
-        .chain(subcmd)
-        .chain(kws)
-        .chain(flags)
-        .cloned()
-        .collect::<Vec<&str>>()
-        .join(" ")
-}
-
-/// Print out the command after the given prompt.
-pub fn print_cmd(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
-    println!(
-        "{:>8} `{}`",
-        prompt.green().bold(),
-        cmd_str(cmd, subcmd, kws, flags)
-    );
-}
-
-/// Print out the command after the given prompt (dry run version).
-pub fn print_dryrun(cmd: &str, subcmd: &[&str], kws: &[&str], flags: &[&str], prompt: &str) {
-    println!(
-        "{:>8} `{}`",
-        prompt.green().bold(),
-        cmd_str(cmd, subcmd, kws, flags)
-    );
-}
-
-/// Print out a message after the given prompt.
-pub fn print_msg(msg: &str, prompt: &str) {
-    println!("{:>8} {}", prompt.green().bold(), msg);
-}
-
-pub fn print_err(err: impl std::error::Error, prompt: &str) {
-    eprintln!("{:>8} {}", prompt.bright_red().bold(), err);
+        .map(|&pat| Regex::new(pat).unwrap())
+        .collect();
+    text.lines()
+        .filter(|&line| rs.iter().all(|regex| regex.find(line).is_some()))
+        .map(|s| s.to_owned())
+        .collect()
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.

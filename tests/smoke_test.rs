@@ -97,6 +97,32 @@ mod chocolatey {
 }
 
 #[cfg(target_os = "linux")]
+mod linuxbrew {
+    use super::Test;
+
+    #[test]
+    fn si_ok() {
+        Test::new()
+            .pacaptr(&["-Si", "curl"], &[])
+            .output(&["Get a file from an HTTP, HTTPS or FTP server"])
+            .run(false)
+    }
+
+    #[test]
+    #[ignore]
+    fn r() {
+        Test::new()
+            .pacaptr(&["-S", "wget", "--yes"], &[])
+            .output(&["brew (re)?install wget"])
+            .exec("wget", &["-V"], &[])
+            .output(&["GNU Wget"])
+            .pacaptr(&["-R", "wget", "--yes"], &[])
+            .output(&["brew uninstall wget"])
+            .run(false)
+    }
+}
+
+#[cfg(target_os = "linux")]
 mod apt {
     use super::Test;
 
@@ -122,11 +148,11 @@ mod apt {
     fn r() {
         Test::new()
             .pacaptr(&["-S", "screen", "--yes"], &[])
-            .output(&["apt-get install --reinstall --yes screen"])
+            .output(&["apt(-get)? install --reinstall --yes screen"])
             .pacaptr(&["-Qi", "screen"], &[])
             .output(&["Status: install"])
             .pacaptr(&["-R", "screen", "--yes"], &[])
-            .output(&["apt-get remove --yes screen"])
+            .output(&["apt(-get)? remove --yes screen"])
             .pacaptr(&["-Qi", "screen"], &[])
             .output(&["Status: deinstall"])
             .run(false)
@@ -199,6 +225,41 @@ mod dnf {
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["dnf remove -y wget", "Removed:", "wget", "Complete!"])
+            .run(false)
+    }
+}
+
+#[cfg(target_os = "linux")]
+mod zypper {
+    use super::Test;
+
+    #[test]
+    fn si_ok() {
+        Test::new()
+            .pacaptr(&["-Si", "curl"], &[])
+            .output(&["A Tool for Transferring Data from URLs"])
+            .run(false)
+    }
+
+    #[test]
+    #[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
+    fn si_fail() {
+        Test::new()
+            .pacaptr(&["-Si", "wget"], &[])
+            .output(&["Why not use curl instead?"])
+            .run(false)
+    }
+
+    #[test]
+    #[ignore]
+    fn r() {
+        Test::new()
+            .pacaptr(&["-S", "wget", "--yes"], &[])
+            .output(&["zypper install -y wget", "Installing: wget"])
+            .exec("wget", &["-V"], &[])
+            .output(&["GNU Wget"])
+            .pacaptr(&["-R", "wget", "--yes"], &[])
+            .output(&["zypper remove -y wget", "Removing wget"])
             .run(false)
     }
 }

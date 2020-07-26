@@ -1,7 +1,8 @@
 pub mod dispatch;
-mod error;
+pub mod error;
 pub mod exec;
-mod packmanager;
+pub mod package_manager;
+pub mod print;
 
 #[macro_use]
 extern crate lazy_static;
