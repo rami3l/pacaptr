@@ -200,7 +200,7 @@ jobs:
         run: tar xvf ./release.tar.gz -C ./dist/choco/tools/
 
       - name: Add license
-        run: cp LICENSE dist/choco/tools/
+        run: cp LICENSE dist/choco/tools/LICENSE.txt
 
       - name: Generate Nuspec from template
         id: replace
