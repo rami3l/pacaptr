@@ -210,9 +210,7 @@ jobs:
         run: |
           import re
           from xml.sax.saxutils import escape
-          version = re.sub('refs/\w+/', '', '${{ github.ref }}')
-          # Pop off the leading 'v' in the tag
-          if version[0] == 'v': version = version[1:]
+          version = '${{ steps.ver.outputs.ver }}'
           # with open('README.md', 'r', encoding='utf8') as desc_file:
           #     description = desc_file.read()
           with open(
