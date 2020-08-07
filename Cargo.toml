@@ -16,7 +16,7 @@ lazy_static = "1.4.0"
 # structopt = "0.3"
 clap = "3.0.0-beta.1"
 colored = "2.0.0"
-which = "4.0.1"
+which = "4.0.2"
 serde = { version = "1.0.114", features = ["derive"] }
 confy = "0.4.0"
 dirs = "3.0.0"
