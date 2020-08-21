@@ -239,7 +239,12 @@ impl PackageManager for Homebrew {
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["info"], kws, flags)
+        let subcmd: &[&str] = if self.cfg.force_cask {
+            &["cask", "info"]
+        } else {
+            &["info"]
+        };
+        self.just_run("brew", subcmd, kws, flags)
     }
 
     /// Sii displays packages which require X to be installed, aka reverse dependencies.
