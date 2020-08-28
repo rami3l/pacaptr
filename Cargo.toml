@@ -1,40 +1,40 @@
 # cargo-features = ["strip"]
 
 [package]
-name = "pacaptr"
-description = "A pacman-like wrapper for many package managers."
-version = "0.4.0"
 authors = ["Rami3L <rami3l@outlook.com>"]
+description = "A pacman-like wrapper for many package managers."
 edition = "2018"
+name = "pacaptr"
+version = "0.5.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+lazy_static = "1.4.0"
 regex = "1.3.9"
 subprocess = "0.2.4"
-lazy_static = "1.4.0"
 # structopt = "0.3"
 clap = "3.0.0-beta.1"
 colored = "2.0.0"
-which = "4.0.2"
-serde = { version = "1.0.115", features = ["derive"] }
 confy = "0.4.0"
-dirs = "3.0.0"
+dirs = "3.0.1"
+serde = {version = "1.0.115", features = ["derive"]}
+which = "4.0.2"
 
 [profile.release]
 # strip = "symbols"
 
 [package.metadata.deb]
-maintainer = "Rami3L <rami3l@outlook.com>"
 copyright = "2020, Rami3L"
+maintainer = "Rami3L <rami3l@outlook.com>"
 # license-file = ["LICENSE", "4"]
+assets = [
+  ["target/release/pacaptr", "usr/bin/", "755"],
+  ["README.md", "usr/share/doc/pacaptr/README", "644"],
+]
+depends = "$auto"
 extended-description = """\
 A Rust port of icy/pacapt, a wrapper for many package managers with \
 pacman-style command syntax."""
-depends = "$auto"
-section = "utility"
 priority = "optional"
-assets = [
-    ["target/release/pacaptr", "usr/bin/", "755"],
-    ["README.md", "usr/share/doc/pacaptr/README", "644"],
-]
+section = "utility"

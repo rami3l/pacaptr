@@ -72,7 +72,7 @@ fn exec_checkall(
         .args(flags)
         .stderr(Redirection::Merge)
         .stream_stdout()
-        .map_err(|_| Error::from("Could not capture stdout"))
+        .map_err(|_| Error::from("Could not capture stdout, is the executable valid?"))
         .map(BufReader::new)?;
 
     let mut out = Vec::<u8>::new();
@@ -105,7 +105,7 @@ fn exec_checkerr(
         .args(kws)
         .args(flags)
         .stream_stderr()
-        .map_err(|_| Error::from("Could not capture stderr"))
+        .map_err(|_| Error::from("Could not capture stderr, is the executable valid?"))
         .map(BufReader::new)?;
 
     let mut out = Vec::<u8>::new();

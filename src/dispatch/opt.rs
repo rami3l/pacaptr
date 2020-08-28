@@ -158,6 +158,7 @@ impl Opt {
         #[cfg(target_os = "macos")]
         match () {
             _ if is_exe("brew", "/usr/local/bin/brew") => "brew",
+            _ if is_exe("port", "/opt/local/bin/port") => "port",
             _ => "unknown",
         }
 
@@ -203,11 +204,11 @@ impl Opt {
             }
         };
 
-        let pm_str: &str = match (&self.using, &cfg.default_pm) {
-            (Some(pm), _) => pm,
-            (_, Some(pm)) => pm,
-            _ => Opt::detect_pm_str(),
-        };
+        let pm_str: &str = self
+            .using
+            .as_deref()
+            .or_else(|| cfg.default_pm.as_deref())
+            .unwrap_or_else(Opt::detect_pm_str);
 
         match pm_str {
             // Chocolatey
@@ -218,6 +219,9 @@ impl Opt {
 
             // Linuxbrew
             "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
+
+            // Macports
+            "port" if cfg!(target_os = "macos") => Box::new(macports::Macports { cfg }),
 
             // Apk for Alpine
             "apk" => Box::new(apk::Apk { cfg }),

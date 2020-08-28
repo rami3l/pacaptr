@@ -232,7 +232,7 @@ checksum = "06de47b848347d8c4c94219ad8ecd35eb90231704b067e67e6ae2e36ee023510"
 
 [[package]]
 name = "pacaptr"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "clap",
  "colored",

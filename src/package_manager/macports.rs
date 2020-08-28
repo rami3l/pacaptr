@@ -2,13 +2,12 @@ use super::PackageManager;
 use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Mode};
-use crate::print::{self, PROMPT_INFO, PROMPT_RUN};
 
-pub struct Linuxbrew {
+pub struct Macports {
     pub cfg: Config,
 }
 
-impl Linuxbrew {
+impl Macports {
     /// A helper method to simplify prompted command invocation.
     fn prompt_run(
         &self,
@@ -27,10 +26,10 @@ impl Linuxbrew {
     }
 }
 
-impl PackageManager for Linuxbrew {
+impl PackageManager for Macports {
     /// Get the name of the package manager.
     fn name(&self) -> String {
-        "brew".into()
+        "port".into()
     }
 
     /// A helper method to simplify direct command invocation.
@@ -52,16 +51,12 @@ impl PackageManager for Linuxbrew {
 
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if kws.is_empty() {
-            self.just_run("brew", &["list"], &[], flags)
-        } else {
-            self.qs(kws, flags)
-        }
+        self.just_run("port", &["installed"], kws, flags)
     }
 
     /// Qc shows the changelog of a package.
     fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["log"], kws, flags)
+        self.just_run("port", &["log"], kws, flags)
     }
 
     /// Qi displays local package information: name, version, description, etc.
@@ -71,73 +66,39 @@ impl PackageManager for Linuxbrew {
 
     /// Ql displays files provided by local package.
     fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        // TODO: it seems that the output of `brew list python` in fish has a mechanism against duplication:
-        // /usr/local/Cellar/python/3.6.0/Frameworks/Python.framework/ (1234 files)
-        self.just_run("brew", &["list"], kws, flags)
+        self.just_run("port", &["contents"], kws, flags)
+    }
+
+    /// Qo queries the package which provides FILE.
+    fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.just_run("port", &["provides"], kws, flags)
     }
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let search = |contents: &str| {
-            exec::grep(contents, kws)
-                .iter()
-                .for_each(|ln| println!("{}", ln))
-        };
-
-        let search_output = |cmd, subcmd| {
-            print::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
-            let out_bytes = exec::exec(cmd, subcmd, &[], flags, Mode::Mute)?;
-            search(&String::from_utf8(out_bytes)?);
-            Ok(())
-        };
-
-        search_output("brew", &["list"])
+        self.just_run("port", &["-v", "installed"], kws, flags)
     }
 
     /// Qu lists packages which have an update available.
     fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["outdated"], kws, flags)
+        self.just_run("port", &["outdated"], kws, flags)
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("brew", &["uninstall"], kws, flags)
+        self.prompt_run("port", &["uninstall"], kws, flags)
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
     fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let subcmd: &[&str] = if self.cfg.dry_run {
-            &["rmtree", "--dry-run"]
-        } else {
-            &["rmtree"]
-        };
-        let err_bytes = exec::exec("brew", subcmd, kws, flags, Mode::CheckErr)?;
-        let err_msg = String::from_utf8(err_bytes)?;
-
-        let pattern = "Unknown command: rmtree";
-        if !exec::grep(&err_msg, &[pattern]).is_empty() {
-            print::print_msg(
-                "`rmtree` is not installed. You may install it with the following command:",
-                PROMPT_INFO,
-            );
-            print::print_msg("`brew tap beeftornado/rmtree`", PROMPT_INFO);
-            return Err("`rmtree` required".into());
-        }
-
-        Ok(())
+        self.prompt_run("port", &["uninstall", "--follow-dependencies"], kws, flags)
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if self.cfg.needed {
-            self.prompt_run("brew", &["install"], kws, flags)?;
-        } else {
-            // If the package is not installed, `brew reinstall` behaves just like `brew install`,
-            // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
-            self.prompt_run("brew", &["reinstall"], kws, flags)?;
-        }
+        self.just_run("port", &["install"], kws, flags)?;
         if self.cfg.no_cache {
             self.scc(kws, flags)?;
         }
@@ -146,56 +107,37 @@ impl PackageManager for Linuxbrew {
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if self.cfg.dry_run {
-            exec::exec(
-                "brew",
-                &["cleanup", "--dry-run"],
-                kws,
-                flags,
-                Mode::CheckErr,
-            )?;
-            Ok(())
+        if flags.is_empty() {
+            self.prompt_run("port", &["clean", "--all"], &["inactive"], flags)
         } else {
-            self.prompt_run("brew", &["cleanup"], kws, flags)
+            self.prompt_run("port", &["clean", "--all"], kws, flags)
         }
     }
 
     /// Scc removes all files from the cache.
     fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if self.cfg.dry_run {
-            exec::exec(
-                "brew",
-                &["cleanup", "-s", "--dry-run"],
-                kws,
-                flags,
-                Mode::CheckErr,
-            )?;
-            Ok(())
+        if flags.is_empty() {
+            self.prompt_run("port", &["clean", "--all"], &["installed"], flags)
         } else {
-            self.prompt_run("brew", &["cleanup", "-s"], kws, flags)
+            self.sc(kws, flags)
         }
     }
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["info"], kws, flags)
-    }
-
-    /// Sii displays packages which require X to be installed, aka reverse dependencies.
-    fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["uses"], kws, flags)
+        self.just_run("port", &["info"], kws, flags)
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["search"], kws, flags)
+        self.just_run("port", &["search"], kws, flags)
     }
 
     /// Su updates outdated packages.
-    fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["upgrade"], kws, flags)?;
+    fn su(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        self.prompt_run("port", &["upgrade"], &["outdated"], flags)?;
         if self.cfg.no_cache {
-            self.scc(kws, flags)?;
+            self.scc(_kws, flags)?;
         }
         Ok(())
     }
@@ -206,14 +148,9 @@ impl PackageManager for Linuxbrew {
         self.su(kws, flags)
     }
 
-    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
-    fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("brew", &["fetch"], kws, flags)
-    }
-
     /// Sy refreshes the local package database.
     fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["update"], &[], flags)?;
+        self.just_run("port", &["selfupdate"], &[], flags)?;
         if !kws.is_empty() {
             self.s(kws, flags)?;
         }
