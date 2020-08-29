@@ -98,7 +98,7 @@ impl PackageManager for Macports {
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("port", &["install"], kws, flags)?;
+        self.prompt_run("port", &["install"], kws, flags)?;
         if self.cfg.no_cache {
             self.scc(kws, flags)?;
         }
