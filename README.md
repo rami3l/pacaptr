@@ -24,6 +24,7 @@ Run `pacaptr -Syu` on the distro of your choice!
 
 - `Windows/chocolatey`
 - `macOS/homebrew` (with [auto `cask` invocation](#platform-specific-tips))
+- `macOS/macports`
 - `Debian/apt`
 - `Alpine/apk`
 - `RedHat/dnf`
