@@ -8,10 +8,10 @@ use std::sync::Mutex;
 use subprocess::{Exec, Redirection};
 
 /// Different ways in which a command shall be dealt with.
-#[derive(Copy, Clone, Debug)]
-pub enum Mode {
+#[derive(Clone, Debug)]
+pub enum Mode<S = String> {
     /// Solely print out the command that should be executed, and stop.
-    DryRun,
+    PrintCmd,
 
     /// Silently collect all the `stdout`/`stderr` combined. Print nothing.
     Mute,
@@ -24,12 +24,15 @@ pub enum Mode {
     /// This will work with a colored `stdout`.
     CheckErr,
 
-    /// Like `CheckErr`, but will ask for confirmation before proceeding.
+    /// A MANUAL prompt. Like `CheckErr`, but will ask for confirmation before proceeding.
     Prompt,
+
+    /// Like `CheckErr`, but will add some extra flags when running.
+    /// This can be used to implement flags like `--dry-run` and `--no-confirm`.
+    WithFlags(Vec<S>),
 }
 
-/// A command to be executed,
-/// provided in `command-keywords-flags` form.
+/// A command to be executed, provided in `command-keywords-flags` form.  
 /// For example, `[brew install]-[curl fish]-[--dry-run]`).
 #[derive(Debug, Clone, Default)]
 pub struct Cmd<S = String> {
@@ -53,41 +56,13 @@ impl<S: AsRef<OsStr>> Cmd<S> {
     }
 }
 
-impl<S: AsRef<str>> std::fmt::Display for Cmd<S> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let Cmd {
-            sudo,
-            cmd,
-            kws,
-            flags,
-        } = self;
-        let sudo: &[&str] = if *sudo && !is_root() {
-            &["sudo", "-S"]
-        } else {
-            &[]
-        };
-        let cmd_full = cmd
-            .iter()
-            .chain(kws)
-            .chain(flags)
-            .map(|s| &s as &dyn AsRef<str>);
-        let res = sudo
-            .into_iter()
-            .map(|&s| &s as &dyn AsRef<str>)
-            .chain(cmd_full)
-            .map(|s| s.as_ref())
-            .collect::<Vec<&str>>()
-            .join(" ");
-        write!(f, "{}", res)
-    }
-}
-
 impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
-    /// Execute a command and return a `Result<Vec<u8>, _>`.
-    /// The exact behavior depends on the `mode` passed in. See `exec::Mode`'s documentation for more info.
-    pub fn exec(self, mode: Mode) -> Result<Vec<u8>, Error> {
+    /// Execute a command and return a `Result<Vec<u8>, _>`.  
+    /// The exact behavior depends on the `mode` passed in.  
+    /// See `exec::Mode`'s documentation for more info.
+    pub fn exec(self, mode: Mode<S>) -> Result<Vec<u8>, Error> {
         match mode {
-            Mode::DryRun => {
+            Mode::PrintCmd => {
                 print_cmd(&self, PROMPT_DRYRUN);
                 Ok(Vec::new())
             }
@@ -101,6 +76,10 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
                 self.exec_checkerr(false)
             }
             Mode::Prompt => self.exec_prompt(false),
+            Mode::WithFlags(v) => {
+                print_cmd(&self, PROMPT_RUN);
+                self.exec_withflags(v, false)
+            }
         }
     }
 
@@ -128,7 +107,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         Ok(out)
     }
 
-    /// Execute a command and collect its `stderr`.
+    /// Execute a command and collect its `stderr`.  
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     fn exec_checkerr(self, mute: bool) -> Result<Vec<u8>, Error> {
         let stderr_reader = self
@@ -151,8 +130,8 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         Ok(out)
     }
 
-    /// Execute a command, collect its `stderr` and print its output to the console.
-    /// The command is provided in `command-keywords-flags` form (for example, `[brew install]-[curl fish]-[--dry-run]`).
+    /// Execute a command and collect its `stderr`.
+    /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     /// The user will be prompted if (s)he wishes to continue with the command execution.
     #[allow(clippy::mutex_atomic)]
     fn exec_prompt(self, mute: bool) -> Result<Vec<u8>, Error> {
@@ -191,6 +170,44 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         }
         print_cmd(&self, PROMPT_RUN);
         self.exec_checkerr(mute)
+    }
+
+    /// Execute a command and collect its `stderr`.
+    /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
+    /// The extra flags will be used during the command execution.
+    fn exec_withflags(self, flags: Vec<S>, mute: bool) -> Result<Vec<u8>, Error> {
+        let mut cmd = self;
+        self.cmd.extend(flags);
+        self.exec_checkerr(mute)
+    }
+}
+
+impl<S: AsRef<str>> std::fmt::Display for Cmd<S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let Cmd {
+            sudo,
+            cmd,
+            kws,
+            flags,
+        } = self;
+        let sudo: &[&str] = if *sudo && !is_root() {
+            &["sudo", "-S"]
+        } else {
+            &[]
+        };
+        let cmd_full = cmd
+            .iter()
+            .chain(kws)
+            .chain(flags)
+            .map(|s| &s as &dyn AsRef<str>);
+        let res = sudo
+            .into_iter()
+            .map(|&s| &s as &dyn AsRef<str>)
+            .chain(cmd_full)
+            .map(|s| s.as_ref())
+            .collect::<Vec<&str>>()
+            .join(" ");
+        write!(f, "{}", res)
     }
 }
 

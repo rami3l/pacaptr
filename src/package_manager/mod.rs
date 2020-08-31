@@ -110,3 +110,8 @@ pub trait PackageManager {
         u
     );
 }
+
+/// The intrinsic properties of a package manager.
+pub struct Strategies {
+    // TODO!
+}

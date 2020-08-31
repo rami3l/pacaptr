@@ -18,7 +18,7 @@ impl Apk {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mode = match () {
-            _ if self.cfg.dry_run => Mode::DryRun,
+            _ if self.cfg.dry_run => Mode::PrintCmd,
             _ if self.cfg.no_confirm => Mode::CheckErr,
             _ => Mode::Prompt,
         };
@@ -42,7 +42,7 @@ impl PackageManager for Apk {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mode = if self.cfg.dry_run {
-            Mode::DryRun
+            Mode::PrintCmd
         } else {
             Mode::CheckErr
         };

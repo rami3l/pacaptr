@@ -43,7 +43,7 @@ impl PackageManager for Zypper {
         flags: &[&str],
     ) -> Result<(), Error> {
         let mode = if self.cfg.dry_run {
-            Mode::DryRun
+            Mode::PrintCmd
         } else {
             Mode::CheckErr
         };
