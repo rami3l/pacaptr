@@ -8,8 +8,8 @@ use std::sync::Mutex;
 use subprocess::{Exec, Redirection};
 
 /// Different ways in which a command shall be dealt with.
-#[derive(Clone, Debug)]
-pub enum Mode<S = String> {
+#[derive(Copy, Clone, Debug)]
+pub enum Mode {
     /// Solely print out the command that should be executed, and stop.
     PrintCmd,
 
@@ -24,22 +24,19 @@ pub enum Mode<S = String> {
     /// This will work with a colored `stdout`.
     CheckErr,
 
-    /// A MANUAL prompt. Like `CheckErr`, but will ask for confirmation before proceeding.
+    /// A CUSTOM prompt implemented by `pacaptr`.
+    /// Like `CheckErr`, but will ask for confirmation before proceeding.
     Prompt,
-
-    /// Like `CheckErr`, but will add some extra flags when running.
-    /// This can be used to implement flags like `--dry-run` and `--no-confirm`.
-    WithFlags(Vec<S>),
 }
 
 /// A command to be executed, provided in `command-keywords-flags` form.  
 /// For example, `[brew install]-[curl fish]-[--dry-run]`).
 #[derive(Debug, Clone, Default)]
 pub struct Cmd<S = String> {
-    sudo: bool,
-    cmd: Vec<S>,
-    kws: Vec<S>,
-    flags: Vec<S>,
+    pub sudo: bool,
+    pub cmd: Vec<S>,
+    pub kws: Vec<S>,
+    pub flags: Vec<S>,
 }
 
 impl<S: AsRef<OsStr>> Cmd<S> {
@@ -60,7 +57,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     /// Execute a command and return a `Result<Vec<u8>, _>`.  
     /// The exact behavior depends on the `mode` passed in.  
     /// See `exec::Mode`'s documentation for more info.
-    pub fn exec(self, mode: Mode<S>) -> Result<Vec<u8>, Error> {
+    pub fn exec(self, mode: Mode) -> Result<Vec<u8>, Error> {
         match mode {
             Mode::PrintCmd => {
                 print_cmd(&self, PROMPT_DRYRUN);
@@ -76,10 +73,6 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
                 self.exec_checkerr(false)
             }
             Mode::Prompt => self.exec_prompt(false),
-            Mode::WithFlags(v) => {
-                print_cmd(&self, PROMPT_RUN);
-                self.exec_withflags(v, false)
-            }
         }
     }
 
@@ -175,10 +168,10 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     /// Execute a command and collect its `stderr`.
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     /// The extra flags will be used during the command execution.
-    fn exec_withflags(self, flags: Vec<S>, mute: bool) -> Result<Vec<u8>, Error> {
+    fn exec_withflags(self, flags: Vec<S>, mode: Mode) -> Result<Vec<u8>, Error> {
         let mut cmd = self;
         self.cmd.extend(flags);
-        self.exec_checkerr(mute)
+        self.exec(mode)
     }
 }
 

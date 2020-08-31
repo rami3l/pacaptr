@@ -12,8 +12,9 @@ pub mod tlmgr;
 pub mod unknown;
 pub mod zypper;
 
+use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Mode};
+use crate::exec::{self, Cmd, Mode};
 
 macro_rules! make_pm {
     ($( $(#[$meta:meta])* $method:ident ), *) => {
@@ -31,17 +32,41 @@ pub trait PackageManager {
     /// Get the name of the package manager.
     fn name(&self) -> String;
 
+    /// Get the config of the package manager.
+    fn cfg(&self) -> Config;
+
     /// A helper method to simplify direct command invocation.
-    /// Override this to implement features such as `dryrun`.
-    fn just_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        exec::exec(cmd, subcmd, kws, flags, Mode::CheckErr)?;
-        Ok(())
+    fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Vec<u8>, Error> {
+        match strat.dry_run {
+            _ if !self.cfg().dry_run => (),
+            DryRunStrategy::PrintCmd => return cmd.exec(Mode::PrintCmd),
+            DryRunStrategy::WithFlags(v) => cmd.flags.extend(v),
+        };
+
+        let no_confirm = self.cfg().no_confirm;
+        let res = match strat.prompt {
+            PromptStrategy::None | PromptStrategy::CustomPrompt if no_confirm => {
+                cmd.exec(Mode::CheckErr)?
+            }
+            PromptStrategy::CustomPrompt => cmd.exec(Mode::Prompt)?,
+            PromptStrategy::NativePrompt { no_confirm: v } => {
+                let mut curr_cmd = cmd.clone();
+                if no_confirm {
+                    curr_cmd.flags.extend(v);
+                }
+                curr_cmd.exec(Mode::CheckErr)?
+            }
+        };
+
+        let flags = cmd.flags.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
+        match strat.no_cache {
+            _ if !self.cfg().no_cache => (),
+            NoCacheStrategy::None => (),
+            NoCacheStrategy::Sc => self.sc(&[], &flags)?,
+            NoCacheStrategy::Scc => self.scc(&[], &flags)?,
+        };
+
+        Ok(res)
     }
 
     make_pm!(
@@ -111,7 +136,91 @@ pub trait PackageManager {
     );
 }
 
-/// The intrinsic properties of a package manager.
-pub struct Strategies {
-    // TODO!
+/// Different ways in which a command shall be dealt with.
+/// This is a `PackageManager` specified version intended to be used along with `Strategies`.
+#[derive(Copy, Clone, Debug)]
+pub enum PmMode {
+    /// Silently collect all the `stdout`/`stderr` combined. Print nothing.
+    Mute,
+
+    /// Print out the command which should be executed, run it and collect its `stdout`/`stderr` combined.
+    /// Potentially dangerous as it destroys the colored `stdout`. Use it only if really necessary.
+    CheckAll,
+
+    /// Print out the command which should be executed, run it and collect its `stderr`.
+    /// This will work with a colored `stdout`.
+    CheckErr,
+}
+
+impl Into<Mode> for PmMode {
+    fn into(self) -> Mode {
+        match self {
+            PmMode::Mute => Mode::Mute,
+            PmMode::CheckAll => Mode::CheckAll,
+            PmMode::CheckErr => Mode::CheckErr,
+        }
+    }
+}
+
+/// The intrinsic properties of a command of a specific package manager
+/// indicating how it is run.
+#[derive(Clone, Debug, Default)]
+pub struct Strategies<S = String> {
+    dry_run: DryRunStrategy<S>,
+    prompt: PromptStrategy<S>,
+    no_cache: NoCacheStrategy<S>,
+}
+
+/// How a dry run is dealt with.
+#[derive(Debug, Clone)]
+pub enum DryRunStrategy<S = String> {
+    /// Print the command to be run, and stop.
+    PrintCmd,
+    /// Invoke the corresponding package manager with the flags given.
+    WithFlags(Vec<S>),
+}
+
+impl<S> Default for DryRunStrategy<S> {
+    fn default() -> Self {
+        DryRunStrategy::PrintCmd
+    }
+}
+
+/// How the prompt is dealt with when running the package manager.
+#[derive(Debug, Clone)]
+pub enum PromptStrategy<S = String> {
+    /// There is no prompt.
+    None,
+    /// There is no prompt, but a custom prompt is added.
+    CustomPrompt,
+    /// There is a native prompt provided by the package manager.
+    NativePrompt {
+        /// Flags required to bypass native prompt.
+        no_confirm: Vec<S>,
+    },
+}
+
+impl<S> Default for PromptStrategy<S> {
+    fn default() -> Self {
+        PromptStrategy::None
+    }
+}
+
+/// How the cache is cleaned when `no_cache` is set to `true`.
+#[derive(Debug, Clone)]
+pub enum NoCacheStrategy<S = String> {
+    /// Do not clean cache.
+    None,
+    /// Use `-Sc` to clean the cache.
+    Sc,
+    /// Use `-Scc`.
+    Scc,
+    /// Invoke the corresponding package manager with the flags given.
+    WithFlags(Vec<S>),
+}
+
+impl<S> Default for NoCacheStrategy<S> {
+    fn default() -> Self {
+        NoCacheStrategy::None
+    }
 }
