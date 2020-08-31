@@ -1,5 +1,6 @@
 use crate::error::Error;
 use crate::print::*;
+pub use is_root::is_root;
 use regex::Regex;
 use std::ffi::OsStr;
 use std::io::{BufReader, Read, Write};
@@ -32,6 +33,7 @@ pub enum Mode {
 /// For example, `[brew install]-[curl fish]-[--dry-run]`).
 #[derive(Debug, Clone, Default)]
 pub struct Cmd<S = String> {
+    sudo: bool,
     cmd: Vec<S>,
     kws: Vec<S>,
     flags: Vec<S>,
@@ -40,21 +42,39 @@ pub struct Cmd<S = String> {
 impl<S: AsRef<OsStr>> Cmd<S> {
     /// Convert a `Cmd` object into a `subprocess::Exec`.
     pub fn build(self) -> Exec {
-        let (cmd, subcmd) = (self.cmd[0], &self.cmd[1..]);
-        Exec::cmd(cmd)
-            .args(subcmd)
-            .args(&self.kws)
-            .args(&self.flags)
+        // * We use `sudo -S` to launch subprocess if `sudo` is `true` and the current user is not `root`.
+        let builder = if self.sudo && !is_root() {
+            Exec::cmd("sudo").arg("-S").args(&self.cmd)
+        } else {
+            let (cmd, subcmd) = (self.cmd[0], &self.cmd[1..]);
+            Exec::cmd(cmd).args(subcmd)
+        };
+        builder.args(&self.kws).args(&self.flags)
     }
 }
 
 impl<S: AsRef<str>> std::fmt::Display for Cmd<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let Cmd { cmd, kws, flags } = self;
-        let res = cmd
+        let Cmd {
+            sudo,
+            cmd,
+            kws,
+            flags,
+        } = self;
+        let sudo: &[&str] = if *sudo && !is_root() {
+            &["sudo", "-S"]
+        } else {
+            &[]
+        };
+        let cmd_full = cmd
             .iter()
             .chain(kws)
             .chain(flags)
+            .map(|s| &s as &dyn AsRef<str>);
+        let res = sudo
+            .into_iter()
+            .map(|&s| &s as &dyn AsRef<str>)
+            .chain(cmd_full)
             .map(|s| s.as_ref())
             .collect::<Vec<&str>>()
             .join(" ");
