@@ -1,4 +1,5 @@
 pub mod apk;
+/*
 pub mod apt;
 pub mod aptget;
 pub mod chocolatey;
@@ -9,12 +10,13 @@ pub mod linuxbrew;
 pub mod macports;
 pub mod pip;
 pub mod tlmgr;
-pub mod unknown;
 pub mod zypper;
+*/
+pub mod unknown;
 
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Cmd, Mode};
+use crate::exec::{Cmd, Mode};
 
 macro_rules! make_pm {
     ($( $(#[$meta:meta])* $method:ident ), *) => {
@@ -37,36 +39,52 @@ pub trait PackageManager {
 
     /// A helper method to simplify direct command invocation.
     fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Vec<u8>, Error> {
-        match strat.dry_run {
-            _ if !self.cfg().dry_run => (),
-            DryRunStrategy::PrintCmd => return cmd.exec(Mode::PrintCmd),
-            DryRunStrategy::WithFlags(v) => cmd.flags.extend(v),
-        };
-
-        let no_confirm = self.cfg().no_confirm;
-        let res = match strat.prompt {
-            PromptStrategy::None | PromptStrategy::CustomPrompt if no_confirm => {
-                cmd.exec(Mode::CheckErr)?
-            }
-            PromptStrategy::CustomPrompt => cmd.exec(Mode::Prompt)?,
-            PromptStrategy::NativePrompt { no_confirm: v } => {
-                let mut curr_cmd = cmd.clone();
-                if no_confirm {
-                    curr_cmd.flags.extend(v);
+        // `--dry-run` should apply to both the main command and the cleaning command.
+        let res = {
+            let body = || {
+                let no_confirm = self.cfg().no_confirm;
+                match strat.prompt {
+                    PromptStrategy::None => cmd.exec(Mode::CheckErr),
+                    PromptStrategy::CustomPrompt if no_confirm => cmd.exec(Mode::CheckErr),
+                    PromptStrategy::CustomPrompt => cmd.exec(Mode::Prompt),
+                    PromptStrategy::NativePrompt { no_confirm: v } => {
+                        let mut curr_cmd = cmd.clone();
+                        if no_confirm {
+                            curr_cmd.flags.extend(v);
+                        }
+                        curr_cmd.exec(Mode::CheckErr)
+                    }
                 }
-                curr_cmd.exec(Mode::CheckErr)?
+            };
+
+            match strat.dry_run {
+                DryRunStrategy::PrintCmd if self.cfg().dry_run => {
+                    cmd.clone().exec(Mode::PrintCmd)?
+                }
+                DryRunStrategy::WithFlags(v) => {
+                    cmd.flags.extend(v);
+                    body()?
+                }
+                _ => body()?,
             }
         };
 
-        let flags = cmd.flags.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
-        match strat.no_cache {
-            _ if !self.cfg().no_cache => (),
-            NoCacheStrategy::None => (),
-            NoCacheStrategy::Sc => self.sc(&[], &flags)?,
-            NoCacheStrategy::Scc => self.scc(&[], &flags)?,
-        };
+        if self.cfg().no_cache {
+            let flags = cmd.flags.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
+            match strat.no_cache {
+                NoCacheStrategy::None => (),
+                NoCacheStrategy::Sc => self.sc(&[], &flags)?,
+                NoCacheStrategy::Scc => self.scc(&[], &flags)?,
+            };
+        }
 
         Ok(res)
+    }
+
+    /// A helper method to simplify direct command invocation.
+    /// It is just like `run`, but intended to be used only for its side effects.
+    fn just_run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<(), Error> {
+        self.run(cmd, mode, strat).and(Ok(()))
     }
 
     make_pm![
@@ -152,6 +170,12 @@ pub enum PmMode {
     CheckErr,
 }
 
+impl Default for PmMode {
+    fn default() -> Self {
+        PmMode::CheckErr
+    }
+}
+
 impl Into<Mode> for PmMode {
     fn into(self) -> Mode {
         match self {
@@ -180,6 +204,12 @@ pub enum DryRunStrategy<S = String> {
     WithFlags(Vec<S>),
 }
 
+impl DryRunStrategy<String> {
+    pub fn with_flags(flags: &[&str]) -> Self {
+        Self::WithFlags(flags.iter().map(|&s| s.to_owned()).collect())
+    }
+}
+
 impl<S> Default for DryRunStrategy<S> {
     fn default() -> Self {
         DryRunStrategy::PrintCmd
@@ -200,6 +230,14 @@ pub enum PromptStrategy<S = String> {
     },
 }
 
+impl PromptStrategy<String> {
+    pub fn native_prompt(no_confirm: &[&str]) -> Self {
+        Self::NativePrompt {
+            no_confirm: no_confirm.iter().map(|&s| s.to_owned()).collect(),
+        }
+    }
+}
+
 impl<S> Default for PromptStrategy<S> {
     fn default() -> Self {
         PromptStrategy::None
@@ -210,6 +248,7 @@ impl<S> Default for PromptStrategy<S> {
 #[derive(Debug, Clone)]
 pub enum NoCacheStrategy<S = String> {
     /// Do not clean cache.
+    /// This variant MUST be used when implementing cache cleaning methods like `-Sc`.
     None,
     /// Use `-Sc` to clean the cache.
     Sc,
@@ -217,6 +256,12 @@ pub enum NoCacheStrategy<S = String> {
     Scc,
     /// Invoke the corresponding package manager with the flags given.
     WithFlags(Vec<S>),
+}
+
+impl NoCacheStrategy<String> {
+    pub fn with_flags(flags: &[&str]) -> Self {
+        Self::WithFlags(flags.iter().map(|&s| s.to_owned()).collect())
+    }
 }
 
 impl<S> Default for NoCacheStrategy<S> {

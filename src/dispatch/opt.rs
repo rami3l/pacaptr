@@ -212,6 +212,7 @@ impl Opt {
             .unwrap_or_else(Opt::detect_pm_str);
 
         match pm_str {
+            /*
             // Chocolatey
             "choco" => Box::new(chocolatey::Chocolatey { cfg }),
 
@@ -223,10 +224,10 @@ impl Opt {
 
             // Macports
             "port" if cfg!(target_os = "macos") => Box::new(macports::Macports { cfg }),
-
+            */
             // Apk for Alpine
             "apk" => Box::new(apk::Apk { cfg }),
-
+            /*
             // Apt for Debian/Ubuntu/Termux (new versions)
             "apt" => Box::new(apt::Apt { cfg }),
 
@@ -256,7 +257,7 @@ impl Opt {
 
             // Tlmgr
             "tlmgr" => Box::new(tlmgr::Tlmgr { cfg }),
-
+            */
             // Unknown package manager X
             x => Box::new(unknown::Unknown { name: x.into() }),
         }
@@ -290,7 +291,7 @@ impl Opt {
             counters: [c, i, s]
         };
 
-        let chars: Vec<char> = options.chars().collect();
+        let mut chars: Vec<char> = options.chars().collect();
         chars.sort_by(|a, b| a.cmp(b));
         options = String::from_iter(chars);
 
@@ -333,6 +334,10 @@ mod tests {
         /// Get the name of the package manager.
         fn name(&self) -> String {
             "mockpm".into()
+        }
+
+        fn cfg(&self) -> Config {
+            Config::default()
         }
 
         make_mock_pm![

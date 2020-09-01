@@ -39,6 +39,34 @@ pub struct Cmd<S = String> {
     pub flags: Vec<S>,
 }
 
+impl Cmd<String> {
+    pub fn new(cmd: &[&str]) -> Self {
+        Self {
+            cmd: cmd.iter().map(|&s| s.to_owned()).collect(),
+            ..Default::default()
+        }
+    }
+
+    pub fn new_sudo(cmd: &[&str]) -> Self {
+        Self::new(cmd).sudo(true)
+    }
+
+    pub fn kws(mut self, kws: &[&str]) -> Self {
+        self.kws = kws.iter().map(|&s| s.to_owned()).collect();
+        self
+    }
+
+    pub fn flags(mut self, flags: &[&str]) -> Self {
+        self.flags = flags.iter().map(|&s| s.to_owned()).collect();
+        self
+    }
+
+    pub fn sudo(mut self, sudo: bool) -> Self {
+        self.sudo = sudo;
+        self
+    }
+}
+
 impl<S: AsRef<OsStr>> Cmd<S> {
     /// Convert a `Cmd` object into a `subprocess::Exec`.
     pub fn build(self) -> Exec {
@@ -46,8 +74,12 @@ impl<S: AsRef<OsStr>> Cmd<S> {
         let builder = if self.sudo && !is_root() {
             Exec::cmd("sudo").arg("-S").args(&self.cmd)
         } else {
-            let (cmd, subcmd) = (self.cmd[0], &self.cmd[1..]);
-            Exec::cmd(cmd).args(subcmd)
+            let mut cmd_iter = self.cmd.iter();
+            let cmd = cmd_iter
+                .next()
+                .expect("Failed to build Cmd, command is empty");
+            let subcmd: Vec<_> = cmd_iter.collect();
+            Exec::cmd(cmd).args(&subcmd)
         };
         builder.args(&self.kws).args(&self.flags)
     }
@@ -170,36 +202,28 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     /// The extra flags will be used during the command execution.
     fn exec_withflags(self, flags: Vec<S>, mode: Mode) -> Result<Vec<u8>, Error> {
         let mut cmd = self;
-        self.cmd.extend(flags);
-        self.exec(mode)
+        cmd.flags.extend(flags);
+        cmd.exec(mode)
     }
 }
 
 impl<S: AsRef<str>> std::fmt::Display for Cmd<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let Cmd {
-            sudo,
-            cmd,
-            kws,
-            flags,
-        } = self;
-        let sudo: &[&str] = if *sudo && !is_root() {
-            &["sudo", "-S"]
+        let sudo: &str = if self.sudo && !is_root() {
+            "sudo -S"
         } else {
-            &[]
+            ""
         };
-        let cmd_full = cmd
+        let mut res = sudo.to_owned();
+        let cmd_str = self
+            .cmd
             .iter()
-            .chain(kws)
-            .chain(flags)
-            .map(|s| &s as &dyn AsRef<str>);
-        let res = sudo
-            .into_iter()
-            .map(|&s| &s as &dyn AsRef<str>)
-            .chain(cmd_full)
+            .chain(&self.kws)
+            .chain(&self.flags)
             .map(|s| s.as_ref())
             .collect::<Vec<&str>>()
             .join(" ");
+        res.push_str(&cmd_str);
         write!(f, "{}", res)
     }
 }
