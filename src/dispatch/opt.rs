@@ -3,6 +3,7 @@ use crate::error::Error;
 use crate::exec::is_exe;
 use crate::package_manager::*;
 use clap::{self, Clap};
+use std::iter::FromIterator;
 // use structopt::{clap, StructOpt};
 
 /// The command line options to be collected.
@@ -267,56 +268,45 @@ impl Opt {
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
         let flags: Vec<&str> = self.extra_flags.iter().map(|s| s.as_ref()).collect();
 
-        match () {
-            _ if self.query => match () {
-                _ if self.c == 1 => pm.qc(&kws, &flags),
-                _ if self.c >= 2 => unimplemented!(),
-                _ if self.e => pm.qe(&kws, &flags),
-                _ if self.i == 1 => pm.qi(&kws, &flags),
-                _ if self.i >= 2 => unimplemented!(),
-                _ if self.k => pm.qk(&kws, &flags),
-                _ if self.l => pm.ql(&kws, &flags),
-                _ if self.m => pm.qm(&kws, &flags),
-                _ if self.o => pm.qo(&kws, &flags),
-                _ if self.p => pm.qp(&kws, &flags),
-                _ if self.s == 1 => pm.qs(&kws, &flags),
-                _ if self.s >= 2 => unimplemented!(),
-                _ if self.u => pm.qu(&kws, &flags),
-                _ => pm.q(&kws, &flags),
-            },
+        let mut options = "".to_owned();
 
-            _ if self.remove => match () {
-                _ if self.n && (self.s == 1) => pm.rns(&kws, &flags),
-                _ if self.n => pm.rn(&kws, &flags),
-                _ if self.s == 1 => pm.rs(&kws, &flags),
-                _ if self.s == 2 => pm.rss(&kws, &flags),
-                _ if self.s >= 3 => unimplemented!(),
-                _ => pm.r(&kws, &flags),
-            },
-
-            _ if self.sync => match () {
-                _ if self.c == 1 => pm.sc(&kws, &flags),
-                _ if self.c == 2 => pm.scc(&kws, &flags),
-                _ if self.c == 3 => pm.sccc(&kws, &flags),
-                _ if self.c >= 4 => unimplemented!(),
-                _ if self.g => pm.sg(&kws, &flags),
-                _ if self.i == 1 => pm.si(&kws, &flags),
-                _ if self.i == 2 => pm.sii(&kws, &flags),
-                _ if self.i >= 3 => unimplemented!(),
-                _ if self.l => pm.sl(&kws, &flags),
-                _ if self.s == 1 => pm.ss(&kws, &flags),
-                _ if self.s >= 2 => unimplemented!(),
-                _ if self.u && self.y => pm.suy(&kws, &flags),
-                _ if self.u => pm.su(&kws, &flags),
-                _ if self.y => pm.sy(&kws, &flags),
-                _ if self.w => pm.sw(&kws, &flags),
-                _ => pm.s(&kws, &flags),
-            },
-
-            _ if self.update => pm.u(&kws, &flags),
-
-            _ => Err("Invalid flag".into()),
+        macro_rules! collect_options {
+            (ops:[$( $op:ident ), *],flags:[$( $flag:ident ), *], counters: [$($counter: ident), *]) => {
+                $(if self.$op {
+                    options.push_str(&stringify!($op)[0..1].to_uppercase());
+                })*
+                $(if self.$flag {
+                    options.push_str(stringify!($flag));
+                })*
+                $(for _ in 0..self.$counter {
+                    options.push_str(stringify!($counter));
+                })*
+            };
         }
+
+        collect_options! {
+            ops: [query, remove, sync, update],
+            flags: [e, g, k, l, m, n, o, p, u, w, y],
+            counters: [c, i, s]
+        };
+
+        let chars: Vec<char> = options.chars().collect();
+        chars.sort_by(|a, b| a.cmp(b));
+        options = String::from_iter(chars);
+
+        macro_rules! dispatch_match {
+            ($( $method:ident ), *) => {
+                match options.to_lowercase().as_ref() {
+                    $(stringify!($method) => pm.$method(&kws, &flags),)*
+                    _ => Err("Invalid flag".into()),
+                }
+            };
+        }
+
+        dispatch_match![
+            q, qc, qe, qi, qk, ql, qm, qo, qp, qs, qu, r, rn, rns, rs, rss, s, sc, scc, sccc, sg,
+            si, sii, sl, ss, su, suy, sw, sy, u
+        ]
     }
 
     pub fn dispatch(&self) -> Result<(), Error> {
@@ -345,10 +335,10 @@ mod tests {
             "mockpm".into()
         }
 
-        make_mock_pm!(
-            q, qc, qe, qi, qk, ql, qm, qo, qp, qs, qu, r, rn, rns, rs, s, sc, scc, sccc, sg, si,
-            sii, sl, ss, su, suy, sw, sy, u
-        );
+        make_mock_pm![
+            q, qc, qe, qi, qk, ql, qm, qo, qp, qs, qu, r, rn, rns, rs, rss, s, sc, scc, sccc, sg,
+            si, sii, sl, ss, su, suy, sw, sy, u
+        ];
     }
 
     impl Opt {

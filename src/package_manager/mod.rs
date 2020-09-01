@@ -69,7 +69,7 @@ pub trait PackageManager {
         Ok(res)
     }
 
-    make_pm!(
+    make_pm![
         /// Q generates a list of installed packages.
         q,
         /// Qc shows the changelog of a package.
@@ -133,7 +133,7 @@ pub trait PackageManager {
         sy,
         /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
         u
-    );
+    ];
 }
 
 /// Different ways in which a command shall be dealt with.
