@@ -66,7 +66,7 @@ pub trait PackageManager {
                 DryRunStrategy::PrintCmd if self.cfg().dry_run => {
                     cmd.clone().exec(Mode::PrintCmd)?
                 }
-                DryRunStrategy::WithFlags(v) => {
+                DryRunStrategy::WithFlags(v) if self.cfg().dry_run => {
                     cmd.flags.extend(v.to_owned());
                     body(&cmd)?
                 }

@@ -8,8 +8,8 @@ pub struct Apk {
     pub cfg: Config,
 }
 
-impl Apk {
-    const PROMPT_STRAT: Strategies = Strategies {
+lazy_static! {
+    static ref PROMPT_STRAT: Strategies = Strategies {
         prompt: PromptStrategy::CustomPrompt,
         ..Default::default()
     };
@@ -85,7 +85,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["apk", "del"]).kws(kws).flags(flags),
             Default::default(),
-            Self::PROMPT_STRAT,
+            PROMPT_STRAT.clone(),
         )
     }
 
@@ -94,7 +94,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["apk", "del", "--purge"]).kws(kws).flags(flags),
             Default::default(),
-            Self::PROMPT_STRAT,
+            PROMPT_STRAT.clone(),
         )
     }
 
@@ -105,7 +105,7 @@ impl PackageManager for Apk {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            Self::PROMPT_STRAT,
+            PROMPT_STRAT.clone(),
         )
     }
 
@@ -133,7 +133,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["apk", "cache", "-v", "clean"]).flags(flags),
             Default::default(),
-            Self::PROMPT_STRAT,
+            PROMPT_STRAT.clone(),
         )
     }
 
@@ -142,7 +142,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["rm", "-vrf", "/var/cache/apk/*"]).flags(flags),
             Default::default(),
-            Self::PROMPT_STRAT,
+            PROMPT_STRAT.clone(),
         )
     }
 
@@ -217,7 +217,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["apk", "fetch"]).kws(kws).flags(flags),
             Default::default(),
-            Self::PROMPT_STRAT,
+            PROMPT_STRAT.clone(),
         )
     }
 

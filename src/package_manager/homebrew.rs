@@ -1,4 +1,4 @@
-use super::{PackageManager, PmMode, PromptStrategy, Strategies};
+use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Cmd, Mode};
@@ -8,17 +8,39 @@ pub struct Homebrew {
     pub cfg: Config,
 }
 
-enum CaskState {
-    NotFound,
-    Unneeded,
-    Needed,
-}
-
-impl Homebrew {
-    const PROMPT_STRAT: Strategies = Strategies {
+lazy_static! {
+    static ref PROMPT_STRAT: Strategies = Strategies {
         prompt: PromptStrategy::CustomPrompt,
         ..Default::default()
     };
+    static ref INSTALL_STRAT: Strategies = Strategies {
+        prompt: PromptStrategy::CustomPrompt,
+        no_cache: NoCacheStrategy::Scc,
+        ..Default::default()
+    };
+}
+
+enum CaskState {
+    NotFound,
+    Brew,
+    Cask,
+}
+
+impl Homebrew {
+    /*
+    const CASK_PREFIX: &'static str = "cask/";
+
+    fn strip_cask_prefix(pack: &str) -> String {
+        {
+            if pack.starts_with(Self::CASK_PREFIX) {
+                &pack[Self::CASK_PREFIX.len()..]
+            } else {
+                pack
+            }
+        }
+        .to_owned()
+    }
+    */
 
     /// Search the output of `brew info` to see if we need `brew cask` for a certain package.
     fn search(&self, pack: &str, flags: &[&str]) -> Result<CaskState, Error> {
@@ -34,15 +56,12 @@ impl Homebrew {
 
             if exec::grep(&out, &[no_formula]).is_empty() {
                 // Found a formula
-                CaskState::Unneeded
+                CaskState::Brew
+            } else if !exec::grep(&out, &[found_cask]).is_empty() {
+                // Found a cask
+                CaskState::Cask
             } else {
-                // Found no formula
-                if !exec::grep(&out, &[found_cask]).is_empty() {
-                    // Found a cask
-                    CaskState::Needed
-                } else {
-                    CaskState::NotFound
-                }
+                CaskState::NotFound
             }
         };
 
@@ -58,26 +77,25 @@ impl Homebrew {
         subcmd: &'s [&str],
         pack: &str,
         flags: &[&str],
+        strat: Strategies,
     ) -> Result<(), Error> {
-        let do_impl = |mut cmd: Vec<&'s str>| {
+        let do_impl = |mut cmd: Vec<&'s str>, pack: &str| {
             cmd.extend(subcmd);
             self.just_run(
                 Cmd::new(&cmd).kws(&[pack]).flags(flags),
                 Default::default(),
-                Self::PROMPT_STRAT,
+                strat,
             )
         };
-        let brew_do = || do_impl(vec!["brew"]);
-        let brew_cask_do = || do_impl(vec!["brew", "cask"]);
 
         if self.cfg.force_cask {
-            return brew_cask_do();
+            return do_impl(vec!["brew", "cask"], pack);
         }
 
         let code = self.search(pack, flags)?;
         match code {
-            CaskState::NotFound | CaskState::Unneeded => brew_do(),
-            CaskState::Needed => brew_cask_do(),
+            CaskState::NotFound | CaskState::Brew => do_impl(vec!["brew"], pack),
+            CaskState::Cask => do_impl(vec!["brew", "cask"], pack),
         }
     }
 }
@@ -116,8 +134,8 @@ impl PackageManager for Homebrew {
     fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         // TODO: it seems that the output of `brew list python` in fish has a mechanism against duplication:
         // /usr/local/Cellar/python/3.6.0/Frameworks/Python.framework/ (1234 files)
-        self.just_run("brew", &["list"], kws, flags)?;
-        self.just_run("brew", &["cask", "list"], kws, flags)
+        self.just_run_default(Cmd::new(&["brew", "list"]).kws(kws).flags(flags))?;
+        self.just_run_default(Cmd::new(&["brew", "cask", "list"]).kws(kws).flags(flags))
     }
 
     /// Qs searches locally installed package for names or descriptions.
@@ -130,37 +148,38 @@ impl PackageManager for Homebrew {
                 .for_each(|ln| println!("{}", ln))
         };
 
-        let search_output = |cmd, subcmd| {
-            print::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
-            let out_bytes = exec::exec(cmd, subcmd, &[], flags, Mode::Mute)?;
+        let search_output = |cmd| {
+            let cmd = Cmd::new(cmd).flags(flags);
+            print::print_cmd(&cmd, PROMPT_RUN);
+            let out_bytes = cmd.exec(Mode::Mute)?;
             search(&String::from_utf8(out_bytes)?);
             Ok(())
         };
 
-        search_output("brew", &["list"])?;
-        search_output("brew", &["cask", "list"])
+        search_output(&["brew", "list"])?;
+        search_output(&["brew", "cask", "list"])
     }
 
     /// Qu lists packages which have an update available.
     fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["outdated"], kws, flags)
+        self.just_run_default(Cmd::new(&["brew", "outdated"]).kws(kws).flags(flags))
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         kws.iter()
-            .map(|&pack| self.auto_cask_do(&["uninstall"], pack, flags))
+            .map(|&pack| self.auto_cask_do(&["uninstall"], pack, flags, PROMPT_STRAT.clone()))
             .collect()
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
     fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let subcmd: &[&str] = if self.cfg.dry_run {
-            &["rmtree", "--dry-run"]
+        let cmd: &[&str] = if self.cfg.dry_run {
+            &["brew", "rmtree", "--dry-run"]
         } else {
-            &["rmtree"]
+            &["brew", "rmtree"]
         };
-        let err_bytes = exec::exec("brew", subcmd, kws, flags, Mode::CheckErr)?;
+        let err_bytes = Cmd::new(cmd).kws(kws).flags(flags).exec(Mode::CheckErr)?;
         let err_msg = String::from_utf8(err_bytes)?;
 
         let pattern = "Unknown command: rmtree";
@@ -180,86 +199,78 @@ impl PackageManager for Homebrew {
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         for &pack in kws {
             if self.cfg.needed {
-                self.auto_cask_do(&["install"], pack, flags)?;
+                self.auto_cask_do(&["install"], pack, flags, INSTALL_STRAT.clone())?;
             } else {
                 // If the package is not installed, `brew reinstall` behaves just like `brew install`,
                 // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
-                self.auto_cask_do(&["reinstall"], pack, flags)?;
+                self.auto_cask_do(&["reinstall"], pack, flags, INSTALL_STRAT.clone())?;
             }
-        }
-        if self.cfg.no_cache {
-            self.scc(kws, flags)?;
         }
         Ok(())
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if self.cfg.dry_run {
-            exec::exec(
-                "brew",
-                &["cleanup", "--dry-run"],
-                kws,
-                flags,
-                Mode::CheckErr,
-            )?;
-            Ok(())
-        } else {
-            self.prompt_run("brew", &["cleanup"], kws, flags)
-        }
+        self.just_run(
+            Cmd::new(&["brew", "cleanup"]).kws(kws).flags(flags),
+            Default::default(),
+            Strategies {
+                dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+                prompt: PromptStrategy::CustomPrompt,
+                ..Default::default()
+            },
+        )
     }
 
     /// Scc removes all files from the cache.
     fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if self.cfg.dry_run {
-            exec::exec(
-                "brew",
-                &["cleanup", "-s", "--dry-run"],
-                kws,
-                flags,
-                Mode::CheckErr,
-            )?;
-            Ok(())
-        } else {
-            self.prompt_run("brew", &["cleanup", "-s"], kws, flags)
-        }
+        self.just_run(
+            Cmd::new(&["brew", "cleanup", "-s"]).kws(kws).flags(flags),
+            Default::default(),
+            Strategies {
+                dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+                prompt: PromptStrategy::CustomPrompt,
+                ..Default::default()
+            },
+        )
     }
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let subcmd: &[&str] = if self.cfg.force_cask {
-            &["cask", "info"]
+        let cmd: &[&str] = if self.cfg.force_cask {
+            &["brew", "cask", "info"]
         } else {
-            &["info"]
+            &["brew", "info"]
         };
-        self.just_run("brew", subcmd, kws, flags)
+        self.just_run_default(Cmd::new(cmd).kws(kws).flags(flags))
     }
 
     /// Sii displays packages which require X to be installed, aka reverse dependencies.
     fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["uses"], kws, flags)
+        self.just_run_default(Cmd::new(&["brew", "uses"]).kws(kws).flags(flags))
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["search"], kws, flags)
+        self.just_run_default(Cmd::new(&["brew", "search"]).kws(kws).flags(flags))
     }
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.prompt_run("brew", &["upgrade"], kws, flags)?;
-            self.prompt_run("brew", &["cask", "upgrade"], kws, flags)?;
-            if self.cfg.no_cache {
-                self.scc(kws, flags)?;
-            }
-            Ok(())
+            self.just_run(
+                Cmd::new(&["brew", "upgrade"]).kws(kws).flags(flags),
+                Default::default(),
+                PROMPT_STRAT.clone(),
+            )?;
+            self.just_run(
+                Cmd::new(&["brew", "cask", "upgrade"]).kws(kws).flags(flags),
+                Default::default(),
+                INSTALL_STRAT.clone(),
+            )
         } else {
             for &pack in kws {
-                self.auto_cask_do(&["upgrade"], pack, flags)?;
-            }
-            if self.cfg.no_cache {
-                self.scc(kws, flags)?;
+                self.auto_cask_do(&["upgrade"], pack, flags, INSTALL_STRAT.clone())?;
             }
             Ok(())
         }
@@ -273,12 +284,14 @@ impl PackageManager for Homebrew {
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("brew", &["fetch"], kws, flags)
+        kws.iter()
+            .map(|&pack| self.auto_cask_do(&["fetch"], pack, flags, PROMPT_STRAT.clone()))
+            .collect()
     }
 
     /// Sy refreshes the local package database.
     fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["update"], &[], flags)?;
+        self.just_run_default(Cmd::new(&["brew", "update"]).flags(flags))?;
         if !kws.is_empty() {
             self.s(kws, flags)?;
         }
