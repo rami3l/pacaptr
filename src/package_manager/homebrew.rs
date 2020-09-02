@@ -79,7 +79,7 @@ impl Homebrew {
         flags: &[&str],
         strat: Strategies,
     ) -> Result<(), Error> {
-        let do_impl = |mut cmd: Vec<&'s str>, pack: &str| {
+        let run = |mut cmd: Vec<&'s str>, pack: &str| {
             cmd.extend(subcmd);
             self.just_run(
                 Cmd::new(&cmd).kws(&[pack]).flags(flags),
@@ -89,13 +89,13 @@ impl Homebrew {
         };
 
         if self.cfg.force_cask {
-            return do_impl(vec!["brew", "cask"], pack);
+            return run(vec!["brew", "cask"], pack);
         }
 
         let code = self.search(pack, flags)?;
         match code {
-            CaskState::NotFound | CaskState::Brew => do_impl(vec!["brew"], pack),
-            CaskState::Cask => do_impl(vec!["brew", "cask"], pack),
+            CaskState::NotFound | CaskState::Brew => run(vec!["brew"], pack),
+            CaskState::Cask => run(vec!["brew", "cask"], pack),
         }
     }
 }

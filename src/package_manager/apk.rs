@@ -1,8 +1,9 @@
-use super::{NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Cmd};
 use crate::print::{self, PROMPT_RUN};
+use exec::Mode;
 
 pub struct Apk {
     pub cfg: Config,
@@ -71,7 +72,7 @@ impl PackageManager for Apk {
         let search_output = |cmd| {
             let cmd = Cmd::new(cmd).flags(flags);
             print::print_cmd(&cmd, PROMPT_RUN);
-            let out_bytes = self.run(cmd, PmMode::Mute, Default::default())?;
+            let out_bytes = cmd.exec(Mode::Mute)?;
             search(&String::from_utf8(out_bytes)?);
             Ok(())
         };
@@ -169,19 +170,12 @@ impl PackageManager for Apk {
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if kws.is_empty() {
-            self.just_run(
-                Cmd::new(&["apk", "upgrade"]).kws(kws).flags(flags),
-                Default::default(),
-                INSTALL_STRAT.clone(),
-            )
+        let cmd = if kws.is_empty() {
+            Cmd::new(&["apk", "upgrade"]).kws(kws).flags(flags)
         } else {
-            self.just_run(
-                Cmd::new(&["apk", "add", "-u"]).kws(kws).flags(flags),
-                Default::default(),
-                INSTALL_STRAT.clone(),
-            )
-        }
+            Cmd::new(&["apk", "add", "-u"]).kws(kws).flags(flags)
+        };
+        self.just_run(cmd, Default::default(), INSTALL_STRAT.clone())
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
