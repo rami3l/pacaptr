@@ -213,13 +213,13 @@ impl PackageManager for Apk {
         };
         if kws.is_empty() {
             self.just_run(
-                Cmd::new(&["apk", "search", "-v"]).kws(kws).flags(flags),
+                Cmd::new(&["apk", "upgrade"]).kws(kws).flags(flags),
                 Default::default(),
                 strat,
             )
         } else {
             self.just_run(
-                Cmd::new(&["apk", "search", "-v"]).kws(kws).flags(flags),
+                Cmd::new(&["apk", "add", "-u"]).kws(kws).flags(flags),
                 Default::default(),
                 strat,
             )

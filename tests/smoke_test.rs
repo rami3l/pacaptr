@@ -55,7 +55,7 @@ mod homebrew {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"], &[])
             .output(&["brew (re)?install wget"])
-            .exec("wget", &["-V"], &[])
+            .exec(&["wget", "-V"], &[])
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["brew uninstall wget", "Uninstalling /usr/local/Cellar/wget"])

@@ -1,7 +1,6 @@
-use pacaptr::exec::{self, Mode};
+use pacaptr::exec::{self, Cmd, Mode};
 
-static CARGO: &str = "cargo";
-static RUN: &[&str] = &["run", "--"];
+static CARGO_RUN: &[&str] = &["cargo", "run", "--"];
 
 #[derive(Debug)]
 enum Input<'i> {
@@ -10,8 +9,7 @@ enum Input<'i> {
         flags: &'i [&'i str],
     },
     Exec {
-        cmd: &'i str,
-        subcmd: &'i [&'i str],
+        cmd: &'i [&'i str],
         kws: &'i [&'i str],
     },
 }
@@ -39,12 +37,12 @@ impl<'t> Test<'t> {
         self
     }
 
-    pub fn exec(mut self, cmd: &'t str, subcmd: &'t [&str], kws: &'t [&str]) -> Self {
+    pub fn exec(mut self, cmd: &'t [&str], kws: &'t [&str]) -> Self {
         // Guard against consecutive inputs without calling `self.output()`.
         if self.pending_input.is_some() {
             panic!("Unexpected consecutive inputs")
         } else {
-            self.pending_input = Some(Input::Exec { cmd, subcmd, kws });
+            self.pending_input = Some(Input::Exec { cmd, kws });
         }
         self
     }
@@ -83,12 +81,12 @@ impl<'t> Test<'t> {
             //     raise MatchError(some_msg)
             let mode = if verbose { Mode::CheckAll } else { Mode::Mute };
             let got_bytes: Vec<u8> = match *input {
-                Input::Pacaptr { args, flags } => {
-                    exec::exec(CARGO, RUN, args, flags, mode).unwrap()
-                }
-                Input::Exec { cmd, subcmd, kws } => {
-                    exec::exec(cmd, subcmd, kws, &[], mode).unwrap()
-                }
+                Input::Pacaptr { args, flags } => Cmd::new(CARGO_RUN)
+                    .kws(args)
+                    .flags(flags)
+                    .exec(mode)
+                    .unwrap(),
+                Input::Exec { cmd, kws } => Cmd::new(cmd).kws(kws).exec(mode).unwrap(),
             };
             let got = String::from_utf8(got_bytes).unwrap();
             try_match(&got, *patterns);

@@ -41,40 +41,45 @@ pub trait PackageManager {
     fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Vec<u8>, Error> {
         // `--dry-run` should apply to both the main command and the cleaning command.
         let res = {
-            let body = || {
+            let body = |cmd: &Cmd| {
+                let mut curr_cmd = cmd.clone();
                 let no_confirm = self.cfg().no_confirm;
-                match strat.prompt {
-                    PromptStrategy::None => cmd.exec(Mode::CheckErr),
-                    PromptStrategy::CustomPrompt if no_confirm => cmd.exec(Mode::CheckErr),
-                    PromptStrategy::CustomPrompt => cmd.exec(Mode::Prompt),
+                if self.cfg().no_cache {
+                    if let NoCacheStrategy::WithFlags(v) = &strat.no_cache {
+                        curr_cmd.flags.extend(v.to_owned());
+                    }
+                }
+                match &strat.prompt {
+                    PromptStrategy::None => curr_cmd.exec(Mode::CheckErr),
+                    PromptStrategy::CustomPrompt if no_confirm => curr_cmd.exec(Mode::CheckErr),
+                    PromptStrategy::CustomPrompt => curr_cmd.exec(Mode::Prompt),
                     PromptStrategy::NativePrompt { no_confirm: v } => {
-                        let mut curr_cmd = cmd.clone();
                         if no_confirm {
-                            curr_cmd.flags.extend(v);
+                            curr_cmd.flags.extend(v.to_owned());
                         }
                         curr_cmd.exec(Mode::CheckErr)
                     }
                 }
             };
 
-            match strat.dry_run {
+            match &strat.dry_run {
                 DryRunStrategy::PrintCmd if self.cfg().dry_run => {
                     cmd.clone().exec(Mode::PrintCmd)?
                 }
                 DryRunStrategy::WithFlags(v) => {
-                    cmd.flags.extend(v);
-                    body()?
+                    cmd.flags.extend(v.to_owned());
+                    body(&cmd)?
                 }
-                _ => body()?,
+                _ => body(&cmd)?,
             }
         };
 
         if self.cfg().no_cache {
             let flags = cmd.flags.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
-            match strat.no_cache {
-                NoCacheStrategy::None => (),
+            match &strat.no_cache {
                 NoCacheStrategy::Sc => self.sc(&[], &flags)?,
                 NoCacheStrategy::Scc => self.scc(&[], &flags)?,
+                _ => (),
             };
         }
 

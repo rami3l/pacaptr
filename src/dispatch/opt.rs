@@ -292,7 +292,7 @@ impl Opt {
         };
 
         let mut chars: Vec<char> = options.chars().collect();
-        chars.sort_by(|a, b| a.cmp(b));
+        chars.sort_unstable();
         options = String::from_iter(chars);
 
         macro_rules! dispatch_match {
