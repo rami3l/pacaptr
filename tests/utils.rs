@@ -1,4 +1,4 @@
-use pacaptr::exec::{self, Cmd, Mode};
+use pacaptr::exec::{Cmd, Mode};
 
 static CARGO_RUN: &[&str] = &["cargo", "run", "--"];
 

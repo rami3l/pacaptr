@@ -50,14 +50,14 @@ pub trait PackageManager {
                     }
                 }
                 match &strat.prompt {
-                    PromptStrategy::None => curr_cmd.exec(Mode::CheckErr),
-                    PromptStrategy::CustomPrompt if no_confirm => curr_cmd.exec(Mode::CheckErr),
+                    PromptStrategy::None => curr_cmd.exec(mode.into()),
+                    PromptStrategy::CustomPrompt if no_confirm => curr_cmd.exec(mode.into()),
                     PromptStrategy::CustomPrompt => curr_cmd.exec(Mode::Prompt),
                     PromptStrategy::NativePrompt { no_confirm: v } => {
                         if no_confirm {
                             curr_cmd.flags.extend(v.to_owned());
                         }
-                        curr_cmd.exec(Mode::CheckErr)
+                        curr_cmd.exec(mode.into())
                     }
                 }
             };
@@ -88,13 +88,13 @@ pub trait PackageManager {
 
     /// A helper method to simplify direct command invocation.
     /// It is just like `run`, but intended to be used only for its side effects.
-    fn just_run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<(), Error> {
+    fn just_run(&self, cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<(), Error> {
         self.run(cmd, mode, strat).and(Ok(()))
     }
 
     /// A helper method to simplify direct command invocation.
     /// It is just like `run`, but intended to be used only for its side effects, and always with default mode (`CheckErr` for now) and strategies.
-    fn just_run_default(&self, mut cmd: Cmd) -> Result<(), Error> {
+    fn just_run_default(&self, cmd: Cmd) -> Result<(), Error> {
         self.just_run(cmd, Default::default(), Default::default())
     }
 

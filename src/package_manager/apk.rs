@@ -13,6 +13,11 @@ lazy_static! {
         prompt: PromptStrategy::CustomPrompt,
         ..Default::default()
     };
+    static ref INSTALL_STRAT: Strategies = Strategies {
+        prompt: PromptStrategy::CustomPrompt,
+        no_cache: NoCacheStrategy::with_flags(&["--no-cache"]),
+        ..Default::default()
+    };
 }
 
 impl PackageManager for Apk {
@@ -120,11 +125,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["apk", "add"]).kws(kws).flags(flags),
             Default::default(),
-            Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                no_cache: NoCacheStrategy::with_flags(&["--no-cache"]),
-                ..Default::default()
-            },
+            INSTALL_STRAT.clone(),
         )
     }
 
@@ -168,48 +169,31 @@ impl PackageManager for Apk {
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let strat = Strategies {
-            prompt: PromptStrategy::CustomPrompt,
-            no_cache: NoCacheStrategy::with_flags(&["--no-cache"]),
-            ..Default::default()
-        };
         if kws.is_empty() {
             self.just_run(
                 Cmd::new(&["apk", "upgrade"]).kws(kws).flags(flags),
                 Default::default(),
-                strat,
+                INSTALL_STRAT.clone(),
             )
         } else {
             self.just_run(
                 Cmd::new(&["apk", "add", "-u"]).kws(kws).flags(flags),
                 Default::default(),
-                strat,
+                INSTALL_STRAT.clone(),
             )
         }
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
     fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let strat = Strategies {
-            prompt: PromptStrategy::CustomPrompt,
-            no_cache: NoCacheStrategy::with_flags(&["--no-cache"]),
-            ..Default::default()
-        };
-        if kws.is_empty() {
-            self.just_run(
-                Cmd::new(&["apk", "upgrade", "-U", "-a"])
-                    .kws(kws)
-                    .flags(flags),
-                Default::default(),
-                strat,
-            )
+        let cmd = if kws.is_empty() {
+            Cmd::new(&["apk", "upgrade", "-U", "-a"])
+                .kws(kws)
+                .flags(flags)
         } else {
-            self.just_run(
-                Cmd::new(&["apk", "add", "-U", "-u"]).kws(kws).flags(flags),
-                Default::default(),
-                strat,
-            )
-        }
+            Cmd::new(&["apk", "add", "-U", "-u"]).kws(kws).flags(flags)
+        };
+        self.just_run(cmd, Default::default(), INSTALL_STRAT.clone())
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
@@ -237,11 +221,7 @@ impl PackageManager for Apk {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                no_cache: NoCacheStrategy::with_flags(&["--no-cache"]),
-                ..Default::default()
-            },
+            INSTALL_STRAT.clone(),
         )
     }
 }

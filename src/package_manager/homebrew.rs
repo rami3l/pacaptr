@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
+use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Cmd, Mode};
@@ -174,12 +174,14 @@ impl PackageManager for Homebrew {
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
     fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let cmd: &[&str] = if self.cfg.dry_run {
-            &["brew", "rmtree", "--dry-run"]
-        } else {
-            &["brew", "rmtree"]
-        };
-        let err_bytes = Cmd::new(cmd).kws(kws).flags(flags).exec(Mode::CheckErr)?;
+        let err_bytes = self.run(
+            Cmd::new(&["brew", "rmtree"]).kws(kws).flags(flags),
+            Default::default(),
+            Strategies {
+                dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+                ..Default::default()
+            },
+        )?;
         let err_msg = String::from_utf8(err_bytes)?;
 
         let pattern = "Unknown command: rmtree";
@@ -270,7 +272,10 @@ impl PackageManager for Homebrew {
             )
         } else {
             for &pack in kws {
-                self.auto_cask_do(&["upgrade"], pack, flags, INSTALL_STRAT.clone())?;
+                self.auto_cask_do(&["upgrade"], pack, flags, PROMPT_STRAT.clone())?;
+            }
+            if self.cfg().no_cache {
+                self.scc(&[], flags)?;
             }
             Ok(())
         }
