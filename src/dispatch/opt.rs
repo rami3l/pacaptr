@@ -215,10 +215,11 @@ impl Opt {
             /*
             // Chocolatey
             "choco" => Box::new(chocolatey::Chocolatey { cfg }),
-
+            */
             // Homebrew
             "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew { cfg }),
 
+            /*
             // Linuxbrew
             "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
 

@@ -1,11 +1,18 @@
-use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Cmd, Mode};
+use crate::exec::{self, Cmd};
 use crate::print::{self, PROMPT_RUN};
 
 pub struct Apk {
     pub cfg: Config,
+}
+
+impl Apk {
+    const PROMPT_STRAT: Strategies = Strategies {
+        prompt: PromptStrategy::CustomPrompt,
+        ..Default::default()
+    };
 }
 
 impl PackageManager for Apk {
@@ -21,11 +28,7 @@ impl PackageManager for Apk {
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.just_run(
-                Cmd::new(&["apk", "info"]).flags(flags),
-                Default::default(),
-                Default::default(),
-            )
+            self.just_run_default(Cmd::new(&["apk", "info"]).flags(flags))
         } else {
             self.qs(kws, flags)
         }
@@ -38,21 +41,15 @@ impl PackageManager for Apk {
 
     /// Ql displays files provided by local package.
     fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(
-            Cmd::new(&["apk", "info", "-L"]).kws(kws).flags(flags),
-            Default::default(),
-            Default::default(),
-        )
+        self.just_run_default(Cmd::new(&["apk", "info", "-L"]).kws(kws).flags(flags))
     }
 
     /// Qo queries the package which provides FILE.
     fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(
+        self.just_run_default(
             Cmd::new(&["apk", "info", "--who-owns"])
                 .kws(kws)
                 .flags(flags),
-            Default::default(),
-            Default::default(),
         )
     }
 
@@ -69,7 +66,7 @@ impl PackageManager for Apk {
         let search_output = |cmd| {
             let cmd = Cmd::new(cmd).flags(flags);
             print::print_cmd(&cmd, PROMPT_RUN);
-            let out_bytes = cmd.exec(Mode::Mute)?;
+            let out_bytes = self.run(cmd, PmMode::Mute, Default::default())?;
             search(&String::from_utf8(out_bytes)?);
             Ok(())
         };
@@ -80,11 +77,7 @@ impl PackageManager for Apk {
     /// Qu lists packages which have an update available.
     //? Is that the right way to input '<'?
     fn qu(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(
-            Cmd::new(&["apk", "version", "-l", "<"]).flags(flags),
-            Default::default(),
-            Default::default(),
-        )
+        self.just_run_default(Cmd::new(&["apk", "version", "-l", "<"]).flags(flags))
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
@@ -92,10 +85,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["apk", "del"]).kws(kws).flags(flags),
             Default::default(),
-            Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
+            Self::PROMPT_STRAT,
         )
     }
 
@@ -104,10 +94,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["apk", "del", "--purge"]).kws(kws).flags(flags),
             Default::default(),
-            Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
+            Self::PROMPT_STRAT,
         )
     }
 
@@ -118,10 +105,7 @@ impl PackageManager for Apk {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
+            Self::PROMPT_STRAT,
         )
     }
 
@@ -149,10 +133,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["apk", "cache", "-v", "clean"]).flags(flags),
             Default::default(),
-            Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
+            Self::PROMPT_STRAT,
         )
     }
 
@@ -161,47 +142,28 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["rm", "-vrf", "/var/cache/apk/*"]).flags(flags),
             Default::default(),
-            Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
+            Self::PROMPT_STRAT,
         )
     }
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(
-            Cmd::new(&["apk", "info", "-a"]).kws(kws).flags(flags),
-            Default::default(),
-            Default::default(),
-        )
+        self.just_run_default(Cmd::new(&["apk", "info", "-a"]).kws(kws).flags(flags))
     }
 
     /// Sii displays packages which require X to be installed, aka reverse dependencies.
     fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(
-            Cmd::new(&["apk", "info", "-r"]).kws(kws).flags(flags),
-            Default::default(),
-            Default::default(),
-        )
+        self.just_run_default(Cmd::new(&["apk", "info", "-r"]).kws(kws).flags(flags))
     }
 
     /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
     fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(
-            Cmd::new(&["apk", "search"]).kws(kws).flags(flags),
-            Default::default(),
-            Default::default(),
-        )
+        self.just_run_default(Cmd::new(&["apk", "search"]).kws(kws).flags(flags))
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(
-            Cmd::new(&["apk", "search", "-v"]).kws(kws).flags(flags),
-            Default::default(),
-            Default::default(),
-        )
+        self.just_run_default(Cmd::new(&["apk", "search", "-v"]).kws(kws).flags(flags))
     }
 
     /// Su updates outdated packages.
@@ -255,20 +217,13 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["apk", "fetch"]).kws(kws).flags(flags),
             Default::default(),
-            Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
+            Self::PROMPT_STRAT,
         )
     }
 
     /// Sy refreshes the local package database.
     fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(
-            Cmd::new(&["apk", "update"]).kws(kws).flags(flags),
-            Default::default(),
-            Default::default(),
-        )?;
+        self.just_run_default(Cmd::new(&["apk", "update"]).kws(kws).flags(flags))?;
         if !kws.is_empty() {
             self.s(kws, flags)?;
         }

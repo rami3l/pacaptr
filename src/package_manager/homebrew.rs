@@ -1,7 +1,7 @@
-use super::PackageManager;
+use super::{PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Mode};
+use crate::exec::{self, Cmd, Mode};
 use crate::print::{self, PROMPT_INFO, PROMPT_RUN};
 
 pub struct Homebrew {
@@ -15,9 +15,17 @@ enum CaskState {
 }
 
 impl Homebrew {
+    const PROMPT_STRAT: Strategies = Strategies {
+        prompt: PromptStrategy::CustomPrompt,
+        ..Default::default()
+    };
+
     /// Search the output of `brew info` to see if we need `brew cask` for a certain package.
     fn search(&self, pack: &str, flags: &[&str]) -> Result<CaskState, Error> {
-        let out_bytes = exec::exec("brew", &["info"], &[pack], flags, Mode::Mute)?;
+        let out_bytes = Cmd::new(&["brew", "info"])
+            .kws(&[pack])
+            .flags(flags)
+            .exec(Mode::Mute)?;
         let out = String::from_utf8(out_bytes)?;
 
         let code = {
@@ -45,12 +53,22 @@ impl Homebrew {
     /// With the exception of `self.cfg.force_cask`,
     /// this function will use `self.search()` to see if we need `brew cask` for a certain package,
     /// and then try to execute the corresponding command.
-    fn auto_cask_do(&self, subcmd: &[&str], pack: &str, flags: &[&str]) -> Result<(), Error> {
-        let brew_do = || self.prompt_run("brew", subcmd, &[pack], flags);
-        let brew_cask_do = || {
-            let subcmd: Vec<&str> = ["cask"].iter().chain(subcmd).cloned().collect();
-            self.prompt_run("brew", &subcmd, &[pack], flags)
+    fn auto_cask_do<'s>(
+        &self,
+        subcmd: &'s [&str],
+        pack: &str,
+        flags: &[&str],
+    ) -> Result<(), Error> {
+        let do_impl = |mut cmd: Vec<&'s str>| {
+            cmd.extend(subcmd);
+            self.just_run(
+                Cmd::new(&cmd).kws(&[pack]).flags(flags),
+                Default::default(),
+                Self::PROMPT_STRAT,
+            )
         };
+        let brew_do = || do_impl(vec!["brew"]);
+        let brew_cask_do = || do_impl(vec!["brew", "cask"]);
 
         if self.cfg.force_cask {
             return brew_cask_do();
@@ -62,23 +80,6 @@ impl Homebrew {
             CaskState::Needed => brew_cask_do(),
         }
     }
-
-    /// A helper method to simplify prompted command invocation.
-    fn prompt_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mode = match () {
-            _ if self.cfg.dry_run => Mode::PrintCmd,
-            _ if self.cfg.no_confirm => Mode::CheckErr,
-            _ => Mode::Prompt,
-        };
-        exec::exec(cmd, subcmd, kws, flags, mode)?;
-        Ok(())
-    }
 }
 
 impl PackageManager for Homebrew {
@@ -87,28 +88,15 @@ impl PackageManager for Homebrew {
         "brew".into()
     }
 
-    /// A helper method to simplify direct command invocation.
-    fn just_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mode = if self.cfg.dry_run {
-            Mode::PrintCmd
-        } else {
-            Mode::CheckErr
-        };
-        exec::exec(cmd, subcmd, kws, flags, mode)?;
-        Ok(())
+    fn cfg(&self) -> Config {
+        self.cfg.clone()
     }
 
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.just_run("brew", &["list"], &[], flags)?;
-            self.just_run("brew", &["cask", "list"], &[], flags)
+            self.just_run_default(Cmd::new(&["brew", "list"]).flags(flags))?;
+            self.just_run_default(Cmd::new(&["brew", "cask", "list"]).flags(flags))
         } else {
             self.qs(kws, flags)
         }
@@ -116,7 +104,7 @@ impl PackageManager for Homebrew {
 
     /// Qc shows the changelog of a package.
     fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("brew", &["log"], kws, flags)
+        self.just_run_default(Cmd::new(&["brew", "log"]).kws(kws).flags(flags))
     }
 
     /// Qi displays local package information: name, version, description, etc.

@@ -1,11 +1,11 @@
 pub mod apk;
+pub mod homebrew;
 /*
 pub mod apt;
 pub mod aptget;
 pub mod chocolatey;
 pub mod conda;
 pub mod dnf;
-pub mod homebrew;
 pub mod linuxbrew;
 pub mod macports;
 pub mod pip;
@@ -90,6 +90,12 @@ pub trait PackageManager {
     /// It is just like `run`, but intended to be used only for its side effects.
     fn just_run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<(), Error> {
         self.run(cmd, mode, strat).and(Ok(()))
+    }
+
+    /// A helper method to simplify direct command invocation.
+    /// It is just like `run`, but intended to be used only for its side effects, and always with default mode (`CheckErr` for now) and strategies.
+    fn just_run_default(&self, mut cmd: Cmd) -> Result<(), Error> {
+        self.just_run(cmd, Default::default(), Default::default())
     }
 
     make_pm![
