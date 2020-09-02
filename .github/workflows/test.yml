@@ -2,9 +2,9 @@ name: test
 
 on:
   push:
-    branches: [master, rs-dev]
+    branches: [master, dev]
   pull_request:
-    branches: [master, rs-dev]
+    branches: [master, dev]
 
 jobs:
   windows-test:
