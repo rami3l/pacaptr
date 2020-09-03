@@ -196,15 +196,6 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         print_cmd(&self, PROMPT_RUN);
         self.exec_checkerr(mute)
     }
-
-    /// Execute a command and collect its `stderr`.
-    /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
-    /// The extra flags will be used during the command execution.
-    fn exec_withflags(self, flags: Vec<S>, mode: Mode) -> Result<Vec<u8>, Error> {
-        let mut cmd = self;
-        cmd.flags.extend(flags);
-        cmd.exec(mode)
-    }
 }
 
 impl<S: AsRef<str>> std::fmt::Display for Cmd<S> {

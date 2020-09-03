@@ -1,12 +1,12 @@
 pub mod apk;
 pub mod homebrew;
+pub mod linuxbrew;
 /*
 pub mod apt;
 pub mod aptget;
 pub mod chocolatey;
 pub mod conda;
 pub mod dnf;
-pub mod linuxbrew;
 pub mod macports;
 pub mod pip;
 pub mod tlmgr;
@@ -39,7 +39,7 @@ pub trait PackageManager {
 
     /// A helper method to simplify direct command invocation.
     fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Vec<u8>, Error> {
-        // `--dry-run` should apply to both the main command and the cleaning command.
+        // `--dry-run` should apply to both the main command and the cleanup.
         let res = {
             let body = |cmd: &Cmd| {
                 let mut curr_cmd = cmd.clone();
@@ -74,6 +74,7 @@ pub trait PackageManager {
             }
         };
 
+        // Perform the cleanup.
         if self.cfg().no_cache {
             let flags = cmd.flags.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
             match &strat.no_cache {
