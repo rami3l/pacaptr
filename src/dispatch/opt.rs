@@ -241,7 +241,7 @@ impl Opt {
             "zypper" => Box::new(zypper::Zypper { cfg }),
 
             // * External Package Managers *
-
+            */
             // Conda
             "conda" => Box::new(conda::Conda { cfg }),
 
@@ -254,7 +254,7 @@ impl Opt {
                 cmd: "pip3".into(),
                 cfg,
             }),
-
+            /*
             // Tlmgr
             "tlmgr" => Box::new(tlmgr::Tlmgr { cfg }),
             */

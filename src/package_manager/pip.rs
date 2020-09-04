@@ -1,29 +1,20 @@
-use super::PackageManager;
+use super::{PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Mode};
 use crate::print::{self, PROMPT_RUN};
+use exec::Cmd;
 
 pub struct Pip {
     pub cmd: String,
     pub cfg: Config,
 }
 
-impl Pip {
-    /// A helper method to simplify prompted command invocation.
-    fn prompt_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mut subcmd: Vec<&str> = subcmd.to_vec();
-        if self.cfg.no_confirm {
-            subcmd.push("-y");
-        }
-        self.just_run(cmd, &subcmd, kws, flags)
-    }
+lazy_static! {
+    static ref PROMPT_STRAT: Strategies = Strategies {
+        prompt: PromptStrategy::native_prompt(&["-y"]),
+        ..Default::default()
+    };
 }
 
 impl PackageManager for Pip {
@@ -32,30 +23,17 @@ impl PackageManager for Pip {
         "pip".into()
     }
 
-    /// A helper method to simplify direct command invocation.
-    fn just_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mode = if self.cfg.dry_run {
-            Mode::PrintCmd
-        } else {
-            Mode::CheckErr
-        };
-        exec::exec(cmd, subcmd, kws, flags, mode)?;
-        Ok(())
-    }
-
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.just_run(&self.cmd, &["list"], kws, flags)
+            self.just_run_default(Cmd::new(&[&self.cmd, "list"]).flags(flags))
         } else {
             self.qs(kws, flags)
         }
+    }
+
+    fn cfg(&self) -> Config {
+        self.cfg.clone()
     }
 
     /// Qs searches locally installed package for names or descriptions.
@@ -68,57 +46,74 @@ impl PackageManager for Pip {
                 .for_each(|ln| println!("{}", ln))
         };
 
-        let search_output = |cmd, subcmd| {
-            print::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
-            let out_bytes = exec::exec(cmd, subcmd, &[], flags, Mode::Mute)?;
+        let search_output = |cmd| {
+            let cmd = Cmd::new(cmd).flags(flags);
+            print::print_cmd(&cmd, PROMPT_RUN);
+            let out_bytes = cmd.exec(Mode::Mute)?;
             search(&String::from_utf8(out_bytes)?);
             Ok(())
         };
 
-        search_output(&self.cmd, &["list"])
+        search_output(&[&self.cmd, "list"])
     }
 
     /// Qu lists packages which have an update available.
     fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("pip", &["list", "--outdated"], kws, flags)
+        self.just_run_default(
+            Cmd::new(&[&self.cmd, "list", "--outdated"])
+                .kws(kws)
+                .flags(flags),
+        )
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run(&self.cmd, &["uninstall"], kws, flags)
+        self.just_run(
+            Cmd::new(&[&self.cmd, "uninstall"]).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(&self.cmd, &["install"], kws, flags)
+        self.just_run(
+            Cmd::new(&[&self.cmd, "install"]).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(&self.cmd, &["cache", "purge"], &[], flags)
+        self.just_run_default(Cmd::new(&[&self.cmd, "cache", "purge"]).flags(flags))
     }
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(&self.cmd, &["show"], kws, flags)
+        self.just_run_default(Cmd::new(&[&self.cmd, "show"]).kws(kws).flags(flags))
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(&self.cmd, &["search"], kws, flags)
+        self.just_run_default(Cmd::new(&[&self.cmd, "search"]).kws(kws).flags(flags))
     }
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if !kws.is_empty() {
-            self.just_run(&self.cmd, &["install", "--upgrade"], kws, flags)
+            self.just_run_default(
+                Cmd::new(&[&self.cmd, "install", "--upgrade"])
+                    .kws(kws)
+                    .flags(flags),
+            )
         } else {
-            todo!()
+            Err(format!("Operation `su` unimplemented for `{}`", self.name()).into())
         }
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run(&self.cmd, &["download"], kws, flags)
+        self.just_run_default(Cmd::new(&[&self.cmd, "download"]).kws(kws).flags(flags))
     }
 }
