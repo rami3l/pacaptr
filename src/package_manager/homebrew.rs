@@ -260,16 +260,20 @@ impl PackageManager for Homebrew {
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
+            // `brew cask upgrade` is now deprecated.
+            // A simple `brew upgrade` should do the job.
             self.just_run(
                 Cmd::new(&["brew", "upgrade"]).kws(kws).flags(flags),
                 Default::default(),
                 PROMPT_STRAT.clone(),
-            )?;
-            self.just_run(
-                Cmd::new(&["brew", "cask", "upgrade"]).kws(kws).flags(flags),
-                Default::default(),
-                INSTALL_STRAT.clone(),
             )
+        /*
+        self.just_run(
+            Cmd::new(&["brew", "cask", "upgrade"]).kws(kws).flags(flags),
+            Default::default(),
+            INSTALL_STRAT.clone(),
+        )
+        */
         } else {
             for &pack in kws {
                 self.auto_cask_do(&["upgrade"], pack, flags, PROMPT_STRAT.clone())?;
