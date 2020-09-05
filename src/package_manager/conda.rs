@@ -1,9 +1,8 @@
 use super::{PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Mode};
+use crate::exec::{self, Cmd, Mode};
 use crate::print::{self, PROMPT_RUN};
-use exec::Cmd;
 
 pub struct Conda {
     pub cfg: Config,

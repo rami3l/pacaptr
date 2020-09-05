@@ -1,9 +1,7 @@
-use exec::Cmd;
-
 use super::{DryRunStrategy, PackageManager, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec;
+use crate::exec::Cmd;
 
 pub struct Tlmgr {
     pub cfg: Config,

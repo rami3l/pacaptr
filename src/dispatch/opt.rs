@@ -212,10 +212,9 @@ impl Opt {
             .unwrap_or_else(Opt::detect_pm_str);
 
         match pm_str {
-            /*
             // Chocolatey
             "choco" => Box::new(chocolatey::Chocolatey { cfg }),
-            */
+
             // Homebrew
             "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew { cfg }),
 

@@ -1,9 +1,8 @@
 use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Mode};
+use crate::exec::{self, Cmd, Mode};
 use crate::print::{self, PROMPT_INFO, PROMPT_RUN};
-use exec::Cmd;
 
 pub struct Linuxbrew {
     pub cfg: Config,
