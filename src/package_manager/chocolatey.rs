@@ -29,7 +29,7 @@ impl PackageManager for Chocolatey {
         self.cfg.clone()
     }
 
-    // Method override.
+    // * Method override.
     fn just_run_default(&self, cmd: Cmd) -> Result<(), Error> {
         self.just_run(cmd, Default::default(), CHECK_DRY_STRAT.clone())
     }

@@ -68,6 +68,8 @@ pub trait PackageManager {
                 }
                 DryRunStrategy::WithFlags(v) if self.cfg().dry_run => {
                     cmd.flags.extend(v.to_owned());
+                    // A dry run does not need `sudo`.
+                    cmd = cmd.sudo(false);
                     body(&cmd)?
                 }
                 _ => body(&cmd)?,
