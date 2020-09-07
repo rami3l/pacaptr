@@ -115,13 +115,17 @@ impl PackageManager for Linuxbrew {
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let cmd = if self.cfg.needed {
-            Cmd::new(&["brew", "install"]).kws(kws).flags(flags)
+            &["brew", "install"]
         } else {
             // If the package is not installed, `brew reinstall` behaves just like `brew install`,
             // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
-            Cmd::new(&["brew", "reinstall"]).kws(kws).flags(flags)
+            &["brew", "reinstall"]
         };
-        self.just_run(cmd, Default::default(), INSTALL_STRAT.clone())
+        self.just_run(
+            Cmd::new(cmd).kws(kws).flags(flags),
+            Default::default(),
+            INSTALL_STRAT.clone(),
+        )
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.

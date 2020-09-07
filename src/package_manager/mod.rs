@@ -1,4 +1,5 @@
 pub mod apk;
+pub mod apt;
 pub mod chocolatey;
 pub mod conda;
 pub mod homebrew;
@@ -6,8 +7,6 @@ pub mod linuxbrew;
 pub mod pip;
 pub mod tlmgr;
 /*
-pub mod apt;
-pub mod aptget;
 pub mod dnf;
 pub mod macports;
 pub mod zypper;

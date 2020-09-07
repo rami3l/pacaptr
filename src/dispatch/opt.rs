@@ -226,13 +226,11 @@ impl Opt {
             */
             // Apk for Alpine
             "apk" => Box::new(apk::Apk { cfg }),
-            /*
+
             // Apt for Debian/Ubuntu/Termux (new versions)
             "apt" => Box::new(apt::Apt { cfg }),
 
-            // Apt-Get/Dpkg for Debian/Ubuntu/Termux
-            "apt-get" => Box::new(aptget::AptGet { cfg }),
-
+            /*
             // Dnf for RedHat
             "dnf" => Box::new(dnf::Dnf { cfg }),
 
