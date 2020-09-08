@@ -252,7 +252,7 @@ pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
         .map(|&pat| Regex::new(pat).unwrap())
         .collect();
     text.lines()
-        .filter(|&line| rs.iter().all(|regex| regex.find(line).is_some()))
+        .filter(|&line| rs.iter().all(|regex| regex.is_match(line)))
         .map(|s| s.to_owned())
         .collect()
 }
