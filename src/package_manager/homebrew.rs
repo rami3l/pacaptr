@@ -114,7 +114,7 @@ impl PackageManager for Homebrew {
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
             self.just_run_default(Cmd::new(&["brew", "list"]).flags(flags))?;
-            self.just_run_default(Cmd::new(&["brew", "cask", "list"]).flags(flags))
+            self.just_run_default(Cmd::new(&["brew", "list", "--cask"]).flags(flags))
         } else {
             self.qs(kws, flags)
         }
@@ -135,7 +135,7 @@ impl PackageManager for Homebrew {
         // TODO: it seems that the output of `brew list python` in fish has a mechanism against duplication:
         // /usr/local/Cellar/python/3.6.0/Frameworks/Python.framework/ (1234 files)
         self.just_run_default(Cmd::new(&["brew", "list"]).kws(kws).flags(flags))?;
-        self.just_run_default(Cmd::new(&["brew", "cask", "list"]).kws(kws).flags(flags))
+        self.just_run_default(Cmd::new(&["brew", "list", "--cask"]).kws(kws).flags(flags))
     }
 
     /// Qs searches locally installed package for names or descriptions.
@@ -157,7 +157,7 @@ impl PackageManager for Homebrew {
         };
 
         search_output(&["brew", "list"])?;
-        search_output(&["brew", "cask", "list"])
+        search_output(&["brew", "list", "--cask"])
     }
 
     /// Qu lists packages which have an update available.
