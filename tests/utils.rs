@@ -62,7 +62,7 @@ impl<'t> Test<'t> {
                 .map(|&p| (p, regex::Regex::new(p).unwrap()))
                 .for_each(|(p, re)| {
                     assert!(
-                        re.find(out).is_some(),
+                        re.is_match(out),
                         "Failed with pattern `{}`, got `{}`",
                         p,
                         out
