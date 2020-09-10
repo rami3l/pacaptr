@@ -4,11 +4,11 @@ pub mod chocolatey;
 pub mod conda;
 pub mod homebrew;
 pub mod linuxbrew;
+pub mod macports;
 pub mod pip;
 pub mod tlmgr;
 /*
 pub mod dnf;
-pub mod macports;
 pub mod zypper;
 */
 pub mod unknown;
@@ -17,9 +17,13 @@ use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{Cmd, Mode};
 
-macro_rules! make_pm {
-    ($( $(#[$meta:meta])* $method:ident ), *) => {
-        $($(#[$meta])*
+macro_rules! make_pm {(
+        $(
+            $( #[$meta:meta] )*
+            $method:ident
+        ),*
+    ) => {
+        $( $(#[$meta] )*
         fn $method(&self, _kws: &[&str], _flags: &[&str]) -> std::result::Result<(), crate::error::Error> {
             std::result::Result::Err(format!("Operation `{}` unimplemented for `{}`", stringify!($method), self.name()).into())
         })*
@@ -67,7 +71,7 @@ pub trait PackageManager {
                 }
                 DryRunStrategy::WithFlags(v) if self.cfg().dry_run => {
                     cmd.flags.extend(v.to_owned());
-                    // A dry run does not need `sudo`.
+                    // * A dry run with extra flags does not need `sudo`.
                     cmd = cmd.sudo(false);
                     body(&cmd)?
                 }

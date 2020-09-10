@@ -220,10 +220,10 @@ impl Opt {
 
             // Linuxbrew
             "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
-            /*
+
             // Macports
             "port" if cfg!(target_os = "macos") => Box::new(macports::Macports { cfg }),
-            */
+
             // Apk for Alpine
             "apk" => Box::new(apk::Apk { cfg }),
 
@@ -268,8 +268,11 @@ impl Opt {
 
         let mut options = "".to_owned();
 
-        macro_rules! collect_options {
-            (ops:[$( $op:ident ), *],flags:[$( $flag:ident ), *], counters: [$($counter: ident), *]) => {
+        macro_rules! collect_options {(
+                ops: [$( $op:ident ), *],
+                flags: [$( $flag:ident ), *],
+                counters: [$($counter: ident), *]
+            ) => {
                 $(if self.$op {
                     options.push_str(&stringify!($op)[0..1].to_uppercase());
                 })*

@@ -1,29 +1,22 @@
-use super::PackageManager;
+use super::{NoCacheStrategy, PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Mode};
+use crate::exec::Cmd;
 
 pub struct Macports {
     pub cfg: Config,
 }
 
-impl Macports {
-    /// A helper method to simplify prompted command invocation.
-    fn prompt_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mode = match () {
-            _ if self.cfg.dry_run => Mode::PrintCmd,
-            _ if self.cfg.no_confirm => Mode::CheckErr,
-            _ => Mode::Prompt,
-        };
-        exec::exec(cmd, subcmd, kws, flags, mode)?;
-        Ok(())
-    }
+lazy_static! {
+    static ref PROMPT_STRAT: Strategies = Strategies {
+        prompt: PromptStrategy::CustomPrompt,
+        ..Default::default()
+    };
+    static ref INSTALL_STRAT: Strategies = Strategies {
+        prompt: PromptStrategy::CustomPrompt,
+        no_cache: NoCacheStrategy::Scc,
+        ..Default::default()
+    };
 }
 
 impl PackageManager for Macports {
@@ -32,31 +25,18 @@ impl PackageManager for Macports {
         "port".into()
     }
 
-    /// A helper method to simplify direct command invocation.
-    fn just_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mode = if self.cfg.dry_run {
-            Mode::PrintCmd
-        } else {
-            Mode::CheckErr
-        };
-        exec::exec(cmd, subcmd, kws, flags, mode)?;
-        Ok(())
+    fn cfg(&self) -> Config {
+        self.cfg.clone()
     }
 
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("port", &["installed"], kws, flags)
+        self.just_run_default(Cmd::new(&["port", "installed"]).kws(kws).flags(flags))
     }
 
     /// Qc shows the changelog of a package.
     fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("port", &["log"], kws, flags)
+        self.just_run_default(Cmd::new(&["port", "log"]).kws(kws).flags(flags))
     }
 
     /// Qi displays local package information: name, version, description, etc.
@@ -66,80 +46,105 @@ impl PackageManager for Macports {
 
     /// Ql displays files provided by local package.
     fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("port", &["contents"], kws, flags)
+        self.just_run_default(Cmd::new(&["port", "contents"]).kws(kws).flags(flags))
     }
 
     /// Qo queries the package which provides FILE.
     fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("port", &["provides"], kws, flags)
+        self.just_run_default(Cmd::new(&["port", "provides"]).kws(kws).flags(flags))
     }
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("port", &["-v", "installed"], kws, flags)
+        self.just_run_default(Cmd::new(&["port", "-v", "installed"]).kws(kws).flags(flags))
     }
 
     /// Qu lists packages which have an update available.
     fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("port", &["outdated"], kws, flags)
+        self.just_run_default(Cmd::new(&["port", "outdated"]).kws(kws).flags(flags))
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("port", &["uninstall"], kws, flags)
+        self.just_run(
+            Cmd::new_sudo(&["port", "uninstall"]).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
     fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("port", &["uninstall", "--follow-dependencies"], kws, flags)
+        self.just_run(
+            Cmd::new_sudo(&["port", "uninstall", "--follow-dependencies"])
+                .kws(kws)
+                .flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("port", &["install"], kws, flags)?;
-        if self.cfg.no_cache {
-            self.scc(kws, flags)?;
-        }
-        Ok(())
+        self.just_run(
+            Cmd::new_sudo(&["port", "install"]).kws(kws).flags(flags),
+            Default::default(),
+            INSTALL_STRAT.clone(),
+        )
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if flags.is_empty() {
-            self.prompt_run("port", &["clean", "--all"], &["inactive"], flags)
+        let cmd: &[&str] = if flags.is_empty() {
+            &["port", "clean", "--all", "inactive"]
         } else {
-            self.prompt_run("port", &["clean", "--all"], kws, flags)
-        }
+            &["port", "clean", "--all"]
+        };
+        self.just_run(
+            Cmd::new_sudo(cmd).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Scc removes all files from the cache.
     fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if flags.is_empty() {
-            self.prompt_run("port", &["clean", "--all"], &["installed"], flags)
+        let cmd: &[&str] = if flags.is_empty() {
+            &["port", "clean", "--all", "installed"]
         } else {
-            self.sc(kws, flags)
-        }
+            &["port", "clean", "--all"]
+        };
+        self.just_run(
+            Cmd::new_sudo(cmd).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("port", &["info"], kws, flags)
+        self.just_run_default(Cmd::new(&["port", "info"]).kws(kws).flags(flags))
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("port", &["search"], kws, flags)
+        self.just_run_default(Cmd::new(&["port", "search"]).kws(kws).flags(flags))
     }
 
     /// Su updates outdated packages.
-    fn su(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("port", &["upgrade"], &["outdated"], flags)?;
-        if self.cfg.no_cache {
-            self.scc(_kws, flags)?;
-        }
-        Ok(())
+    fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+        let cmd: &[&str] = if flags.is_empty() {
+            &["port", "upgrade", "outdated"]
+        } else {
+            &["port", "upgrade"]
+        };
+        self.just_run(
+            Cmd::new_sudo(cmd).kws(kws).flags(flags),
+            Default::default(),
+            INSTALL_STRAT.clone(),
+        )
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
@@ -150,7 +155,7 @@ impl PackageManager for Macports {
 
     /// Sy refreshes the local package database.
     fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("port", &["selfupdate"], &[], flags)?;
+        self.just_run_default(Cmd::new(&["port", "selfupdate"]).flags(flags))?;
         if !kws.is_empty() {
             self.s(kws, flags)?;
         }

@@ -84,7 +84,11 @@ impl PackageManager for Linuxbrew {
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run_default(Cmd::new(&["brew", "uninstall"]).kws(kws).flags(flags))
+        self.just_run(
+            Cmd::new(&["brew", "uninstall"]).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.

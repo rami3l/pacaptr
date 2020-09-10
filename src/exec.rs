@@ -74,12 +74,11 @@ impl<S: AsRef<OsStr>> Cmd<S> {
         let builder = if self.sudo && !is_root() {
             Exec::cmd("sudo").arg("-S").args(&self.cmd)
         } else {
-            let mut cmd_iter = self.cmd.iter();
-            let cmd = cmd_iter
-                .next()
+            let (cmd, subcmd) = self
+                .cmd
+                .split_first()
                 .expect("Failed to build Cmd, command is empty");
-            let subcmd: Vec<_> = cmd_iter.collect();
-            Exec::cmd(cmd).args(&subcmd)
+            Exec::cmd(cmd).args(subcmd)
         };
         builder.args(&self.kws).args(&self.flags)
     }

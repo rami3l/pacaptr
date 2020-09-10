@@ -102,7 +102,7 @@ impl PackageManager for Chocolatey {
         let cmd: &[&str] = if kws.is_empty() {
             &["choco", "upgrade", "all"]
         } else {
-            &["tlmgr", "upgrade"]
+            &["choco", "upgrade"]
         };
         self.just_run(
             Cmd::new(cmd).kws(kws).flags(flags),
