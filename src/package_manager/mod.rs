@@ -2,13 +2,13 @@ pub mod apk;
 pub mod apt;
 pub mod chocolatey;
 pub mod conda;
+pub mod dnf;
 pub mod homebrew;
 pub mod linuxbrew;
 pub mod macports;
 pub mod pip;
 pub mod tlmgr;
 /*
-pub mod dnf;
 pub mod zypper;
 */
 pub mod unknown;
@@ -85,6 +85,7 @@ pub trait PackageManager {
             match &strat.no_cache {
                 NoCacheStrategy::Sc => self.sc(&[], &flags)?,
                 NoCacheStrategy::Scc => self.scc(&[], &flags)?,
+                NoCacheStrategy::Sccc => self.sccc(&[], &flags)?,
                 _ => (),
             };
         }
@@ -271,6 +272,8 @@ pub enum NoCacheStrategy<S = String> {
     Sc,
     /// Use `-Scc`.
     Scc,
+    /// Use `-Sccc`.
+    Sccc,
     /// Invoke the corresponding package manager with the flags given.
     WithFlags(Vec<S>),
 }

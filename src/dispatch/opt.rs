@@ -230,15 +230,15 @@ impl Opt {
             // Apt for Debian/Ubuntu/Termux (new versions)
             "apt" => Box::new(apt::Apt { cfg }),
 
-            /*
             // Dnf for RedHat
             "dnf" => Box::new(dnf::Dnf { cfg }),
 
+            /*
             // Zypper for SUSE
             "zypper" => Box::new(zypper::Zypper { cfg }),
-
-            // * External Package Managers *
             */
+            // * External Package Managers *
+
             // Conda
             "conda" => Box::new(conda::Conda { cfg }),
 

@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PromptStrategy, Strategies};
+use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{self, Cmd, Mode};
@@ -150,8 +150,10 @@ impl PackageManager for Homebrew {
 
         let search_output = |cmd| {
             let cmd = Cmd::new(cmd).flags(flags);
-            print::print_cmd(&cmd, PROMPT_RUN);
-            let out_bytes = cmd.exec(Mode::Mute)?;
+            if !self.cfg().dry_run {
+                print::print_cmd(&cmd, PROMPT_RUN);
+            }
+            let out_bytes = self.run(cmd, PmMode::Mute, Default::default())?;
             search(&String::from_utf8(out_bytes)?);
             Ok(())
         };
@@ -239,7 +241,7 @@ impl PackageManager for Homebrew {
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let cmd: &[&str] = if self.cfg.force_cask {
+        let cmd: &[&str] = if self.cfg().force_cask {
             &["brew", "cask", "info"]
         } else {
             &["brew", "info"]

@@ -1,7 +1,7 @@
-use super::{PackageManager, PromptStrategy, Strategies};
+use super::{PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Cmd, Mode};
+use crate::exec::{self, Cmd};
 use crate::print::{self, PROMPT_RUN};
 
 pub struct Pip {
@@ -47,8 +47,10 @@ impl PackageManager for Pip {
 
         let search_output = |cmd| {
             let cmd = Cmd::new(cmd).flags(flags);
-            print::print_cmd(&cmd, PROMPT_RUN);
-            let out_bytes = cmd.exec(Mode::Mute)?;
+            if !self.cfg().dry_run {
+                print::print_cmd(&cmd, PROMPT_RUN);
+            }
+            let out_bytes = self.run(cmd, PmMode::Mute, Default::default())?;
             search(&String::from_utf8(out_bytes)?);
             Ok(())
         };
