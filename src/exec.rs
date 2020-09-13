@@ -80,7 +80,9 @@ impl<S: AsRef<OsStr>> Cmd<S> {
                 .expect("Failed to build Cmd, command is empty");
             Exec::cmd(cmd).args(subcmd)
         };
-        builder.args(&self.kws).args(&self.flags)
+        // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
+        // ! but not `zypper install curl -y.`
+        builder.args(&self.flags).args(&self.kws)
     }
 }
 

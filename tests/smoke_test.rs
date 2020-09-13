@@ -220,11 +220,11 @@ mod dnf {
     fn r() {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"], &[])
-            .output(&["dnf install wget -y", "Installed:", "wget", "Complete!"])
+            .output(&["dnf install", "-y", "wget", "Installed:", "Complete!"])
             .exec(&["wget", "-V"], &[])
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
-            .output(&["dnf remove wget -y", "Removed:", "wget", "Complete!"])
+            .output(&["dnf remove", "-y", "wget", "Removed:", "Complete!"])
             .run(false)
     }
 }
@@ -255,11 +255,11 @@ mod zypper {
     fn r() {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"], &[])
-            .output(&["zypper install wget -y", "Installing: wget"])
+            .output(&["zypper install", "-y", "wget", "Installing: wget"])
             .exec(&["wget", "-V"], &[])
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
-            .output(&["zypper remove wget -y", "Removing wget"])
+            .output(&["zypper remove", "-y", "wget", "Removing wget"])
             .run(false)
     }
 }
