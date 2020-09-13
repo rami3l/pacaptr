@@ -10,12 +10,19 @@ pub struct Chocolatey {
 lazy_static! {
     static ref PROMPT_STRAT: Strategies = Strategies {
         prompt: PromptStrategy::native_prompt(&["--yes"]),
+        dry_run: DryRunStrategy::with_flags(&["--what-if"]),
         ..Default::default()
     };
     static ref CHECK_DRY_STRAT: Strategies = Strategies {
         dry_run: DryRunStrategy::with_flags(&["--what-if"]),
         ..Default::default()
     };
+}
+
+impl Chocolatey {
+    fn check_dry_run(&self, cmd: Cmd) -> Result<(), Error> {
+        self.just_run(cmd, Default::default(), CHECK_DRY_STRAT.clone())
+    }
 }
 
 // Windows is so special! It's better not to "sudo" automatically.
@@ -29,14 +36,9 @@ impl PackageManager for Chocolatey {
         self.cfg.clone()
     }
 
-    // * Method override.
-    fn just_run_default(&self, cmd: Cmd) -> Result<(), Error> {
-        self.just_run(cmd, Default::default(), CHECK_DRY_STRAT.clone())
-    }
-
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run_default(
+        self.check_dry_run(
             Cmd::new(&["choco", "list", "--localonly"])
                 .kws(kws)
                 .flags(flags),
@@ -50,7 +52,7 @@ impl PackageManager for Chocolatey {
 
     /// Qu lists packages which have an update available.
     fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run_default(Cmd::new(&["choco", "outdated"]).kws(kws).flags(flags))
+        self.check_dry_run(Cmd::new(&["choco", "outdated"]).kws(kws).flags(flags))
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
@@ -89,12 +91,12 @@ impl PackageManager for Chocolatey {
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run_default(Cmd::new(&["choco", "info"]).kws(kws).flags(flags))
+        self.check_dry_run(Cmd::new(&["choco", "info"]).kws(kws).flags(flags))
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run_default(Cmd::new(&["choco", "search"]).kws(kws).flags(flags))
+        self.check_dry_run(Cmd::new(&["choco", "search"]).kws(kws).flags(flags))
     }
 
     /// Su updates outdated packages.

@@ -8,10 +8,8 @@ pub mod linuxbrew;
 pub mod macports;
 pub mod pip;
 pub mod tlmgr;
-/*
-pub mod zypper;
-*/
 pub mod unknown;
+pub mod zypper;
 
 use crate::dispatch::config::Config;
 use crate::error::Error;

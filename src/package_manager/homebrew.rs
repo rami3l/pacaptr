@@ -150,7 +150,7 @@ impl PackageManager for Homebrew {
 
         let search_output = |cmd| {
             let cmd = Cmd::new(cmd).flags(flags);
-            if !self.cfg().dry_run {
+            if !self.cfg.dry_run {
                 print::print_cmd(&cmd, PROMPT_RUN);
             }
             let out_bytes = self.run(cmd, PmMode::Mute, Default::default())?;
@@ -241,7 +241,7 @@ impl PackageManager for Homebrew {
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let cmd: &[&str] = if self.cfg().force_cask {
+        let cmd: &[&str] = if self.cfg.force_cask {
             &["brew", "cask", "info"]
         } else {
             &["brew", "info"]
@@ -280,7 +280,7 @@ impl PackageManager for Homebrew {
             for &pack in kws {
                 self.auto_cask_do(&["upgrade"], pack, flags, PROMPT_STRAT.clone())?;
             }
-            if self.cfg().no_cache {
+            if self.cfg.no_cache {
                 self.scc(&[], flags)?;
             }
             Ok(())

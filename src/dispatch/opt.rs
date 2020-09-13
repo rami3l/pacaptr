@@ -233,10 +233,9 @@ impl Opt {
             // Dnf for RedHat
             "dnf" => Box::new(dnf::Dnf { cfg }),
 
-            /*
             // Zypper for SUSE
             "zypper" => Box::new(zypper::Zypper { cfg }),
-            */
+
             // * External Package Managers *
 
             // Conda

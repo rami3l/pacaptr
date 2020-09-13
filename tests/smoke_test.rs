@@ -255,11 +255,11 @@ mod zypper {
     fn r() {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"], &[])
-            .output(&["zypper install -y wget", "Installing: wget"])
+            .output(&["zypper install wget -y", "Installing: wget"])
             .exec(&["wget", "-V"], &[])
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
-            .output(&["zypper remove -y wget", "Removing wget"])
+            .output(&["zypper remove wget -y", "Removing wget"])
             .run(false)
     }
 }
