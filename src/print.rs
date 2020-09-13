@@ -1,7 +1,8 @@
 use crate::exec::Cmd;
 use colored::Colorize;
 
-pub static PROMPT_DRYRUN: &str = "Pending";
+pub static PROMPT_CANCELED: &str = "Canceled";
+pub static PROMPT_PENDING: &str = "Pending";
 pub static PROMPT_RUN: &str = "Running";
 pub static PROMPT_INFO: &str = "Info";
 pub static PROMPT_ERROR: &str = "Error";

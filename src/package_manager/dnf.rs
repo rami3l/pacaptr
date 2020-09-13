@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::error::Error;
 use crate::exec::{self, Cmd};
 use crate::print::PROMPT_RUN;

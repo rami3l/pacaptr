@@ -91,7 +91,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     pub fn exec(self, mode: Mode) -> Result<Vec<u8>, Error> {
         match mode {
             Mode::PrintCmd => {
-                print_cmd(&self, PROMPT_DRYRUN);
+                print_cmd(&self, PROMPT_CANCELED);
                 Ok(Vec::new())
             }
             Mode::Mute => self.exec_checkall(true),
@@ -167,7 +167,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         let proceed: bool = if *all_yes {
             true
         } else {
-            print_cmd(&self, PROMPT_DRYRUN);
+            print_cmd(&self, PROMPT_PENDING);
             match prompt(
                 "Proceed",
                 "[Yes/all/no]",
