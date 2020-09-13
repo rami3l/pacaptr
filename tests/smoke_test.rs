@@ -220,11 +220,11 @@ mod dnf {
     fn r() {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"], &[])
-            .output(&["dnf install -y wget", "Installed:", "wget", "Complete!"])
+            .output(&["dnf install wget -y", "Installed:", "wget", "Complete!"])
             .exec(&["wget", "-V"], &[])
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
-            .output(&["dnf remove -y wget", "Removed:", "wget", "Complete!"])
+            .output(&["dnf remove wget -y", "Removed:", "wget", "Complete!"])
             .run(false)
     }
 }
