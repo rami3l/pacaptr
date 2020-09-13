@@ -1,28 +1,17 @@
-use super::PackageManager;
+use super::{DryRunStrategy, PackageManager, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Mode};
+use crate::exec::Cmd;
 
 pub struct Tlmgr {
     pub cfg: Config,
 }
 
-impl Tlmgr {
-    /// A helper method to simplify prompted command invocation.
-    fn check_dry_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mut subcmd: Vec<&str> = subcmd.to_vec();
-        if self.cfg.dry_run {
-            subcmd.push("--dry-run");
-        }
-        exec::exec(cmd, &subcmd, kws, flags, Mode::CheckErr)?;
-        Ok(())
-    }
+lazy_static! {
+    static ref CHECK_DRY_STRAT: Strategies = Strategies {
+        dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+        ..Default::default()
+    };
 }
 
 impl PackageManager for Tlmgr {
@@ -31,21 +20,8 @@ impl PackageManager for Tlmgr {
         "tlmgr".into()
     }
 
-    /// A helper method to simplify direct command invocation.
-    fn just_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mode = if self.cfg.dry_run {
-            Mode::DryRun
-        } else {
-            Mode::CheckErr
-        };
-        exec::exec(cmd, subcmd, kws, flags, mode)?;
-        Ok(())
+    fn cfg(&self) -> Config {
+        self.cfg.clone()
     }
 
     /// Q generates a list of installed packages.
@@ -55,51 +31,76 @@ impl PackageManager for Tlmgr {
 
     /// Qi displays local package information: name, version, description, etc.
     fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("tlmgr", &["info", "--only-installed"], kws, flags)
+        self.just_run_default(
+            Cmd::new(&["tlmgr", "info", "--only-installed"])
+                .kws(kws)
+                .flags(flags),
+        )
     }
 
     /// Qk verifies one or more packages.
     fn qk(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("tlmgr", &["check", "files"], &[], flags)
+        self.just_run_default(Cmd::new(&["tlmgr", "check", "files"]).flags(flags))
     }
 
     /// Ql displays files provided by local package.
     fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("tlmgr", &["info", "--only-installed", "--list"], kws, flags)
+        self.just_run_default(
+            Cmd::new(&["tlmgr", "info", "--only-installed", "--list"])
+                .kws(kws)
+                .flags(flags),
+        )
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_dry_run("tlmgr", &["remove"], kws, flags)
+        self.just_run(
+            Cmd::new(&["tlmgr", "remove"]).kws(kws).flags(flags),
+            Default::default(),
+            CHECK_DRY_STRAT.clone(),
+        )
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_dry_run("tlmgr", &["install"], kws, flags)
+        self.just_run(
+            Cmd::new(&["tlmgr", "install"]).kws(kws).flags(flags),
+            Default::default(),
+            CHECK_DRY_STRAT.clone(),
+        )
     }
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("tlmgr", &["info"], kws, flags)
+        self.just_run_default(Cmd::new(&["tlmgr", "info"]).kws(kws).flags(flags))
     }
 
     /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
     fn sl(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("tlmgr", &["info"], &[], flags)
+        self.just_run_default(Cmd::new(&["tlmgr", "info"]).flags(flags))
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("tlmgr", &["search", "--global"], kws, flags)
+        self.just_run_default(
+            Cmd::new(&["tlmgr", "search", "--global"])
+                .kws(kws)
+                .flags(flags),
+        )
     }
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if kws.is_empty() {
-            self.check_dry_run("tlmgr", &["update", "--self", "--all"], &[], flags)
+        let cmd: &[&str] = if kws.is_empty() {
+            &["tlmgr", "update", "--self", "--all"]
         } else {
-            self.check_dry_run("tlmgr", &["update", "--self"], kws, flags)
-        }
+            &["tlmgr", "update", "--self"]
+        };
+        self.just_run(
+            Cmd::new(cmd).kws(kws).flags(flags),
+            Default::default(),
+            CHECK_DRY_STRAT.clone(),
+        )
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
@@ -109,6 +110,12 @@ impl PackageManager for Tlmgr {
 
     /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
     fn u(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.check_dry_run("tlmgr", &["install", "--file"], kws, flags)
+        self.just_run(
+            Cmd::new(&["tlmgr", "install", "--file"])
+                .kws(kws)
+                .flags(flags),
+            Default::default(),
+            CHECK_DRY_STRAT.clone(),
+        )
     }
 }

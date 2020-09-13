@@ -27,6 +27,7 @@
         "rmtree",
         "rustfmt",
         "saxutils",
+        "strat",
         "struct",
         "structopt",
         "subcmd",

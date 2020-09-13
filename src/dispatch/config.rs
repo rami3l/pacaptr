@@ -1,7 +1,8 @@
 use crate::error::Error;
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+/// Configurations that may vary when running the package manager.
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
     pub dry_run: bool,
