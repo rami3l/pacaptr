@@ -183,12 +183,12 @@ impl Opt {
                     $other: ident,
                     bool: ($( $bool_field:ident ), *),
                     retain: ($( $retain_field:ident ), *),
-                ) => {{
+                ) => {
                     Config {
                         $($bool_field: self.$bool_field || $other.$bool_field,)*
                         $($retain_field: $other.$retain_field,)*
                     }
-                }};
+                };
             }
             make_actual_cfg! {
                 cfg,
