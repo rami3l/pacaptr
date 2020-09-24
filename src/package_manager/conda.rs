@@ -1,28 +1,18 @@
-use super::PackageManager;
+use super::{PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Mode};
+use crate::exec::{self, Cmd};
 use crate::print::{self, PROMPT_RUN};
 
 pub struct Conda {
     pub cfg: Config,
 }
 
-impl Conda {
-    /// A helper method to simplify prompted command invocation.
-    fn prompt_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mut subcmd: Vec<&str> = subcmd.to_vec();
-        if self.cfg.no_confirm {
-            subcmd.push("-y");
-        }
-        self.just_run(cmd, &subcmd, kws, flags)
-    }
+lazy_static! {
+    static ref PROMPT_STRAT: Strategies = Strategies {
+        prompt: PromptStrategy::native_prompt(&["-y"]),
+        ..Default::default()
+    };
 }
 
 impl PackageManager for Conda {
@@ -31,27 +21,14 @@ impl PackageManager for Conda {
         "conda".into()
     }
 
-    /// A helper method to simplify direct command invocation.
-    fn just_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mode = if self.cfg.dry_run {
-            Mode::DryRun
-        } else {
-            Mode::CheckErr
-        };
-        exec::exec(cmd, subcmd, kws, flags, mode)?;
-        Ok(())
+    fn cfg(&self) -> Config {
+        self.cfg.clone()
     }
 
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         if kws.is_empty() {
-            self.just_run("conda", &["list"], kws, flags)
+            self.just_run_default(Cmd::new(&["conda", "list"]).flags(flags))
         } else {
             self.qs(kws, flags)
         }
@@ -67,47 +44,72 @@ impl PackageManager for Conda {
                 .for_each(|ln| println!("{}", ln))
         };
 
-        let search_output = |cmd, subcmd| {
-            print::print_cmd(cmd, subcmd, &[], flags, PROMPT_RUN);
-            let out_bytes = exec::exec(cmd, subcmd, &[], flags, Mode::Mute)?;
+        let search_output = |cmd| {
+            let cmd = Cmd::new(cmd).flags(flags);
+            if !self.cfg.dry_run {
+                print::print_cmd(&cmd, PROMPT_RUN);
+            }
+            let out_bytes = self.run(cmd, PmMode::Mute, Default::default())?;
             search(&String::from_utf8(out_bytes)?);
             Ok(())
         };
 
-        search_output("conda", &["list"])
+        search_output(&["conda", "list"])
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("conda", &["remove"], kws, flags)
+        self.just_run(
+            Cmd::new(&["conda", "remove"]).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("conda", &["install"], kws, flags)
+        self.just_run(
+            Cmd::new(&["conda", "install"]).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("conda", &["clean", "--all"], &[], flags)
+        self.just_run(
+            Cmd::new(&["conda", "clean", "--all"]).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("conda", &["search", "--info"], kws, flags)
+        self.just_run_default(
+            Cmd::new(&["conda", "search", "--info"])
+                .kws(kws)
+                .flags(flags),
+        )
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
         let kws: Vec<String> = kws.iter().map(|&s| format!("*{}*", s)).collect();
         kws.iter()
-            .map(|kw| self.just_run("conda", &["search"], &[kw], flags))
+            .map(|kw| self.just_run_default(Cmd::new(&["conda", "search"]).kws(&[kw]).flags(flags)))
             .collect()
     }
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("conda", &["update", "--all"], kws, flags)
+        self.just_run(
+            Cmd::new(&["conda", "update", "--all"])
+                .kws(kws)
+                .flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.

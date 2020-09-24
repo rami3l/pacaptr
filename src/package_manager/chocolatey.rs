@@ -1,53 +1,48 @@
-use super::PackageManager;
+use super::{DryRunStrategy, PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Error;
-use crate::exec::{self, Mode};
+use crate::exec::Cmd;
 
 pub struct Chocolatey {
     pub cfg: Config,
 }
 
+lazy_static! {
+    static ref PROMPT_STRAT: Strategies = Strategies {
+        prompt: PromptStrategy::native_prompt(&["--yes"]),
+        dry_run: DryRunStrategy::with_flags(&["--what-if"]),
+        ..Default::default()
+    };
+    static ref CHECK_DRY_STRAT: Strategies = Strategies {
+        dry_run: DryRunStrategy::with_flags(&["--what-if"]),
+        ..Default::default()
+    };
+}
+
 impl Chocolatey {
-    fn prompt_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mut subcmd: Vec<&str> = subcmd.to_vec();
-        if self.cfg.no_confirm {
-            subcmd.push("--yes");
-        }
-        self.just_run(cmd, &subcmd, kws, flags)
+    fn check_dry_run(&self, cmd: Cmd) -> Result<(), Error> {
+        self.just_run(cmd, Default::default(), CHECK_DRY_STRAT.clone())
     }
 }
 
+// Windows is so special! It's better not to "sudo" automatically.
 impl PackageManager for Chocolatey {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "choco".into()
     }
 
-    /// A helper method to simplify direct command invocation.
-    fn just_run(
-        &self,
-        cmd: &str,
-        subcmd: &[&str],
-        kws: &[&str],
-        flags: &[&str],
-    ) -> Result<(), Error> {
-        let mut flags: Vec<&str> = flags.to_vec();
-        if self.cfg.dry_run {
-            flags.push("--what-if");
-        }
-        exec::exec(cmd, subcmd, kws, &flags, Mode::CheckErr)?;
-        Ok(())
+    fn cfg(&self) -> Config {
+        self.cfg.clone()
     }
 
     /// Q generates a list of installed packages.
     fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("choco", &["list", "--localonly"], kws, flags)
+        self.check_dry_run(
+            Cmd::new(&["choco", "list", "--localonly"])
+                .kws(kws)
+                .flags(flags),
+        )
     }
 
     /// Qi displays local package information: name, version, description, etc.
@@ -57,46 +52,65 @@ impl PackageManager for Chocolatey {
 
     /// Qu lists packages which have an update available.
     fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("choco", &["outdated"], kws, flags)
+        self.check_dry_run(Cmd::new(&["choco", "outdated"]).kws(kws).flags(flags))
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("choco", &["uninstall"], kws, flags)
+        self.just_run(
+            Cmd::new(&["choco", "uninstall"]).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
     fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.prompt_run("choco", &["uninstall", "--removedependencies"], kws, flags)
+        self.just_run(
+            Cmd::new(&["choco", "uninstall", "--removedependencies"])
+                .kws(kws)
+                .flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// S installs one or more packages by name.
     fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        let subcmd: &[&str] = if self.cfg.needed {
-            &["install"]
+        let cmd: &[&str] = if self.cfg.needed {
+            &["choco", "install"]
         } else {
-            &["install", "--force"]
+            &["choco", "install", "--force"]
         };
-        self.prompt_run("choco", subcmd, kws, flags)
+        self.just_run(
+            Cmd::new(cmd).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Si displays remote package information: name, version, description, etc.
     fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("choco", &["info"], kws, flags)
+        self.check_dry_run(Cmd::new(&["choco", "info"]).kws(kws).flags(flags))
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run("choco", &["search"], kws, flags)
+        self.check_dry_run(Cmd::new(&["choco", "search"]).kws(kws).flags(flags))
     }
 
     /// Su updates outdated packages.
     fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        if kws.is_empty() {
-            self.prompt_run("choco", &["upgrade"], &["all"], flags)
+        let cmd: &[&str] = if kws.is_empty() {
+            &["choco", "upgrade", "all"]
         } else {
-            self.prompt_run("choco", &["upgrade"], kws, flags)
-        }
+            &["choco", "upgrade"]
+        };
+        self.just_run(
+            Cmd::new(cmd).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.

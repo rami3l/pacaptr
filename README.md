@@ -1,5 +1,8 @@
 # pacaptr
 
+![Rust Badge](https://img.shields.io/badge/WARNING-Rusty-red?logo=rust&style=flat-square)
+![Arch Linux Badge](https://img.shields.io/badge/BTW-I--Use--Arch-blue?logo=arch-linux&style=flat-square)
+
 `pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
 
 Run `pacaptr -Syu` on the distro of your choice!
@@ -24,6 +27,7 @@ Run `pacaptr -Syu` on the distro of your choice!
 
 - `Windows/chocolatey`
 - `macOS/homebrew` (with [auto `cask` invocation](#platform-specific-tips))
+- `macOS/macports`
 - `Debian/apt`
 - `Alpine/apk`
 - `RedHat/dnf`
