@@ -3,6 +3,7 @@ use crate::print::*;
 pub use is_root::is_root;
 use regex::Regex;
 use std::ffi::OsStr;
+use std::io::Write;
 use std::process::Stdio;
 use std::sync::Mutex;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
@@ -29,6 +30,15 @@ pub enum Mode {
     /// A CUSTOM prompt implemented by `pacaptr`.
     /// Like `CheckErr`, but will ask for confirmation before proceeding.
     Prompt,
+}
+
+/// Representation of what a command returns.
+#[derive(Debug, Clone, Default)]
+pub struct Output {
+    /// The captured `stdout`, sometimes mixed with captured `stderr`.
+    contents: Vec<u8>,
+    /// `Some(n)` for exit code, `None` for signals.
+    code: Option<i32>,
 }
 
 /// A command to be executed, provided in `command-keywords-flags` form.  
@@ -92,22 +102,22 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     /// Execute a command and return a `Result<Vec<u8>, _>`.  
     /// The exact behavior depends on the `mode` passed in.  
     /// See `exec::Mode`'s documentation for more info.
-    pub fn exec(self, mode: Mode) -> Result<Vec<u8>, Error> {
+    pub async fn exec(self, mode: Mode) -> Result<Output, Error> {
         match mode {
             Mode::PrintCmd => {
                 print_cmd(&self, PROMPT_CANCELED);
-                Ok(Vec::new())
+                Ok(Default::default())
             }
-            Mode::Mute => self.exec_checkall(true),
+            Mode::Mute => self.exec_checkall(true).await,
             Mode::CheckAll => {
                 print_cmd(&self, PROMPT_RUN);
-                self.exec_checkall(false)
+                self.exec_checkall(false).await
             }
             Mode::CheckErr => {
                 print_cmd(&self, PROMPT_RUN);
-                self.exec_checkerr(false)
+                self.exec_checkerr(false).await
             }
-            Mode::Prompt => self.exec_prompt(false),
+            Mode::Prompt => self.exec_prompt(false).await,
         }
     }
 
@@ -128,7 +138,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
 
     /// Execute a command and return its `stdout` and `stderr`.
     /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
-    async fn exec_checkall(self, mute: bool) -> Result<Vec<u8>, Error> {
+    async fn exec_checkall(self, mute: bool) -> Result<Output, Error> {
         let mut child = self
             .build()
             .stdout(Stdio::piped())
@@ -144,6 +154,14 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             .take()
             .map(|x| BufReader::new(x).lines())
             .ok_or_else(|| Error::from("Child did not have a handle to stderr"))?;
+
+        let code: tokio::task::JoinHandle<Result<Option<i32>, Error>> = tokio::spawn(async move {
+            let status = child
+                .wait()
+                .await
+                .map_err(|_| Error::from("Child encountered an error"))?;
+            Ok(status.code())
+        });
 
         let mut out = Vec::<u8>::new();
         let mut stdout = tokio::io::stdout();
@@ -162,12 +180,15 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             }
         }
 
-        Ok(out)
+        Ok(Output {
+            contents: out,
+            code: code.await.unwrap()?,
+        })
     }
 
     /// Execute a command and collect its `stderr`.  
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
-    async fn exec_checkerr(self, mute: bool) -> Result<Vec<u8>, Error> {
+    async fn exec_checkerr(self, mute: bool) -> Result<Output, Error> {
         let mut child = self
             .build()
             .stdout(Stdio::piped())
@@ -179,6 +200,14 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             .map(|x| BufReader::new(x).lines())
             .ok_or_else(|| Error::from("Child did not have a handle to stderr"))?;
 
+        let code: tokio::task::JoinHandle<Result<Option<i32>, Error>> = tokio::spawn(async move {
+            let status = child
+                .wait()
+                .await
+                .map_err(|_| Error::from("Child encountered an error"))?;
+            Ok(status.code())
+        });
+
         let mut out = Vec::<u8>::new();
         let mut stderr = tokio::io::stderr();
 
@@ -186,20 +215,23 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             select! {
                 ln = stderr_reader.next_line() => match ln? {
                     None => break,
-                    Some(l) => Self::write(&l, mute, Pin::new(&mut out), Pin::new(&mut stderr)).await?,
+                    Some(l) => Self::write(&l, mute, &mut out, &mut stderr).await?,
                 },
                 else => continue,
             }
         }
 
-        Ok(out)
+        Ok(Output {
+            contents: out,
+            code: code.await.unwrap()?,
+        })
     }
 
     /// Execute a command and collect its `stderr`.
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     /// The user will be prompted if (s)he wishes to continue with the command execution.
     #[allow(clippy::mutex_atomic)]
-    fn exec_prompt(self, mute: bool) -> Result<Vec<u8>, Error> {
+    async fn exec_prompt(self, mute: bool) -> Result<Output, Error> {
         lazy_static! {
             static ref ALL_YES: Mutex<bool> = Mutex::new(false);
         }
@@ -209,13 +241,15 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             true
         } else {
             print_cmd(&self, PROMPT_PENDING);
-            match prompt(
-                "Proceed",
-                "[Yes/all/no]",
-                &["", "y", "yes", "a", "all", "n", "no"],
-                false,
-            )
-            .to_lowercase()
+            match tokio::task::block_in_place(move || {
+                prompt(
+                    "Proceed",
+                    "[Yes/all/no]",
+                    &["", "y", "yes", "a", "all", "n", "no"],
+                    false,
+                )
+                .to_lowercase()
+            })
             .as_ref()
             {
                 // The default answer is `Yes`
@@ -231,10 +265,10 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             }
         };
         if !proceed {
-            return Ok(Vec::new());
+            return Ok(Default::default());
         }
         print_cmd(&self, PROMPT_RUN);
-        self.exec_checkerr(mute)
+        self.exec_checkerr(mute).await
     }
 }
 
