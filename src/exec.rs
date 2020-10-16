@@ -3,9 +3,11 @@ use crate::print::*;
 pub use is_root::is_root;
 use regex::Regex;
 use std::ffi::OsStr;
-use std::io::{BufReader, Read, Write};
+use std::process::Stdio;
 use std::sync::Mutex;
-use subprocess::{Exec, Redirection};
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::process::Command as Exec;
+use tokio::select;
 
 /// Different ways in which a command shall be dealt with.
 #[derive(Copy, Clone, Debug)]
@@ -72,17 +74,17 @@ impl<S: AsRef<OsStr>> Cmd<S> {
     pub fn build(self) -> Exec {
         // * We use `sudo -S` to launch subprocess if `sudo` is `true` and the current user is not `root`.
         let builder = if self.sudo && !is_root() {
-            Exec::cmd("sudo").arg("-S").args(&self.cmd)
+            Exec::new("sudo").arg("-S").args(&self.cmd)
         } else {
             let (cmd, subcmd) = self
                 .cmd
                 .split_first()
                 .expect("Failed to build Cmd, command is empty");
-            Exec::cmd(cmd).args(subcmd)
+            Exec::new(cmd).args(subcmd)
         };
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
         // ! but not `zypper install curl -y.`
-        builder.args(&self.flags).args(&self.kws)
+        *(builder.args(&self.flags).args(&self.kws))
     }
 }
 
@@ -109,24 +111,54 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         }
     }
 
+    /// Helper function to write a string to a `String` and `stdout`.
+    async fn write<V, W>(s: &str, mute: bool, mut out: V, mut stdout: W) -> tokio::io::Result<()>
+    where
+        V: AsyncWriteExt + Unpin,
+        W: AsyncWriteExt + Unpin,
+    {
+        let bytes = s.as_bytes();
+        if mute {
+            out.write_all(bytes).await
+        } else {
+            try_join!(stdout.write_all(bytes), out.write_all(bytes))?;
+            Ok(())
+        }
+    }
+
     /// Execute a command and return its `stdout` and `stderr`.
     /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
-    fn exec_checkall(self, mute: bool) -> Result<Vec<u8>, Error> {
-        let stdout_reader = self
+    async fn exec_checkall(self, mute: bool) -> Result<Vec<u8>, Error> {
+        let mut child = self
             .build()
-            .stderr(Redirection::Merge)
-            .stream_stdout()
-            .map_err(|_| Error::from("Could not capture stdout, is the executable valid?"))
-            .map(BufReader::new)?;
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()?;
+        let mut stdout_reader = child
+            .stdout
+            .take()
+            .map(|x| BufReader::new(x).lines())
+            .ok_or_else(|| Error::from("Child did not have a handle to stdout"))?;
+        let mut stderr_reader = child
+            .stderr
+            .take()
+            .map(|x| BufReader::new(x).lines())
+            .ok_or_else(|| Error::from("Child did not have a handle to stderr"))?;
 
         let mut out = Vec::<u8>::new();
-        let mut stdout = std::io::stdout();
+        let mut stdout = tokio::io::stdout();
 
-        for mb in stdout_reader.bytes() {
-            let b = mb?;
-            out.write_all(&[b])?;
-            if !mute {
-                stdout.write_all(&[b])?;
+        loop {
+            select! {
+                ln = stdout_reader.next_line() => match ln? {
+                    None => break,
+                    Some(l) => Self::write(&l, mute, &mut out, &mut stdout).await?,
+                },
+                ln = stderr_reader.next_line() => match ln? {
+                    None => break,
+                    Some(l) => Self::write(&l, mute, &mut out, &mut stdout).await?,
+                },
+                else => continue,
             }
         }
 
@@ -135,21 +167,28 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
 
     /// Execute a command and collect its `stderr`.  
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
-    fn exec_checkerr(self, mute: bool) -> Result<Vec<u8>, Error> {
-        let stderr_reader = self
+    async fn exec_checkerr(self, mute: bool) -> Result<Vec<u8>, Error> {
+        let mut child = self
             .build()
-            .stream_stderr()
-            .map_err(|_| Error::from("Could not capture stderr, is the executable valid?"))
-            .map(BufReader::new)?;
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()?;
+        let mut stderr_reader = child
+            .stderr
+            .take()
+            .map(|x| BufReader::new(x).lines())
+            .ok_or_else(|| Error::from("Child did not have a handle to stderr"))?;
 
         let mut out = Vec::<u8>::new();
-        let mut stderr = std::io::stderr();
+        let mut stderr = tokio::io::stderr();
 
-        for mb in stderr_reader.bytes() {
-            let b = mb?;
-            out.write_all(&[b])?;
-            if !mute {
-                stderr.write_all(&[b])?;
+        loop {
+            select! {
+                ln = stderr_reader.next_line() => match ln? {
+                    None => break,
+                    Some(l) => Self::write(&l, mute, Pin::new(&mut out), Pin::new(&mut stderr)).await?,
+                },
+                else => continue,
             }
         }
 

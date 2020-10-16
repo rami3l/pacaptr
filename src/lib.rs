@@ -6,3 +6,6 @@ pub mod print;
 
 #[macro_use]
 extern crate lazy_static;
+
+#[macro_use]
+extern crate tokio;

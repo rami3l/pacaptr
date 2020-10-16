@@ -18,7 +18,8 @@ is-root = "0.1.2"
 lazy_static = "1.4.0"
 regex = "1.4.1"
 serde = {version = "1.0.116", features = ["derive"]}
-subprocess = "0.2.6"
+# subprocess = "0.2.6"
+tokio = {version = "0.3.0", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread"]}
 which = "4.0.2"
 
 [profile.release]
