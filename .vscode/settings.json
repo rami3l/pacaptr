@@ -22,6 +22,7 @@
         "nuget",
         "nupkg",
         "pacaptr",
+        "proto",
         "rdepends",
         "repoquery",
         "rmtree",

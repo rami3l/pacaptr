@@ -2,7 +2,8 @@ use clap::Clap;
 use pacaptr::dispatch::Opt;
 use pacaptr::print::{print_err, PROMPT_ERROR};
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let opt = Opt::parse();
     if let Err(e) = opt.dispatch() {
         print_err(e, PROMPT_ERROR);

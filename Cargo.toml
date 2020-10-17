@@ -5,7 +5,7 @@ authors = ["Rami3L <rami3l@outlook.com>"]
 description = "A pacman-like wrapper for many package managers."
 edition = "2018"
 name = "pacaptr"
-version = "0.6.1"
+version = "0.7.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -19,6 +19,7 @@ lazy_static = "1.4.0"
 regex = "1.4.1"
 serde = {version = "1.0.116", features = ["derive"]}
 # subprocess = "0.2.6"
+async-trait = "0.1.41"
 tokio = {version = "0.3.0", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread"]}
 which = "4.0.2"
 
