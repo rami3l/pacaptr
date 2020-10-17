@@ -68,7 +68,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: dtolnay/rust-toolchain@stable
 
-      - run: apt install upx-ucl binutils
+      - run: sudo apt install upx-ucl binutils
 
       - run: rustup target add ${{ matrix.target_name }}
 
@@ -155,8 +155,8 @@ jobs:
         uses: rami3l/bumper@master
         id: replace
         with:
-          template: "dist/brew/template.rb"
-          out: "pacaptr.rb"
+          template: 'dist/brew/template.rb'
+          out: 'pacaptr.rb'
 
           rules: |
             {
@@ -174,8 +174,8 @@ jobs:
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: "pacaptr.rb"
-          asset_name: "pacaptr.rb"
+          file: 'pacaptr.rb'
+          asset_name: 'pacaptr.rb'
           tag: ${{ github.ref }}
           overwrite: true
 
