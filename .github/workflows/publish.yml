@@ -26,8 +26,21 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/checkout@v1
 
+      - name: Install UPX on Windows
+        if: ${{matrix.os == 'windows-latest'}}
+        run: choco install upx
+
+      - name: Install UPX on MacOS
+        if: ${{matrix.os == 'macos-latest'}}
+        run: brew install upx
+
       - name: Build
         run: cargo build --release --locked
+
+      - name: compress
+        run: |
+          strip -s ./target/release/${{ matrix.artifact_name }}
+          upx -9 --lzma ./target/release/${{ matrix.artifact_name }}
 
       - name: Zip
         run: tar czvf ${{ matrix.asset_name }}.tar.gz -C ./target/release/ ${{ matrix.artifact_name }}
