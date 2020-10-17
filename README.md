@@ -60,10 +60,10 @@ PPAs might be added when appropriate.
 
   ```bash
   # Short version:
-  brew install rami3l/pacaptr/pacaptr
+  brew install rami3l/tap/pacaptr
 
   # Which is equivalent to this:
-  brew tap rami3l/pacaptr
+  brew tap rami3l/tap
   brew install pacaptr
   ```
 

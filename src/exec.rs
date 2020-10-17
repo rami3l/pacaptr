@@ -228,20 +228,20 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
         let mut answer = String::new();
         print_question(question, options);
         let _ = std::io::stdout().flush();
-        let read = std::io::stdin().read_line(&mut answer);
+        std::io::stdin()
+            .read_line(&mut answer)
+            .expect("Error while reading user input");
         if !case_sensitive {
             answer = answer.to_lowercase();
         }
-        if read.is_ok() {
-            if let Some('\n') = answer.chars().next_back() {
-                answer.pop();
-            }
-            if let Some('\r') = answer.chars().next_back() {
-                answer.pop();
-            }
-            if expected.iter().any(|&x| x == answer) {
-                break answer;
-            }
+        if let Some('\n') = answer.chars().next_back() {
+            answer.pop();
+        }
+        if let Some('\r') = answer.chars().next_back() {
+            answer.pop();
+        }
+        if expected.iter().any(|&x| x == answer) {
+            break answer;
         }
     }
 }

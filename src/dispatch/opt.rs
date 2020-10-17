@@ -17,16 +17,16 @@ use std::iter::FromIterator;
 )]
 pub struct Opt {
     // Operations include Query, Remove, Sync, etc.
-    #[clap(short = "Q", long)]
+    #[clap(short = 'Q', long)]
     query: bool,
 
-    #[clap(short = "R", long)]
+    #[clap(short = 'R', long)]
     remove: bool,
 
-    #[clap(short = "S", long)]
+    #[clap(short = 'S', long)]
     sync: bool,
 
-    #[clap(short = "U", long)]
+    #[clap(short = 'U', long)]
     update: bool,
 
     // Main flags and flagcounters
