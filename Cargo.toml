@@ -22,7 +22,7 @@ serde = {version = "1.0.116", features = ["derive"]}
 anyhow = "1.0.33"
 async-trait = "0.1.41"
 futures = "0.3.6"
-tokio = {version = "0.3.0", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread"]}
+tokio = {version = "0.3.0", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"]}
 which = "4.0.2"
 
 [profile.release]

@@ -5,13 +5,11 @@ use regex::Regex;
 use std::ffi::OsStr;
 use std::io::Write;
 use std::process::Stdio;
-use std::sync::Mutex;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::Command as Exec;
 use tokio::select;
-use tokio::{
-    io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
-    try_join,
-};
+use tokio::sync::Mutex;
+use tokio::try_join;
 
 /// Different ways in which a command shall be dealt with.
 #[derive(Copy, Clone, Debug)]
