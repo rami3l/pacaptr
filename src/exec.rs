@@ -32,13 +32,15 @@ pub enum Mode {
     Prompt,
 }
 
+pub type StatusCode = i32;
+
 /// Representation of what a command returns.
 #[derive(Debug, Clone, Default)]
 pub struct Output {
     /// The captured `stdout`, sometimes mixed with captured `stderr`.
     contents: Vec<u8>,
     /// `Some(n)` for exit code, `None` for signals.
-    code: Option<i32>,
+    code: Option<StatusCode>,
 }
 
 /// A command to be executed, provided in `command-keywords-flags` form.  
