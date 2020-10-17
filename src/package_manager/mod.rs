@@ -15,6 +15,7 @@ use crate::dispatch::config::Config;
 use crate::error::Error;
 use crate::exec::{Cmd, Mode, Output};
 use anyhow::Result;
+use futures::future::BoxFuture;
 
 use async_trait::async_trait;
 
@@ -25,8 +26,19 @@ macro_rules! make_pm {(
         ),*
     ) => {
         $( $(#[$meta] )*
-        async fn $method(&self, _kws: &[&str], _flags: &[&str]) -> anyhow::Result<()> {
-            std::result::Result::Err(format!("Operation `{}` unimplemented for `{}`", stringify!($method), self.name()).into())
+        fn $method(&self, _kws: &[&str], _flags: &[&str]) -> BoxFuture<'_,anyhow::Result<()>> {
+            let name = self.name();
+            Box::pin(async {
+                ::std::result::Result::Err(crate::error::Error::from(
+                    format!(
+                        "Operation `{}` unimplemented for `{}`",
+                        stringify!($method),
+                        name
+                    )
+                    .as_ref(),
+                ))?;
+                Ok(())
+            })
         })*
     };
 }
@@ -43,52 +55,59 @@ pub trait PackageManager {
     fn cfg(&self) -> Config;
 
     /// A helper method to simplify direct command invocation.
-    async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Output> {
+    async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Output>
+    where
+        Self: Sized,
+    {
+        let cfg = self.cfg();
+
         // `--dry-run` should apply to both the main command and the cleanup.
-        let res = {
-            let body = |cmd: &Cmd| async {
-                let mut curr_cmd = cmd.clone();
-                let no_confirm = self.cfg().no_confirm;
-                if self.cfg().no_cache {
-                    if let NoCacheStrategy::WithFlags(v) = &strat.no_cache {
+        async fn body(
+            cfg: &Config,
+            cmd: &Cmd,
+            mode: PmMode,
+            strat: &Strategies,
+        ) -> Result<Output, Error> {
+            let mut curr_cmd = cmd.clone();
+            let no_confirm = cfg.no_confirm;
+            if cfg.no_cache {
+                if let NoCacheStrategy::WithFlags(v) = &strat.no_cache {
+                    curr_cmd.flags.extend(v.to_owned());
+                }
+            }
+            match &strat.prompt {
+                PromptStrategy::None => curr_cmd.exec(mode.into()).await,
+                PromptStrategy::CustomPrompt if no_confirm => curr_cmd.exec(mode.into()).await,
+                PromptStrategy::CustomPrompt => curr_cmd.exec(Mode::Prompt).await,
+                PromptStrategy::NativePrompt { no_confirm: v } => {
+                    if no_confirm {
                         curr_cmd.flags.extend(v.to_owned());
                     }
+                    curr_cmd.exec(mode.into()).await
                 }
-                match &strat.prompt {
-                    PromptStrategy::None => curr_cmd.exec(mode.into()),
-                    PromptStrategy::CustomPrompt if no_confirm => curr_cmd.exec(mode.into()),
-                    PromptStrategy::CustomPrompt => curr_cmd.exec(Mode::Prompt),
-                    PromptStrategy::NativePrompt { no_confirm: v } => {
-                        if no_confirm {
-                            curr_cmd.flags.extend(v.to_owned());
-                        }
-                        curr_cmd.exec(mode.into())
-                    }
-                }
-                .await
-            };
-
-            match &strat.dry_run {
-                DryRunStrategy::PrintCmd if self.cfg().dry_run => {
-                    cmd.clone().exec(Mode::PrintCmd).await?
-                }
-                DryRunStrategy::WithFlags(v) if self.cfg().dry_run => {
-                    cmd.flags.extend(v.to_owned());
-                    // * A dry run with extra flags does not need `sudo`.
-                    cmd = cmd.sudo(false);
-                    body(&cmd).await?
-                }
-                _ => body(&cmd).await?,
             }
         };
 
+        let res = match &strat.dry_run {
+            DryRunStrategy::PrintCmd if self.cfg().dry_run => {
+                cmd.clone().exec(Mode::PrintCmd).await?
+            }
+            DryRunStrategy::WithFlags(v) if self.cfg().dry_run => {
+                cmd.flags.extend(v.to_owned());
+                // * A dry run with extra flags does not need `sudo`.
+                cmd = cmd.sudo(false);
+                body(&cfg, &cmd, mode, &strat).await?
+            }
+            _ => body(&cfg, &cmd, mode, &strat).await?,
+        };
+
         // Perform the cleanup.
-        if self.cfg().no_cache {
+        if cfg.no_cache {
             let flags = cmd.flags.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
             match &strat.no_cache {
-                NoCacheStrategy::Sc => self.sc(&[], &flags)?,
-                NoCacheStrategy::Scc => self.scc(&[], &flags)?,
-                NoCacheStrategy::Sccc => self.sccc(&[], &flags)?,
+                NoCacheStrategy::Sc => self.sc(&[], &flags).await?,
+                NoCacheStrategy::Scc => self.scc(&[], &flags).await?,
+                NoCacheStrategy::Sccc => self.sccc(&[], &flags).await?,
                 _ => (),
             };
         }
@@ -98,14 +117,20 @@ pub trait PackageManager {
 
     /// A helper method to simplify direct command invocation.
     /// It is just like `run`, but intended to be used only for its side effects.
-    async fn just_run(&self, cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<()> {
+    async fn just_run(&self, cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<()>
+    where
+        Self: Sized,
+    {
         self.run(cmd, mode, strat).await?;
         Ok(())
     }
 
     /// A helper method to simplify direct command invocation.
     /// It is just like `run`, but intended to be used only for its side effects, and always with default mode (`CheckErr` for now) and strategies.
-    async fn just_run_default(&self, cmd: Cmd) -> Result<()> {
+    async fn just_run_default(&self, cmd: Cmd) -> Result<()>
+    where
+        Self: Sized,
+    {
         self.just_run(cmd, Default::default(), Default::default())
             .await
     }
