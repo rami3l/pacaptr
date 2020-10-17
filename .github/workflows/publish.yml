@@ -37,9 +37,16 @@ jobs:
       - name: Build
         run: cargo build --release --locked
 
-      - name: compress
+      - name: compress (windows)
+        if: ${{matrix.os == 'windows-latest'}}
         run: |
           strip -s ./target/release/${{ matrix.artifact_name }}
+          upx -9 --lzma ./target/release/${{ matrix.artifact_name }}
+
+      - name: compress (macos)
+        if: ${{matrix.os == 'macos-latest'}}
+        run: |
+          strip ./target/release/${{ matrix.artifact_name }}
           upx -9 --lzma ./target/release/${{ matrix.artifact_name }}
 
       - name: Zip
