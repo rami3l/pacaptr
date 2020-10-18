@@ -1,8 +1,8 @@
 use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
-use crate::error::Error;
 use crate::exec::{self, Cmd, Mode};
 use crate::print::{self, PROMPT_INFO, PROMPT_RUN};
+use anyhow::Result;
 
 pub struct Homebrew {
     pub cfg: Config,
@@ -27,27 +27,14 @@ enum CaskState {
 }
 
 impl Homebrew {
-    /*
-    const CASK_PREFIX: &'static str = "cask/";
-
-    fn strip_cask_prefix(pack: &str) -> String {
-        {
-            if pack.starts_with(Self::CASK_PREFIX) {
-                &pack[Self::CASK_PREFIX.len()..]
-            } else {
-                pack
-            }
-        }
-        .to_owned()
-    }
-    */
-
     /// Search the output of `brew info` to see if we need `brew cask` for a certain package.
-    fn search(&self, pack: &str, flags: &[&str]) -> Result<CaskState, Error> {
+    async fn search(&self, pack: &str, flags: &[&str]) -> Result<CaskState> {
         let out_bytes = Cmd::new(&["brew", "info"])
             .kws(&[pack])
             .flags(flags)
-            .exec(Mode::Mute)?;
+            .exec(Mode::Mute)
+            .await?
+            .contents;
         let out = String::from_utf8(out_bytes)?;
 
         let code = {
@@ -72,34 +59,46 @@ impl Homebrew {
     /// With the exception of `self.cfg.force_cask`,
     /// this function will use `self.search()` to see if we need `brew cask` for a certain package,
     /// and then try to execute the corresponding command.
-    fn auto_cask_do<'s>(
+    async fn auto_cask_do<'s>(
         &self,
         subcmd: &'s [&str],
         pack: &str,
         flags: &[&str],
         strat: Strategies,
-    ) -> Result<(), Error> {
-        let run = |mut cmd: Vec<&'s str>, pack: &str| {
+    ) -> Result<()> {
+        async fn run(
+            self_: &Homebrew,
+            mut cmd: Vec<&str>,
+            subcmd: &[&str],
+            pack: &str,
+            flags: &[&str],
+            strat: Strategies,
+        ) -> Result<()> {
             cmd.extend(subcmd);
-            self.just_run(
-                Cmd::new(&cmd).kws(&[pack]).flags(flags),
-                Default::default(),
-                strat,
-            )
-        };
-
-        if self.cfg.force_cask {
-            return run(vec!["brew", "cask"], pack);
+            self_
+                .just_run(
+                    Cmd::new(&cmd).kws(&[pack]).flags(flags),
+                    Default::default(),
+                    strat,
+                )
+                .await
         }
 
-        let code = self.search(pack, flags)?;
+        if self.cfg.force_cask {
+            return run(&self, vec!["brew", "cask"], subcmd, pack, flags, strat).await;
+        }
+
+        let code = self.search(pack, flags).await?;
         match code {
-            CaskState::NotFound | CaskState::Brew => run(vec!["brew"], pack),
-            CaskState::Cask => run(vec!["brew", "cask"], pack),
+            CaskState::NotFound | CaskState::Brew => {
+                run(&self, vec!["brew"], subcmd, pack, flags, strat).await
+            }
+            CaskState::Cask => run(&self, vec!["brew", "cask"], subcmd, pack, flags, strat).await,
         }
     }
 }
 
+#[async_trait]
 impl PackageManager for Homebrew {
     /// Get the name of the package manager.
     fn name(&self) -> String {
@@ -111,11 +110,12 @@ impl PackageManager for Homebrew {
     }
 
     /// Q generates a list of installed packages.
-    fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
             self.just_run_default(Cmd::new(&["brew", "list"]).flags(flags))
+                .await
         } else {
-            self.qs(kws, flags)
+            self.qs(kws, flags).await
         }
     }
 

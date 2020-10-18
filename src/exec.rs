@@ -1,5 +1,5 @@
 use crate::print::*;
-use anyhow::{Context, Error};
+use anyhow::{anyhow, Context, Result};
 pub use is_root::is_root;
 use regex::Regex;
 use std::ffi::OsStr;
@@ -112,7 +112,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     /// Execute a command and return a `Result<Vec<u8>, _>`.  
     /// The exact behavior depends on the `mode` passed in.  
     /// See `exec::Mode`'s documentation for more info.
-    pub async fn exec(self, mode: Mode) -> Result<Output, Error> {
+    pub async fn exec(self, mode: Mode) -> Result<Output> {
         match mode {
             Mode::PrintCmd => {
                 print_cmd(&self, PROMPT_CANCELED);
@@ -159,7 +159,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
 
     /// Execute a command and return its `stdout` and `stderr`.
     /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
-    async fn exec_checkall(self, mute: bool) -> Result<Output, Error> {
+    async fn exec_checkall(self, mute: bool) -> Result<Output> {
         let mut child = self
             .build()
             .stdout(Stdio::piped())
@@ -177,7 +177,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             .map(|x| BufReader::new(x).lines())
             .ok_or_else(|| anyhow!("Child process did not have a handle to stderr"))?;
 
-        let code: tokio::task::JoinHandle<Result<Option<i32>, Error>> = tokio::spawn(async move {
+        let code: tokio::task::JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
             let status = child
                 .wait()
                 .await
@@ -210,7 +210,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
 
     /// Execute a command and collect its `stderr`.  
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
-    async fn exec_checkerr(self, mute: bool) -> Result<Output, Error> {
+    async fn exec_checkerr(self, mute: bool) -> Result<Output> {
         let mut child = self
             .build()
             .stdout(Stdio::piped())
@@ -223,7 +223,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             .map(|x| BufReader::new(x).lines())
             .ok_or_else(|| anyhow!("Child did not have a handle to stderr"))?;
 
-        let code: tokio::task::JoinHandle<Result<Option<i32>, Error>> = tokio::spawn(async move {
+        let code: tokio::task::JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
             let status = child
                 .wait()
                 .await
@@ -254,7 +254,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     /// The user will be prompted if (s)he wishes to continue with the command execution.
     #[allow(clippy::mutex_atomic)]
-    async fn exec_prompt(self, mute: bool) -> Result<Output, Error> {
+    async fn exec_prompt(self, mute: bool) -> Result<Output> {
         lazy_static! {
             static ref ALL_YES: Mutex<bool> = Mutex::new(false);
         }

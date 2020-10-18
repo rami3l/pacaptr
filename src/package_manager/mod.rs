@@ -11,7 +11,7 @@ pub mod tlmgr;
 pub mod zypper;
 */
 
-// pub mod homebrew;
+pub mod homebrew;
 pub mod unknown;
 
 use crate::dispatch::config::Config;
@@ -27,7 +27,8 @@ macro_rules! make_pm {(
         ),*
     ) => {
         $( $(#[$meta] )*
-        fn $method<'s>(&'s self, _kws: &[&str], _flags: &[&str]) -> BoxFuture<'s,anyhow::Result<()>> {
+        fn $method(&self, _kws: &[&str], _flags: &[&str]) -> BoxFuture<'_, anyhow::Result<()>>
+        {
             Box::pin(async move {
                 let name = self.name();
                 ::std::result::Result::Err(anyhow::anyhow!(
