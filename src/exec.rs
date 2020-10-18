@@ -7,9 +7,8 @@ use std::io::Write;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::Command as Exec;
-use tokio::select;
 use tokio::sync::Mutex;
-use tokio::try_join;
+use tokio::{select, try_join};
 
 /// Different ways in which a command shall be dealt with.
 #[derive(Copy, Clone, Debug)]
@@ -349,4 +348,19 @@ pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
 pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && std::path::Path::new(path).exists())
         || (!name.is_empty() && which::which(name).is_ok())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
+
+    #[test]
+    async fn simple_run() {
+        println!("Starting!");
+        let cmd =
+            Cmd::new(&["bash", "-c"]).kws(&["echo Hello; sleep 2; echo World; sleep 2; echo !"]);
+        let res = cmd.exec_checkall(false).await.unwrap();
+        dbg!(res);
+    }
 }
