@@ -213,7 +213,6 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     async fn exec_checkerr(self, mute: bool) -> Result<Output> {
         let mut child = self
             .build()
-            .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
             .context("Failed to spawn child process")?;

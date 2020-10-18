@@ -2,57 +2,62 @@ pub use self::utils::Test;
 
 mod utils;
 
-/*
 #[cfg(target_os = "macos")]
 mod homebrew {
     use super::Test;
+    use tokio::test;
 
     #[test]
-    fn si_ok() {
+    async fn si_ok() {
         Test::new()
             .pacaptr(&["-Si", "curl"], &[])
             .output(&["curl is keg-only"])
             .run(false)
+            .await
     }
 
     #[test]
     #[should_panic(expected = "Failed with pattern `curl is not keg-only`")]
-    fn si_fail() {
+    async fn si_fail() {
         Test::new()
             .pacaptr(&["-Si", "curl"], &[])
             .output(&["curl is not keg-only"])
             .run(false)
+            .await
     }
 
     #[test]
-    fn s_auto_cask() {
+    async fn s_auto_cask() {
         Test::new()
             .pacaptr(&["-S", "curl", "gimp", "--dryrun"], &[])
             .output(&["brew (re)?install curl", "brew cask (re)?install gimp"])
             .run(false)
+            .await
     }
 
     #[test]
-    fn s_force_cask() {
+    async fn s_force_cask() {
         Test::new()
             .pacaptr(&["-S", "docker", "--dryrun"], &[])
             .output(&["brew (re)?install docker"])
             .pacaptr(&["-S", "docker", "--cask", "--dryrun"], &[])
             .output(&["brew cask (re)?install docker"])
             .run(false)
+            .await
     }
 
     #[test]
-    fn r_cask() {
+    async fn r_cask() {
         Test::new()
             .pacaptr(&["-R", "curl", "gimp", "--dryrun"], &[])
             .output(&["brew uninstall curl", "brew cask uninstall gimp"])
             .run(false)
+            .await
     }
 
     #[test]
     #[ignore]
-    fn r() {
+    async fn r() {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"], &[])
             .output(&["brew (re)?install wget"])
@@ -61,9 +66,11 @@ mod homebrew {
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["brew uninstall wget", "Uninstalling /usr/local/Cellar/wget"])
             .run(false)
+            .await
     }
 }
 
+/*
 #[cfg(target_os = "windows")]
 mod chocolatey {
     use super::Test;

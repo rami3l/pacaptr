@@ -130,8 +130,7 @@ pub trait PackageManager: Sync {
     where
         Self: Sized,
     {
-        self.run(cmd, mode, strat).await?;
-        Ok(())
+        self.run(cmd, mode, strat).await.and(Ok(()))
     }
 
     /// A helper method to simplify direct command invocation.
@@ -418,3 +417,37 @@ impl<S> Default for NoCacheStrategy<S> {
         NoCacheStrategy::None
     }
 }
+
+/*
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
+
+    struct MockPM {}
+
+    #[async_trait]
+    impl PackageManager for MockPM {
+        /// Get the name of the package manager.
+        fn name(&self) -> String {
+            "mockpm".into()
+        }
+
+        fn cfg(&self) -> Config {
+            Config::default()
+        }
+    }
+
+    #[test]
+    async fn simple_run() {
+        println!("Starting!");
+        let cmd = Cmd::new(&["bash", "-c"])
+            .kws(&[r#"printf "Hello\n"; sleep 3; printf "World\n"; sleep 3; printf "!\n""#]);
+        let res = MockPM {}
+            .run(cmd, PmMode::CheckErr, Default::default())
+            .await
+            .unwrap();
+        dbg!(res);
+    }
+}
+*/
