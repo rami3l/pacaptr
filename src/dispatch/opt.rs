@@ -356,156 +356,156 @@ mod tests {
         // ! Dirty copy-paste!
 
         /// Q generates a list of installed packages.
-        async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, q)
+        async fn q(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, q)
         }
 
         /// Qc shows the changelog of a package.
-        async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, qc)
+        async fn qc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, qc)
         }
 
         /// Qe lists packages installed explicitly (not as dependencies).
-        async fn qe(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, qe)
+        async fn qe(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, qe)
         }
 
         /// Qi displays local package information: name, version, description, etc.
-        async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, qi)
+        async fn qi(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, qi)
         }
 
         /// Qk verifies one or more packages.
-        async fn qk(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, qk)
+        async fn qk(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, qk)
         }
 
         /// Ql displays files provided by local package.
-        async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, ql)
+        async fn ql(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, ql)
         }
 
         /// Qm lists packages that are installed but are not available in any installation source (anymore).
-        async fn qm(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, qm)
+        async fn qm(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, qm)
         }
 
         /// Qo queries the package which provides FILE.
-        async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, qo)
+        async fn qo(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, qo)
         }
 
         /// Qp queries a package supplied on the command line rather than an entry in the package management database.
-        async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, qp)
+        async fn qp(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, qp)
         }
 
         /// Qs searches locally installed package for names or descriptions.
-        async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, qs)
+        async fn qs(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, qs)
         }
 
         /// Qu lists packages which have an update available.
-        async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, qu)
+        async fn qu(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, qu)
         }
 
         /// R removes a single package, leaving all of its dependencies installed.
-        async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, r)
+        async fn r(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, r)
         }
 
         /// Rn removes a package and skips the generation of configuration backup files.
-        async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, rn)
+        async fn rn(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, rn)
         }
 
         /// Rns removes a package and its dependencies which are not required by any other installed package,
         /// and skips the generation of configuration backup files.
-        async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, rns)
+        async fn rns(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, rns)
         }
 
         /// Rs removes a package and its dependencies which are not required by any other installed package,
         /// and not explicitly installed by the user.
-        async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, rs)
+        async fn rs(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, rs)
         }
 
         /// Rss removes a package and its dependencies which are not required by any other installed package.
-        async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, rss)
+        async fn rss(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, rss)
         }
 
         /// S installs one or more packages by name.
-        async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, s)
+        async fn s(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, s)
         }
 
         /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
-        async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, sc)
+        async fn sc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, sc)
         }
 
         /// Scc removes all files from the cache.
-        async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, scc)
+        async fn scc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, scc)
         }
 
         /// Sccc ...
         /// What is this?
-        async fn sccc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, sccc)
+        async fn sccc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, sccc)
         }
 
         /// Sg lists all packages belonging to the GROUP.
-        async fn sg(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, sg)
+        async fn sg(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, sg)
         }
 
         /// Si displays remote package information: name, version, description, etc.
-        async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, si)
+        async fn si(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, si)
         }
 
         /// Sii displays packages which require X to be installed, aka reverse dependencies.
-        async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, sii)
+        async fn sii(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, sii)
         }
 
         /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
-        async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, sl)
+        async fn sl(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, sl)
         }
 
         /// Ss searches for package(s) by searching the expression in name, description, short description.
-        async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, ss)
+        async fn ss(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, ss)
         }
 
         /// Su updates outdated packages.
-        async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, su)
+        async fn su(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, su)
         }
 
         /// Suy refreshes the local package database, then updates outdated packages.
-        async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, suy)
+        async fn suy(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, suy)
         }
 
         /// Sw retrieves all packages from the server, but does not install/upgrade anything.
-        async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, sw)
+        async fn sw(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, sw)
         }
 
         /// Sy refreshes the local package database.
-        async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, sy)
+        async fn sy(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, sy)
         }
 
         /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
-        async fn u(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-            make_mock_op_body!(self, kws, flags, u)
+        async fn u(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+            make_mock_op_body!(self, _kws, _flags, u)
         }
     }
 
