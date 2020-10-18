@@ -212,6 +212,7 @@ impl Opt {
             .or_else(|| cfg.default_pm.as_deref())
             .unwrap_or_else(Opt::detect_pm_str);
 
+        #[allow(clippy::match_single_binding)]
         match pm_str {
             // Chocolatey
             // "choco" => Box::new(chocolatey::Chocolatey { cfg }),
