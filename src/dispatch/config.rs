@@ -1,4 +1,4 @@
-use crate::error::Error;
+use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
 
 /// Configurations that may vary when running the package manager.
@@ -24,12 +24,10 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn load() -> Result<Self, Error> {
+    pub fn load() -> Result<Self> {
         let crate_name = clap::crate_name!();
         let config = dirs::home_dir()
-            .ok_or(Error {
-                msg: "$HOME path not found".into(),
-            })?
+            .ok_or_else(|| anyhow!("$HOME path not found"))?
             .join(".config")
             .join(crate_name)
             .join(&format!("{}.toml", crate_name));

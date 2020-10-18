@@ -1,23 +1,24 @@
+/*
 pub mod apk;
 pub mod apt;
 pub mod chocolatey;
 pub mod conda;
 pub mod dnf;
-pub mod homebrew;
 pub mod linuxbrew;
 pub mod macports;
 pub mod pip;
 pub mod tlmgr;
-pub mod unknown;
 pub mod zypper;
+*/
+
+// pub mod homebrew;
+pub mod unknown;
 
 use crate::dispatch::config::Config;
-use crate::error::Error;
 use crate::exec::{Cmd, Mode, Output};
+use anyhow::Error;
 use anyhow::Result;
 use futures::future::BoxFuture;
-
-use async_trait::async_trait;
 
 macro_rules! make_pm {(
         $(
@@ -26,18 +27,16 @@ macro_rules! make_pm {(
         ),*
     ) => {
         $( $(#[$meta] )*
-        fn $method(&self, _kws: &[&str], _flags: &[&str]) -> BoxFuture<'_,anyhow::Result<()>> {
-            let name = self.name();
-            Box::pin(async {
-                ::std::result::Result::Err(crate::error::Error::from(
+        fn $method<'s>(&'s self, _kws: &[&str], _flags: &[&str]) -> BoxFuture<'s,anyhow::Result<()>> {
+            Box::pin(async move {
+                let name = self.name();
+                ::std::result::Result::Err(anyhow::anyhow!(
                     format!(
                         "Operation `{}` unimplemented for `{}`",
                         stringify!($method),
-                        name
-                    )
-                    .as_ref(),
-                ))?;
-                Ok(())
+                        name,
+                    ),
+                ))
             })
         })*
     };
@@ -47,7 +46,7 @@ macro_rules! make_pm {(
 /// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 /// and https://wiki.archlinux.org/index.php/Pacman
 #[async_trait]
-pub trait PackageManager {
+pub trait PackageManager: Sync {
     /// Get the name of the package manager.
     fn name(&self) -> String;
 
@@ -55,10 +54,7 @@ pub trait PackageManager {
     fn cfg(&self) -> Config;
 
     /// A helper method to simplify direct command invocation.
-    async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Output>
-    where
-        Self: Sized,
-    {
+    async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Output> {
         let cfg = self.cfg();
 
         // `--dry-run` should apply to both the main command and the cleanup.

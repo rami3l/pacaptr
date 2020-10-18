@@ -42,7 +42,8 @@ pub fn print_msg(msg: &str, prompt: &str) {
 }
 
 /// Print out an error after the given prompt.
-pub fn print_err(err: impl std::error::Error, prompt: &str) {
+pub fn print_err(err: impl std::fmt::Display, prompt: &str) {
+    let err = format!("{:#}", err);
     eprintln!(msg_format!(), prompt.bright_red().bold(), err);
 }
 

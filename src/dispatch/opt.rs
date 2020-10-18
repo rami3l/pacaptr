@@ -1,8 +1,9 @@
 use super::config::Config;
-use crate::error::Error;
 use crate::exec::is_exe;
 use crate::package_manager::*;
+use anyhow::{Error, Result};
 use clap::{self, Clap};
+use futures::TryFutureExt;
 use std::iter::FromIterator;
 // use structopt::{clap, StructOpt};
 
@@ -136,13 +137,13 @@ pub struct Opt {
 
 impl Opt {
     /// Check if an Opt object is malformed.
-    fn check(&self) -> Result<(), Error> {
+    fn check(&self) -> Result<()> {
         let count = [self.query, self.remove, self.sync, self.update]
             .iter()
             .filter(|&&x| x)
             .count();
         if count != 1 {
-            Err("exactly 1 operation expected".into())
+            Err(anyhow!("exactly 1 operation expected"))
         } else {
             Ok(())
         }
@@ -213,35 +214,36 @@ impl Opt {
 
         match pm_str {
             // Chocolatey
-            "choco" => Box::new(chocolatey::Chocolatey { cfg }),
+            // "choco" => Box::new(chocolatey::Chocolatey { cfg }),
 
             // Homebrew
-            "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew { cfg }),
+            // "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew { cfg }),
 
             // Linuxbrew
-            "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
+            // "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
 
             // Macports
-            "port" if cfg!(target_os = "macos") => Box::new(macports::Macports { cfg }),
+            // "port" if cfg!(target_os = "macos") => Box::new(macports::Macports { cfg }),
 
             // Apk for Alpine
-            "apk" => Box::new(apk::Apk { cfg }),
+            // "apk" => Box::new(apk::Apk { cfg }),
 
             // Apt for Debian/Ubuntu/Termux (new versions)
-            "apt" => Box::new(apt::Apt { cfg }),
+            // "apt" => Box::new(apt::Apt { cfg }),
 
             // Dnf for RedHat
-            "dnf" => Box::new(dnf::Dnf { cfg }),
+            // "dnf" => Box::new(dnf::Dnf { cfg }),
 
             // Zypper for SUSE
-            "zypper" => Box::new(zypper::Zypper { cfg }),
+            // "zypper" => Box::new(zypper::Zypper { cfg }),
 
             // * External Package Managers *
 
             // Conda
-            "conda" => Box::new(conda::Conda { cfg }),
+            // "conda" => Box::new(conda::Conda { cfg }),
 
             // Pip
+            /*
             "pip" => Box::new(pip::Pip {
                 cmd: "pip".into(),
                 cfg,
@@ -250,9 +252,9 @@ impl Opt {
                 cmd: "pip3".into(),
                 cfg,
             }),
-
+            */
             // Tlmgr
-            "tlmgr" => Box::new(tlmgr::Tlmgr { cfg }),
+            // "tlmgr" => Box::new(tlmgr::Tlmgr { cfg }),
 
             // Unknown package manager X
             x => Box::new(unknown::Unknown { name: x.into() }),
@@ -260,7 +262,7 @@ impl Opt {
     }
 
     /// Execute the job according to the flags received and the package manager detected.
-    pub fn dispatch_from(&self, pm: Box<dyn PackageManager>) -> Result<(), Error> {
+    pub async fn dispatch_from(&self, pm: Box<dyn PackageManager>) -> Result<()> {
         self.check()?;
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
         let flags: Vec<&str> = self.extra_flags.iter().map(|s| s.as_ref()).collect();
@@ -297,8 +299,8 @@ impl Opt {
         macro_rules! dispatch_match {
             ($( $method:ident ), *) => {
                 match options.to_lowercase().as_ref() {
-                    $(stringify!($method) => pm.$method(&kws, &flags),)*
-                    _ => Err("Invalid flag".into()),
+                    $(stringify!($method) => pm.$method(&kws, &flags).await,)*
+                    _ => Err(anyhow!("Invalid flag")),
                 }
             };
         }
@@ -309,18 +311,19 @@ impl Opt {
         ]
     }
 
-    pub fn dispatch(&self) -> Result<(), Error> {
-        self.dispatch_from(self.make_pm(Config::load()?))
+    pub async fn dispatch(&self) -> Result<()> {
+        self.dispatch_from(self.make_pm(Config::load()?)).await
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tokio::test;
 
     macro_rules! make_mock_pm {
         ($( $method:ident ), *) => {
-            $(fn $method(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+            $(fn $method(&self, kws: &[&str], flags: &[&str]) -> futures::future::BoxFuture<'_,anyhow::Result<()>> {
                     let kws: Vec<_> = kws.iter().chain(flags).collect();
                     panic!("should run: {} {:?}", stringify!($method), &kws)
             })*
@@ -329,6 +332,7 @@ mod tests {
 
     struct MockPM {}
 
+    #[async_trait]
     impl PackageManager for MockPM {
         /// Get the name of the package manager.
         fn name(&self) -> String {
@@ -353,19 +357,19 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "should run: suy")]
-    fn simple_syu() {
+    async fn simple_syu() {
         let opt = dbg!(Opt::parse_from(&["pacaptr", "-Syu"]));
 
         assert!(opt.keywords.is_empty());
         assert!(opt.sync);
         assert!(opt.y);
         assert!(opt.u);
-        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
     }
 
     #[test]
     #[should_panic(expected = "should run: suy")]
-    fn long_syu() {
+    async fn long_syu() {
         let opt = dbg!(Opt::parse_from(&[
             "pacaptr",
             "--sync",
@@ -377,22 +381,22 @@ mod tests {
         assert!(opt.sync);
         assert!(opt.y);
         assert!(opt.u);
-        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
     }
 
     #[test]
     #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
-    fn simple_si() {
+    async fn simple_si() {
         let opt = dbg!(Opt::parse_from(&["pacaptr", "-Sw", "curl", "wget"]));
 
         assert!(opt.sync);
         assert!(opt.w);
-        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
     }
 
     #[test]
     #[should_panic(expected = r#"should run: s ["docker"]"#)]
-    fn other_flags() {
+    async fn other_flags() {
         let opt = dbg!(Opt::parse_from(&[
             "pacaptr", "-S", "--dryrun", "--yes", "docker", "--cask"
         ]));
@@ -401,12 +405,12 @@ mod tests {
         assert!(opt.dry_run);
         assert!(opt.no_confirm);
         assert!(opt.force_cask);
-        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
     }
 
     #[test]
     #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
-    fn extra_flags() {
+    async fn extra_flags() {
         let opt = dbg!(Opt::parse_from(&[
             "pacaptr",
             "-S",
@@ -421,18 +425,18 @@ mod tests {
         let mut flags = opt.extra_flags.iter();
         assert_eq!(flags.next(), Some(&String::from("--proxy=localhost:1234")));
         assert_eq!(flags.next(), None);
-        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
     }
 
     #[test]
     #[should_panic(expected = "exactly 1 operation expected")]
-    fn too_many_ops() {
+    async fn too_many_ops() {
         let opt = dbg!(Opt::parse_from(&["pacaptr", "-SQns", "docker", "--cask"]));
 
         assert!(opt.sync);
         assert!(opt.query);
         assert!(opt.n);
         assert_eq!(opt.s, 1);
-        opt.dispatch_from(Box::new(opt.make_mock())).unwrap();
+        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
     }
 }

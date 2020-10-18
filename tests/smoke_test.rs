@@ -2,6 +2,7 @@ pub use self::utils::Test;
 
 mod utils;
 
+/*
 #[cfg(target_os = "macos")]
 mod homebrew {
     use super::Test;
@@ -263,3 +264,4 @@ mod zypper {
             .run(false)
     }
 }
+*/

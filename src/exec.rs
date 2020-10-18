@@ -1,5 +1,5 @@
-use crate::error::Error;
 use crate::print::*;
+use anyhow::Error;
 pub use is_root::is_root;
 use regex::Regex;
 use std::ffi::OsStr;
@@ -39,9 +39,9 @@ pub type StatusCode = i32;
 #[derive(Debug, Clone, Default)]
 pub struct Output {
     /// The captured `stdout`, sometimes mixed with captured `stderr`.
-    contents: Vec<u8>,
+    pub contents: Vec<u8>,
     /// `Some(n)` for exit code, `None` for signals.
-    code: Option<StatusCode>,
+    pub code: Option<StatusCode>,
 }
 
 /// A command to be executed, provided in `command-keywords-flags` form.  
@@ -86,18 +86,26 @@ impl<S: AsRef<OsStr>> Cmd<S> {
     /// Convert a `Cmd` object into a `subprocess::Exec`.
     pub fn build(self) -> Exec {
         // * We use `sudo -S` to launch subprocess if `sudo` is `true` and the current user is not `root`.
-        let builder = if self.sudo && !is_root() {
-            Exec::new("sudo").arg("-S").args(&self.cmd)
+        // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
+        // ! but not `zypper install curl -y`.
+        // ! So we place the flags first, and then keywords.
+        if self.sudo && !is_root() {
+            let mut builder = Exec::new("sudo");
+            builder
+                .arg("-S")
+                .args(&self.cmd)
+                .args(&self.flags)
+                .args(&self.kws);
+            builder
         } else {
             let (cmd, subcmd) = self
                 .cmd
                 .split_first()
                 .expect("Failed to build Cmd, command is empty");
-            Exec::new(cmd).args(subcmd)
-        };
-        // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
-        // ! but not `zypper install curl -y.`
-        *(builder.args(&self.flags).args(&self.kws))
+            let mut builder = Exec::new(cmd);
+            builder.args(subcmd).args(&self.flags).args(&self.kws);
+            builder
+        }
     }
 }
 
@@ -151,18 +159,18 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             .stdout
             .take()
             .map(|x| BufReader::new(x).lines())
-            .ok_or_else(|| Error::from("Child did not have a handle to stdout"))?;
+            .ok_or_else(|| anyhow!("Child did not have a handle to stdout"))?;
         let mut stderr_reader = child
             .stderr
             .take()
             .map(|x| BufReader::new(x).lines())
-            .ok_or_else(|| Error::from("Child did not have a handle to stderr"))?;
+            .ok_or_else(|| anyhow!("Child did not have a handle to stderr"))?;
 
         let code: tokio::task::JoinHandle<Result<Option<i32>, Error>> = tokio::spawn(async move {
             let status = child
                 .wait()
                 .await
-                .map_err(|_| Error::from("Child encountered an error"))?;
+                .map_err(|_| anyhow!("Child encountered an error"))?;
             Ok(status.code())
         });
 
@@ -201,13 +209,13 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             .stderr
             .take()
             .map(|x| BufReader::new(x).lines())
-            .ok_or_else(|| Error::from("Child did not have a handle to stderr"))?;
+            .ok_or_else(|| anyhow!("Child did not have a handle to stderr"))?;
 
         let code: tokio::task::JoinHandle<Result<Option<i32>, Error>> = tokio::spawn(async move {
             let status = child
                 .wait()
                 .await
-                .map_err(|_| Error::from("Child encountered an error"))?;
+                .map_err(|_| anyhow!("Child encountered an error"))?;
             Ok(status.code())
         });
 
@@ -239,7 +247,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             static ref ALL_YES: Mutex<bool> = Mutex::new(false);
         }
 
-        let mut all_yes = ALL_YES.lock().unwrap();
+        let mut all_yes = ALL_YES.lock().await;
         let proceed: bool = if *all_yes {
             true
         } else {

@@ -55,7 +55,7 @@ impl<'t> Test<'t> {
         self
     }
 
-    pub fn run(&self, verbose: bool) {
+    pub async fn run(&self, verbose: bool) {
         let try_match = |out: &str, patterns: &[&str]| {
             patterns
                 .iter()
@@ -80,14 +80,16 @@ impl<'t> Test<'t> {
             // if not matches_all(got, patterns):
             //     raise MatchError(some_msg)
             let mode = if verbose { Mode::CheckAll } else { Mode::Mute };
-            let got_bytes: Vec<u8> = match *input {
+            let output = match *input {
                 Input::Pacaptr { args, flags } => Cmd::new(CARGO_RUN)
                     .kws(args)
                     .flags(flags)
                     .exec(mode)
+                    .await
                     .unwrap(),
-                Input::Exec { cmd, kws } => Cmd::new(cmd).kws(kws).exec(mode).unwrap(),
+                Input::Exec { cmd, kws } => Cmd::new(cmd).kws(kws).exec(mode).await.unwrap(),
             };
+            let got_bytes = output.contents;
             let got = String::from_utf8(got_bytes).unwrap();
             try_match(&got, *patterns);
         }
