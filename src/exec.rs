@@ -1,5 +1,5 @@
 use crate::print::*;
-use anyhow::Error;
+use anyhow::{Context, Error};
 pub use is_root::is_root;
 use regex::Regex;
 use std::ffi::OsStr;
@@ -154,23 +154,24 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             .build()
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
-            .spawn()?;
+            .spawn()
+            .context("Failed to spawn child process")?;
         let mut stdout_reader = child
             .stdout
             .take()
             .map(|x| BufReader::new(x).lines())
-            .ok_or_else(|| anyhow!("Child did not have a handle to stdout"))?;
+            .ok_or_else(|| anyhow!("Child process did not have a handle to stdout"))?;
         let mut stderr_reader = child
             .stderr
             .take()
             .map(|x| BufReader::new(x).lines())
-            .ok_or_else(|| anyhow!("Child did not have a handle to stderr"))?;
+            .ok_or_else(|| anyhow!("Child process did not have a handle to stderr"))?;
 
         let code: tokio::task::JoinHandle<Result<Option<i32>, Error>> = tokio::spawn(async move {
             let status = child
                 .wait()
                 .await
-                .map_err(|_| anyhow!("Child encountered an error"))?;
+                .context("Child process encountered an error")?;
             Ok(status.code())
         });
 
@@ -204,7 +205,8 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             .build()
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
-            .spawn()?;
+            .spawn()
+            .context("Failed to spawn child process")?;
         let mut stderr_reader = child
             .stderr
             .take()
@@ -215,7 +217,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             let status = child
                 .wait()
                 .await
-                .map_err(|_| anyhow!("Child encountered an error"))?;
+                .context("Child process encountered an error")?;
             Ok(status.code())
         });
 

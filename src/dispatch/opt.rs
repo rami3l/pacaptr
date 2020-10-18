@@ -1,9 +1,8 @@
 use super::config::Config;
 use crate::exec::is_exe;
 use crate::package_manager::*;
-use anyhow::{Error, Result};
+use anyhow::Result;
 use clap::{self, Clap};
-use futures::TryFutureExt;
 use std::iter::FromIterator;
 // use structopt::{clap, StructOpt};
 
