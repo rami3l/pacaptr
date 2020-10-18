@@ -146,6 +146,17 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         }
     }
 
+    /// Helper function to write a line to a `String` and `stdout`.
+    async fn writeln<V, W>(s: &str, mute: bool, out: V, stdout: W) -> tokio::io::Result<()>
+    where
+        V: AsyncWriteExt + Unpin,
+        W: AsyncWriteExt + Unpin,
+    {
+        let mut s = s.to_owned();
+        s.push('\n');
+        Self::write(&s, mute, out, stdout).await
+    }
+
     /// Execute a command and return its `stdout` and `stderr`.
     /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
     async fn exec_checkall(self, mute: bool) -> Result<Output, Error> {
@@ -181,11 +192,11 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             select! {
                 ln = stdout_reader.next_line() => match ln? {
                     None => break,
-                    Some(l) => Self::write(&l, mute, &mut out, &mut stdout).await?,
+                    Some(l) => Self::writeln(&l, mute, &mut out, &mut stdout).await?,
                 },
                 ln = stderr_reader.next_line() => match ln? {
                     None => break,
-                    Some(l) => Self::write(&l, mute, &mut out, &mut stdout).await?,
+                    Some(l) => Self::writeln(&l, mute, &mut out, &mut stdout).await?,
                 },
                 else => continue,
             }
@@ -227,7 +238,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             select! {
                 ln = stderr_reader.next_line() => match ln? {
                     None => break,
-                    Some(l) => Self::write(&l, mute, &mut out, &mut stderr).await?,
+                    Some(l) => Self::writeln(&l, mute, &mut out, &mut stderr).await?,
                 },
                 else => continue,
             }
@@ -350,6 +361,7 @@ pub fn is_exe(name: &str, path: &str) -> bool {
         || (!name.is_empty() && which::which(name).is_ok())
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -358,9 +370,10 @@ mod tests {
     #[test]
     async fn simple_run() {
         println!("Starting!");
-        let cmd =
-            Cmd::new(&["bash", "-c"]).kws(&["echo Hello; sleep 2; echo World; sleep 2; echo !"]);
+        let cmd = Cmd::new(&["bash", "-c"])
+            .kws(&[r#"printf "Hello\n"; sleep 3; printf "World\n"; sleep 3; printf "!\n""#]);
         let res = cmd.exec_checkall(false).await.unwrap();
         dbg!(res);
     }
 }
+*/
