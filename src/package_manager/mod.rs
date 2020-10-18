@@ -18,8 +18,8 @@ use crate::dispatch::config::Config;
 use crate::exec::{Cmd, Mode, Output};
 use anyhow::Error;
 use anyhow::Result;
-use futures::future::BoxFuture;
 
+/*
 macro_rules! make_pm {(
         $(
             $( #[$meta:meta] )*
@@ -41,6 +41,18 @@ macro_rules! make_pm {(
             })
         })*
     };
+}
+*/
+
+macro_rules! make_op_body {
+    ( $self:ident, $method:ident ) => {{
+        let name = $self.name();
+        ::std::result::Result::Err(anyhow::anyhow!(format!(
+            "Operation `{}` unimplemented for `{}`",
+            stringify!($method),
+            name,
+        ),))
+    }};
 }
 
 /// The behaviors of a Pack(age)Manager.
@@ -132,71 +144,161 @@ pub trait PackageManager: Sync {
             .await
     }
 
-    make_pm![
-        /// Q generates a list of installed packages.
-        q,
-        /// Qc shows the changelog of a package.
-        qc,
-        /// Qe lists packages installed explicitly (not as dependencies).
-        qe,
-        /// Qi displays local package information: name, version, description, etc.
-        qi,
-        /// Qk verifies one or more packages.
-        qk,
-        /// Ql displays files provided by local package.
-        ql,
-        /// Qm lists packages that are installed but are not available in any installation source (anymore).
-        qm,
-        /// Qo queries the package which provides FILE.
-        qo,
-        /// Qp queries a package supplied on the command line rather than an entry in the package management database.
-        qp,
-        /// Qs searches locally installed package for names or descriptions.
-        qs,
-        /// Qu lists packages which have an update available.
-        qu,
-        /// R removes a single package, leaving all of its dependencies installed.
-        r,
-        /// Rn removes a package and skips the generation of configuration backup files.
-        rn,
-        /// Rns removes a package and its dependencies which are not required by any other installed package,
-        /// and skips the generation of configuration backup files.
-        rns,
-        /// Rs removes a package and its dependencies which are not required by any other installed package,
-        /// and not explicitly installed by the user.
-        rs,
-        /// Rss removes a package and its dependencies which are not required by any other installed package.
-        rss,
-        /// S installs one or more packages by name.
-        s,
-        /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
-        sc,
-        /// Scc removes all files from the cache.
-        scc,
-        /// Sccc ...
-        /// What is this?
-        sccc,
-        /// Sg lists all packages belonging to the GROUP.
-        sg,
-        /// Si displays remote package information: name, version, description, etc.
-        si,
-        /// Sii displays packages which require X to be installed, aka reverse dependencies.
-        sii,
-        /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
-        sl,
-        /// Ss searches for package(s) by searching the expression in name, description, short description.
-        ss,
-        /// Su updates outdated packages.
-        su,
-        /// Suy refreshes the local package database, then updates outdated packages.
-        suy,
-        /// Sw retrieves all packages from the server, but does not install/upgrade anything.
-        sw,
-        /// Sy refreshes the local package database.
-        sy,
-        /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
-        u
-    ];
+    // ! WARNING!
+    // ! Dirty copy-paste!
+
+    /// Q generates a list of installed packages.
+    async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, q)
+    }
+
+    /// Qc shows the changelog of a package.
+    async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qc)
+    }
+
+    /// Qe lists packages installed explicitly (not as dependencies).
+    async fn qe(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qe)
+    }
+
+    /// Qi displays local package information: name, version, description, etc.
+    async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qi)
+    }
+
+    /// Qk verifies one or more packages.
+    async fn qk(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qk)
+    }
+
+    /// Ql displays files provided by local package.
+    async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, ql)
+    }
+
+    /// Qm lists packages that are installed but are not available in any installation source (anymore).
+    async fn qm(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qm)
+    }
+
+    /// Qo queries the package which provides FILE.
+    async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qo)
+    }
+
+    /// Qp queries a package supplied on the command line rather than an entry in the package management database.
+    async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qp)
+    }
+
+    /// Qs searches locally installed package for names or descriptions.
+    async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qs)
+    }
+
+    /// Qu lists packages which have an update available.
+    async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qu)
+    }
+
+    /// R removes a single package, leaving all of its dependencies installed.
+    async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, r)
+    }
+
+    /// Rn removes a package and skips the generation of configuration backup files.
+    async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, rn)
+    }
+
+    /// Rns removes a package and its dependencies which are not required by any other installed package,
+    /// and skips the generation of configuration backup files.
+    async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, rns)
+    }
+
+    /// Rs removes a package and its dependencies which are not required by any other installed package,
+    /// and not explicitly installed by the user.
+    async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, rs)
+    }
+
+    /// Rss removes a package and its dependencies which are not required by any other installed package.
+    async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, rss)
+    }
+
+    /// S installs one or more packages by name.
+    async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, s)
+    }
+
+    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sc)
+    }
+
+    /// Scc removes all files from the cache.
+    async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, scc)
+    }
+
+    /// Sccc ...
+    /// What is this?
+    async fn sccc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sccc)
+    }
+
+    /// Sg lists all packages belonging to the GROUP.
+    async fn sg(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sg)
+    }
+
+    /// Si displays remote package information: name, version, description, etc.
+    async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, si)
+    }
+
+    /// Sii displays packages which require X to be installed, aka reverse dependencies.
+    async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sii)
+    }
+
+    /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
+    async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sl)
+    }
+
+    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, ss)
+    }
+
+    /// Su updates outdated packages.
+    async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, su)
+    }
+
+    /// Suy refreshes the local package database, then updates outdated packages.
+    async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, suy)
+    }
+
+    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
+    async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sw)
+    }
+
+    /// Sy refreshes the local package database.
+    async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sy)
+    }
+
+    /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
+    async fn u(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        make_op_body!(self, u)
+    }
 }
 
 /// Different ways in which a command shall be dealt with.
