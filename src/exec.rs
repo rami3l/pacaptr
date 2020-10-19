@@ -35,12 +35,21 @@ pub enum Mode {
 pub type StatusCode = i32;
 
 /// Representation of what a command returns.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Output {
     /// The captured `stdout`, sometimes mixed with captured `stderr`.
     pub contents: Vec<u8>,
     /// `Some(n)` for exit code, `None` for signals.
     pub code: Option<StatusCode>,
+}
+
+impl Default for Output {
+    fn default() -> Self {
+        Output {
+            contents: Default::default(),
+            code: Some(0),
+        }
+    }
 }
 
 /// A command to be executed, provided in `command-keywords-flags` form.  
