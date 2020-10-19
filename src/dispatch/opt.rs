@@ -213,7 +213,7 @@ impl Opt {
         #[allow(clippy::match_single_binding)]
         match pm_str {
             // Chocolatey
-            // "choco" => Box::new(chocolatey::Chocolatey { cfg }),
+            "choco" => Box::new(chocolatey::Chocolatey { cfg }),
 
             // Homebrew
             "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew { cfg }),
