@@ -239,7 +239,7 @@ impl Opt {
             // * External Package Managers *
 
             // Conda
-            // "conda" => Box::new(conda::Conda { cfg }),
+            "conda" => Box::new(conda::Conda { cfg }),
 
             // Pip
             /*

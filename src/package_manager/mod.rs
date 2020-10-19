@@ -1,5 +1,4 @@
 /*
-pub mod conda;
 pub mod dnf;
 pub mod linuxbrew;
 pub mod macports;
@@ -11,6 +10,7 @@ pub mod zypper;
 pub mod apk;
 pub mod apt;
 pub mod chocolatey;
+pub mod conda;
 pub mod homebrew;
 pub mod unknown;
 
