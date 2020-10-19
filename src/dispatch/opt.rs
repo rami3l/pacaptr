@@ -222,7 +222,7 @@ impl Opt {
             // "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
 
             // Macports
-            // "port" if cfg!(target_os = "macos") => Box::new(macports::Macports { cfg }),
+            "port" if cfg!(target_os = "macos") => Box::new(macports::Macports { cfg }),
 
             // Apk for Alpine
             "apk" => Box::new(apk::Apk { cfg }),

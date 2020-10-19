@@ -1,6 +1,5 @@
 /*
 pub mod linuxbrew;
-pub mod macports;
 */
 
 pub mod apk;
@@ -9,6 +8,7 @@ pub mod chocolatey;
 pub mod conda;
 pub mod dnf;
 pub mod homebrew;
+pub mod macports;
 pub mod pip;
 pub mod tlmgr;
 pub mod unknown;
