@@ -228,7 +228,7 @@ impl Opt {
             "apk" => Box::new(apk::Apk { cfg }),
 
             // Apt for Debian/Ubuntu/Termux (new versions)
-            // "apt" => Box::new(apt::Apt { cfg }),
+            "apt" => Box::new(apt::Apt { cfg }),
 
             // Dnf for RedHat
             // "dnf" => Box::new(dnf::Dnf { cfg }),
