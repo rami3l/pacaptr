@@ -73,6 +73,7 @@ mod homebrew {
 #[cfg(target_os = "windows")]
 mod chocolatey {
     use super::Test;
+    use tokio::test;
 
     #[test]
     async fn si_ok() {
@@ -109,6 +110,7 @@ mod chocolatey {
 #[cfg(target_os = "linux")]
 mod linuxbrew {
     use super::Test;
+    use tokio::test;
 
     #[test]
     async fn si_ok() {
@@ -137,6 +139,7 @@ mod linuxbrew {
 #[cfg(target_os = "linux")]
 mod apt {
     use super::Test;
+    use tokio::test;
 
     #[test]
     async fn si_ok() {
@@ -177,6 +180,7 @@ mod apt {
 #[cfg(target_os = "linux")]
 mod apk {
     use super::Test;
+    use tokio::test;
 
     #[test]
     async fn si_ok() {
@@ -215,6 +219,7 @@ mod apk {
 #[cfg(target_os = "linux")]
 mod dnf {
     use super::Test;
+    use tokio::test;
 
     #[test]
     async fn si_ok() {
@@ -253,6 +258,7 @@ mod dnf {
 #[cfg(target_os = "linux")]
 mod zypper {
     use super::Test;
+    use tokio::test;
 
     #[test]
     async fn si_ok() {
