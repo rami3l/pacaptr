@@ -242,7 +242,6 @@ impl Opt {
             "conda" => Box::new(conda::Conda { cfg }),
 
             // Pip
-            /*
             "pip" => Box::new(pip::Pip {
                 cmd: "pip".into(),
                 cfg,
@@ -251,9 +250,9 @@ impl Opt {
                 cmd: "pip3".into(),
                 cfg,
             }),
-            */
+
             // Tlmgr
-            // "tlmgr" => Box::new(tlmgr::Tlmgr { cfg }),
+            "tlmgr" => Box::new(tlmgr::Tlmgr { cfg }),
 
             // Unknown package manager X
             x => Box::new(unknown::Unknown { name: x.into() }),
