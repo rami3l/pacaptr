@@ -32,12 +32,12 @@ jobs:
   debian-test:
     runs-on: ubuntu-latest
     container:
-      image: docker://debian:testing
+      image: docker://rust:latest
 
     steps:
       - uses: actions/checkout@v2
       - run: apt-get update && apt-get install -y curl build-essential
-      - uses: dtolnay/rust-toolchain@stable
+      # - uses: dtolnay/rust-toolchain@stable
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
