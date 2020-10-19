@@ -106,22 +106,22 @@ mod chocolatey {
     }
 }
 
-/*
 #[cfg(target_os = "linux")]
 mod linuxbrew {
     use super::Test;
 
     #[test]
-    fn si_ok() {
+    async fn si_ok() {
         Test::new()
             .pacaptr(&["-Si", "curl"], &[])
             .output(&["Get a file from an HTTP, HTTPS or FTP server"])
             .run(false)
+            .await
     }
 
     #[test]
     #[ignore]
-    fn r() {
+    async fn r() {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"], &[])
             .output(&["brew (re)?install wget"])
@@ -130,6 +130,7 @@ mod linuxbrew {
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["brew uninstall wget"])
             .run(false)
+            .await
     }
 }
 
@@ -138,25 +139,27 @@ mod apt {
     use super::Test;
 
     #[test]
-    fn si_ok() {
+    async fn si_ok() {
         Test::new()
             .pacaptr(&["-Si", "screen"], &[])
             .output(&["Package: screen"])
             .run(false)
+            .await
     }
 
     #[test]
     #[should_panic(expected = "Failed with pattern `Package: wget`")]
-    fn si_fail() {
+    async fn si_fail() {
         Test::new()
             .pacaptr(&["-Si", "screen"], &[])
             .output(&["Package: wget"])
             .run(false)
+            .await
     }
 
     #[test]
     #[ignore]
-    fn r() {
+    async fn r() {
         Test::new()
             .pacaptr(&["-S", "screen", "--yes"], &[])
             .output(&["apt(-get)? install", "--reinstall", "--yes", "screen"])
@@ -167,6 +170,7 @@ mod apt {
             .pacaptr(&["-Qi", "screen"], &[])
             .output(&["Status: deinstall"])
             .run(false)
+            .await
     }
 }
 
@@ -175,25 +179,27 @@ mod apk {
     use super::Test;
 
     #[test]
-    fn si_ok() {
+    async fn si_ok() {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
             .output(&["A network utility to retrieve files from the Web"])
             .run(false)
+            .await
     }
 
     #[test]
     #[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
-    fn si_fail() {
+    async fn si_fail() {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
             .output(&["Why not use curl instead?"])
             .run(false)
+            .await
     }
 
     #[test]
     #[ignore]
-    fn r() {
+    async fn r() {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"], &[])
             .output(&["Installing wget"])
@@ -202,6 +208,7 @@ mod apk {
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["Purging wget"])
             .run(false)
+            .await
     }
 }
 
@@ -210,25 +217,27 @@ mod dnf {
     use super::Test;
 
     #[test]
-    fn si_ok() {
+    async fn si_ok() {
         Test::new()
             .pacaptr(&["-Si", "curl"], &[])
             .output(&["A utility for getting files from remote servers"])
             .run(false)
+            .await
     }
 
     #[test]
     #[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
-    fn si_fail() {
+    async fn si_fail() {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
             .output(&["Why not use curl instead?"])
             .run(false)
+            .await
     }
 
     #[test]
     #[ignore]
-    fn r() {
+    async fn r() {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"], &[])
             .output(&["dnf install", "-y", "wget", "Installed:", "Complete!"])
@@ -237,6 +246,7 @@ mod dnf {
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["dnf remove", "-y", "wget", "Removed:", "Complete!"])
             .run(false)
+            .await
     }
 }
 
@@ -245,25 +255,27 @@ mod zypper {
     use super::Test;
 
     #[test]
-    fn si_ok() {
+    async fn si_ok() {
         Test::new()
             .pacaptr(&["-Si", "curl"], &[])
             .output(&["A Tool for Transferring Data from URLs"])
             .run(false)
+            .await
     }
 
     #[test]
     #[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
-    fn si_fail() {
+    async fn si_fail() {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
             .output(&["Why not use curl instead?"])
             .run(false)
+            .await
     }
 
     #[test]
     #[ignore]
-    fn r() {
+    async fn r() {
         Test::new()
             .pacaptr(&["-S", "wget", "--yes"], &[])
             .output(&["zypper install", "-y", "wget", "Installing: wget"])
@@ -272,6 +284,6 @@ mod zypper {
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["zypper remove", "-y", "wget", "Removing wget"])
             .run(false)
+            .await
     }
 }
-*/

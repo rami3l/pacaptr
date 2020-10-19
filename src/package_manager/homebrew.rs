@@ -149,7 +149,7 @@ impl PackageManager for Homebrew {
                 .for_each(|ln| println!("{}", ln))
         };
 
-        let cmd: &[&str] = &["brew", "list"];
+        let cmd = &["brew", "list"];
         let cmd = Cmd::new(cmd).flags(flags);
         if !self.cfg.dry_run {
             print::print_cmd(&cmd, PROMPT_RUN);
