@@ -1,7 +1,7 @@
 use super::{DryRunStrategy, PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
-use crate::error::Error;
 use crate::exec::Cmd;
+use anyhow::Result;
 
 pub struct Chocolatey {
     pub cfg: Config,
@@ -20,12 +20,14 @@ lazy_static! {
 }
 
 impl Chocolatey {
-    fn check_dry_run(&self, cmd: Cmd) -> Result<(), Error> {
+    async fn check_dry_run(&self, cmd: Cmd) -> Result<()> {
         self.just_run(cmd, Default::default(), CHECK_DRY_STRAT.clone())
+            .await
     }
 }
 
 // Windows is so special! It's better not to "sudo" automatically.
+#[async_trait]
 impl PackageManager for Chocolatey {
     /// Get the name of the package manager.
     fn name(&self) -> String {
@@ -37,35 +39,38 @@ impl PackageManager for Chocolatey {
     }
 
     /// Q generates a list of installed packages.
-    fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.check_dry_run(
             Cmd::new(&["choco", "list", "--localonly"])
                 .kws(kws)
                 .flags(flags),
         )
+        .await
     }
 
     /// Qi displays local package information: name, version, description, etc.
-    fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.si(kws, flags)
+    async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.si(kws, flags).await
     }
 
     /// Qu lists packages which have an update available.
-    fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.check_dry_run(Cmd::new(&["choco", "outdated"]).kws(kws).flags(flags))
+            .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
-    fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new(&["choco", "uninstall"]).kws(kws).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
-    fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new(&["choco", "uninstall", "--removedependencies"])
                 .kws(kws)
@@ -73,10 +78,11 @@ impl PackageManager for Chocolatey {
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// S installs one or more packages by name.
-    fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd: &[&str] = if self.cfg.needed {
             &["choco", "install"]
         } else {
@@ -87,20 +93,23 @@ impl PackageManager for Chocolatey {
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
-    fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.check_dry_run(Cmd::new(&["choco", "info"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
-    fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.check_dry_run(Cmd::new(&["choco", "search"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Su updates outdated packages.
-    fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd: &[&str] = if kws.is_empty() {
             &["choco", "upgrade", "all"]
         } else {
@@ -111,10 +120,11 @@ impl PackageManager for Chocolatey {
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
-    fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.su(kws, flags)
+    async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.su(kws, flags).await
     }
 }

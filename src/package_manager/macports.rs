@@ -1,7 +1,7 @@
 use super::{NoCacheStrategy, PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
-use crate::error::Error;
 use crate::exec::Cmd;
+use anyhow::Result;
 
 pub struct Macports {
     pub cfg: Config,
@@ -19,6 +19,7 @@ lazy_static! {
     };
 }
 
+#[async_trait]
 impl PackageManager for Macports {
     /// Get the name of the package manager.
     fn name(&self) -> String {
@@ -30,53 +31,60 @@ impl PackageManager for Macports {
     }
 
     /// Q generates a list of installed packages.
-    fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["port", "installed"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Qc shows the changelog of a package.
-    fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["port", "log"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Qi displays local package information: name, version, description, etc.
-    fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.si(kws, flags)
+    async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.si(kws, flags).await
     }
 
     /// Ql displays files provided by local package.
-    fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["port", "contents"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Qo queries the package which provides FILE.
-    fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["port", "provides"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
-    fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["port", "-v", "installed"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Qu lists packages which have an update available.
-    fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["port", "outdated"]).kws(kws).flags(flags))
+            .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
-    fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new_sudo(&["port", "uninstall"]).kws(kws).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
-    fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new_sudo(&["port", "uninstall", "--follow-dependencies"])
                 .kws(kws)
@@ -84,19 +92,21 @@ impl PackageManager for Macports {
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// S installs one or more packages by name.
-    fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new_sudo(&["port", "install"]).kws(kws).flags(flags),
             Default::default(),
             INSTALL_STRAT.clone(),
         )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
-    fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd: &[&str] = if flags.is_empty() {
             &["port", "clean", "--all", "inactive"]
         } else {
@@ -107,10 +117,11 @@ impl PackageManager for Macports {
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Scc removes all files from the cache.
-    fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd: &[&str] = if flags.is_empty() {
             &["port", "clean", "--all", "installed"]
         } else {
@@ -121,20 +132,23 @@ impl PackageManager for Macports {
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
-    fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["port", "info"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
-    fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["port", "search"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Su updates outdated packages.
-    fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd: &[&str] = if flags.is_empty() {
             &["port", "upgrade", "outdated"]
         } else {
@@ -145,19 +159,21 @@ impl PackageManager for Macports {
             Default::default(),
             INSTALL_STRAT.clone(),
         )
+        .await
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
-    fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.sy(&[], flags)?;
-        self.su(kws, flags)
+    async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.sy(&[], flags).await?;
+        self.su(kws, flags).await
     }
 
     /// Sy refreshes the local package database.
-    fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run_default(Cmd::new(&["port", "selfupdate"]).flags(flags))?;
+    async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.just_run_default(Cmd::new(&["port", "selfupdate"]).flags(flags))
+            .await?;
         if !kws.is_empty() {
-            self.s(kws, flags)?;
+            self.s(kws, flags).await?;
         }
         Ok(())
     }

@@ -12,9 +12,11 @@ pub mod unknown;
 pub mod zypper;
 
 use crate::dispatch::config::Config;
-use crate::error::Error;
-use crate::exec::{Cmd, Mode};
+use crate::exec::{Cmd, Mode, Output, StatusCode};
+use anyhow::Result;
+use tokio::sync::Mutex;
 
+/*
 macro_rules! make_pm {(
         $(
             $( #[$meta:meta] )*
@@ -22,152 +24,302 @@ macro_rules! make_pm {(
         ),*
     ) => {
         $( $(#[$meta] )*
-        fn $method(&self, _kws: &[&str], _flags: &[&str]) -> std::result::Result<(), crate::error::Error> {
-            std::result::Result::Err(format!("Operation `{}` unimplemented for `{}`", stringify!($method), self.name()).into())
+        fn $method(&self, _kws: &[&str], _flags: &[&str]) -> BoxFuture<'_, anyhow::Result<()>>
+        {
+            Box::pin(async move {
+                let name = self.name();
+                ::std::result::Result::Err(anyhow::anyhow!(
+                    format!(
+                        "Operation `{}` unimplemented for `{}`",
+                        stringify!($method),
+                        name,
+                    ),
+                ))
+            })
         })*
     };
+}
+*/
+
+macro_rules! make_op_body {
+    ( $self:ident, $method:ident ) => {{
+        let name = $self.name();
+        ::std::result::Result::Err(anyhow::anyhow!(format!(
+            "Operation `{}` unimplemented for `{}`",
+            stringify!($method),
+            name,
+        ),))
+    }};
 }
 
 /// The behaviors of a Pack(age)Manager.
 /// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 /// and https://wiki.archlinux.org/index.php/Pacman
-pub trait PackageManager {
+#[async_trait]
+pub trait PackageManager: Sync {
     /// Get the name of the package manager.
     fn name(&self) -> String;
 
     /// Get the config of the package manager.
     fn cfg(&self) -> Config;
 
+    /// Get the `StatusCode` to be returned.
+    async fn code(&self) -> StatusCode {
+        self._code(None).await
+    }
+
+    /// Set the `StatusCode` to be returned.
+    async fn set_code(&self, to: StatusCode) {
+        self._code(Some(to)).await;
+    }
+
+    /// Get/Set the `StatusCode` to be returned.
+    /// If `to` is `Some(n)`, then the current `StatusCode` will be reset to `n`.
+    /// Then the current `StatusCode` will be returned.
+    #[doc(hidden)]
+    async fn _code(&self, to: Option<StatusCode>) -> StatusCode {
+        lazy_static! {
+            static ref CODE: Mutex<StatusCode> = Mutex::new(0);
+        }
+
+        let mut code = CODE.lock().await;
+        if let Some(n) = to {
+            *code = n;
+        }
+
+        *code
+    }
+
     /// A helper method to simplify direct command invocation.
-    fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Vec<u8>, Error> {
+    async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Output> {
+        let cfg = self.cfg();
+
         // `--dry-run` should apply to both the main command and the cleanup.
-        let res = {
-            let body = |cmd: &Cmd| {
-                let mut curr_cmd = cmd.clone();
-                let no_confirm = self.cfg().no_confirm;
-                if self.cfg().no_cache {
-                    if let NoCacheStrategy::WithFlags(v) = &strat.no_cache {
+        async fn body(cfg: &Config, cmd: &Cmd, mode: PmMode, strat: &Strategies) -> Result<Output> {
+            let mut curr_cmd = cmd.clone();
+            let no_confirm = cfg.no_confirm;
+            if cfg.no_cache {
+                if let NoCacheStrategy::WithFlags(v) = &strat.no_cache {
+                    curr_cmd.flags.extend(v.to_owned());
+                }
+            }
+            match &strat.prompt {
+                PromptStrategy::None => curr_cmd.exec(mode.into()).await,
+                PromptStrategy::CustomPrompt if no_confirm => curr_cmd.exec(mode.into()).await,
+                PromptStrategy::CustomPrompt => curr_cmd.exec(Mode::Prompt).await,
+                PromptStrategy::NativePrompt { no_confirm: v } => {
+                    if no_confirm {
                         curr_cmd.flags.extend(v.to_owned());
                     }
+                    curr_cmd.exec(mode.into()).await
                 }
-                match &strat.prompt {
-                    PromptStrategy::None => curr_cmd.exec(mode.into()),
-                    PromptStrategy::CustomPrompt if no_confirm => curr_cmd.exec(mode.into()),
-                    PromptStrategy::CustomPrompt => curr_cmd.exec(Mode::Prompt),
-                    PromptStrategy::NativePrompt { no_confirm: v } => {
-                        if no_confirm {
-                            curr_cmd.flags.extend(v.to_owned());
-                        }
-                        curr_cmd.exec(mode.into())
-                    }
-                }
-            };
-
-            match &strat.dry_run {
-                DryRunStrategy::PrintCmd if self.cfg().dry_run => {
-                    cmd.clone().exec(Mode::PrintCmd)?
-                }
-                DryRunStrategy::WithFlags(v) if self.cfg().dry_run => {
-                    cmd.flags.extend(v.to_owned());
-                    // * A dry run with extra flags does not need `sudo`.
-                    cmd = cmd.sudo(false);
-                    body(&cmd)?
-                }
-                _ => body(&cmd)?,
             }
         };
 
+        let res = match &strat.dry_run {
+            DryRunStrategy::PrintCmd if self.cfg().dry_run => {
+                cmd.clone().exec(Mode::PrintCmd).await?
+            }
+            DryRunStrategy::WithFlags(v) if self.cfg().dry_run => {
+                cmd.flags.extend(v.to_owned());
+                // * A dry run with extra flags does not need `sudo`.
+                cmd = cmd.sudo(false);
+                body(&cfg, &cmd, mode, &strat).await?
+            }
+            _ => body(&cfg, &cmd, mode, &strat).await?,
+        };
+
         // Perform the cleanup.
-        if self.cfg().no_cache {
+        if cfg.no_cache {
             let flags = cmd.flags.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
             match &strat.no_cache {
-                NoCacheStrategy::Sc => self.sc(&[], &flags)?,
-                NoCacheStrategy::Scc => self.scc(&[], &flags)?,
-                NoCacheStrategy::Sccc => self.sccc(&[], &flags)?,
+                NoCacheStrategy::Sc => self.sc(&[], &flags).await?,
+                NoCacheStrategy::Scc => self.scc(&[], &flags).await?,
+                NoCacheStrategy::Sccc => self.sccc(&[], &flags).await?,
                 _ => (),
             };
         }
+
+        // Reset the current status code.
+        self.set_code(res.code.unwrap_or(1)).await;
 
         Ok(res)
     }
 
     /// A helper method to simplify direct command invocation.
     /// It is just like `run`, but intended to be used only for its side effects.
-    fn just_run(&self, cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<(), Error> {
-        self.run(cmd, mode, strat).and(Ok(()))
+    async fn just_run(&self, cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<()>
+    where
+        Self: Sized,
+    {
+        self.run(cmd, mode, strat).await.and(Ok(()))
     }
 
     /// A helper method to simplify direct command invocation.
     /// It is just like `run`, but intended to be used only for its side effects, and always with default mode (`CheckErr` for now) and strategies.
-    fn just_run_default(&self, cmd: Cmd) -> Result<(), Error> {
+    async fn just_run_default(&self, cmd: Cmd) -> Result<()>
+    where
+        Self: Sized,
+    {
         self.just_run(cmd, Default::default(), Default::default())
+            .await
     }
 
-    make_pm![
-        /// Q generates a list of installed packages.
-        q,
-        /// Qc shows the changelog of a package.
-        qc,
-        /// Qe lists packages installed explicitly (not as dependencies).
-        qe,
-        /// Qi displays local package information: name, version, description, etc.
-        qi,
-        /// Qk verifies one or more packages.
-        qk,
-        /// Ql displays files provided by local package.
-        ql,
-        /// Qm lists packages that are installed but are not available in any installation source (anymore).
-        qm,
-        /// Qo queries the package which provides FILE.
-        qo,
-        /// Qp queries a package supplied on the command line rather than an entry in the package management database.
-        qp,
-        /// Qs searches locally installed package for names or descriptions.
-        qs,
-        /// Qu lists packages which have an update available.
-        qu,
-        /// R removes a single package, leaving all of its dependencies installed.
-        r,
-        /// Rn removes a package and skips the generation of configuration backup files.
-        rn,
-        /// Rns removes a package and its dependencies which are not required by any other installed package,
-        /// and skips the generation of configuration backup files.
-        rns,
-        /// Rs removes a package and its dependencies which are not required by any other installed package,
-        /// and not explicitly installed by the user.
-        rs,
-        /// Rss removes a package and its dependencies which are not required by any other installed package.
-        rss,
-        /// S installs one or more packages by name.
-        s,
-        /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
-        sc,
-        /// Scc removes all files from the cache.
-        scc,
-        /// Sccc ...
-        /// What is this?
-        sccc,
-        /// Sg lists all packages belonging to the GROUP.
-        sg,
-        /// Si displays remote package information: name, version, description, etc.
-        si,
-        /// Sii displays packages which require X to be installed, aka reverse dependencies.
-        sii,
-        /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
-        sl,
-        /// Ss searches for package(s) by searching the expression in name, description, short description.
-        ss,
-        /// Su updates outdated packages.
-        su,
-        /// Suy refreshes the local package database, then updates outdated packages.
-        suy,
-        /// Sw retrieves all packages from the server, but does not install/upgrade anything.
-        sw,
-        /// Sy refreshes the local package database.
-        sy,
-        /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
-        u
-    ];
+    // ! WARNING!
+    // ! Dirty copy-paste!
+
+    /// Q generates a list of installed packages.
+    async fn q(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, q)
+    }
+
+    /// Qc shows the changelog of a package.
+    async fn qc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qc)
+    }
+
+    /// Qe lists packages installed explicitly (not as dependencies).
+    async fn qe(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qe)
+    }
+
+    /// Qi displays local package information: name, version, description, etc.
+    async fn qi(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qi)
+    }
+
+    /// Qk verifies one or more packages.
+    async fn qk(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qk)
+    }
+
+    /// Ql displays files provided by local package.
+    async fn ql(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, ql)
+    }
+
+    /// Qm lists packages that are installed but are not available in any installation source (anymore).
+    async fn qm(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qm)
+    }
+
+    /// Qo queries the package which provides FILE.
+    async fn qo(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qo)
+    }
+
+    /// Qp queries a package supplied on the command line rather than an entry in the package management database.
+    async fn qp(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qp)
+    }
+
+    /// Qs searches locally installed package for names or descriptions.
+    async fn qs(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qs)
+    }
+
+    /// Qu lists packages which have an update available.
+    async fn qu(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, qu)
+    }
+
+    /// R removes a single package, leaving all of its dependencies installed.
+    async fn r(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, r)
+    }
+
+    /// Rn removes a package and skips the generation of configuration backup files.
+    async fn rn(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, rn)
+    }
+
+    /// Rns removes a package and its dependencies which are not required by any other installed package,
+    /// and skips the generation of configuration backup files.
+    async fn rns(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, rns)
+    }
+
+    /// Rs removes a package and its dependencies which are not required by any other installed package,
+    /// and not explicitly installed by the user.
+    async fn rs(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, rs)
+    }
+
+    /// Rss removes a package and its dependencies which are not required by any other installed package.
+    async fn rss(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, rss)
+    }
+
+    /// S installs one or more packages by name.
+    async fn s(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, s)
+    }
+
+    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    async fn sc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sc)
+    }
+
+    /// Scc removes all files from the cache.
+    async fn scc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, scc)
+    }
+
+    /// Sccc ...
+    /// What is this?
+    async fn sccc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sccc)
+    }
+
+    /// Sg lists all packages belonging to the GROUP.
+    async fn sg(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sg)
+    }
+
+    /// Si displays remote package information: name, version, description, etc.
+    async fn si(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, si)
+    }
+
+    /// Sii displays packages which require X to be installed, aka reverse dependencies.
+    async fn sii(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sii)
+    }
+
+    /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
+    async fn sl(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sl)
+    }
+
+    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    async fn ss(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, ss)
+    }
+
+    /// Su updates outdated packages.
+    async fn su(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, su)
+    }
+
+    /// Suy refreshes the local package database, then updates outdated packages.
+    async fn suy(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, suy)
+    }
+
+    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
+    async fn sw(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sw)
+    }
+
+    /// Sy refreshes the local package database.
+    async fn sy(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, sy)
+    }
+
+    /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
+    async fn u(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+        make_op_body!(self, u)
+    }
 }
 
 /// Different ways in which a command shall be dealt with.
@@ -287,3 +439,37 @@ impl<S> Default for NoCacheStrategy<S> {
         NoCacheStrategy::None
     }
 }
+
+/*
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
+
+    struct MockPM {}
+
+    #[async_trait]
+    impl PackageManager for MockPM {
+        /// Get the name of the package manager.
+        fn name(&self) -> String {
+            "mockpm".into()
+        }
+
+        fn cfg(&self) -> Config {
+            Config::default()
+        }
+    }
+
+    #[test]
+    async fn simple_run() {
+        println!("Starting!");
+        let cmd = Cmd::new(&["bash", "-c"])
+            .kws(&[r#"printf "Hello\n"; sleep 3; printf "World\n"; sleep 3; printf "!\n""#]);
+        let res = MockPM {}
+            .run(cmd, PmMode::CheckErr, Default::default())
+            .await
+            .unwrap();
+        dbg!(res);
+    }
+}
+*/

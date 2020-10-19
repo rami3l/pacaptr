@@ -1,7 +1,7 @@
 use super::{NoCacheStrategy, PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
-use crate::error::Error;
 use crate::exec::Cmd;
+use anyhow::Result;
 
 pub struct Apt {
     pub cfg: Config,
@@ -19,6 +19,7 @@ lazy_static! {
     };
 }
 
+#[async_trait]
 impl PackageManager for Apt {
     /// Get the name of the package manager.
     fn name(&self) -> String {
@@ -30,54 +31,61 @@ impl PackageManager for Apt {
     }
 
     /// Q generates a list of installed packages.
-    fn q(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["apt", "list"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Qi displays local package information: name, version, description, etc.
-    fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["dpkg-query", "-s"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Qo queries the package which provides FILE.
-    fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["dpkg-query", "-S"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Qp queries a package supplied on the command line rather than an entry in the package management database.
-    fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["dpkg-deb", "-I"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Qu lists packages which have an update available.
-    fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(
             Cmd::new(&["apt", "upgrade", "--trivial-only"])
                 .kws(kws)
                 .flags(flags),
         )
+        .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
-    fn r(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new(&["apt", "remove"]).kws(kws).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Rn removes a package and skips the generation of configuration backup files.
-    fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new(&["apt", "purge"]).kws(kws).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
-    fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new(&["apt", "autoremove", "--purge"])
                 .kws(kws)
@@ -85,20 +93,22 @@ impl PackageManager for Apt {
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Rs removes a package and its dependencies which are not required by any other installed package,
     /// and not explicitly installed by the user.
-    fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new(&["apt", "autoremove"]).kws(kws).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// S installs one or more packages by name.
-    fn s(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd: &[&str] = if self.cfg.needed {
             &["apt", "install"]
         } else {
@@ -109,79 +119,89 @@ impl PackageManager for Apt {
             Default::default(),
             INSTALL_STRAT.clone(),
         )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
-    fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new(&["apt", "clean"]).kws(kws).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Scc removes all files from the cache.
-    fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
             Cmd::new(&["apt", "autoclean"]).kws(kws).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
+        .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
-    fn si(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["apt", "show"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Sii displays packages which require X to be installed, aka reverse dependencies.
-    fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["apt", "rdepends"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
-    fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(Cmd::new(&["apt", "search"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Su updates outdated packages.
-    fn su(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
             self.just_run(
                 Cmd::new(&["apt", "upgrade"]).flags(flags),
                 Default::default(),
                 PROMPT_STRAT.clone(),
-            )?;
+            )
+            .await?;
             self.just_run(
                 Cmd::new(&["apt", "dist-upgrade"]).flags(flags),
                 Default::default(),
                 INSTALL_STRAT.clone(),
             )
+            .await
         } else {
-            self.s(kws, flags)
+            self.s(kws, flags).await
         }
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
-    fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.sy(kws, flags)?;
-        self.su(kws, flags)
+    async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.sy(kws, flags).await?;
+        self.su(kws, flags).await
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
-    fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
+    async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(
             Cmd::new(&["apt", "install", "--download-only"])
                 .kws(kws)
                 .flags(flags),
         )
+        .await
     }
 
     /// Sy refreshes the local package database.
-    fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<(), Error> {
-        self.just_run_default(Cmd::new(&["apt", "update"]).kws(kws).flags(flags))?;
+    async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.just_run_default(Cmd::new(&["apt", "update"]).kws(kws).flags(flags))
+            .await?;
         if !kws.is_empty() {
-            self.s(kws, flags)?;
+            self.s(kws, flags).await?;
         }
         Ok(())
     }

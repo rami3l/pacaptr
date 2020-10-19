@@ -1,11 +1,14 @@
-use crate::error::Error;
 use crate::print::*;
+use anyhow::{anyhow, Context, Result};
 pub use is_root::is_root;
 use regex::Regex;
 use std::ffi::OsStr;
-use std::io::{BufReader, Read, Write};
-use std::sync::Mutex;
-use subprocess::{Exec, Redirection};
+use std::io::Write;
+use std::process::Stdio;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::process::Command as Exec;
+use tokio::sync::Mutex;
+use tokio::{select, try_join};
 
 /// Different ways in which a command shall be dealt with.
 #[derive(Copy, Clone, Debug)]
@@ -27,6 +30,26 @@ pub enum Mode {
     /// A CUSTOM prompt implemented by `pacaptr`.
     /// Like `CheckErr`, but will ask for confirmation before proceeding.
     Prompt,
+}
+
+pub type StatusCode = i32;
+
+/// Representation of what a command returns.
+#[derive(Debug, Clone)]
+pub struct Output {
+    /// The captured `stdout`, sometimes mixed with captured `stderr`.
+    pub contents: Vec<u8>,
+    /// `Some(n)` for exit code, `None` for signals.
+    pub code: Option<StatusCode>,
+}
+
+impl Default for Output {
+    fn default() -> Self {
+        Output {
+            contents: Default::default(),
+            code: Some(0),
+        }
+    }
 }
 
 /// A command to be executed, provided in `command-keywords-flags` form.  
@@ -71,18 +94,26 @@ impl<S: AsRef<OsStr>> Cmd<S> {
     /// Convert a `Cmd` object into a `subprocess::Exec`.
     pub fn build(self) -> Exec {
         // * We use `sudo -S` to launch subprocess if `sudo` is `true` and the current user is not `root`.
-        let builder = if self.sudo && !is_root() {
-            Exec::cmd("sudo").arg("-S").args(&self.cmd)
+        // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
+        // ! but not `zypper install curl -y`.
+        // ! So we place the flags first, and then keywords.
+        if self.sudo && !is_root() {
+            let mut builder = Exec::new("sudo");
+            builder
+                .arg("-S")
+                .args(&self.cmd)
+                .args(&self.flags)
+                .args(&self.kws);
+            builder
         } else {
             let (cmd, subcmd) = self
                 .cmd
                 .split_first()
                 .expect("Failed to build Cmd, command is empty");
-            Exec::cmd(cmd).args(subcmd)
-        };
-        // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
-        // ! but not `zypper install curl -y.`
-        builder.args(&self.flags).args(&self.kws)
+            let mut builder = Exec::new(cmd);
+            builder.args(subcmd).args(&self.flags).args(&self.kws);
+            builder
+        }
     }
 }
 
@@ -90,93 +121,166 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     /// Execute a command and return a `Result<Vec<u8>, _>`.  
     /// The exact behavior depends on the `mode` passed in.  
     /// See `exec::Mode`'s documentation for more info.
-    pub fn exec(self, mode: Mode) -> Result<Vec<u8>, Error> {
+    pub async fn exec(self, mode: Mode) -> Result<Output> {
         match mode {
             Mode::PrintCmd => {
                 print_cmd(&self, PROMPT_CANCELED);
-                Ok(Vec::new())
+                Ok(Default::default())
             }
-            Mode::Mute => self.exec_checkall(true),
+            Mode::Mute => self.exec_checkall(true).await,
             Mode::CheckAll => {
                 print_cmd(&self, PROMPT_RUN);
-                self.exec_checkall(false)
+                self.exec_checkall(false).await
             }
             Mode::CheckErr => {
                 print_cmd(&self, PROMPT_RUN);
-                self.exec_checkerr(false)
+                self.exec_checkerr(false).await
             }
-            Mode::Prompt => self.exec_prompt(false),
+            Mode::Prompt => self.exec_prompt(false).await,
         }
+    }
+
+    /// Helper function to write a string to a `String` and `stdout`.
+    async fn write<V, W>(s: &str, mute: bool, mut out: V, mut stdout: W) -> tokio::io::Result<()>
+    where
+        V: AsyncWriteExt + Unpin,
+        W: AsyncWriteExt + Unpin,
+    {
+        let bytes = s.as_bytes();
+        if mute {
+            out.write_all(bytes).await
+        } else {
+            try_join!(stdout.write_all(bytes), out.write_all(bytes))?;
+            Ok(())
+        }
+    }
+
+    /// Helper function to write a line to a `String` and `stdout`.
+    async fn writeln<V, W>(s: &str, mute: bool, out: V, stdout: W) -> tokio::io::Result<()>
+    where
+        V: AsyncWriteExt + Unpin,
+        W: AsyncWriteExt + Unpin,
+    {
+        let mut s = s.to_owned();
+        s.push('\n');
+        Self::write(&s, mute, out, stdout).await
     }
 
     /// Execute a command and return its `stdout` and `stderr`.
     /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
-    fn exec_checkall(self, mute: bool) -> Result<Vec<u8>, Error> {
-        let stdout_reader = self
+    async fn exec_checkall(self, mute: bool) -> Result<Output> {
+        let mut child = self
             .build()
-            .stderr(Redirection::Merge)
-            .stream_stdout()
-            .map_err(|_| Error::from("Could not capture stdout, is the executable valid?"))
-            .map(BufReader::new)?;
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .context("Failed to spawn child process")?;
+        let mut stdout_reader = child
+            .stdout
+            .take()
+            .map(|x| BufReader::new(x).lines())
+            .ok_or_else(|| anyhow!("Child process did not have a handle to stdout"))?;
+        let mut stderr_reader = child
+            .stderr
+            .take()
+            .map(|x| BufReader::new(x).lines())
+            .ok_or_else(|| anyhow!("Child process did not have a handle to stderr"))?;
+
+        let code: tokio::task::JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
+            let status = child
+                .wait()
+                .await
+                .context("Child process encountered an error")?;
+            Ok(status.code())
+        });
 
         let mut out = Vec::<u8>::new();
-        let mut stdout = std::io::stdout();
+        let mut stdout = tokio::io::stdout();
 
-        for mb in stdout_reader.bytes() {
-            let b = mb?;
-            out.write_all(&[b])?;
-            if !mute {
-                stdout.write_all(&[b])?;
+        loop {
+            select! {
+                ln = stdout_reader.next_line() => match ln? {
+                    None => break,
+                    Some(l) => Self::writeln(&l, mute, &mut out, &mut stdout).await?,
+                },
+                ln = stderr_reader.next_line() => match ln? {
+                    None => break,
+                    Some(l) => Self::writeln(&l, mute, &mut out, &mut stdout).await?,
+                },
+                else => continue,
             }
         }
 
-        Ok(out)
+        Ok(Output {
+            contents: out,
+            code: code.await.unwrap()?,
+        })
     }
 
     /// Execute a command and collect its `stderr`.  
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
-    fn exec_checkerr(self, mute: bool) -> Result<Vec<u8>, Error> {
-        let stderr_reader = self
+    async fn exec_checkerr(self, mute: bool) -> Result<Output> {
+        let mut child = self
             .build()
-            .stream_stderr()
-            .map_err(|_| Error::from("Could not capture stderr, is the executable valid?"))
-            .map(BufReader::new)?;
+            .stderr(Stdio::piped())
+            .spawn()
+            .context("Failed to spawn child process")?;
+        let mut stderr_reader = child
+            .stderr
+            .take()
+            .map(|x| BufReader::new(x).lines())
+            .ok_or_else(|| anyhow!("Child did not have a handle to stderr"))?;
+
+        let code: tokio::task::JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
+            let status = child
+                .wait()
+                .await
+                .context("Child process encountered an error")?;
+            Ok(status.code())
+        });
 
         let mut out = Vec::<u8>::new();
-        let mut stderr = std::io::stderr();
+        let mut stderr = tokio::io::stderr();
 
-        for mb in stderr_reader.bytes() {
-            let b = mb?;
-            out.write_all(&[b])?;
-            if !mute {
-                stderr.write_all(&[b])?;
+        loop {
+            select! {
+                ln = stderr_reader.next_line() => match ln? {
+                    None => break,
+                    Some(l) => Self::writeln(&l, mute, &mut out, &mut stderr).await?,
+                },
+                else => continue,
             }
         }
 
-        Ok(out)
+        Ok(Output {
+            contents: out,
+            code: code.await.unwrap()?,
+        })
     }
 
     /// Execute a command and collect its `stderr`.
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     /// The user will be prompted if (s)he wishes to continue with the command execution.
     #[allow(clippy::mutex_atomic)]
-    fn exec_prompt(self, mute: bool) -> Result<Vec<u8>, Error> {
+    async fn exec_prompt(self, mute: bool) -> Result<Output> {
         lazy_static! {
             static ref ALL_YES: Mutex<bool> = Mutex::new(false);
         }
 
-        let mut all_yes = ALL_YES.lock().unwrap();
+        let mut all_yes = ALL_YES.lock().await;
         let proceed: bool = if *all_yes {
             true
         } else {
             print_cmd(&self, PROMPT_PENDING);
-            match prompt(
-                "Proceed",
-                "[Yes/all/no]",
-                &["", "y", "yes", "a", "all", "n", "no"],
-                false,
-            )
-            .to_lowercase()
+            match tokio::task::block_in_place(move || {
+                prompt(
+                    "Proceed",
+                    "[Yes/all/no]",
+                    &["", "y", "yes", "a", "all", "n", "no"],
+                    false,
+                )
+                .to_lowercase()
+            })
             .as_ref()
             {
                 // The default answer is `Yes`
@@ -192,10 +296,10 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             }
         };
         if !proceed {
-            return Ok(Vec::new());
+            return Ok(Default::default());
         }
         print_cmd(&self, PROMPT_RUN);
-        self.exec_checkerr(mute)
+        self.exec_checkerr(mute).await
     }
 }
 
@@ -264,3 +368,20 @@ pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && std::path::Path::new(path).exists())
         || (!name.is_empty() && which::which(name).is_ok())
 }
+
+/*
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
+
+    #[test]
+    async fn simple_run() {
+        println!("Starting!");
+        let cmd = Cmd::new(&["bash", "-c"])
+            .kws(&[r#"printf "Hello\n"; sleep 3; printf "World\n"; sleep 3; printf "!\n""#]);
+        let res = cmd.exec_checkall(false).await.unwrap();
+        dbg!(res);
+    }
+}
+*/

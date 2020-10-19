@@ -2,10 +2,14 @@ use clap::Clap;
 use pacaptr::dispatch::Opt;
 use pacaptr::print::{print_err, PROMPT_ERROR};
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let opt = Opt::parse();
-    if let Err(e) = opt.dispatch() {
-        print_err(e, PROMPT_ERROR);
-        std::process::exit(1);
+    match opt.dispatch().await {
+        Ok(n) => std::process::exit(n),
+        Err(e) => {
+            print_err(e, PROMPT_ERROR);
+            std::process::exit(1);
+        }
     }
 }
