@@ -219,7 +219,7 @@ impl Opt {
             "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew { cfg }),
 
             // Linuxbrew
-            // "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
+            "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
 
             // Macports
             "port" if cfg!(target_os = "macos") => Box::new(macports::Macports { cfg }),
