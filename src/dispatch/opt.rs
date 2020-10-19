@@ -231,10 +231,10 @@ impl Opt {
             "apt" => Box::new(apt::Apt { cfg }),
 
             // Dnf for RedHat
-            // "dnf" => Box::new(dnf::Dnf { cfg }),
+            "dnf" => Box::new(dnf::Dnf { cfg }),
 
             // Zypper for SUSE
-            // "zypper" => Box::new(zypper::Zypper { cfg }),
+            "zypper" => Box::new(zypper::Zypper { cfg }),
 
             // * External Package Managers *
 

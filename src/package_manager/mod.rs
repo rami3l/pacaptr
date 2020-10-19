@@ -1,18 +1,18 @@
 /*
-pub mod dnf;
 pub mod linuxbrew;
 pub mod macports;
 pub mod pip;
 pub mod tlmgr;
-pub mod zypper;
 */
 
 pub mod apk;
 pub mod apt;
 pub mod chocolatey;
 pub mod conda;
+pub mod dnf;
 pub mod homebrew;
 pub mod unknown;
+pub mod zypper;
 
 use crate::dispatch::config::Config;
 use crate::exec::{Cmd, Mode, Output, StatusCode};
