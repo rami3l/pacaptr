@@ -143,22 +143,30 @@ impl PackageManager for Homebrew {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let search = |contents: &str| {
-            exec::grep(contents, kws)
-                .iter()
-                .for_each(|ln| println!("{}", ln))
+        async fn run(self_: &Homebrew, cmd: &[&str], kws: &[&str], flags: &[&str]) -> Result<()> {
+            let search = |contents: &str| {
+                exec::grep(contents, kws)
+                    .iter()
+                    .for_each(|ln| println!("{}", ln))
+            };
+
+            let cmd = Cmd::new(cmd).flags(flags);
+            if !self_.cfg.dry_run {
+                print::print_cmd(&cmd, PROMPT_RUN);
+            }
+            let out_bytes = self_
+                .run(cmd, PmMode::Mute, Default::default())
+                .await?
+                .contents;
+
+            search(&String::from_utf8(out_bytes)?);
+            Ok(())
         };
 
-        let cmd = &["brew", "list"];
-        let cmd = Cmd::new(cmd).flags(flags);
-        if !self.cfg.dry_run {
-            print::print_cmd(&cmd, PROMPT_RUN);
-        }
-        let out_bytes = self
-            .run(cmd, PmMode::Mute, Default::default())
-            .await?
-            .contents;
-        search(&String::from_utf8(out_bytes)?);
+        // ! `brew list` lists all formulae and casks only when using tty.
+        run(self, &["brew", "list"], kws, flags).await?;
+        run(self, &["brew", "list", "--cask"], kws, flags).await?;
+
         Ok(())
     }
 
