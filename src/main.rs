@@ -5,8 +5,12 @@ use pacaptr::print::{print_err, PROMPT_ERROR};
 #[tokio::main]
 async fn main() {
     let opt = Opt::parse();
-    if let Err(e) = opt.dispatch().await {
-        print_err(e, PROMPT_ERROR);
-        std::process::exit(1);
+    match opt.dispatch().await {
+        Ok(0) => (),
+        Ok(n) => std::process::exit(n),
+        Err(e) => {
+            print_err(e, PROMPT_ERROR);
+            std::process::exit(1);
+        }
     }
 }

@@ -1,10 +1,9 @@
 use super::config::Config;
-use crate::exec::is_exe;
+use crate::exec::{is_exe, StatusCode};
 use crate::package_manager::*;
 use anyhow::Result;
 use clap::{self, Clap};
 use std::iter::FromIterator;
-// use structopt::{clap, StructOpt};
 
 /// The command line options to be collected.
 #[derive(Debug, Clap)]
@@ -262,7 +261,7 @@ impl Opt {
     }
 
     /// Execute the job according to the flags received and the package manager detected.
-    pub async fn dispatch_from(&self, pm: Box<dyn PackageManager>) -> Result<()> {
+    pub async fn dispatch_from(&self, pm: Box<dyn PackageManager>) -> Result<StatusCode> {
         self.check()?;
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
         let flags: Vec<&str> = self.extra_flags.iter().map(|s| s.as_ref()).collect();
@@ -308,10 +307,12 @@ impl Opt {
         dispatch_match![
             q, qc, qe, qi, qk, ql, qm, qo, qp, qs, qu, r, rn, rns, rs, rss, s, sc, scc, sccc, sg,
             si, sii, sl, ss, su, suy, sw, sy, u
-        ]
+        ]?;
+
+        Ok(pm.code().await)
     }
 
-    pub async fn dispatch(&self) -> Result<()> {
+    pub async fn dispatch(&self) -> Result<StatusCode> {
         self.dispatch_from(self.make_pm(Config::load()?)).await
     }
 }

@@ -15,9 +15,9 @@ pub mod homebrew;
 pub mod unknown;
 
 use crate::dispatch::config::Config;
-use crate::exec::{Cmd, Mode, Output};
-use anyhow::Error;
+use crate::exec::{Cmd, Mode, Output, StatusCode};
 use anyhow::Result;
+use tokio::sync::Mutex;
 
 /*
 macro_rules! make_pm {(
@@ -66,17 +66,39 @@ pub trait PackageManager: Sync {
     /// Get the config of the package manager.
     fn cfg(&self) -> Config;
 
+    /// Get the `StatusCode` to be returned.
+    async fn code(&self) -> StatusCode {
+        self._code(None).await
+    }
+
+    /// Set the `StatusCode` to be returned.
+    async fn set_code(&self, to: StatusCode) {
+        self._code(Some(to)).await;
+    }
+
+    /// Get/Set the `StatusCode` to be returned.
+    /// If `to` is `Some(n)`, then the current `StatusCode` will be reset to `n`.
+    /// Then the current `StatusCode` will be returned.
+    #[doc(hidden)]
+    async fn _code(&self, to: Option<StatusCode>) -> StatusCode {
+        lazy_static! {
+            static ref CODE: Mutex<StatusCode> = Mutex::new(0);
+        }
+
+        let mut code = CODE.lock().await;
+        if let Some(n) = to {
+            *code = n;
+        }
+
+        *code
+    }
+
     /// A helper method to simplify direct command invocation.
     async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Output> {
         let cfg = self.cfg();
 
         // `--dry-run` should apply to both the main command and the cleanup.
-        async fn body(
-            cfg: &Config,
-            cmd: &Cmd,
-            mode: PmMode,
-            strat: &Strategies,
-        ) -> Result<Output, Error> {
+        async fn body(cfg: &Config, cmd: &Cmd, mode: PmMode, strat: &Strategies) -> Result<Output> {
             let mut curr_cmd = cmd.clone();
             let no_confirm = cfg.no_confirm;
             if cfg.no_cache {
@@ -120,6 +142,9 @@ pub trait PackageManager: Sync {
                 _ => (),
             };
         }
+
+        // Reset the current status code.
+        self.set_code(res.code.unwrap_or(1)).await;
 
         Ok(res)
     }
