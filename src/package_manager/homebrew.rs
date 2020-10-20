@@ -68,7 +68,7 @@ impl Homebrew {
         strat: Strategies,
     ) -> Result<()> {
         macro_rules! run {
-            ($cmd:expr) => {
+            ( $cmd:expr ) => {
                 async {
                     let mut cmd = $cmd;
                     cmd.extend(subcmd);
@@ -139,7 +139,7 @@ impl PackageManager for Homebrew {
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         macro_rules! run {
-            ($cmd: expr) => {
+            ( $cmd: expr ) => {
                 async {
                     let search = |contents: &str| {
                         exec::grep(contents, kws)

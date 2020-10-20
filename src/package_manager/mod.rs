@@ -44,11 +44,11 @@ macro_rules! make_pm {(
 macro_rules! make_op_body {
     ( $self:ident, $method:ident ) => {{
         let name = $self.name();
-        ::std::result::Result::Err(anyhow::anyhow!(format!(
+        Err(anyhow::anyhow!(format!(
             "Operation `{}` unimplemented for `{}`",
             stringify!($method),
             name,
-        ),))
+        )))
     }};
 }
 
