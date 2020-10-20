@@ -62,39 +62,34 @@ impl Homebrew {
     /// and then try to execute the corresponding command.
     async fn auto_cask_do(
         &self,
-        subcmd: &'_ [&str],
+        subcmd: &[&str],
         pack: &str,
         flags: &[&str],
         strat: Strategies,
     ) -> Result<()> {
-        async fn run(
-            self_: &Homebrew,
-            mut cmd: Vec<&str>,
-            subcmd: &[&str],
-            pack: &str,
-            flags: &[&str],
-            strat: Strategies,
-        ) -> Result<()> {
-            cmd.extend(subcmd);
-            self_
-                .just_run(
-                    Cmd::new(&cmd).kws(&[pack]).flags(flags),
-                    Default::default(),
-                    strat,
-                )
-                .await
+        macro_rules! run {
+            ($cmd:expr) => {
+                async {
+                    let mut cmd = $cmd;
+                    cmd.extend(subcmd);
+                    self.just_run(
+                        Cmd::new(&cmd).kws(&[pack]).flags(flags),
+                        Default::default(),
+                        strat,
+                    )
+                    .await
+                }
+            };
         }
 
         if self.cfg.force_cask {
-            return run(&self, vec!["brew", "cask"], subcmd, pack, flags, strat).await;
+            return run!(vec!["brew", "cask"]).await;
         }
 
         let code = self.search(pack, flags).await?;
         match code {
-            CaskState::NotFound | CaskState::Brew => {
-                run(&self, vec!["brew"], subcmd, pack, flags, strat).await
-            }
-            CaskState::Cask => run(&self, vec!["brew", "cask"], subcmd, pack, flags, strat).await,
+            CaskState::NotFound | CaskState::Brew => run!(vec!["brew"]).await,
+            CaskState::Cask => run!(vec!["brew", "cask"]).await,
         }
     }
 }
@@ -143,29 +138,33 @@ impl PackageManager for Homebrew {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        async fn run(self_: &Homebrew, cmd: &[&str], kws: &[&str], flags: &[&str]) -> Result<()> {
-            let search = |contents: &str| {
-                exec::grep(contents, kws)
-                    .iter()
-                    .for_each(|ln| println!("{}", ln))
+        macro_rules! run {
+            ($cmd: expr) => {
+                async {
+                    let search = |contents: &str| {
+                        exec::grep(contents, kws)
+                            .iter()
+                            .for_each(|ln| println!("{}", ln))
+                    };
+
+                    let cmd = Cmd::new($cmd).flags(flags);
+                    if !self.cfg.dry_run {
+                        print::print_cmd(&cmd, PROMPT_RUN);
+                    }
+                    let out_bytes = self
+                        .run(cmd, PmMode::Mute, Default::default())
+                        .await?
+                        .contents;
+
+                    search(&String::from_utf8(out_bytes)?);
+                    Ok::<(), anyhow::Error>(())
+                }
             };
-
-            let cmd = Cmd::new(cmd).flags(flags);
-            if !self_.cfg.dry_run {
-                print::print_cmd(&cmd, PROMPT_RUN);
-            }
-            let out_bytes = self_
-                .run(cmd, PmMode::Mute, Default::default())
-                .await?
-                .contents;
-
-            search(&String::from_utf8(out_bytes)?);
-            Ok(())
-        };
+        }
 
         // ! `brew list` lists all formulae and casks only when using tty.
-        run(self, &["brew", "list"], kws, flags).await?;
-        run(self, &["brew", "list", "--cask"], kws, flags).await?;
+        run!(&["brew", "list"]).await?;
+        run!(&["brew", "list", "--cask"]).await?;
 
         Ok(())
     }
