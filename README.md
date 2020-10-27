@@ -2,9 +2,12 @@
 
 ![pacaptr][Socialify Badge]
 
-<!-- ![Rust Badge](https://img.shields.io/badge/WARNING-Rusty-red?logo=rust&style=flat-square) -->
-<!-- ![Arch Linux Badge](https://img.shields.io/badge/BTW-I--Use--Arch-blue?logo=arch-linux&style=flat-square) -->
-![Interface Concept](https://user-images.githubusercontent.com/33851577/83973021-2f876b00-a916-11ea-9c7e-9cb76ca27a0e.png)
+<!--
+![Rust Badge](https://img.shields.io/badge/WARNING-Rusty-red?logo=rust&style=flat-square)
+![Arch Linux Badge](https://img.shields.io/badge/BTW-I--Use--Arch-blue?logo=arch-linux&style=flat-square)
+-->
+
+![Interface Concept](https://user-images.githubusercontent.com/33851577/97274042-619d5900-1834-11eb-812f-a54a18186740.png)
 
 `pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
 
