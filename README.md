@@ -11,7 +11,9 @@
 
 `pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
 
-Run `pacaptr -Syu` on the distro of your choice!
+It's highly recommended to set `pacman` as the alias of `pacaptr` on your non-ArchLinux OS.
+
+Run `pacman -Syu` on the OS of your choice!
 
 ## Contents
 
