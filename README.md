@@ -198,7 +198,7 @@ default_pm = "choco"
 
   - ~~Automatic `brew cask` invocation~~: This is not supported anymore since `v0.8.0`, as `homebrew` is natively supporting it!
 
-  - Be careful when a bottle and a cask share the same name, eg. `docker`.
+  - Be careful when a formula and a cask share the same name, eg. `docker`.
 
     ```bash
     pacaptr -Si docker | rg cask
