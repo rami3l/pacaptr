@@ -1,4 +1,4 @@
-# pac·apt·R<sup>evised</sup>
+# pacaptr
 
 ![pacaptr][Socialify Badge]
 
@@ -9,7 +9,7 @@
 
 ![Interface Concept](https://user-images.githubusercontent.com/33851577/97274042-619d5900-1834-11eb-812f-a54a18186740.png)
 
-`pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
+`pac·apt·r` (pacapt<sup>REVISED</sup>) is a wrapper for many package managers with pacman-style command syntax, started as a Rust port of [icy/pacapt].
 
 It's highly recommended to set `pacman` as the alias of `pacaptr` on your non-ArchLinux OS.
 
@@ -17,7 +17,7 @@ Run `pacman -Syu` on the OS of your choice!
 
 ## Contents
 
-- [pac·apt·R<sup>evised</sup>](#pacaptrsupevisedsup)
+- [pacaptr](#pacaptr)
   - [Contents](#contents)
   - [Supported Package Managers](#supported-package-managers)
   - [Motivation & Current Status](#motivation--current-status)
