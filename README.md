@@ -4,7 +4,7 @@
 
 <!-- ![Rust Badge](https://img.shields.io/badge/WARNING-Rusty-red?logo=rust&style=flat-square) -->
 <!-- ![Arch Linux Badge](https://img.shields.io/badge/BTW-I--Use--Arch-blue?logo=arch-linux&style=flat-square) -->
-![Interface Concept](https://user-images.githubusercontent.com/33851577/83973021-2f876b00-a916-11ea-9c7e-9cb76ca27a0e.png)
+![Interface Concept]
 
 `pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
 
@@ -217,6 +217,7 @@ default_pm = "choco"
 - `External/pip` support: Use `pacaptr --using pip3` if you want to run the `pip3` command.
 
 [Socialify Badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&forks=1&issues=1&logo=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2Fd%2Fd5%2FRust_programming_language_black_logo.svg%2F1200px-Rust_programming_language_black_logo.svg.png&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Light
+[Interface Concept]: https://carbon.now.sh/?bg=rgba(255%2C255%2C255%2C1)&t=vscode&wt=none&l=smalltalk&ds=false&dsyoff=20px&dsblur=68px&wc=true&wa=true&pv=30px&ph=48px&ln=false&fl=1&fm=JetBrains%20Mono&fs=13.5px&lh=133%25&si=false&es=2x&wm=false&code=%253E%2520pacaptr%2520-S%2520neofetch%250A%2520%2520Pending%2520%2560brew%2520reinstall%2520neofetch%2560%250A%2520%2520Proceed%2520%255BYes%252Fall%252Fno%255D%253F%2520y%250A%2520%2520Running%2520%2560brew%2520reinstall%2520neofetch%2560%250A%253D%253D%253E%2520Downloading%2520https%253A%252F%252Fhomebrew.bintray.com%252Fbottles%252Fneofetch-7.1.0.catalina.bot%250A%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2523%2520100.0%2525%250A%253D%253D%253E%2520Reinstalling%2520neofetch%250A%253D%253D%253E%2520Pouring%2520neofetch-7.1.0.catalina.bottle.tar.gz%250A%25F0%259F%258D%25BA%2520%2520%252Fusr%252Flocal%252FCellar%252Fneofetch%252F7.1.0%253A%25206%2520files%252C%2520351.5KB
 [Pacman Rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt
 [pacapt/#117]: https://github.com/icy/pacapt/issues/117
