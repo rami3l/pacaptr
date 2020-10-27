@@ -27,7 +27,7 @@ Run `pacaptr -Syu` on the distro of your choice!
 ## Supported Package Managers
 
 - `Windows/chocolatey`
-- `macOS/homebrew` (with [auto `cask` invocation](#platform-specific-tips))
+- `macOS/homebrew`
 - `macOS/macports`
 - `Debian/apt`
 - `Alpine/apk`
@@ -123,7 +123,6 @@ default_pm = "choco"
 
 # dry_run = false
 # no_confirm = false
-# force_cask = false
 # no_cache = false
 ```
 
@@ -197,17 +196,23 @@ default_pm = "choco"
 
 - `macOS/homebrew` & `External/linuxbrew` support: Please note that `cask` is for macOS only.
 
-  - Automatic `brew cask` invocation: implemented for `-S`, `-R`, `-Su`, and more.
+  - ~~Automatic `brew cask` invocation~~: This is not supported anymore since `v0.8.0`, as `homebrew` is natively supporting it!
+
+  - Be careful when a bottle and a cask share the same name, eg. `docker`.
 
     ```bash
-    pacaptr -S curl --dryrun
-    # Pending: brew install curl
+    pacaptr -Si docker | rg cask
+    # => Warning: Treating docker as a formula. For the cask, use homebrew/cask/docker
 
-    pacaptr -S gimp --dryrun
-    # Pending: brew cask install gimp
+    # Install the formula `docker`
+    pacaptr -S docker
+
+    # Install the cask `docker`
+    pacaptr -S homebrew/cask/docker
+
+    # Make homebrew treat all keywords as casks
+    pacaptr -S docker -- --cask
     ```
-
-  - The use of `brew cask` commands can also be enforced by adding a `--cask` flag. Useful when a bottle and a cask share the same name, eg. `docker`.
 
   - To use `-Rss`, you need to install [rmtree] first:
 

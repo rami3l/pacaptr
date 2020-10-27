@@ -106,14 +106,6 @@ pub struct Opt {
     no_confirm: bool,
 
     #[clap(
-        long = "cask",
-        alias = "forcecask",
-        alias = "force-cask",
-        about = "Force the use of `brew cask` in some commands"
-    )]
-    force_cask: bool,
-
-    #[clap(
         long = "nocache",
         alias = "no-cache",
         about = "Remove cache after installation"
@@ -195,7 +187,6 @@ impl Opt {
                     dry_run,
                     needed,
                     no_confirm,
-                    force_cask,
                     no_cache
                 ),
                 retain: (
@@ -215,11 +206,8 @@ impl Opt {
             // Chocolatey
             "choco" => Box::new(chocolatey::Chocolatey { cfg }),
 
-            // Homebrew
-            "brew" if cfg!(target_os = "macos") => Box::new(homebrew::Homebrew { cfg }),
-
-            // Linuxbrew
-            "brew" => Box::new(linuxbrew::Linuxbrew { cfg }),
+            // Homebrew/Linuxbrew
+            "brew" => Box::new(homebrew::Homebrew { cfg }),
 
             // Macports
             "port" if cfg!(target_os = "macos") => Box::new(macports::Macports { cfg }),
@@ -558,13 +546,12 @@ mod tests {
     #[should_panic(expected = r#"should run: s ["docker"]"#)]
     async fn other_flags() {
         let opt = dbg!(Opt::parse_from(&[
-            "pacaptr", "-S", "--dryrun", "--yes", "docker", "--cask"
+            "pacaptr", "-S", "--dryrun", "--yes", "docker"
         ]));
 
         assert!(opt.sync);
         assert!(opt.dry_run);
         assert!(opt.no_confirm);
-        assert!(opt.force_cask);
         opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
     }
 
@@ -591,7 +578,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "exactly 1 operation expected")]
     async fn too_many_ops() {
-        let opt = dbg!(Opt::parse_from(&["pacaptr", "-SQns", "docker", "--cask"]));
+        let opt = dbg!(Opt::parse_from(&["pacaptr", "-SQns", "docker"]));
 
         assert!(opt.sync);
         assert!(opt.query);

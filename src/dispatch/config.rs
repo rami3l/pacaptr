@@ -14,9 +14,6 @@ pub struct Config {
     pub no_confirm: bool,
 
     #[serde(default)]
-    pub force_cask: bool,
-
-    #[serde(default)]
     pub no_cache: bool,
 
     #[serde(default)]

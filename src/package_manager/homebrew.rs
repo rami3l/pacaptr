@@ -1,9 +1,8 @@
 use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
-use crate::exec::{self, Cmd, Mode};
+use crate::exec::{self, Cmd};
 use crate::print::{self, PROMPT_INFO, PROMPT_RUN};
 use anyhow::Result;
-use futures::stream::{self, TryStreamExt};
 
 pub struct Homebrew {
     pub cfg: Config,
@@ -21,15 +20,10 @@ lazy_static! {
     };
 }
 
-enum CaskState {
-    NotFound,
-    Brew,
-    Cask,
-}
-
+/*
 impl Homebrew {
-    /// Search the output of `brew info` to see if we need `brew cask` for a certain package.
-    async fn search(&self, pack: &str, flags: &[&str]) -> Result<CaskState> {
+    /// Search the output of `brew info` to see if a `pack` is a formula and a cask at the same time.
+    async fn is_homonym(&self, pack: &str, flags: &[&str]) -> Result<bool> {
         let out_bytes = Cmd::new(&["brew", "info"])
             .kws(&[pack])
             .flags(flags)
@@ -37,62 +31,11 @@ impl Homebrew {
             .await?
             .contents;
         let out = String::from_utf8(out_bytes)?;
-
-        let code = {
-            let no_formula = "No available formula with the name";
-            let found_cask = "Found a cask named";
-
-            if exec::grep(&out, &[no_formula]).is_empty() {
-                // Found a formula
-                CaskState::Brew
-            } else if !exec::grep(&out, &[found_cask]).is_empty() {
-                // Found a cask
-                CaskState::Cask
-            } else {
-                CaskState::NotFound
-            }
-        };
-
-        Ok(code)
-    }
-
-    /// The common logic behind functions like S and R to use `brew cask` commands automatically.
-    /// With the exception of `self.cfg.force_cask`,
-    /// this function will use `self.search()` to see if we need `brew cask` for a certain package,
-    /// and then try to execute the corresponding command.
-    async fn auto_cask_do(
-        &self,
-        subcmd: &[&str],
-        pack: &str,
-        flags: &[&str],
-        strat: Strategies,
-    ) -> Result<()> {
-        macro_rules! run {
-            ( $cmd:expr ) => {
-                async {
-                    let mut cmd = $cmd;
-                    cmd.extend(subcmd);
-                    self.just_run(
-                        Cmd::new(&cmd).kws(&[pack]).flags(flags),
-                        Default::default(),
-                        strat,
-                    )
-                    .await
-                }
-            };
-        }
-
-        if self.cfg.force_cask {
-            return run!(vec!["brew", "cask"]).await;
-        }
-
-        let code = self.search(pack, flags).await?;
-        match code {
-            CaskState::NotFound | CaskState::Brew => run!(vec!["brew"]).await,
-            CaskState::Cask => run!(vec!["brew", "cask"]).await,
-        }
+        let pat = "as a formula. For the cask, use homebrew/cask/";
+        Ok(!exec::grep(&out, &[pat]).is_empty())
     }
 }
+*/
 
 #[async_trait]
 impl PackageManager for Homebrew {
@@ -164,7 +107,9 @@ impl PackageManager for Homebrew {
 
         // ! `brew list` lists all formulae and casks only when using tty.
         run!(&["brew", "list"]).await?;
-        run!(&["brew", "list", "--cask"]).await?;
+        if cfg!(target_os = "macos") {
+            run!(&["brew", "list", "--cask"]).await?;
+        }
 
         Ok(())
     }
@@ -177,12 +122,12 @@ impl PackageManager for Homebrew {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        stream::iter(kws.iter().map(Ok))
-            .try_for_each(|&pack| async move {
-                self.auto_cask_do(&["uninstall"], pack, flags, PROMPT_STRAT.clone())
-                    .await
-            })
-            .await
+        self.just_run(
+            Cmd::new(&["brew", "uninstall"]).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
+        .await
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
@@ -215,18 +160,19 @@ impl PackageManager for Homebrew {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        for &pack in kws {
-            if self.cfg.needed {
-                self.auto_cask_do(&["install"], pack, flags, INSTALL_STRAT.clone())
-                    .await?;
-            } else {
-                // If the package is not installed, `brew reinstall` behaves just like `brew install`,
-                // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
-                self.auto_cask_do(&["reinstall"], pack, flags, INSTALL_STRAT.clone())
-                    .await?;
-            }
-        }
-        Ok(())
+        let cmd = if self.cfg.needed {
+            &["brew", "install"]
+        } else {
+            // If the package is not installed, `brew reinstall` behaves just like `brew install`,
+            // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
+            &["brew", "reinstall"]
+        };
+        self.just_run(
+            Cmd::new(cmd).kws(kws).flags(flags),
+            Default::default(),
+            INSTALL_STRAT.clone(),
+        )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
@@ -259,12 +205,7 @@ impl PackageManager for Homebrew {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd: &[&str] = if self.cfg.force_cask {
-            &["brew", "cask", "info"]
-        } else {
-            &["brew", "info"]
-        };
-        self.just_run_default(Cmd::new(cmd).kws(kws).flags(flags))
+        self.just_run_default(Cmd::new(&["brew", "info"]).kws(kws).flags(flags))
             .await
     }
 
@@ -282,25 +223,12 @@ impl PackageManager for Homebrew {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        if kws.is_empty() {
-            // `brew cask upgrade` is now deprecated.
-            // A simple `brew upgrade` should do the job.
-            self.just_run(
-                Cmd::new(&["brew", "upgrade"]).kws(kws).flags(flags),
-                Default::default(),
-                PROMPT_STRAT.clone(),
-            )
-            .await
-        } else {
-            for &pack in kws {
-                self.auto_cask_do(&["upgrade"], pack, flags, PROMPT_STRAT.clone())
-                    .await?;
-            }
-            if self.cfg.no_cache {
-                self.scc(&[], flags).await?;
-            }
-            Ok(())
-        }
+        self.just_run(
+            Cmd::new(&["brew", "upgrade"]).kws(kws).flags(flags),
+            Default::default(),
+            INSTALL_STRAT.clone(),
+        )
+        .await
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
@@ -311,12 +239,12 @@ impl PackageManager for Homebrew {
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        stream::iter(kws.iter().map(Ok))
-            .try_for_each(|&pack| async move {
-                self.auto_cask_do(&["fetch"], pack, flags, PROMPT_STRAT.clone())
-                    .await
-            })
-            .await
+        self.just_run(
+            Cmd::new(&["brew", "fetch"]).kws(kws).flags(flags),
+            Default::default(),
+            PROMPT_STRAT.clone(),
+        )
+        .await
     }
 
     /// Sy refreshes the local package database.

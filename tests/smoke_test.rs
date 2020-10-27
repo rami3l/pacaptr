@@ -27,35 +27,6 @@ mod homebrew {
     }
 
     #[test]
-    async fn s_auto_cask() {
-        Test::new()
-            .pacaptr(&["-S", "curl", "gimp", "--dryrun"], &[])
-            .output(&["brew (re)?install curl", "brew cask (re)?install gimp"])
-            .run(false)
-            .await
-    }
-
-    #[test]
-    async fn s_force_cask() {
-        Test::new()
-            .pacaptr(&["-S", "docker", "--dryrun"], &[])
-            .output(&["brew (re)?install docker"])
-            .pacaptr(&["-S", "docker", "--cask", "--dryrun"], &[])
-            .output(&["brew cask (re)?install docker"])
-            .run(false)
-            .await
-    }
-
-    #[test]
-    async fn r_cask() {
-        Test::new()
-            .pacaptr(&["-R", "curl", "gimp", "--dryrun"], &[])
-            .output(&["brew uninstall curl", "brew cask uninstall gimp"])
-            .run(false)
-            .await
-    }
-
-    #[test]
     #[ignore]
     async fn r() {
         Test::new()

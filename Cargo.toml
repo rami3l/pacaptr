@@ -5,7 +5,7 @@ authors = ["Rami3L <rami3l@outlook.com>"]
 description = "A pacman-like wrapper for many package managers."
 edition = "2018"
 name = "pacaptr"
-version = "0.7.0"
+version = "0.8.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
