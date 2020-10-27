@@ -1,4 +1,4 @@
-# pacaptr
+# pac·apt·R<sup>evised</sup>
 
 ![pacaptr][Socialify Badge]
 
@@ -17,7 +17,7 @@ Run `pacman -Syu` on the OS of your choice!
 
 ## Contents
 
-- [pacaptr](#pacaptr)
+- [pac·apt·R<sup>evised</sup>](#pacaptrsupevisedsup)
   - [Contents](#contents)
   - [Supported Package Managers](#supported-package-managers)
   - [Motivation & Current Status](#motivation--current-status)
