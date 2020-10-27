@@ -1,16 +1,14 @@
 # pacaptr
 
-![Rust Badge](https://img.shields.io/badge/WARNING-Rusty-red?logo=rust&style=flat-square)
-![Arch Linux Badge](https://img.shields.io/badge/BTW-I--Use--Arch-blue?logo=arch-linux&style=flat-square)
+![pacaptr][Socialify Badge]
+
+<!-- ![Rust Badge](https://img.shields.io/badge/WARNING-Rusty-red?logo=rust&style=flat-square) -->
+<!-- ![Arch Linux Badge](https://img.shields.io/badge/BTW-I--Use--Arch-blue?logo=arch-linux&style=flat-square) -->
+![Interface Concept](https://user-images.githubusercontent.com/33851577/83973021-2f876b00-a916-11ea-9c7e-9cb76ca27a0e.png)
 
 `pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
 
 Run `pacaptr -Syu` on the distro of your choice!
-
-![Interface Concept](https://user-images.githubusercontent.com/33851577/83973021-2f876b00-a916-11ea-9c7e-9cb76ca27a0e.png)
-
-> \- It's nice, but wait, why `reinstall`?  
-> \- To be more like `pacman`! Use `-S --needed` to `install`.
 
 ## Contents
 
@@ -218,6 +216,7 @@ default_pm = "choco"
 
 - `External/pip` support: Use `pacaptr --using pip3` if you want to run the `pip3` command.
 
+[Socialify Badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&forks=1&issues=1&logo=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2Fd%2Fd5%2FRust_programming_language_black_logo.svg%2F1200px-Rust_programming_language_black_logo.svg.png&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Light
 [Pacman Rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt
 [pacapt/#117]: https://github.com/icy/pacapt/issues/117
