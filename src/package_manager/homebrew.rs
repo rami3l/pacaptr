@@ -81,15 +81,15 @@ impl PackageManager for Homebrew {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        let search = |contents: &str| {
+            exec::grep(contents, kws)
+                .iter()
+                .for_each(|ln| println!("{}", ln))
+        };
+
         macro_rules! run {
             ( $cmd: expr ) => {
                 async {
-                    let search = |contents: &str| {
-                        exec::grep(contents, kws)
-                            .iter()
-                            .for_each(|ln| println!("{}", ln))
-                    };
-
                     let cmd = Cmd::new($cmd).flags(flags);
                     if !self.cfg.dry_run {
                         print::print_cmd(&cmd, PROMPT_RUN);
