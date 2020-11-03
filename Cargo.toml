@@ -21,7 +21,7 @@ is-root = "0.1.2"
 lazy_static = "1.4.0"
 regex = { version = "1.4.2", default-features = false, features = ["std", "perf"] }
 serde = { version = "1.0.117", features = ["derive"] }
-tokio = { version = "0.3.2", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"] }
+tokio = { version = "0.3.3", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"] }
 which = "4.0.2"
 
 [profile.release]
