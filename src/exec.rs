@@ -1,6 +1,7 @@
 use crate::print::*;
 use anyhow::{anyhow, Context, Result};
 pub use is_root::is_root;
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::ffi::OsStr;
 use std::io::Write;

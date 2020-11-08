@@ -3,6 +3,8 @@ use crate::dispatch::config::Config;
 use crate::exec::{self, Cmd};
 use crate::print::{self, PROMPT_RUN};
 use anyhow::Result;
+use async_trait::async_trait;
+use lazy_static::lazy_static;
 
 pub struct Apk {
     pub cfg: Config,

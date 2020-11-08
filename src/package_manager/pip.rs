@@ -2,7 +2,9 @@ use super::{PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::exec::{self, Cmd};
 use crate::print::{self, PROMPT_RUN};
-use anyhow::Result;
+use anyhow::{anyhow, Result};
+use async_trait::async_trait;
+use lazy_static::lazy_static;
 
 pub struct Pip {
     pub cmd: String,

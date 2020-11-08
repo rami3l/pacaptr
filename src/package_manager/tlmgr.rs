@@ -2,6 +2,8 @@ use super::{DryRunStrategy, PackageManager, Strategies};
 use crate::dispatch::config::Config;
 use crate::exec::Cmd;
 use anyhow::Result;
+use async_trait::async_trait;
+use lazy_static::lazy_static;
 
 pub struct Tlmgr {
     pub cfg: Config,

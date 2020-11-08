@@ -2,6 +2,8 @@ use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrat
 use crate::dispatch::config::Config;
 use crate::exec::{self, Cmd};
 use anyhow::Result;
+use async_trait::async_trait;
+use lazy_static::lazy_static;
 
 pub struct Zypper {
     pub cfg: Config,

@@ -13,6 +13,8 @@ pub mod zypper;
 use crate::dispatch::config::Config;
 use crate::exec::{Cmd, Mode, Output, StatusCode};
 use anyhow::Result;
+use async_trait::async_trait;
+use lazy_static::lazy_static;
 use tokio::sync::Mutex;
 
 /*

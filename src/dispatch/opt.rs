@@ -1,7 +1,7 @@
 use super::config::Config;
 use crate::exec::{is_exe, StatusCode};
 use crate::package_manager::*;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::{self, Clap};
 use std::iter::FromIterator;
 
@@ -307,6 +307,7 @@ impl Opt {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use async_trait::async_trait;
     use tokio::test;
 
     /*
