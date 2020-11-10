@@ -16,7 +16,7 @@ clap = "3.0.0-beta.2"
 colored = "2.0.0"
 confy = "0.4.0"
 dirs = "3.0.1"
-futures = "0.3.7"
+futures = "0.3.8"
 is-root = "0.1.2"
 lazy_static = "1.4.0"
 regex = { version = "1.4.2", default-features = false, features = ["std", "perf"] }
