@@ -73,8 +73,7 @@ PPAs might be added when appropriate.
 - `Windows/chocolatey` install:
   
   ```powershell
-  # Yes, now we are still in the prerelease stage...
-  choco install pacaptr --pre
+  choco install pacaptr
   ```
 
 - Build from source:
@@ -136,7 +135,7 @@ default_pm = "choco"
   # Here we force the use of `choco`,
   # so the following output is platform-independent:
   pacaptr --using choco -Su --dryrun
-  # Pending: choco upgrade all
+  # Canceled: choco upgrade all
   ```
 
   This can be useful when you are running Linux and you want to use `linuxbrew`, for example. In that case, you can `--using brew`.
@@ -150,8 +149,8 @@ default_pm = "choco"
     #     pacaptr [FLAGS] [KEYWORDS]... [-- <EXTRA_FLAGS>...]
 
     pacaptr -S curl docker --dryrun -- --proxy=localhost:1234
-    # Pending: foo install curl --proxy=localhost:1234
-    # Pending: foo install docker --proxy=localhost:1234
+    # Canceled: foo install curl --proxy=localhost:1234
+    # Canceled: foo install docker --proxy=localhost:1234
     ```
 
     Here `foo` is the name of your package manager.
@@ -160,8 +159,7 @@ default_pm = "choco"
 - `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed
   (sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
-  - `Pending` means that the command execution is blocked (a dry run or prompted to continue),
-  while `Running` means that it is running.
+  - `Pending` means that the command execution has been blocked by a prompt; `Canceled` means it has been canceled in a dry run; `Running` means that it has started running.
 
   - Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
     For instance:
@@ -170,7 +168,7 @@ default_pm = "choco"
     # Nothing will be installed,
     # as `brew install curl` won't run:
     pacaptr -S curl --dryrun
-    # Pending: brew install curl
+    # Canceled: brew install curl
 
     # Nothing will be deleted here,
     # but `brew cleanup --dry-run` is actually running:
