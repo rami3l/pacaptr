@@ -79,18 +79,22 @@ PPAs might be added when appropriate.
 - Build from source:
 
   ```bash
-  # First you'll need to download the source:
+  # To install (short version):
+  cargo install --git https://github.com/rami3l/pacaptr.git
+
+  # To install (long version):
   git clone https://github.com/rami3l/pacaptr.git
   cd pacaptr
-
-  # To run:
-  cargo run -- -S curl
-
-  # To install:
   cargo install --path .
 
   # To uninstall:
   cargo uninstall pacaptr
+  ```
+
+  With default settings, the binary should be installed as:
+
+  ```bash
+  $HOME/.cargo/bin/pacaptr
   ```
 
 - Packaging for Debian:
