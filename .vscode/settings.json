@@ -6,6 +6,7 @@
         "Tazpkg",
         "Tlmgr",
         "Zypper",
+        "binutils",
         "choco",
         "clippy",
         "conda",
