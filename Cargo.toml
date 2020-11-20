@@ -9,6 +9,11 @@ version = "0.8.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[build-dependencies]
+anyhow = "1.0.34"
+prettytable-rs = "0.8.0"
+regex = "1.4.2"
+
 [dependencies]
 anyhow = "1.0.34"
 async-trait = "0.1.41"
@@ -19,9 +24,9 @@ dirs = "3.0.1"
 futures = "0.3.8"
 is-root = "0.1.2"
 lazy_static = "1.4.0"
-regex = {version = "1.4.2", default-features = false, features = ["std", "perf"]}
-serde = {version = "1.0.117", features = ["derive"]}
-tokio = {version = "0.3.3", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"]}
+regex = { version = "1.4.2", default-features = false, features = ["std", "perf"] }
+serde = { version = "1.0.117", features = ["derive"] }
+tokio = { version = "0.3.4", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"] }
 which = "4.0.2"
 
 [profile.release]

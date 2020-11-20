@@ -42,6 +42,8 @@ Run `pacman -Syu` on the OS of your choice!
 
 ¹: Require `pacaptr --using <name>` to invocate (see [general tips](#general-tips)).
 
+Please refer to the [compatibility table] for more details.
+
 Notes:
 
 - Support for more package managers will be added Soon™.
@@ -236,3 +238,4 @@ default_pm = "choco"
 [rmtree]: https://github.com/beeftornado/homebrew-rmtree
 [gsudo]: https://github.com/gerardog/gsudo
 [rs-dev]: https://github.com/rami3l/pacaptr/tree/rs-dev
+[compatibility table]: ./docs/compatibility_table.md
