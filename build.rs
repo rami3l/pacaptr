@@ -31,7 +31,6 @@ fn check_methods(file: &Path) -> Result<BTreeMap<String, bool>> {
 
 fn main() -> Result<()> {
     // Tell Cargo that if the given file changes, to rerun this build script.
-
     println!("cargo:rerun-if-changed={}", PM_IMPL_DIR);
 
     let paths = fs::read_dir(PM_IMPL_DIR).context("Failed while reading PM_IMPL_DIR")?;
