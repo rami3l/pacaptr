@@ -3,10 +3,11 @@ use prettytable::{Cell, Row, Table};
 use regex::Regex;
 use std::collections::BTreeMap;
 use std::fs;
+use std::io::Write;
 use std::path::Path;
 
 const PM_IMPL_DIR: &str = "src/package_manager/";
-const COMPAT_TABLE_PATH: &str = "docs/compatibility_table.txt";
+const COMPAT_TABLE_PATH: &str = "docs/compatibility_table.md";
 const METHODS: &[&str] = &[
     "q", "qc", "qe", "qi", "qk", "ql", "qm", "qo", "qp", "qs", "qu", "r", "rn", "rns", "rs", "rss",
     "s", "sc", "scc", "sccc", "sg", "si", "sii", "sl", "ss", "su", "suy", "sw", "sy", "u",
@@ -85,9 +86,12 @@ fn main() -> Result<()> {
 
     let mut file =
         fs::File::create(COMPAT_TABLE_PATH).context("Failed while creating compatibility table")?;
+
+    file.write_all("```txt\n".as_bytes())?;
     table
         .print(&mut file)
         .context("Failed while writing compatibility table")?;
+    file.write_all("```\n".as_bytes())?;
 
     Ok(())
 }
