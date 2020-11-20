@@ -42,10 +42,9 @@ Run `pacman -Syu` on the OS of your choice!
 
 ¹: Require `pacaptr --using <name>` to invocate (see [general tips](#general-tips)).
 
-Please refer to the [compatibility table] for more details.
-
 Notes:
 
+- Please refer to the [compatibility table] for more details.
 - Support for more package managers will be added Soon™.
 - Don't miss the [general](#general-tips) & [platform-specific](#platform-specific-tips) tips below!
 
