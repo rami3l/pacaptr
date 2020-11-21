@@ -20,9 +20,9 @@ fn check_methods(file: &Path) -> Result<BTreeMap<String, bool>> {
 
     let mut res = BTreeMap::new();
     for &method in METHODS {
-        // ! Here we depend implicitly on `rustfmt`: a function definition is written as follows:
-        // ! `(async) fn rs(..) {..}`, so we match `fn rs(` in order distinguish `rss` from `rs`.
-        let found = Regex::new(&format!(r#"fn\s{}\("#, method))?.is_match(&contents);
+        // ! A function definition (rg. `rs`) is written as follows:
+        // ! `(async) fn rs(..) {..}`
+        let found = Regex::new(&format!(r#"fn\s+{}\s*\("#, method))?.is_match(&contents);
         res.insert(method.to_owned(), found);
     }
 
