@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use itertools::Itertools;
 use prettytable::{Cell, Row, Table};
 use regex::Regex;
 use std::collections::BTreeMap;
@@ -18,15 +19,15 @@ fn check_methods(file: &Path) -> Result<BTreeMap<String, bool>> {
     let bytes = fs::read(file)?;
     let contents = String::from_utf8(bytes)?;
 
-    let mut res = BTreeMap::new();
-    for &method in METHODS {
-        // ! A function definition (rg. `rs`) is written as follows:
-        // ! `(async) fn rs(..) {..}`
-        let found = Regex::new(&format!(r#"fn\s+{}\s*\("#, method))?.is_match(&contents);
-        res.insert(method.to_owned(), found);
-    }
-
-    Ok(res)
+    METHODS
+        .iter()
+        .map(|&method| {
+            // A function definition (rg. `rs`) is written as follows:
+            // `(async) fn rs(..) {..}`
+            let found = Regex::new(&format!(r#"fn\s+{}\s*\("#, method))?.is_match(&contents);
+            Ok((method.to_owned(), found))
+        })
+        .try_collect()
 }
 
 fn main() -> Result<()> {
@@ -49,9 +50,11 @@ fn main() -> Result<()> {
     let mut table = Table::new();
     let make_row = |row_name: &str, data: &[&str]| {
         Row::new({
-            let mut row = vec![row_name];
-            row.extend(data);
-            row.into_iter().map(Cell::new).collect()
+            [row_name]
+                .iter()
+                .chain(data.iter())
+                .map(|&s| Cell::new(s))
+                .collect()
         })
     };
 
@@ -63,10 +66,10 @@ fn main() -> Result<()> {
         let data = METHODS
             .iter()
             .map(|&method| {
-                let has_impl = items
+                let &has_impl = items
                     .get(method)
                     .expect("Implementation details not registered");
-                if *has_impl {
+                if has_impl {
                     "*"
                 } else {
                     ""

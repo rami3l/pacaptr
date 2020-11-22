@@ -18,6 +18,7 @@
         "dtolnay",
         "gsudo",
         "impls",
+        "itertools",
         "macos",
         "mockpm",
         "nocache",
