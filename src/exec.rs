@@ -1,15 +1,17 @@
 use crate::print::*;
 use anyhow::{anyhow, Context, Result};
+use futures::{stream, Stream, StreamExt, TryStreamExt};
 pub use is_root::is_root;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::ffi::OsStr;
-use std::io::Write;
 use std::process::Stdio;
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::io::{AsyncRead, AsyncWriteExt};
 use tokio::process::Command as Exec;
 use tokio::sync::Mutex;
-use tokio::{select, try_join};
+use tokio::task::JoinHandle;
+use tokio::try_join;
+use tokio_util::codec::{BytesCodec, FramedRead};
 
 /// Different ways in which a command shall be dealt with.
 #[derive(Copy, Clone, Debug)]
@@ -63,6 +65,13 @@ pub struct Cmd<S = String> {
     pub flags: Vec<S>,
 }
 
+impl<S> Cmd<S> {
+    /// Determine if this command needs to run with `sudo -S`.
+    pub fn needs_sudo(&self) -> bool {
+        self.sudo && !is_root()
+    }
+}
+
 impl Cmd<String> {
     pub fn new(cmd: &[&str]) -> Self {
         Self {
@@ -98,7 +107,7 @@ impl<S: AsRef<OsStr>> Cmd<S> {
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
         // ! but not `zypper install curl -y`.
         // ! So we place the flags first, and then keywords.
-        if self.sudo && !is_root() {
+        if self.needs_sudo() {
             let mut builder = Exec::new("sudo");
             builder
                 .arg("-S")
@@ -141,32 +150,6 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         }
     }
 
-    /// Helper function to write a string to a `String` and `stdout`.
-    async fn write<V, W>(s: &str, mute: bool, mut out: V, mut stdout: W) -> tokio::io::Result<()>
-    where
-        V: AsyncWriteExt + Unpin,
-        W: AsyncWriteExt + Unpin,
-    {
-        let bytes = s.as_bytes();
-        if mute {
-            out.write_all(bytes).await
-        } else {
-            try_join!(stdout.write_all(bytes), out.write_all(bytes))?;
-            Ok(())
-        }
-    }
-
-    /// Helper function to write a line to a `String` and `stdout`.
-    async fn writeln<V, W>(s: &str, mute: bool, out: V, stdout: W) -> tokio::io::Result<()>
-    where
-        V: AsyncWriteExt + Unpin,
-        W: AsyncWriteExt + Unpin,
-    {
-        let mut s = s.to_owned();
-        s.push('\n');
-        Self::write(&s, mute, out, stdout).await
-    }
-
     /// Execute a command and return its `stdout` and `stderr`.
     /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
     async fn exec_checkall(self, mute: bool) -> Result<Output> {
@@ -176,18 +159,19 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             .stderr(Stdio::piped())
             .spawn()
             .context("Failed to spawn child process")?;
-        let mut stdout_reader = child
+        let stdout_reader = child
             .stdout
             .take()
-            .map(|x| BufReader::new(x).lines())
+            .map(into_byte_stream)
             .ok_or_else(|| anyhow!("Child process did not have a handle to stdout"))?;
-        let mut stderr_reader = child
+        let stderr_reader = child
             .stderr
             .take()
-            .map(|x| BufReader::new(x).lines())
+            .map(into_byte_stream)
             .ok_or_else(|| anyhow!("Child process did not have a handle to stderr"))?;
+        let mut merged_reader = tokio::stream::StreamExt::merge(stdout_reader, stderr_reader);
 
-        let code: tokio::task::JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
+        let code: JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
             let status = child
                 .wait()
                 .await
@@ -198,17 +182,13 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         let mut out = Vec::<u8>::new();
         let mut stdout = tokio::io::stdout();
 
-        loop {
-            select! {
-                ln = stdout_reader.next_line() => match ln? {
-                    None => break,
-                    Some(l) => Self::writeln(&l, mute, &mut out, &mut stdout).await?,
-                },
-                ln = stderr_reader.next_line() => match ln? {
-                    None => break,
-                    Some(l) => Self::writeln(&l, mute, &mut out, &mut stdout).await?,
-                },
-                else => continue,
+        while let Some(mb) = merged_reader.next().await {
+            let b = mb?;
+            if mute {
+                out.write_all(&[b]).await?;
+            } else {
+                let b = &[b];
+                try_join!(stdout.write_all(b), out.write_all(b))?;
             }
         }
 
@@ -229,10 +209,10 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         let mut stderr_reader = child
             .stderr
             .take()
-            .map(|x| BufReader::new(x).lines())
+            .map(into_byte_stream)
             .ok_or_else(|| anyhow!("Child did not have a handle to stderr"))?;
 
-        let code: tokio::task::JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
+        let code: JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
             let status = child
                 .wait()
                 .await
@@ -243,13 +223,13 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         let mut out = Vec::<u8>::new();
         let mut stderr = tokio::io::stderr();
 
-        loop {
-            select! {
-                ln = stderr_reader.next_line() => match ln? {
-                    None => break,
-                    Some(l) => Self::writeln(&l, mute, &mut out, &mut stderr).await?,
-                },
-                else => continue,
+        while let Some(mb) = stderr_reader.next().await {
+            let b = mb?;
+            if mute {
+                out.write_all(&[b]).await?;
+            } else {
+                let b = &[b];
+                try_join!(stderr.write_all(b), out.write_all(b))?;
             }
         }
 
@@ -306,12 +286,8 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
 
 impl<S: AsRef<str>> std::fmt::Display for Cmd<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let sudo: &str = if self.sudo && !is_root() {
-            "sudo -S"
-        } else {
-            ""
-        };
-        let mut res = sudo.to_owned();
+        let sudo_prefix: &str = if self.needs_sudo() { "sudo -S " } else { "" };
+        let mut res = sudo_prefix.to_owned();
         let cmd_str = self
             .cmd
             .iter()
@@ -329,6 +305,7 @@ impl<S: AsRef<str>> std::fmt::Display for Cmd<S> {
 /// This action won't end until an expected answer is found.
 /// If `case_sensitive == false`, then `expected` should be all lower case patterns.
 pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
+    use std::io::Write;
     loop {
         let mut answer = String::new();
         print_question(question, options);
@@ -368,6 +345,14 @@ pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
 pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && std::path::Path::new(path).exists())
         || (!name.is_empty() && which::which(name).is_ok())
+}
+
+/// Helper function to turn an `AsyncRead` to a `Stream`
+// See also: https://stackoverflow.com/a/59327560
+pub fn into_byte_stream<R: AsyncRead>(r: R) -> impl Stream<Item = Result<u8>> {
+    FramedRead::new(r, BytesCodec::new())
+        .map_ok(|bytes| stream::iter(bytes).map(Ok))
+        .try_flatten()
 }
 
 /*

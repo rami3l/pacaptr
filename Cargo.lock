@@ -524,6 +524,7 @@ dependencies = [
  "regex",
  "serde",
  "tokio",
+ "tokio-util",
  "which",
 ]
 
@@ -818,6 +819,7 @@ checksum = "720ba21c25078711bf456d607987d95bce90f7c3bea5abe1db587862e7a1e87c"
 dependencies = [
  "autocfg",
  "bytes",
+ "futures-core",
  "libc",
  "memchr",
  "mio",
@@ -839,6 +841,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "tokio-util"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3137de2b078e95274b696cc522e87f22c9a753fe3ef3344116ffb94f104f10a3"
+dependencies = [
+ "bytes",
+ "futures-core",
+ "futures-sink",
+ "log",
+ "pin-project-lite",
+ "tokio",
 ]
 
 [[package]]
