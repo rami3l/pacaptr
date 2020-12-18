@@ -126,7 +126,7 @@ impl PackageManager for Zypper {
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["zypper", "remove"]).kws(kws).flags(flags),
+            Cmd::new_sudo(&["zypper", "remove"]).kws(kws).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
@@ -136,7 +136,7 @@ impl PackageManager for Zypper {
     /// Rss removes a package and its dependencies which are not required by any other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["zypper", "remove", "--clean-deps"])
+            Cmd::new_sudo(&["zypper", "remove", "--clean-deps"])
                 .kws(kws)
                 .flags(flags),
             Default::default(),
@@ -148,7 +148,7 @@ impl PackageManager for Zypper {
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["zypper", "install"]).kws(kws).flags(flags),
+            Cmd::new_sudo(&["zypper", "install"]).kws(kws).flags(flags),
             Default::default(),
             INSTALL_STRAT.clone(),
         )
@@ -158,7 +158,7 @@ impl PackageManager for Zypper {
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["zypper", "clean"]).flags(flags),
+            Cmd::new_sudo(&["zypper", "clean"]).flags(flags),
             Default::default(),
             Strategies {
                 prompt: PromptStrategy::CustomPrompt,
@@ -201,7 +201,7 @@ impl PackageManager for Zypper {
 
     /// Su updates outdated packages.
     async fn su(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.check_dry(Cmd::new(&["zypper", "--no-refresh", "dist-upgrade"]).flags(flags))
+        self.check_dry(Cmd::new_sudo(&["zypper", "--no-refresh", "dist-upgrade"]).flags(flags))
             .await?;
         if self.cfg.no_cache {
             self.sccc(_kws, flags).await?;
@@ -212,7 +212,7 @@ impl PackageManager for Zypper {
     /// Suy refreshes the local package database, then updates outdated packages.
     async fn suy(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["zypper", "dist-upgrade"]).flags(flags),
+            Cmd::new_sudo(&["zypper", "dist-upgrade"]).flags(flags),
             Default::default(),
             INSTALL_STRAT.clone(),
         )
@@ -222,7 +222,7 @@ impl PackageManager for Zypper {
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["zypper", "install", "--download-only"])
+            Cmd::new_sudo(&["zypper", "install", "--download-only"])
                 .kws(kws)
                 .flags(flags),
             Default::default(),
@@ -233,7 +233,7 @@ impl PackageManager for Zypper {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.check_dry(Cmd::new(&["zypper", "refresh"]).flags(flags))
+        self.check_dry(Cmd::new_sudo(&["zypper", "refresh"]).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;
