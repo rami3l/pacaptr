@@ -1,6 +1,7 @@
 use crate::print::*;
 use anyhow::{anyhow, Context, Result};
-use futures::{stream, Stream, StreamExt, TryStreamExt};
+use bytes::Bytes;
+use futures::{Stream, StreamExt, TryStreamExt};
 pub use is_root::is_root;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -162,12 +163,12 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         let stdout_reader = child
             .stdout
             .take()
-            .map(into_byte_stream)
+            .map(into_bytes)
             .ok_or_else(|| anyhow!("Child process did not have a handle to stdout"))?;
         let stderr_reader = child
             .stderr
             .take()
-            .map(into_byte_stream)
+            .map(into_bytes)
             .ok_or_else(|| anyhow!("Child process did not have a handle to stderr"))?;
         let mut merged_reader = tokio::stream::StreamExt::merge(stdout_reader, stderr_reader);
 
@@ -184,10 +185,10 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
 
         while let Some(mb) = merged_reader.next().await {
             let b = mb?;
+            let b = b.as_ref();
             if mute {
-                out.write_all(&[b]).await?;
+                out.write_all(b).await?;
             } else {
-                let b = &[b];
                 try_join!(stdout.write_all(b), out.write_all(b))?;
             }
         }
@@ -209,7 +210,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
         let mut stderr_reader = child
             .stderr
             .take()
-            .map(into_byte_stream)
+            .map(into_bytes)
             .ok_or_else(|| anyhow!("Child did not have a handle to stderr"))?;
 
         let code: JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
@@ -225,10 +226,10 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
 
         while let Some(mb) = stderr_reader.next().await {
             let b = mb?;
+            let b = b.as_ref();
             if mute {
-                out.write_all(&[b]).await?;
+                out.write_all(b).await?;
             } else {
-                let b = &[b];
                 try_join!(stderr.write_all(b), out.write_all(b))?;
             }
         }
@@ -349,10 +350,8 @@ pub fn is_exe(name: &str, path: &str) -> bool {
 
 /// Helper function to turn an `AsyncRead` to a `Stream`
 // See also: https://stackoverflow.com/a/59327560
-pub fn into_byte_stream<R: AsyncRead>(r: R) -> impl Stream<Item = Result<u8>> {
-    FramedRead::new(r, BytesCodec::new())
-        .map_ok(|bytes| stream::iter(bytes).map(Ok))
-        .try_flatten()
+pub fn into_bytes<R: AsyncRead>(r: R) -> impl Stream<Item = tokio::io::Result<Bytes>> {
+    FramedRead::new(r, BytesCodec::new()).map_ok(|bytes| bytes.freeze())
 }
 
 /*
