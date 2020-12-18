@@ -97,7 +97,7 @@ impl PackageManager for Apk {
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["apk", "del"]).kws(kws).flags(flags),
+            Cmd::new_sudo(&["apk", "del"]).kws(kws).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
@@ -107,7 +107,9 @@ impl PackageManager for Apk {
     /// Rn removes a package and skips the generation of configuration backup files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["apk", "del", "--purge"]).kws(kws).flags(flags),
+            Cmd::new_sudo(&["apk", "del", "--purge"])
+                .kws(kws)
+                .flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
@@ -117,7 +119,7 @@ impl PackageManager for Apk {
     /// Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
     async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["apk", "del", "--purge", "-r"])
+            Cmd::new_sudo(&["apk", "del", "--purge", "-r"])
                 .kws(kws)
                 .flags(flags),
             Default::default(),
@@ -135,7 +137,7 @@ impl PackageManager for Apk {
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["apk", "add"]).kws(kws).flags(flags),
+            Cmd::new_sudo(&["apk", "add"]).kws(kws).flags(flags),
             Default::default(),
             INSTALL_STRAT.clone(),
         )
@@ -145,7 +147,7 @@ impl PackageManager for Apk {
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["apk", "cache", "-v", "clean"]).flags(flags),
+            Cmd::new_sudo(&["apk", "cache", "-v", "clean"]).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
@@ -155,7 +157,7 @@ impl PackageManager for Apk {
     /// Scc removes all files from the cache.
     async fn scc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["rm", "-vrf", "/var/cache/apk/*"]).flags(flags),
+            Cmd::new_sudo(&["rm", "-vrf", "/var/cache/apk/*"]).flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
@@ -189,9 +191,9 @@ impl PackageManager for Apk {
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = if kws.is_empty() {
-            Cmd::new(&["apk", "upgrade"]).kws(kws).flags(flags)
+            Cmd::new_sudo(&["apk", "upgrade"]).kws(kws).flags(flags)
         } else {
-            Cmd::new(&["apk", "add", "-u"]).kws(kws).flags(flags)
+            Cmd::new_sudo(&["apk", "add", "-u"]).kws(kws).flags(flags)
         };
         self.just_run(cmd, Default::default(), INSTALL_STRAT.clone())
             .await
@@ -200,11 +202,13 @@ impl PackageManager for Apk {
     /// Suy refreshes the local package database, then updates outdated packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = if kws.is_empty() {
-            Cmd::new(&["apk", "upgrade", "-U", "-a"])
+            Cmd::new_sudo(&["apk", "upgrade", "-U", "-a"])
                 .kws(kws)
                 .flags(flags)
         } else {
-            Cmd::new(&["apk", "add", "-U", "-u"]).kws(kws).flags(flags)
+            Cmd::new_sudo(&["apk", "add", "-U", "-u"])
+                .kws(kws)
+                .flags(flags)
         };
         self.just_run(cmd, Default::default(), INSTALL_STRAT.clone())
             .await
@@ -222,7 +226,7 @@ impl PackageManager for Apk {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apk", "update"]).kws(kws).flags(flags))
+        self.just_run_default(Cmd::new_sudo(&["apk", "update"]).kws(kws).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;
@@ -233,7 +237,7 @@ impl PackageManager for Apk {
     /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
     async fn u(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["apk", "add", "--allow-untrusted"])
+            Cmd::new_sudo(&["apk", "add", "--allow-untrusted"])
                 .kws(kws)
                 .flags(flags),
             Default::default(),
