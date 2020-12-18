@@ -348,7 +348,7 @@ pub fn is_exe(name: &str, path: &str) -> bool {
         || (!name.is_empty() && which::which(name).is_ok())
 }
 
-/// Helper function to turn an `AsyncRead` to a `Stream`
+/// Helper function to turn an `AsyncRead` to a `Stream`.
 // See also: https://stackoverflow.com/a/59327560
 pub fn into_bytes<R: AsyncRead>(r: R) -> impl Stream<Item = tokio::io::Result<Bytes>> {
     FramedRead::new(r, BytesCodec::new()).map_ok(|bytes| bytes.freeze())
