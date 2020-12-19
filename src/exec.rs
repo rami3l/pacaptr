@@ -128,6 +128,26 @@ impl<S: AsRef<OsStr>> Cmd<S> {
     }
 }
 
+/// Helper macro to implement `exec_checkerr` and `exec_checkall`.
+/// Take contents from the input stream `$src` and copy to `$out1` and `$out2`,
+/// and finally return `$out2`.
+/// The boolean `$mute1` decides whether to mute `$out1`.
+macro_rules! exec_tee {
+    ( $src:expr, $out1:expr, $out2:expr, $mute1:expr  ) => {{
+        while let Some(mb) = $src.next().await {
+            let b = mb?;
+            let b = b.as_ref();
+            if $mute1 {
+                $out2.write_all(b).await?;
+            } else {
+                try_join!($out1.write_all(b), $out2.write_all(b))?;
+            }
+        }
+
+        $out2
+    }};
+}
+
 impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     /// Execute a command and return a `Result<Vec<u8>, _>`.  
     /// The exact behavior depends on the `mode` passed in.  
@@ -182,19 +202,10 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
 
         let mut out = Vec::<u8>::new();
         let mut stdout = tokio::io::stdout();
-
-        while let Some(mb) = merged_reader.next().await {
-            let b = mb?;
-            let b = b.as_ref();
-            if mute {
-                out.write_all(b).await?;
-            } else {
-                try_join!(stdout.write_all(b), out.write_all(b))?;
-            }
-        }
+        let contents = exec_tee!(merged_reader, stdout, out, mute);
 
         Ok(Output {
-            contents: out,
+            contents,
             code: code.await.unwrap()?,
         })
     }
@@ -223,19 +234,10 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
 
         let mut out = Vec::<u8>::new();
         let mut stderr = tokio::io::stderr();
-
-        while let Some(mb) = stderr_reader.next().await {
-            let b = mb?;
-            let b = b.as_ref();
-            if mute {
-                out.write_all(b).await?;
-            } else {
-                try_join!(stderr.write_all(b), out.write_all(b))?;
-            }
-        }
+        let contents = exec_tee!(stderr_reader, stderr, out, mute);
 
         Ok(Output {
-            contents: out,
+            contents,
             code: code.await.unwrap()?,
         })
     }
