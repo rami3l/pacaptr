@@ -145,6 +145,10 @@ default_pm = "choco"
 
   This can be useful when you are running Linux and you want to use `linuxbrew`, for example. In that case, you can `--using brew`.
 
+- Automatic `sudo` invocation (since `v0.9.0`):
+  - If you are not `root` and you wish to do something requiring `sudo`, `pacaptr` will do it for you by invoking `sudo -S`.
+  - This feature is currently available for `apk`, `apt`, `dnf`, `macports` and `zypper`.
+
 - Extra flags support:
   - The flags after a `--` will be passed directly to the underlying package manager:
 
