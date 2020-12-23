@@ -190,7 +190,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
             .take()
             .map(into_bytes)
             .ok_or_else(|| anyhow!("Child process did not have a handle to stderr"))?;
-        let mut merged_reader = tokio::stream::StreamExt::merge(stdout_reader, stderr_reader);
+        let mut merged_reader = tokio_stream::StreamExt::merge(stdout_reader, stderr_reader);
 
         let code: JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
             let status = child
