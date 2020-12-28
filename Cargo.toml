@@ -28,7 +28,7 @@ is-root = "0.1.2"
 lazy_static = "1.4.0"
 regex = { version = "1.4.2", default-features = false, features = ["std", "perf"] }
 serde = { version = "1.0.118", features = ["derive"] }
-tokio = { version = "1.0.0", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"] }
+tokio = { version = "1.0.1", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"] }
 tokio-stream = "0.1.0"
 tokio-util = { version = "0.6.0", features = ["codec"] }
 which = "4.0.2"
