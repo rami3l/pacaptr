@@ -40,7 +40,7 @@ Run `pacman -Syu` on the OS of your choice!
 - `External/pip`¹
 - `External/tlmgr`¹
 
-¹: Require `pacaptr --using <name>` to invocate (see [general tips](#general-tips)).
+¹: Require `pacaptr --using <name>` to invoke (see [general tips](#general-tips)).
 
 Notes:
 
