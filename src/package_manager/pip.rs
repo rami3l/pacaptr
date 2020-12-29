@@ -1,8 +1,8 @@
 use super::{PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
+use crate::error::Result;
 use crate::exec::{self, Cmd};
 use crate::print::{self, PROMPT_RUN};
-use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 
@@ -120,10 +120,10 @@ impl PackageManager for Pip {
             )
             .await
         } else {
-            Err(anyhow!(
-                "Operation `su` unimplemented for `{}`",
-                self.name()
-            ))
+            Err(crate::error::Error::OperationUnimplementedError {
+                op: "su".into(),
+                pm: self.name(),
+            })
         }
     }
 

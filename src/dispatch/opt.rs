@@ -1,7 +1,7 @@
 use super::config::Config;
+use crate::error::{Error, Result};
 use crate::exec::{is_exe, StatusCode};
 use crate::package_manager::*;
-use anyhow::{anyhow, Result};
 use clap::{self, Clap};
 use std::iter::FromIterator;
 
@@ -133,7 +133,9 @@ impl Opt {
             .filter(|&&x| x)
             .count();
         if count != 1 {
-            Err(anyhow!("exactly 1 operation expected"))
+            Err(Error::ArgParseError {
+                msg: "exactly 1 operation expected".into(),
+            })
         } else {
             Ok(())
         }
@@ -286,7 +288,9 @@ impl Opt {
             ($( $method:ident ), *) => {
                 match options.to_lowercase().as_ref() {
                     $(stringify!($method) => pm.$method(&kws, &flags).await,)*
-                    _ => Err(anyhow!("Invalid flag")),
+                    _ => Err(Error::ArgParseError {
+                        msg: "Invalid flag".into()
+                    }),
                 }
             };
         }
@@ -313,7 +317,7 @@ mod tests {
     /*
     macro_rules! make_mock_pm {
         ($( $method:ident ), *) => {
-            $(fn $method(&self, kws: &[&str], flags: &[&str]) -> futures::future::BoxFuture<'_,anyhow::Result<()>> {
+            $(fn $method(&self, kws: &[&str], flags: &[&str]) -> futures::future::BoxFuture<'_,crate::error::Result<()>> {
                     let kws: Vec<_> = kws.iter().chain(flags).collect();
                     panic!("should run: {} {:?}", stringify!($method), &kws)
             })*

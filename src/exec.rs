@@ -1,5 +1,5 @@
+use crate::error::{Error, Result};
 use crate::print::*;
-use anyhow::{anyhow, Context, Result};
 use bytes::Bytes;
 use futures::{Stream, StreamExt, TryStreamExt};
 pub use is_root::is_root;
@@ -174,29 +174,34 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     /// Execute a command and return its `stdout` and `stderr`.
     /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
     async fn exec_checkall(self, mute: bool) -> Result<Output> {
+        use Error::*;
+
         let mut child = self
             .build()
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
-            .context("Failed to spawn child process")?;
-        let stdout_reader = child
-            .stdout
-            .take()
-            .map(into_bytes)
-            .ok_or_else(|| anyhow!("Child process did not have a handle to stdout"))?;
-        let stderr_reader = child
-            .stderr
-            .take()
-            .map(into_bytes)
-            .ok_or_else(|| anyhow!("Child process did not have a handle to stderr"))?;
+            .map_err(CmdSpawnError)?;
+        let stdout_reader =
+            child
+                .stdout
+                .take()
+                .map(into_bytes)
+                .ok_or_else(|| CmdNoHandleError {
+                    handle: "stdout".into(),
+                })?;
+        let stderr_reader =
+            child
+                .stderr
+                .take()
+                .map(into_bytes)
+                .ok_or_else(|| CmdNoHandleError {
+                    handle: "stderr".into(),
+                })?;
         let mut merged_reader = tokio_stream::StreamExt::merge(stdout_reader, stderr_reader);
 
         let code: JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
-            let status = child
-                .wait()
-                .await
-                .context("Child process encountered an error")?;
+            let status = child.wait().await.map_err(CmdWaitError)?;
             Ok(status.code())
         });
 
@@ -213,22 +218,24 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     /// Execute a command and collect its `stderr`.  
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     async fn exec_checkerr(self, mute: bool) -> Result<Output> {
+        use Error::*;
+
         let mut child = self
             .build()
             .stderr(Stdio::piped())
             .spawn()
-            .context("Failed to spawn child process")?;
-        let mut stderr_reader = child
-            .stderr
-            .take()
-            .map(into_bytes)
-            .ok_or_else(|| anyhow!("Child did not have a handle to stderr"))?;
+            .map_err(CmdSpawnError)?;
+        let mut stderr_reader =
+            child
+                .stderr
+                .take()
+                .map(into_bytes)
+                .ok_or_else(|| CmdNoHandleError {
+                    handle: "stderr".into(),
+                })?;
 
         let code: JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
-            let status = child
-                .wait()
-                .await
-                .context("Child process encountered an error")?;
+            let status = child.wait().await.map_err(CmdWaitError)?;
             Ok(status.code())
         });
 

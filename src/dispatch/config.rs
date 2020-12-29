@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use crate::error::{Error, Result};
 use serde::{Deserialize, Serialize};
 
 /// Configurations that may vary when running the package manager.
@@ -24,12 +24,16 @@ impl Config {
     pub fn load() -> Result<Self> {
         let crate_name = clap::crate_name!();
         let config = dirs::home_dir()
-            .ok_or_else(|| anyhow!("$HOME path not found"))?
+            .ok_or_else(|| Error::ConfigError {
+                msg: "$HOME path not found".into(),
+            })?
             .join(".config")
             .join(crate_name)
             .join(&format!("{}.toml", crate_name));
         // dbg!(&config);
-        let res = confy::load_path(config)?;
+        let res = confy::load_path(config).map_err(|_e| Error::ConfigError {
+            msg: "Failed to read config".into(),
+        })?;
         // dbg!(&res);
         Ok(res)
     }
