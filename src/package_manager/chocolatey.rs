@@ -1,7 +1,7 @@
 use super::{DryRunStrategy, PackageManager, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
+use crate::error::Result;
 use crate::exec::Cmd;
-use anyhow::Result;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 

@@ -11,8 +11,8 @@ pub mod unknown;
 pub mod zypper;
 
 use crate::dispatch::config::Config;
+use crate::error::Result;
 use crate::exec::{Cmd, Mode, Output, StatusCode};
-use anyhow::Result;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex;
@@ -25,7 +25,7 @@ macro_rules! make_pm {(
         ),*
     ) => {
         $( $(#[$meta] )*
-        fn $method(&self, _kws: &[&str], _flags: &[&str]) -> BoxFuture<'_, anyhow::Result<()>>
+        fn $method(&self, _kws: &[&str], _flags: &[&str]) -> BoxFuture<'_, crate::error::Result<()>>
         {
             Box::pin(async move {
                 let name = self.name();
@@ -44,12 +44,10 @@ macro_rules! make_pm {(
 
 macro_rules! make_op_body {
     ( $self:ident, $method:ident ) => {{
-        let name = $self.name();
-        Err(anyhow::anyhow!(format!(
-            "Operation `{}` unimplemented for `{}`",
-            stringify!($method),
-            name,
-        )))
+        Err(crate::error::Error::OperationUnimplementedError {
+            op: stringify!($method).into(),
+            pm: $self.name(),
+        })
     }};
 }
 

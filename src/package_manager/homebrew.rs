@@ -1,8 +1,8 @@
 use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
+use crate::error::{Error, Result};
 use crate::exec::{self, Cmd};
 use crate::print::{self, PROMPT_INFO, PROMPT_RUN};
-use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 
@@ -102,7 +102,7 @@ impl PackageManager for Homebrew {
                         .contents;
 
                     search(&String::from_utf8(out_bytes)?);
-                    Ok::<(), anyhow::Error>(())
+                    Ok::<(), Error>(())
                 }
             };
         }
@@ -154,7 +154,7 @@ impl PackageManager for Homebrew {
                 PROMPT_INFO,
             );
             print::print_msg("`brew tap beeftornado/rmtree`", PROMPT_INFO);
-            return Err(anyhow!("`rmtree` required"));
+            return Err(Error::OtherError("`rmtree` required".into()));
         }
 
         Ok(())
