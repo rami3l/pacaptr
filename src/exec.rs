@@ -41,7 +41,8 @@ pub type StatusCode = i32;
 /// Representation of what a command returns.
 #[derive(Debug, Clone)]
 pub struct Output {
-    /// The captured `stdout`, sometimes mixed with captured `stderr`.
+    /// The captured `stdout`,
+    /// and if `Mode::CheckAll`, mixed with captured `stderr`.
     pub contents: Vec<u8>,
     /// `Some(n)` for exit code, `None` for signals.
     pub code: Option<StatusCode>,
@@ -104,7 +105,6 @@ impl Cmd<String> {
 impl<S: AsRef<OsStr>> Cmd<S> {
     /// Convert a `Cmd` object into a `subprocess::Exec`.
     pub fn build(self) -> Exec {
-        // * We use `sudo -S` to launch subprocess if `sudo` is `true` and the current user is not `root`.
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
         // ! but not `zypper install curl -y`.
         // ! So we place the flags first, and then keywords.
@@ -283,6 +283,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
                 }
                 // Or you can say `No`.
                 "n" | "no" => false,
+                // ! I didn't put a `None` option because you can just Ctrl-C it if you want.
                 _ => unreachable!(),
             }
         };
@@ -301,8 +302,8 @@ impl<S: AsRef<str>> std::fmt::Display for Cmd<S> {
         let cmd_str = self
             .cmd
             .iter()
-            .chain(&self.kws)
             .chain(&self.flags)
+            .chain(&self.kws)
             .map(|s| s.as_ref())
             .collect::<Vec<&str>>()
             .join(" ");
@@ -359,8 +360,8 @@ pub fn is_exe(name: &str, path: &str) -> bool {
 
 /// Helper function to turn an `AsyncRead` to a `Stream`.
 // See also: https://stackoverflow.com/a/59327560
-pub fn into_bytes<R: AsyncRead>(r: R) -> impl Stream<Item = tokio::io::Result<Bytes>> {
-    FramedRead::new(r, BytesCodec::new()).map_ok(|bytes| bytes.freeze())
+pub fn into_bytes<R: AsyncRead>(reader: R) -> impl Stream<Item = tokio::io::Result<Bytes>> {
+    FramedRead::new(reader, BytesCodec::new()).map_ok(|bytes| bytes.freeze())
 }
 
 /*

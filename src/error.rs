@@ -6,7 +6,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// Error type for the `pacaptr` library.
 #[derive(Debug, Error)]
 pub enum Error {
-    /// A subprocess fails to finish.
+    /// Error while parsing CLI arguments.
     #[error("Failed to parse arguments: {msg}")]
     ArgParseError { msg: String },
 
