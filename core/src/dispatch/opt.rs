@@ -14,7 +14,7 @@ use std::iter::FromIterator;
     setting = clap::AppSettings::ColoredHelp,
     setting = clap::AppSettings::ArgRequiredElseHelp,
 )]
-pub struct Opt {
+pub struct Opts {
     // Operations include Query, Remove, Sync, etc.
     #[clap(short = 'Q', long)]
     query: bool,
@@ -125,7 +125,7 @@ pub struct Opt {
     extra_flags: Vec<String>,
 }
 
-impl Opt {
+impl Opts {
     /// Check if an Opt object is malformed.
     fn check(&self) -> Result<()> {
         let count = [self.query, self.remove, self.sync, self.update]
@@ -201,7 +201,7 @@ impl Opt {
             .using
             .as_deref()
             .or_else(|| cfg.default_pm.as_deref())
-            .unwrap_or_else(Opt::detect_pm_str);
+            .unwrap_or_else(Opts::detect_pm_str);
 
         #[allow(clippy::match_single_binding)]
         match pm_str {
@@ -502,7 +502,7 @@ mod tests {
         }
     }
 
-    impl Opt {
+    impl Opts {
         fn make_mock(&self) -> MockPM {
             MockPM {}
         }
@@ -511,7 +511,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "should run: suy")]
     async fn simple_syu() {
-        let opt = dbg!(Opt::parse_from(&["pacaptr", "-Syu"]));
+        let opt = dbg!(Opts::parse_from(&["pacaptr", "-Syu"]));
 
         assert!(opt.keywords.is_empty());
         assert!(opt.sync);
@@ -523,7 +523,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "should run: suy")]
     async fn long_syu() {
-        let opt = dbg!(Opt::parse_from(&[
+        let opt = dbg!(Opts::parse_from(&[
             "pacaptr",
             "--sync",
             "--refresh",
@@ -540,7 +540,7 @@ mod tests {
     #[test]
     #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
     async fn simple_si() {
-        let opt = dbg!(Opt::parse_from(&["pacaptr", "-Sw", "curl", "wget"]));
+        let opt = dbg!(Opts::parse_from(&["pacaptr", "-Sw", "curl", "wget"]));
 
         assert!(opt.sync);
         assert!(opt.w);
@@ -550,7 +550,7 @@ mod tests {
     #[test]
     #[should_panic(expected = r#"should run: s ["docker"]"#)]
     async fn other_flags() {
-        let opt = dbg!(Opt::parse_from(&[
+        let opt = dbg!(Opts::parse_from(&[
             "pacaptr", "-S", "--dryrun", "--yes", "docker"
         ]));
 
@@ -563,7 +563,7 @@ mod tests {
     #[test]
     #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
     async fn extra_flags() {
-        let opt = dbg!(Opt::parse_from(&[
+        let opt = dbg!(Opts::parse_from(&[
             "pacaptr",
             "-S",
             "--yes",
@@ -583,7 +583,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "exactly 1 operation expected")]
     async fn too_many_ops() {
-        let opt = dbg!(Opt::parse_from(&["pacaptr", "-SQns", "docker"]));
+        let opt = dbg!(Opts::parse_from(&["pacaptr", "-SQns", "docker"]));
 
         assert!(opt.sync);
         assert!(opt.query);
