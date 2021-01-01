@@ -144,7 +144,7 @@ macro_rules! exec_tee {
 }
 
 impl Cmd {
-    /// Execute a command and return a `Result<Vec<u8>, _>`.  
+    /// Execute a command and return its output.  
     /// The exact behavior depends on the `mode` passed in.  
     /// See `exec::Mode`'s documentation for more info.
     pub async fn exec(self, mode: Mode) -> Result<Output> {
