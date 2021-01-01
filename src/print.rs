@@ -34,7 +34,7 @@ macro_rules! question_format {
 }
 
 /// Print out the command after the given prompt.
-pub fn print_cmd<S: AsRef<str>>(cmd: &Cmd<S>, prompt: &str) {
+pub fn print_cmd(cmd: &Cmd, prompt: &str) {
     println!(
         cmd_format!(),
         prompt.green().bold(),

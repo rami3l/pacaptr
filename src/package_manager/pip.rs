@@ -32,7 +32,7 @@ impl PackageManager for Pip {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.just_run_default(Cmd::new(&[&self.cmd, "list"]).flags(flags))
+            self.just_run_default(Cmd::new(&[self.cmd.as_ref(), "list"]).flags(flags))
                 .await
         } else {
             self.qs(kws, flags).await
@@ -49,7 +49,7 @@ impl PackageManager for Pip {
                 .for_each(|ln| println!("{}", ln))
         };
 
-        let cmd = &[&self.cmd, "list"];
+        let cmd = &[self.cmd.as_ref(), "list"];
         let cmd = Cmd::new(cmd).flags(flags);
         if !self.cfg.dry_run {
             print::print_cmd(&cmd, PROMPT_RUN);
@@ -65,7 +65,7 @@ impl PackageManager for Pip {
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(
-            Cmd::new(&[&self.cmd, "list", "--outdated"])
+            Cmd::new(&[self.cmd.as_ref(), "list", "--outdated"])
                 .kws(kws)
                 .flags(flags),
         )
@@ -75,7 +75,9 @@ impl PackageManager for Pip {
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&[&self.cmd, "uninstall"]).kws(kws).flags(flags),
+            Cmd::new(&[self.cmd.as_ref(), "uninstall"])
+                .kws(kws)
+                .flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
@@ -85,7 +87,9 @@ impl PackageManager for Pip {
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&[&self.cmd, "install"]).kws(kws).flags(flags),
+            Cmd::new(&[self.cmd.as_ref(), "install"])
+                .kws(kws)
+                .flags(flags),
             Default::default(),
             PROMPT_STRAT.clone(),
         )
@@ -94,27 +98,31 @@ impl PackageManager for Pip {
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&[&self.cmd, "cache", "purge"]).flags(flags))
+        self.just_run_default(Cmd::new(&[self.cmd.as_ref(), "cache", "purge"]).flags(flags))
             .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&[&self.cmd, "show"]).kws(kws).flags(flags))
+        self.just_run_default(Cmd::new(&[self.cmd.as_ref(), "show"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&[&self.cmd, "search"]).kws(kws).flags(flags))
-            .await
+        self.just_run_default(
+            Cmd::new(&[self.cmd.as_ref(), "search"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if !kws.is_empty() {
             self.just_run_default(
-                Cmd::new(&[&self.cmd, "install", "--upgrade"])
+                Cmd::new(&[self.cmd.as_ref(), "install", "--upgrade"])
                     .kws(kws)
                     .flags(flags),
             )
@@ -129,7 +137,11 @@ impl PackageManager for Pip {
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&[&self.cmd, "download"]).kws(kws).flags(flags))
-            .await
+        self.just_run_default(
+            Cmd::new(&[self.cmd.as_ref(), "download"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 }
