@@ -39,6 +39,7 @@
         "subcmd",
         "svenstaro",
         "sysupgrade",
-        "untrusted"
+        "untrusted",
+        "xshell"
     ]
 }

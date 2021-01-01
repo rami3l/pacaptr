@@ -1,0 +1,11 @@
+[package]
+name = "xtask"
+version = "0.1.0"
+authors = ["rami3l <rami3l@outlook.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.37"
+xshell = "0.1.8"
