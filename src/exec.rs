@@ -5,7 +5,6 @@ use futures::{Stream, StreamExt, TryStreamExt};
 pub use is_root::is_root;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::ffi::OsStr;
 use std::process::Stdio;
 use tokio::io::{AsyncRead, AsyncWriteExt};
 use tokio::process::Command as Exec;
@@ -60,39 +59,32 @@ impl Default for Output {
 /// A command to be executed, provided in `command-keywords-flags` form.  
 /// For example, `[brew install]-[curl fish]-[--dry-run]`).
 #[derive(Debug, Clone, Default)]
-pub struct Cmd<S = String> {
+pub struct Cmd {
     pub sudo: bool,
-    pub cmd: Vec<S>,
-    pub kws: Vec<S>,
-    pub flags: Vec<S>,
+    pub cmd: Vec<String>,
+    pub kws: Vec<String>,
+    pub flags: Vec<String>,
 }
 
-impl<S> Cmd<S> {
-    /// Determine if this command needs to run with `sudo -S`.
-    pub fn needs_sudo(&self) -> bool {
-        self.sudo && !is_root()
-    }
-}
-
-impl Cmd<String> {
-    pub fn new(cmd: &[&str]) -> Self {
+impl Cmd {
+    pub fn new<S: AsRef<str>>(cmd: &[S]) -> Self {
         Self {
-            cmd: cmd.iter().map(|&s| s.to_owned()).collect(),
+            cmd: cmd.iter().map(|s| s.as_ref().into()).collect(),
             ..Default::default()
         }
     }
 
-    pub fn new_sudo(cmd: &[&str]) -> Self {
+    pub fn new_sudo<S: AsRef<str>>(cmd: &[S]) -> Self {
         Self::new(cmd).sudo(true)
     }
 
-    pub fn kws(mut self, kws: &[&str]) -> Self {
-        self.kws = kws.iter().map(|&s| s.to_owned()).collect();
+    pub fn kws<S: AsRef<str>>(mut self, kws: &[S]) -> Self {
+        self.kws = kws.iter().map(|s| s.as_ref().into()).collect();
         self
     }
 
-    pub fn flags(mut self, flags: &[&str]) -> Self {
-        self.flags = flags.iter().map(|&s| s.to_owned()).collect();
+    pub fn flags<S: AsRef<str>>(mut self, flags: &[S]) -> Self {
+        self.flags = flags.iter().map(|s| s.as_ref().into()).collect();
         self
     }
 
@@ -100,9 +92,12 @@ impl Cmd<String> {
         self.sudo = sudo;
         self
     }
-}
 
-impl<S: AsRef<OsStr>> Cmd<S> {
+    /// Determine if this command needs to run with `sudo -S`.
+    pub fn needs_sudo(&self) -> bool {
+        self.sudo && !is_root()
+    }
+
     /// Convert a `Cmd` object into a `subprocess::Exec`.
     pub fn build(self) -> Exec {
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
@@ -148,7 +143,7 @@ macro_rules! exec_tee {
     }};
 }
 
-impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
+impl Cmd {
     /// Execute a command and return a `Result<Vec<u8>, _>`.  
     /// The exact behavior depends on the `mode` passed in.  
     /// See `exec::Mode`'s documentation for more info.
@@ -295,7 +290,7 @@ impl<S: AsRef<OsStr> + AsRef<str>> Cmd<S> {
     }
 }
 
-impl<S: AsRef<str>> std::fmt::Display for Cmd<S> {
+impl std::fmt::Display for Cmd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let sudo_prefix: &str = if self.needs_sudo() { "sudo -S " } else { "" };
         let mut res = sudo_prefix.to_owned();
