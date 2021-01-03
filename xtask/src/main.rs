@@ -1,12 +1,9 @@
 mod dispatch;
 
-use crate::dispatch::{Opts, Run, SubCmd};
+use crate::dispatch::{Opts, Runner, SubCmd};
+use anyhow::Result;
 use clap::Clap;
 
-use anyhow::Result;
-use xshell::{cmd, read_file};
-
-const CORE: &str = "pacaptr";
 /*
 const BANNER: &str = r#"
                             __
@@ -31,15 +28,12 @@ fn main() -> Result<()> {
     */
 
     let opts = Opts::parse();
+
+    use SubCmd::*;
     match opts.subcmd {
-        SubCmd::Run(run) => {
-            let keywords = run.keywords;
-            let _o = cmd!("cargo run -p {CORE} {keywords...}").run()?;
-        }
-        SubCmd::Install(install) => {
-            let keywords = install.keywords;
-            let _o = cmd!("cargo install {CORE} --path ./core {keywords...}").run()?;
-        }
+        Run(x) => x.run()?,
+        Install(x) => x.run()?,
+        Publish(x) => x.run()?,
     }
 
     Ok(())
