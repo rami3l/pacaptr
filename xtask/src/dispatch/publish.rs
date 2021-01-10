@@ -19,7 +19,11 @@ impl Runner for Publish {
     fn run(self) -> Result<()> {
         let Self { artifact, asset } = self;
 
-        println!("Building the binary in `release` mode...");
+        println!(":: Logging into GitHub CLI...");
+        let repo_token = std::env::var("REPO_TOKEN")?;
+        cmd!("gh auth login --with-token").stdin(repo_token).run()?;
+
+        println!(":: Building the binary in `release` mode...");
         if cfg!(target_os = "linux") {
             // In Linux, we need to add the `musl` target first.
             cmd!("rustup target add {LINUX_MUSL}").run()?;
@@ -29,7 +33,7 @@ impl Runner for Publish {
             cmd!("cargo build --verbose --bin {CORE} --release --locked").run()?;
         }
 
-        println!("Zipping the binary...");
+        println!(":: Zipping the binary...");
         let bin_dir = if cfg!(target_os = "linux") {
             format!("./target/{}/release/", LINUX_MUSL)
         } else {
@@ -44,11 +48,11 @@ impl Runner for Publish {
 
         cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}{ext}").run()?;
 
-        println!("Generating sha256...");
+        println!(":: Generating sha256...");
         let shasum = cmd!("openssl dgst -r -sha256 {asset}.tar.gz").read()?;
         write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
 
-        println!("Uploading binary and sha256...");
+        println!(":: Uploading binary and sha256...");
         cmd!("gh release upload $GITHUB_REF {asset}.tar.gz {asset}.tar.gz.sha256").run()?;
 
         /*

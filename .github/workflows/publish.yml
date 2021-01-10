@@ -26,12 +26,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/checkout@v1
 
-      - name: Login to GitHub CLI
+      - name: Publish
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh auth login --with-token <<< "$REPO_TOKEN"
-
-      - name: Publish
         run: cargo xtask publish --artifact='${{ matrix.artifact_name }}' --asset='${{ matrix.asset_name }}'
 
   bump-tap-version:
