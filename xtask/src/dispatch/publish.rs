@@ -2,12 +2,13 @@ use super::{Runner, CORE};
 use anyhow::Result;
 use clap::Clap;
 use regex::Regex;
+use std::env;
 use xshell::{cmd, write_file};
 
 const LINUX_MUSL: &str = "x86_64-unknown-linux-musl";
 
 #[derive(Debug, Clap)]
-#[clap(about = "Build relese and upload to GitHub releases.")]
+#[clap(about = "Build release and upload to GitHub releases.")]
 pub struct Publish {
     #[clap(long, alias = "exe", about = "Name of the executable")]
     pub artifact: String,
@@ -49,7 +50,7 @@ impl Runner for Publish {
         write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
 
         println!(":: Uploading binary and sha256...");
-        let gh_ref = std::env::var("GITHUB_REF")?;
+        let gh_ref = env::var("GITHUB_REF")?;
         let tag = get_ver(gh_ref);
         cmd!("gh release create {tag} {asset}.tar.gz {asset}.tar.gz.sha256")
             .run()
@@ -66,6 +67,7 @@ impl Runner for Publish {
 
         #[cfg(target_os = "macos")]
         {
+            // ! Generation of tap script requires binaries for both macOS and Linux.
             println!("Publishing to `homebrew tap`...");
             todo!()
         }
