@@ -1,6 +1,7 @@
 use super::{Runner, CORE};
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use clap::Clap;
+use regex::Regex;
 use xshell::{cmd, write_file};
 
 const LINUX_MUSL: &str = "x86_64-unknown-linux-musl";
@@ -41,24 +42,20 @@ impl Runner for Publish {
             "./target/release/".to_owned()
         };
 
-        let ext = if cfg!(target_os = "windows") {
-            ".exe"
-        } else {
-            ""
-        };
-
-        cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}{ext}").run()?;
+        cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}").run()?;
 
         println!(":: Generating sha256...");
         let shasum = cmd!("openssl dgst -r -sha256 {asset}.tar.gz").read()?;
         write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
 
         println!(":: Uploading binary and sha256...");
-        let github_ref = std::env::var("GITHUB_REF")?;
-        let tag = github_ref
-            .strip_prefix("refs/tags/")
-            .ok_or_else(|| anyhow!("Error while striping prefix of `{}`", github_ref))?;
-        cmd!("gh release create {tag} {asset}.tar.gz {asset}.tar.gz.sha256").run()?;
+        let gh_ref = std::env::var("GITHUB_REF")?;
+        let tag = get_ver(gh_ref);
+        cmd!("gh release create {tag} {asset}.tar.gz {asset}.tar.gz.sha256")
+            .run()
+            .or_else(|_| {
+                cmd!("gh release upload {tag} {asset}.tar.gz {asset}.tar.gz.sha256").run()
+            })?;
 
         /*
         #[cfg(target_os = "windows")]
@@ -76,4 +73,12 @@ impl Runner for Publish {
 
         Ok(())
     }
+}
+
+/// Strip the `ref/*/` prefix from `GITHUB_REF` to get a version string.
+fn get_ver<S: AsRef<str>>(gh_ref: S) -> String {
+    Regex::new("refs/.*/")
+        .unwrap()
+        .replace(gh_ref.as_ref(), "")
+        .to_string()
 }

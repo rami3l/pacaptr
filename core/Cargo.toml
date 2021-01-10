@@ -13,7 +13,7 @@ version = "0.10.0"
 anyhow = "1.0.37"
 itertools = "0.10.0"
 prettytable-rs = "0.8.0"
-regex = "1.4.2"
+regex = "1.4.3"
 
 [dependencies]
 async-trait = "0.1.42"
@@ -22,15 +22,15 @@ clap = "3.0.0-beta.2"
 colored = "2.0.0"
 confy = "0.4.0"
 dirs = "3.0.1"
-futures = "0.3.8"
+futures = "0.3.9"
 is-root = "0.1.2"
 lazy_static = "1.4.0"
-regex = {version = "1.4.2", default-features = false, features = ["std", "perf"]}
-serde = {version = "1.0.118", features = ["derive"]}
+regex = { version = "1.4.3", default-features = false, features = ["std", "perf"] }
+serde = { version = "1.0.118", features = ["derive"] }
 thiserror = "1.0.23"
-tokio = {version = "1.0.1", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"]}
-tokio-stream = "0.1.0"
-tokio-util = {version = "0.6.0", features = ["codec"]}
+tokio = { version = "1.0.1", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"] }
+tokio-stream = "0.1.1"
+tokio-util = { version = "0.6.0", features = ["codec"] }
 which = "4.0.2"
 
 [package.metadata.deb]
