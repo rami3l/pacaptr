@@ -28,7 +28,7 @@ jobs:
 
       - name: Publish
         env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cargo xtask publish --artifact='${{ matrix.artifact_name }}' --asset='${{ matrix.asset_name }}'
 
   bump-tap-version:

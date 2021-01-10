@@ -1,5 +1,5 @@
 use super::{Runner, CORE};
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::Clap;
 use xshell::{cmd, write_file};
 
@@ -19,9 +19,10 @@ impl Runner for Publish {
     fn run(self) -> Result<()> {
         let Self { artifact, asset } = self;
 
-        println!(":: Logging into GitHub CLI...");
-        let repo_token = std::env::var("REPO_TOKEN")?;
-        cmd!("gh auth login --with-token").stdin(repo_token).run()?;
+        cmd!("gh config set prompt disabled").run()?;
+
+        // println!(":: Logging into GitHub CLI...");
+        // cmd!("gh auth login").run()?;
 
         println!(":: Building the binary in `release` mode...");
         if cfg!(target_os = "linux") {
@@ -53,7 +54,11 @@ impl Runner for Publish {
         write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
 
         println!(":: Uploading binary and sha256...");
-        cmd!("gh release upload $GITHUB_REF {asset}.tar.gz {asset}.tar.gz.sha256").run()?;
+        let github_ref = std::env::var("GITHUB_REF")?;
+        let tag = github_ref
+            .strip_prefix("refs/tags/")
+            .ok_or_else(|| anyhow!("Error while striping prefix of `{}`", github_ref))?;
+        cmd!("gh release create {tag} {asset}.tar.gz {asset}.tar.gz.sha256").run()?;
 
         /*
         #[cfg(target_os = "windows")]
