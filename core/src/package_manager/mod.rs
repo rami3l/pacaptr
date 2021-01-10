@@ -350,9 +350,9 @@ impl Default for PmMode {
     }
 }
 
-impl Into<Mode> for PmMode {
-    fn into(self) -> Mode {
-        match self {
+impl From<PmMode> for Mode {
+    fn from(pm_mode: PmMode) -> Self {
+        match pm_mode {
             PmMode::Mute => Mode::Mute,
             PmMode::CheckAll => Mode::CheckAll,
             PmMode::CheckErr => Mode::CheckErr,
