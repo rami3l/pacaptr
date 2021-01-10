@@ -19,8 +19,6 @@ impl Runner for Publish {
     fn run(self) -> Result<()> {
         let Self { artifact, asset } = self;
 
-        cmd!("ls -lah").run()?;
-
         println!("Building the binary in `release` mode...");
         if cfg!(target_os = "linux") {
             // In Linux, we need to add the `musl` target first.
@@ -44,8 +42,6 @@ impl Runner for Publish {
             ""
         };
 
-        // cmd!("ls -lah").run()?;
-        // cmd!("ls -lah ./target/release").run()?;
         cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}{ext}").run()?;
 
         println!("Generating sha256...");
