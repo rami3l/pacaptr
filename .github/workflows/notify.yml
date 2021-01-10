@@ -1,6 +1,6 @@
 name: notify
 on:
-  push:
+  # push:
   release:
 
 jobs:

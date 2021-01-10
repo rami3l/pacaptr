@@ -6,126 +6,34 @@ on:
       - "*"
 
 jobs:
-  publish-non-linux:
+  publish:
     name: Publish for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-          # - os: ubuntu-latest
-          #  artifact_name: pacaptr
-          #  asset_name: pacaptr-linux-amd64
           - os: windows-latest
             artifact_name: pacaptr.exe
             asset_name: pacaptr-windows-amd64
           - os: macos-latest
             artifact_name: pacaptr
             asset_name: pacaptr-macos-amd64
+          - os: ubuntu-latest
+            artifact_name: pacaptr
+            asset_name: pacaptr-linux-amd64
 
     steps:
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/checkout@v1
 
-      # - name: Install UPX on Windows
-      #   if: ${{matrix.os == 'windows-latest'}}
-      #   run: choco install upx
-
-      # - name: Install UPX on MacOS
-      #   if: ${{matrix.os == 'macos-latest'}}
-      #   run: brew install upx
-
-      - name: Build
-        run: cargo build --release --locked
-
-      # - name: compress (windows)
-      #  if: ${{matrix.os == 'windows-latest'}}
-      #  run: |
-      #    strip -s ./target/release/${{ matrix.artifact_name }}
-      #    upx -9 --lzma ./target/release/${{ matrix.artifact_name }}
-
-      # - name: compress (macos)
-      #   if: ${{matrix.os == 'macos-latest'}}
-      #   run: |
-      #     strip ./target/release/${{ matrix.artifact_name }}
-      #     upx -9 --lzma ./target/release/${{ matrix.artifact_name }}
-
-      - name: Zip
-        run: tar czvf ${{ matrix.asset_name }}.tar.gz -C ./target/release/ ${{ matrix.artifact_name }}
-
-      - name: Generate sha256
-        run: openssl dgst -r -sha256 ${{ matrix.asset_name }}.tar.gz > ${{ matrix.asset_name }}.tar.gz.sha256
-
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v1-release
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.asset_name }}.tar.gz
-          asset_name: ${{ matrix.asset_name }}.tar.gz
-          tag: ${{ github.ref }}
-          overwrite: true
-
-      - name: Upload sha256 to release
-        uses: svenstaro/upload-release-action@v1-release
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.asset_name }}.tar.gz.sha256
-          asset_name: ${{ matrix.asset_name }}.tar.gz.sha256
-          tag: ${{ github.ref }}
-          overwrite: true
-
-  publish-linux:
-    name: Publish for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            artifact_name: pacaptr
-            asset_name: pacaptr-linux-amd64
-            target_name: x86_64-unknown-linux-musl
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@stable
-
-      - run: rustup target add ${{ matrix.target_name }}
-
-      - name: Build
-        run: cargo build --release --locked --target=${{ matrix.target_name }}
-
-      # - run: sudo apt install upx-ucl binutils
-      # - name: compress
-      #   run: |
-      #     strip -s ./target/${{ matrix.target_name }}/release/${{ matrix.artifact_name }}
-      #     upx -9 --lzma ./target/${{ matrix.target_name }}/release/${{ matrix.artifact_name }}
-
-      - name: Zip
-        run: tar czvf ${{ matrix.asset_name }}.tar.gz -C ./target/${{ matrix.target_name }}/release/ ${{ matrix.artifact_name }}
-
-      - name: Generate sha256
-        run: openssl dgst -r -sha256 ${{ matrix.asset_name }}.tar.gz > ${{ matrix.asset_name }}.tar.gz.sha256
-
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v1-release
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.asset_name }}.tar.gz
-          asset_name: ${{ matrix.asset_name }}.tar.gz
-          tag: ${{ github.ref }}
-          overwrite: true
-
-      - name: Upload sha256 to release
-        uses: svenstaro/upload-release-action@v1-release
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.asset_name }}.tar.gz.sha256
-          asset_name: ${{ matrix.asset_name }}.tar.gz.sha256
-          tag: ${{ github.ref }}
-          overwrite: true
+      - name: Publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cargo xtask publish --artifact='${{ matrix.artifact_name }}' --asset='${{ matrix.asset_name }}'
 
   bump-tap-version:
     name: Generate new ruby script for homebrew tap
-    needs: [publish-linux, publish-non-linux]
+    needs: [publish]
     runs-on: ubuntu-latest
 
     steps:
@@ -202,7 +110,7 @@ jobs:
   publish-choco:
     name: Publish app on Chocolatey
     runs-on: windows-latest
-    needs: [publish-non-linux]
+    needs: [publish]
     if: ${{ !contains(github.ref, '-') }}
     steps:
       - name: Checkout
