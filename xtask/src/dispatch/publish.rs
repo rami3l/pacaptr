@@ -1,7 +1,7 @@
 use super::{Runner, CORE};
 use anyhow::Result;
 use clap::Clap;
-use xshell::cmd;
+use xshell::{cmd, write_file};
 
 const LINUX_MUSL: &str = "x86_64-unknown-linux-musl";
 
@@ -49,7 +49,8 @@ impl Runner for Publish {
         cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}{ext}").run()?;
 
         println!("Generating sha256...");
-        cmd!("openssl dgst -r -sha256 {asset}.tar.gz > {asset}.tar.gz.sha256").run()?;
+        let shasum = cmd!("openssl dgst -r -sha256 {asset}.tar.gz").read()?;
+        write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
 
         println!("Uploading binary and sha256...");
         cmd!("gh release upload $GITHUB_REF {asset}.tar.gz {asset}.tar.gz.sha256").run()?;
