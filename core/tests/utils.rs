@@ -1,6 +1,5 @@
-use pacaptr::exec::{Cmd, Mode};
-
-static CARGO_RUN: &[&str] = &["cargo", "run", "--"];
+use regex::Regex;
+use xshell::cmd;
 
 #[derive(Debug)]
 enum Input<'i> {
@@ -55,11 +54,11 @@ impl<'t> Test<'t> {
         self
     }
 
-    pub async fn run(&self, verbose: bool) {
+    pub fn run(&self, verbose: bool) {
         let try_match = |out: &str, patterns: &[&str]| {
             patterns
                 .iter()
-                .map(|&p| (p, regex::Regex::new(p).unwrap()))
+                .map(|&p| (p, Regex::new(p).unwrap()))
                 .for_each(|(p, re)| {
                     assert!(
                         re.is_match(out),
@@ -79,18 +78,21 @@ impl<'t> Test<'t> {
             // got = cmd.run()
             // if not matches_all(got, patterns):
             //     raise MatchError(some_msg)
-            let mode = if verbose { Mode::CheckAll } else { Mode::Mute };
-            let output = match *input {
-                Input::Pacaptr { args, flags } => Cmd::new(CARGO_RUN)
-                    .kws(args)
-                    .flags(flags)
-                    .exec(mode)
-                    .await
-                    .unwrap(),
-                Input::Exec { cmd, kws } => Cmd::new(cmd).kws(kws).exec(mode).await.unwrap(),
-            };
-            let got_bytes = output.contents;
-            let got = String::from_utf8(got_bytes).unwrap();
+            let got = match *input {
+                Input::Pacaptr { args, flags } => {
+                    cmd!("cargo run --").args(args).args(flags).read()
+                }
+                Input::Exec { cmd, kws } => {
+                    let (cmd, subcmd) = cmd.split_first().unwrap();
+                    cmd!("{cmd}").args(subcmd).args(kws).read()
+                }
+            }
+            .unwrap();
+
+            if verbose {
+                println!("{}", &got);
+            }
+
             try_match(&got, *patterns);
         }
     }
