@@ -529,6 +529,7 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "which",
+ "xshell",
 ]
 
 [[package]]
