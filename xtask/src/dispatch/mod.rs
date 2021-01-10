@@ -8,6 +8,7 @@ use self::run::Run;
 use anyhow::Result;
 use clap::Clap;
 
+/// The name of the executable.
 const CORE: &str = "pacaptr";
 
 /// The command line options to be collected.

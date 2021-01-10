@@ -1,4 +1,4 @@
-use super::Runner;
+use super::{Runner, CORE};
 use anyhow::Result;
 use clap::Clap;
 use xshell::cmd;
@@ -23,13 +23,14 @@ impl Runner for Publish {
         if cfg!(target_os = "linux") {
             // In Linux, we need to add the `musl` target first.
             cmd!("rustup target add {LINUX_MUSL}").run()?;
-            cmd!("cargo build --release --locked --target={LINUX_MUSL}").run()?;
+            cmd!("cargo build --bin {CORE} --release --locked --target={LINUX_MUSL}").run()?;
         } else {
-            cmd!("cargo build --release --locked").run()?;
+            cmd!("cargo build --bin {CORE} --release --locked").run()?;
         }
 
         println!("Zipping the binary...");
-        cmd!("tar czvf {asset}.tar.gz -C ./target/release/ {artifact}").run()?;
+        // ! `.` is now the root path of the crate (i.e. xtask).
+        cmd!("tar czvf {asset}.tar.gz -C ../target/release/ {artifact}").run()?;
 
         println!("Generating sha256...");
         cmd!("openssl dgst -r -sha256 {asset}.tar.gz > {asset}.tar.gz.sha256").run()?;

@@ -40,6 +40,7 @@
         "svenstaro",
         "sysupgrade",
         "untrusted",
-        "xshell"
+        "xshell",
+        "xtask"
     ]
 }
