@@ -19,18 +19,34 @@ impl Runner for Publish {
     fn run(self) -> Result<()> {
         let Self { artifact, asset } = self;
 
+        cmd!("ls -lah").run()?;
+
         println!("Building the binary in `release` mode...");
         if cfg!(target_os = "linux") {
             // In Linux, we need to add the `musl` target first.
             cmd!("rustup target add {LINUX_MUSL}").run()?;
-            cmd!("cargo build --bin {CORE} --release --locked --target={LINUX_MUSL}").run()?;
+            cmd!("cargo build --verbose --bin {CORE} --release --locked --target={LINUX_MUSL}")
+                .run()?;
         } else {
-            cmd!("cargo build --bin {CORE} --release --locked").run()?;
+            cmd!("cargo build --verbose --bin {CORE} --release --locked").run()?;
         }
 
         println!("Zipping the binary...");
-        // ! `.` is now the root path of the crate (i.e. xtask).
-        cmd!("tar czvf {asset}.tar.gz -C ../target/release/ {artifact}").run()?;
+        let bin_dir = if cfg!(target_os = "linux") {
+            format!("./target/{}/release/", LINUX_MUSL)
+        } else {
+            "./target/release/".to_owned()
+        };
+
+        let ext = if cfg!(target_os = "windows") {
+            ".exe"
+        } else {
+            ""
+        };
+
+        // cmd!("ls -lah").run()?;
+        // cmd!("ls -lah ./target/release").run()?;
+        cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}{ext}").run()?;
 
         println!("Generating sha256...");
         cmd!("openssl dgst -r -sha256 {asset}.tar.gz > {asset}.tar.gz.sha256").run()?;
