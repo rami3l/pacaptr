@@ -22,7 +22,7 @@ impl Runner for Publish {
         println!("Building the binary in `release` mode...");
         if cfg!(target_os = "linux") {
             // In Linux, we need to add the `musl` target first.
-            cmd!("rustup target add {LINUX_MUSL}}").run()?;
+            cmd!("rustup target add {LINUX_MUSL}").run()?;
             cmd!("cargo build --release --locked --target={LINUX_MUSL}").run()?;
         } else {
             cmd!("cargo build --release --locked").run()?;
