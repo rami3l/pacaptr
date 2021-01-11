@@ -21,7 +21,7 @@ Run `pacman -Syu` on the OS of your choice!
   - [Contents](#contents)
   - [Supported Package Managers](#supported-package-managers)
   - [Motivation & Current Status](#motivation--current-status)
-  - [Building & Installation](#building--installation)
+  - [Installation](#installation)
   - [Configuration](#configuration)
   - [General Tips](#general-tips)
   - [Platform-Specific Tips](#platform-specific-tips)
@@ -56,7 +56,7 @@ Initially, I found [icy/pacapt] which does just that, and I made this project to
 
 After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
 
-## Building & Installation
+## Installation
 
 PPAs might be added when appropriate.
 
@@ -77,16 +77,13 @@ PPAs might be added when appropriate.
   choco install pacaptr
   ```
 
-- Build from source:
+- Install from source:
 
   ```bash
-  # To install (short version):
-  cargo install --git https://github.com/rami3l/pacaptr.git
-
-  # To install (long version):
+  # To install:
   git clone https://github.com/rami3l/pacaptr.git
   cd pacaptr
-  cargo install --path .
+  cargo xtask install
 
   # To uninstall:
   cargo uninstall pacaptr
@@ -102,6 +99,7 @@ PPAs might be added when appropriate.
 
   ```bash
   cargo install cargo-deb
+  cd core
   cargo deb
   ```
 
