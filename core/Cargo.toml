@@ -20,7 +20,7 @@ xshell = "0.1.8"
 
 [dependencies]
 async-trait = "0.1.42"
-bytes = "1.0.0"
+bytes = "1.0.1"
 clap = "3.0.0-beta.2"
 colored = "2.0.0"
 confy = "0.4.0"
