@@ -29,7 +29,7 @@ futures = "0.3.12"
 is-root = "0.1.2"
 lazy_static = "1.4.0"
 regex = {version = "1.4.3", default-features = false, features = ["std", "perf"]}
-serde = {version = "1.0.119", features = ["derive"]}
+serde = {version = "1.0.120", features = ["derive"]}
 thiserror = "1.0.23"
 tokio = {version = "1.0.2", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"]}
 tokio-stream = "0.1.2"
