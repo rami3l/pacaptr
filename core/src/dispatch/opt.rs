@@ -143,29 +143,30 @@ impl Opts {
 
     /// Automatically detect the name of the package manager in question.
     pub fn detect_pm_str<'s>() -> &'s str {
-        #[cfg(target_os = "windows")]
-        match () {
-            _ if is_exe("choco", "") => "choco",
-            _ => "unknown",
-        }
+        let pairs: &[(&str, &str)] = match () {
+            _ if cfg!(target_os = "windows") => &[("choco", "")],
 
-        #[cfg(target_os = "macos")]
-        match () {
-            _ if is_exe("brew", "/usr/local/bin/brew") => "brew",
-            _ if is_exe("port", "/opt/local/bin/port") => "port",
-            _ => "unknown",
-        }
+            _ if cfg!(target_os = "macos") => &[
+                ("brew", "/usr/local/bin/brew"),
+                ("port", "/opt/local/bin/port"),
+            ],
 
-        #[cfg(target_os = "linux")]
-        match () {
-            _ if is_exe("apk", "/sbin/apk") => "apk",
-            _ if is_exe("apt", "/usr/bin/apt") => "apt",
-            _ if is_exe("apt-get", "/usr/bin/apt-get") => "apt-get",
-            _ if is_exe("dnf", "/usr/bin/dnf") => "dnf",
-            _ if is_exe("zypper", "/usr/bin/zypper") => "zypper",
+            _ if cfg!(target_os = "linux") => &[
+                ("apk", "/sbin/apk"),
+                ("apt", "/usr/bin/apt"),
+                ("apt-get", "/usr/bin/apt-get"),
+                ("dnf", "/usr/bin/dnf"),
+                ("zypper", "/usr/bin/zypper"),
+            ],
 
-            _ => "unknown",
-        }
+            _ => &[],
+        };
+
+        pairs
+            .iter()
+            .find(|(name, path)| is_exe(name, path))
+            .map(|p| p.0)
+            .unwrap_or("unknown")
     }
 
     /// Generate the PackageManager instance according it's name.
