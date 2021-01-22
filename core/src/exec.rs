@@ -206,7 +206,7 @@ impl Cmd {
 
         Ok(Output {
             contents,
-            code: code.await.unwrap()?,
+            code: code.await.map_err(CmdJoinError)??,
         })
     }
 
@@ -240,7 +240,7 @@ impl Cmd {
 
         Ok(Output {
             contents,
-            code: code.await.unwrap()?,
+            code: code.await.map_err(CmdJoinError)??,
         })
     }
 

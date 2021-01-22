@@ -166,6 +166,7 @@ impl Opts {
             .iter()
             .find(|(name, path)| is_exe(name, path))
             .map(|p| p.0)
+            // .find_map(|(name, path)| is_exe(name, path).then(|| *name))
             .unwrap_or("unknown")
     }
 

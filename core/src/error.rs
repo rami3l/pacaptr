@@ -1,5 +1,6 @@
 use thiserror::Error;
 use tokio::io;
+use tokio::task::JoinError;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -13,6 +14,10 @@ pub enum Error {
     /// Error when handling config.
     #[error("Failed to handle config: {msg}")]
     ConfigError { msg: String },
+
+    /// A subprocess fails to finish.
+    #[error("Failed to get exit code of subprocess: {0}")]
+    CmdJoinError(JoinError),
 
     /// A subprocess fails to spawn.
     #[error("Failed to spawn subprocess: {0}")]
