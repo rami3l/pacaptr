@@ -108,7 +108,7 @@ impl PackageManager for Homebrew {
         }
 
         // ! `brew list` lists all formulae and casks only when using tty.
-        run!(&["brew", "list"]).await?;
+        run!(&["brew", "list", "--formula"]).await?;
         if cfg!(target_os = "macos") {
             run!(&["brew", "list", "--cask"]).await?;
         }
