@@ -20,47 +20,38 @@ Run `pacman -Syu` on the OS of your choice!
 - [pacaptr](#pacaptr)
   - [Contents](#contents)
   - [Supported Package Managers](#supported-package-managers)
-  - [Motivation & Current Status](#motivation--current-status)
   - [Installation](#installation)
   - [Configuration](#configuration)
   - [General Tips](#general-tips)
   - [Platform-Specific Tips](#platform-specific-tips)
+  - [Postscript](#postscript)
 
 ## Supported Package Managers
 
-- `Windows/chocolatey`
-- `macOS/homebrew`
-- `macOS/macports`
-- `Debian/apt`
-- `Alpine/apk`
-- `RedHat/dnf`
-- `SUSE/zypper`
-- `External/conda`¹
-- `External/linuxbrew`¹
-- `External/pip`¹
-- `External/tlmgr`¹
+`pacaptr` supports the following package managers:
 
-¹: Require `pacaptr --using <name>` to invoke (see [general tips](#general-tips)).
+- Windows: `chocolatey`
+- macOS: `homebrew`, `macports`
+- Linux: `apt`, `apk`, `dnf`, `zypper`
+- External: `conda`, `linuxbrew`, `pip`, `tlmgr`
+  - Require `pacaptr --using <name>` to invoke (see [general tips](#general-tips)).
+
+Support for more package managers will be added Soon™.
 
 Notes:
 
 - Please refer to the [compatibility table] for more details.
-- Support for more package managers will be added Soon™.
 - Don't miss the [general](#general-tips) & [platform-specific](#platform-specific-tips) tips below!
-
-## Motivation & Current Status
-
-Coming from `Arch Linux` to `macOS`, I really like the idea of having an automated version of [Pacman Rosetta] for making common package managing tasks less of a travail thanks to the concise `pacman` syntax.
-
-Initially, I found [icy/pacapt] which does just that, and I made this project to improve `pacapt`'s `homebrew` (especially `cask`) support. (See [pacapt/#117].)
-
-After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
 
 ## Installation
 
 PPAs might be added when appropriate.
 
-- `macOS/homebrew` & `External/linuxbrew` install:
+<details>
+  <summary>
+    <code> macOS/homebrew </code>
+    & <code> External/linuxbrew </code> install
+  </summary>
 
   ```bash
   # Short version:
@@ -71,13 +62,17 @@ PPAs might be added when appropriate.
   brew install pacaptr
   ```
 
-- `Windows/chocolatey` install:
+</details>
+
+<details> <summary> <code> Windows/chocolatey </code> install </summary>
   
   ```powershell
   choco install pacaptr
   ```
 
-- Install from source:
+</details>
+
+<details> <summary> Install from source </summary>
 
   ```bash
   # To install:
@@ -95,7 +90,15 @@ PPAs might be added when appropriate.
   $HOME/.cargo/bin/pacaptr
   ```
 
-- Packaging for Debian:
+  For `Alpine Linux` users, `cargo build` won't just work, please try this instead:
+  
+  ```bash
+  RUSTFLAGS="-C target-feature=-crt-static" cargo build
+  ```
+
+</details>
+
+<details> <summary> Packaging for Debian </summary>
 
   ```bash
   cargo install cargo-deb
@@ -103,19 +106,13 @@ PPAs might be added when appropriate.
   cargo deb
   ```
 
-Notes:
-
-- For `Alpine/apk` users: `cargo build` won't just work, please try this instead:
-  
-  ```bash
-  RUSTFLAGS="-C target-feature=-crt-static" cargo build
-  ```
+</details>
 
 ## Configuration
 
 The configuration file is `$HOME/.config/pacaptr/pacaptr.toml`.
 
-An example:
+<details> <summary> Example </summary>
 
 ```toml
 # This enforces the use of `install` instead of
@@ -129,6 +126,8 @@ default_pm = "choco"
 # no_confirm = false
 # no_cache = false
 ```
+
+</details>
 
 ## General Tips
 
@@ -201,35 +200,58 @@ default_pm = "choco"
 
 ## Platform-Specific Tips
 
-- `macOS/homebrew` & `External/linuxbrew` support: Please note that `cask` is for macOS only.
+<details> <summary>
+  <code> macOS/homebrew </code>
+  & <code> External/linuxbrew </code>
+</summary>
 
-  - ~~Automatic `brew cask` invocation~~: This is not supported anymore since `v0.8.0`, as `homebrew` is natively supporting it!
+- Please note that `cask` is for `macOS` only.
 
-  - Be careful when a formula and a cask share the same name, eg. `docker`.
+- ~~Automatic `brew cask` invocation~~: This is not supported anymore since `v0.8.0`, as `homebrew` is natively supporting it!
 
-    ```bash
-    pacaptr -Si docker | rg cask
-    # => Warning: Treating docker as a formula. For the cask, use homebrew/cask/docker
+- Be careful when a formula and a cask share the same name, eg. `docker`.
 
-    # Install the formula `docker`
-    pacaptr -S docker
+  ```bash
+  pacaptr -Si docker | rg cask
+  # => Warning: Treating docker as a formula. For the cask, use homebrew/cask/docker
 
-    # Install the cask `docker`
-    pacaptr -S homebrew/cask/docker
+  # Install the formula `docker`
+  pacaptr -S docker
 
-    # Make homebrew treat all keywords as casks
-    pacaptr -S docker -- --cask
-    ```
+  # Install the cask `docker`
+  pacaptr -S homebrew/cask/docker
 
-  - To use `-Rss`, you need to install [rmtree] first:
+  # Make homebrew treat all keywords as casks
+  pacaptr -S docker -- --cask
+  ```
 
-    ```bash
-    brew tap beeftornado/rmtree
-    ```
+- To use `-Rss`, you need to install [rmtree] first:
 
-- `Windows/chocolatey` support: Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
+  ```bash
+  brew tap beeftornado/rmtree
+  ```
 
-- `External/pip` support: Use `pacaptr --using pip3` if you want to run the `pip3` command.
+</details>
+
+<details> <summary> <code> Windows/chocolatey </code> </summary>
+
+- Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
+
+</details>
+
+<details> <summary> <code> External/pip </code> </summary>
+
+- Use `pacaptr --using pip3` if you want to run the `pip3` command.
+
+</details>
+
+## Postscript
+
+Coming from `Arch Linux` to `macOS`, I really like the idea of having an automated version of [Pacman Rosetta] for making common package managing tasks less of a travail thanks to the concise `pacman` syntax.
+
+Initially, I found [icy/pacapt] which does just that, and I made this project to improve `pacapt`'s `homebrew` (especially `cask`) support. (See [pacapt/#117].)
+
+After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
 
 [Socialify Badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&forks=1&issues=1&logo=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2Fd%2Fd5%2FRust_programming_language_black_logo.svg%2F1200px-Rust_programming_language_black_logo.svg.png&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Light
 [Pacman Rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
