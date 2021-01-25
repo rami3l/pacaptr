@@ -48,10 +48,7 @@ Notes:
 PPAs might be added when appropriate.
 
 <details>
-  <summary>
-    <code> macOS/homebrew </code>
-    & <code> External/linuxbrew </code> install
-  </summary>
+<summary><code>macOS/homebrew</code> & <code>External/linuxbrew</code> install</summary>
 
   ```bash
   # Short version:
@@ -64,7 +61,7 @@ PPAs might be added when appropriate.
 
 </details>
 
-<details> <summary> <code> Windows/chocolatey </code> install </summary>
+<details><summary><code>Windows/chocolatey</code> install</summary>
   
   ```powershell
   choco install pacaptr
@@ -72,7 +69,7 @@ PPAs might be added when appropriate.
 
 </details>
 
-<details> <summary> Install from source </summary>
+<details><summary>Install from source</summary>
 
   ```bash
   # To install:
@@ -98,7 +95,7 @@ PPAs might be added when appropriate.
 
 </details>
 
-<details> <summary> Packaging for Debian </summary>
+<details><summary>Packaging for <code>Debian</code></summary>
 
   ```bash
   cargo install cargo-deb
@@ -112,7 +109,7 @@ PPAs might be added when appropriate.
 
 The configuration file is `$HOME/.config/pacaptr/pacaptr.toml`.
 
-<details> <summary> Example </summary>
+<details><summary>Example</summary>
 
 ```toml
 # This enforces the use of `install` instead of
@@ -200,10 +197,8 @@ default_pm = "choco"
 
 ## Platform-Specific Tips
 
-<details> <summary>
-  <code> macOS/homebrew </code>
-  & <code> External/linuxbrew </code>
-</summary>
+<details>
+<summary><code>macOS/homebrew</code> & <code>External/linuxbrew</code></summary>
 
 - Please note that `cask` is for `macOS` only.
 
@@ -233,13 +228,13 @@ default_pm = "choco"
 
 </details>
 
-<details> <summary> <code> Windows/chocolatey </code> </summary>
+<details><summary><code>Windows/chocolatey</code></summary>
 
 - Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
 </details>
 
-<details> <summary> <code> External/pip </code> </summary>
+<details><summary><code>External/pip</code></summary>
 
 - Use `pacaptr --using pip3` if you want to run the `pip3` command.
 
