@@ -1,6 +1,8 @@
+<!-- markdownlint-disable MD033 -->
+
 # pacaptr
 
-![pacaptr][Socialify Badge]
+![pacaptr][socialify badge]
 
 <!--
 ![Rust Badge](https://img.shields.io/badge/WARNING-Rusty-red?logo=rust&style=flat-square)
@@ -50,14 +52,14 @@ PPAs might be added when appropriate.
 <details>
 <summary><code>macOS/homebrew</code> & <code>External/linuxbrew</code> install</summary>
 
-  ```bash
-  # Short version:
-  brew install rami3l/tap/pacaptr
+```bash
+# Short version:
+brew install rami3l/tap/pacaptr
 
-  # Which is equivalent to this:
-  brew tap rami3l/tap
-  brew install pacaptr
-  ```
+# Which is equivalent to this:
+brew tap rami3l/tap
+brew install pacaptr
+```
 
 </details>
 
@@ -71,37 +73,37 @@ PPAs might be added when appropriate.
 
 <details><summary>Install from source</summary>
 
-  ```bash
-  # To install:
-  git clone https://github.com/rami3l/pacaptr.git
-  cd pacaptr
-  cargo xtask install
+```bash
+# To install:
+git clone https://github.com/rami3l/pacaptr.git
+cd pacaptr
+cargo xtask install
 
-  # To uninstall:
-  cargo uninstall pacaptr
-  ```
+# To uninstall:
+cargo uninstall pacaptr
+```
 
-  With default settings, the binary should be installed as:
+With default settings, the binary should be installed as:
 
-  ```bash
-  $HOME/.cargo/bin/pacaptr
-  ```
+```bash
+$HOME/.cargo/bin/pacaptr
+```
 
-  For `Alpine Linux` users, `cargo build` won't just work, please try this instead:
-  
-  ```bash
-  RUSTFLAGS="-C target-feature=-crt-static" cargo build
-  ```
+For `Alpine Linux` users, `cargo build` won't just work, please try this instead:
+
+```bash
+RUSTFLAGS="-C target-feature=-crt-static" cargo build
+```
 
 </details>
 
 <details><summary>Packaging for <code>Debian</code></summary>
 
-  ```bash
-  cargo install cargo-deb
-  cd core
-  cargo deb
-  ```
+```bash
+cargo install cargo-deb
+cd core
+cargo deb
+```
 
 </details>
 
@@ -140,10 +142,12 @@ default_pm = "choco"
   This can be useful when you are running Linux and you want to use `linuxbrew`, for example. In that case, you can `--using brew`.
 
 - Automatic `sudo` invocation (since `v0.9.0`):
+
   - If you are not `root` and you wish to do something requiring `sudo`, `pacaptr` will do it for you by invoking `sudo -S`.
   - This feature is currently available for `apk`, `apt`, `dnf`, `macports` and `zypper`.
 
 - Extra flags support:
+
   - The flags after a `--` will be passed directly to the underlying package manager:
 
     ```bash
@@ -188,6 +192,7 @@ default_pm = "choco"
 
 - `--yes`, `--noconfirm`, `--no-confirm`:
   Use this flag to trigger the corresponding flag of your package manager (if possible) in order to answer "yes" to every incoming question.
+
   - This option is useful when you don't want to be asked during installation, for example.
   - ... But it can be potentially dangerous if you don't know what you're doing!
 
@@ -248,8 +253,8 @@ Initially, I found [icy/pacapt] which does just that, and I made this project to
 
 After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
 
-[Socialify Badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&forks=1&issues=1&logo=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2Fd%2Fd5%2FRust_programming_language_black_logo.svg%2F1200px-Rust_programming_language_black_logo.svg.png&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Light
-[Pacman Rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
+[socialify badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&forks=1&issues=1&logo=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2Fd%2Fd5%2FRust_programming_language_black_logo.svg%2F1200px-Rust_programming_language_black_logo.svg.png&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Light
+[pacman rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt
 [pacapt/#117]: https://github.com/icy/pacapt/issues/117
 [pacapt/#126]: https://github.com/icy/pacapt/issues/126
