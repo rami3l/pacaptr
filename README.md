@@ -65,9 +65,9 @@ brew install pacaptr
 
 <details><summary><code>Windows/chocolatey</code> install</summary>
   
-  ```powershell
-  choco install pacaptr
-  ```
+```powershell
+choco install pacaptr
+```
 
 </details>
 

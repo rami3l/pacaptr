@@ -28,12 +28,12 @@ dirs = "3.0.1"
 futures = "0.3.12"
 is-root = "0.1.2"
 lazy_static = "1.4.0"
-regex = {version = "1.4.3", default-features = false, features = ["std", "perf"]}
-serde = {version = "1.0.123", features = ["derive"]}
+regex = { version = "1.4.3", default-features = false, features = ["std", "perf"] }
+serde = { version = "1.0.123", features = ["derive"] }
 thiserror = "1.0.23"
-tokio = {version = "1.1.0", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"]}
+tokio = { version = "1.1.0", features = ["io-std", "io-util", "macros", "process", "rt-multi-thread", "sync"] }
 tokio-stream = "0.1.2"
-tokio-util = {version = "0.6.2", features = ["codec"]}
+tokio-util = { version = "0.6.2", features = ["codec"] }
 which = "4.0.2"
 
 [package.metadata.deb]
