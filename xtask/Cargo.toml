@@ -1,13 +1,13 @@
 [package]
 authors = ["rami3l <rami3l@outlook.com>"]
 edition = "2018"
-name = "xtask"
+name    = "xtask"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0.38"
-clap = "3.0.0-beta.2"
-regex = { version = "1.4.3", default-features = false, features = ["std", "perf"] }
+clap   = "3.0.0-beta.2"
+regex  = { version = "1.4.3", default-features = false, features = ["std", "perf"] }
 xshell = "0.1.8"
