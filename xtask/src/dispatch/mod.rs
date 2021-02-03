@@ -1,10 +1,6 @@
-mod install;
 mod publish;
-mod run;
 
-use self::install::Install;
 use self::publish::Publish;
-use self::run::Run;
 use anyhow::Result;
 use clap::Clap;
 
@@ -27,8 +23,6 @@ pub struct Opts {
 
 #[derive(Debug, Clap)]
 pub enum SubCmd {
-    Run(Run),
-    Install(Install),
     Publish(Publish),
 }
 

@@ -31,8 +31,6 @@ fn main() -> Result<()> {
 
     use SubCmd::*;
     match opts.subcmd {
-        Run(x) => x.run()?,
-        Install(x) => x.run()?,
         Publish(x) => x.run()?,
     }
 
