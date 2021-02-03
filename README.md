@@ -74,10 +74,13 @@ choco install pacaptr
 <details><summary>Install from source</summary>
 
 ```bash
-# To install:
+# To install (short version):
+cargo install --git https://github.com/rami3l/pacaptr.git
+
+# To install (long version):
 git clone https://github.com/rami3l/pacaptr.git
 cd pacaptr
-cargo xtask install
+cargo install --path .
 
 # To uninstall:
 cargo uninstall pacaptr
@@ -101,7 +104,6 @@ RUSTFLAGS="-C target-feature=-crt-static" cargo build
 
 ```bash
 cargo install cargo-deb
-cd core
 cargo deb
 ```
 
