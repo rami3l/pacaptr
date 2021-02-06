@@ -71,7 +71,7 @@ impl PackageManager for Apt {
         self.just_run(
             Cmd::new_sudo(&["apt", "remove"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -81,7 +81,7 @@ impl PackageManager for Apt {
         self.just_run(
             Cmd::new_sudo(&["apt", "purge"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -93,7 +93,7 @@ impl PackageManager for Apt {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -104,7 +104,7 @@ impl PackageManager for Apt {
         self.just_run(
             Cmd::new_sudo(&["apt", "autoremove"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -119,7 +119,7 @@ impl PackageManager for Apt {
         self.just_run(
             Cmd::new_sudo(cmd).kws(kws).flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }
@@ -129,7 +129,7 @@ impl PackageManager for Apt {
         self.just_run(
             Cmd::new_sudo(&["apt", "clean"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -139,7 +139,7 @@ impl PackageManager for Apt {
         self.just_run(
             Cmd::new_sudo(&["apt", "autoclean"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -168,13 +168,13 @@ impl PackageManager for Apt {
             self.just_run(
                 Cmd::new_sudo(&["apt", "upgrade"]).flags(flags),
                 Default::default(),
-                PROMPT_STRAT.clone(),
+                &PROMPT_STRAT,
             )
             .await?;
             self.just_run(
                 Cmd::new_sudo(&["apt", "dist-upgrade"]).flags(flags),
                 Default::default(),
-                INSTALL_STRAT.clone(),
+                &INSTALL_STRAT,
             )
             .await
         } else {

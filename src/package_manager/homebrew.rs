@@ -97,7 +97,7 @@ impl PackageManager for Homebrew {
                         print::print_cmd(&cmd, PROMPT_RUN);
                     }
                     let out_bytes = self
-                        .run(cmd, PmMode::Mute, Default::default())
+                        .run(cmd, PmMode::Mute, &Default::default())
                         .await?
                         .contents;
 
@@ -127,7 +127,7 @@ impl PackageManager for Homebrew {
         self.just_run(
             Cmd::new(&["brew", "uninstall"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -138,7 +138,7 @@ impl PackageManager for Homebrew {
             .run(
                 Cmd::new(&["brew", "rmtree"]).kws(kws).flags(flags),
                 Default::default(),
-                Strategies {
+                &Strategies {
                     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
                     ..Default::default()
                 },
@@ -172,7 +172,7 @@ impl PackageManager for Homebrew {
         self.just_run(
             Cmd::new(cmd).kws(kws).flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }
@@ -182,7 +182,7 @@ impl PackageManager for Homebrew {
         self.just_run(
             Cmd::new(&["brew", "cleanup"]).kws(kws).flags(flags),
             Default::default(),
-            Strategies {
+            &Strategies {
                 dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
                 prompt: PromptStrategy::CustomPrompt,
                 ..Default::default()
@@ -196,7 +196,7 @@ impl PackageManager for Homebrew {
         self.just_run(
             Cmd::new(&["brew", "cleanup", "-s"]).kws(kws).flags(flags),
             Default::default(),
-            Strategies {
+            &Strategies {
                 dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
                 prompt: PromptStrategy::CustomPrompt,
                 ..Default::default()
@@ -228,7 +228,7 @@ impl PackageManager for Homebrew {
         self.just_run(
             Cmd::new(&["brew", "upgrade"]).kws(kws).flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }
@@ -244,7 +244,7 @@ impl PackageManager for Homebrew {
         self.just_run(
             Cmd::new(&["brew", "fetch"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }

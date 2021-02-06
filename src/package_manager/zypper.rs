@@ -11,7 +11,7 @@ pub struct Zypper {
 
 impl Zypper {
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
-        self.just_run(cmd, Default::default(), CHECK_DRY_STRAT.clone())
+        self.just_run(cmd, Default::default(), &CHECK_DRY_STRAT)
             .await
     }
 }
@@ -84,7 +84,7 @@ impl PackageManager for Zypper {
         let cmd = &["zypper", "search", "-si"];
         let cmd = Cmd::new(cmd).kws(kws).flags(flags);
         let out_bytes = self
-            .run(cmd, PmMode::Mute, Default::default())
+            .run(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
         let out = String::from_utf8(out_bytes)?;
@@ -128,7 +128,7 @@ impl PackageManager for Zypper {
         self.just_run(
             Cmd::new_sudo(&["zypper", "remove"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -140,7 +140,7 @@ impl PackageManager for Zypper {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -150,7 +150,7 @@ impl PackageManager for Zypper {
         self.just_run(
             Cmd::new_sudo(&["zypper", "install"]).kws(kws).flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }
@@ -160,7 +160,7 @@ impl PackageManager for Zypper {
         self.just_run(
             Cmd::new_sudo(&["zypper", "clean"]).flags(flags),
             Default::default(),
-            Strategies {
+            &Strategies {
                 prompt: PromptStrategy::CustomPrompt,
                 ..Default::default()
             },
@@ -214,7 +214,7 @@ impl PackageManager for Zypper {
         self.just_run(
             Cmd::new_sudo(&["zypper", "dist-upgrade"]).flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }
@@ -226,7 +226,7 @@ impl PackageManager for Zypper {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }

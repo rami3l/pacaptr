@@ -80,7 +80,7 @@ impl PackageManager for Apk {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .run(cmd, PmMode::Mute, Default::default())
+            .run(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
         search(&String::from_utf8(out_bytes)?);
@@ -99,7 +99,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new_sudo(&["apk", "del"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -111,7 +111,7 @@ impl PackageManager for Apk {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -123,7 +123,7 @@ impl PackageManager for Apk {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -139,7 +139,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new_sudo(&["apk", "add"]).kws(kws).flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }
@@ -149,7 +149,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new_sudo(&["apk", "cache", "-v", "clean"]).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -159,7 +159,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new_sudo(&["rm", "-vrf", "/var/cache/apk/*"]).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -195,8 +195,7 @@ impl PackageManager for Apk {
         } else {
             Cmd::new_sudo(&["apk", "add", "-u"]).kws(kws).flags(flags)
         };
-        self.just_run(cmd, Default::default(), INSTALL_STRAT.clone())
-            .await
+        self.just_run(cmd, Default::default(), &INSTALL_STRAT).await
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
@@ -210,8 +209,7 @@ impl PackageManager for Apk {
                 .kws(kws)
                 .flags(flags)
         };
-        self.just_run(cmd, Default::default(), INSTALL_STRAT.clone())
-            .await
+        self.just_run(cmd, Default::default(), &INSTALL_STRAT).await
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
@@ -219,7 +217,7 @@ impl PackageManager for Apk {
         self.just_run(
             Cmd::new(&["apk", "fetch"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -241,7 +239,7 @@ impl PackageManager for Apk {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }

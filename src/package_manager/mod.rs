@@ -6,6 +6,7 @@ pub mod dnf;
 pub mod homebrew;
 pub mod macports;
 pub mod pip;
+pub mod scoop;
 pub mod tlmgr;
 pub mod unknown;
 pub mod zypper;
@@ -90,7 +91,7 @@ pub trait PackageManager: Sync {
     }
 
     /// A helper method to simplify direct command invocation.
-    async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<Output> {
+    async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: &Strategies) -> Result<Output> {
         let cfg = self.cfg();
 
         // `--dry-run` should apply to both the main command and the cleanup.
@@ -154,7 +155,7 @@ pub trait PackageManager: Sync {
 
     /// A helper method to simplify direct command invocation.
     /// It is just like `run`, but intended to be used only for its side effects.
-    async fn just_run(&self, cmd: Cmd, mode: PmMode, strat: Strategies) -> Result<()>
+    async fn just_run(&self, cmd: Cmd, mode: PmMode, strat: &Strategies) -> Result<()>
     where
         Self: Sized,
     {
@@ -167,7 +168,7 @@ pub trait PackageManager: Sync {
     where
         Self: Sized,
     {
-        self.just_run(cmd, Default::default(), Default::default())
+        self.just_run(cmd, Default::default(), &Default::default())
             .await
     }
 

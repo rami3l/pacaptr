@@ -70,6 +70,41 @@ mod chocolatey {
     }
 }
 
+#[cfg(target_os = "windows")]
+mod scoop {
+    use super::Test;
+
+    #[test]
+    fn si_ok() {
+        Test::new()
+            .pacaptr(&["--using", "scoop", "-Si", "wget"], &[])
+            .output(&["Description: A command-line utility for retrieving files using HTTP, HTTPS, FTP, and FTPS protocols."])
+            .run(false)
+    }
+
+    #[test]
+    #[should_panic(expected = "Failed with pattern `GNU Wget is not a free software package`")]
+    fn si_fail() {
+        Test::new()
+            .pacaptr(&["--using", "scoop", "-Si", "wget"], &[])
+            .output(&["GNU Wget is not a free software package"])
+            .run(false)
+    }
+
+    #[test]
+    #[ignore]
+    fn r() {
+        Test::new()
+            .pacaptr(&["--using", "scoop", "-S", "wget", "--yes"], &[])
+            .output(&["wget", "was installed successfully!"])
+            .pacaptr(&["--using", "scoop", "-Q"])
+            .output(&["wget", "[main]"])
+            .pacaptr(&["--using", "scoop", "-R", "wget", "--yes"], &[])
+            .output(&["wget", "was uninstalled."])
+            .run(false)
+    }
+}
+
 #[cfg(target_os = "linux")]
 mod linuxbrew {
     use super::Test;

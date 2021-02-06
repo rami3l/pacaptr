@@ -55,7 +55,7 @@ impl PackageManager for Pip {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .run(cmd, PmMode::Mute, Default::default())
+            .run(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
         search(&String::from_utf8(out_bytes)?);
@@ -79,7 +79,7 @@ impl PackageManager for Pip {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -91,7 +91,7 @@ impl PackageManager for Pip {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }

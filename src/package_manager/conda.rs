@@ -55,7 +55,7 @@ impl PackageManager for Conda {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .run(cmd, PmMode::Mute, Default::default())
+            .run(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
         search(&String::from_utf8(out_bytes)?);
@@ -67,7 +67,7 @@ impl PackageManager for Conda {
         self.just_run(
             Cmd::new(&["conda", "remove"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -77,7 +77,7 @@ impl PackageManager for Conda {
         self.just_run(
             Cmd::new(&["conda", "install"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -87,7 +87,7 @@ impl PackageManager for Conda {
         self.just_run(
             Cmd::new(&["conda", "clean", "--all"]).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -121,7 +121,7 @@ impl PackageManager for Conda {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
