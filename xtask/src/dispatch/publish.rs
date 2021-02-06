@@ -1,8 +1,6 @@
-use super::{Runner, CORE};
+use super::{get_ver_from_env, Runner, CORE};
 use anyhow::Result;
 use clap::Clap;
-use regex::Regex;
-use std::env;
 use xshell::{cmd, write_file};
 
 const LINUX_MUSL: &str = "x86_64-unknown-linux-musl";
@@ -50,33 +48,9 @@ impl Runner for Publish {
         write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
 
         println!(":: Uploading binary and sha256...");
-        let gh_ref = env::var("GITHUB_REF")?;
-        let tag = get_ver(gh_ref);
+        let tag = get_ver_from_env()?;
         cmd!("gh release upload {tag} {asset}.tar.gz {asset}.tar.gz.sha256").run()?;
-
-        /*
-        #[cfg(target_os = "windows")]
-        {
-            println!("Publishing to `choco`...");
-            todo!()
-        }
-
-        #[cfg(target_os = "macos")]
-        {
-            // ! Generation of tap script requires binaries for both macOS and Linux.
-            println!("Publishing to `homebrew tap`...");
-            todo!()
-        }
-        */
 
         Ok(())
     }
-}
-
-/// Strip the `ref/*/` prefix from `GITHUB_REF` to get a version string.
-fn get_ver<S: AsRef<str>>(gh_ref: S) -> String {
-    Regex::new("refs/.*/")
-        .unwrap()
-        .replace(gh_ref.as_ref(), "")
-        .to_string()
 }

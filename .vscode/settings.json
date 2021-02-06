@@ -9,6 +9,7 @@
         "binutils",
         "choco",
         "clippy",
+        "concatcp",
         "conda",
         "confy",
         "consts",

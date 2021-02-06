@@ -1,6 +1,6 @@
 mod dispatch;
 
-use crate::dispatch::{Opts, Runner, SubCmd};
+use crate::dispatch::{Opts, Runner};
 use anyhow::Result;
 use clap::Clap;
 
@@ -15,24 +15,10 @@ const BANNER: &str = r#"
 */
 
 fn main() -> Result<()> {
-    /*
-    let name = "Julia";
-    let output = cmd!("echo hello {name}!").read()?;
-    assert_eq!(output, "hello Julia!");
-
-    let err = read_file("feeling-lucky.txt").unwrap_err();
-    assert_eq!(
-        err.to_string(),
-        "`feeling-lucky.txt`: no such file or directory (os error 2)",
-    );
-    */
-
-    let opts = Opts::parse();
-
-    use SubCmd::*;
-    match opts.subcmd {
+    use dispatch::Opts::*;
+    match Opts::parse() {
         Publish(x) => x.run()?,
+        BumpTap(x) => x.run()?,
     }
-
     Ok(())
 }

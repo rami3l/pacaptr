@@ -43,79 +43,17 @@ jobs:
         run: cargo xtask publish --artifact='${{ matrix.artifact_name }}' --asset='${{ matrix.asset_name }}'
 
   bump-tap-version:
-    name: Generate new ruby script for homebrew tap
+    name: Bump formula version for homebrew
     needs: [publish]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - run: npm i @actions/core @actions/github
-
-      - name: Get "version"
-        id: ver
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
-      - name: Check "version"
+      - name: Generate new formula
         env:
-          RELEASE_VERSION: ${{ steps.ver.outputs.tag }}
-        run: |
-          echo "Detected version:"
-          echo $RELEASE_VERSION
-
-      - name: Get tarball file name
-        id: binaries
-        env:
-          BIN_MAC: pacaptr-macos-amd64.tar.gz
-          BIN_LINUX: pacaptr-linux-amd64.tar.gz
-        run: |
-          echo ::set-output name=mac::$BIN_MAC
-          echo ::set-output name=linux::$BIN_LINUX
-
-      - name: Get url
-        id: url
-        env:
-          URL_MAC: https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.mac }}
-          URL_LINUX: https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/${{ steps.binaries.outputs.linux }}
-        run: |
-          echo ::set-output name=mac::$URL_MAC
-          echo ::set-output name=linux::$URL_LINUX
-
-      - name: Get files and checksums
-        id: checksums
-        run: |
-          curl -LO ${{ steps.url.outputs.mac }}.sha256
-          curl -LO ${{ steps.url.outputs.linux }}.sha256
-          echo ::set-output name=mac::$(cat ${{ steps.binaries.outputs.mac }}.sha256 | awk '{ print $1 }')
-          echo ::set-output name=linux::$(cat ${{ steps.binaries.outputs.linux }}.sha256 | awk '{ print $1 }')
-
-      - name: Replace variables in template
-        uses: rami3l/bumper@master
-        id: replace
-        with:
-          template: "dist/brew/template.rb"
-          out: "pacaptr.rb"
-
-          rules: |
-            {
-              "version": "${{ steps.ver.outputs.tag }}",
-              "url_mac": "${{ steps.url.outputs.mac }}",
-              "sha256_mac": "${{ steps.checksums.outputs.mac }}",
-              "url_linux": "${{ steps.url.outputs.linux }}",
-              "sha256_linux": "${{ steps.checksums.outputs.linux }}"
-            }
-
-      - name: Get the output script
-        run: cat pacaptr.rb
-
-      - name: Upload the script to release
-        uses: svenstaro/upload-release-action@v1-release
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: "pacaptr.rb"
-          asset_name: "pacaptr.rb"
-          tag: ${{ github.ref }}
-          overwrite: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cargo xtask bump-tap
 
   # this scripts packs up a Chocolatey package and pushes it to Choco repository
   publish-choco:
