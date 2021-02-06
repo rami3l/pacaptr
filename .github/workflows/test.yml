@@ -21,6 +21,8 @@ jobs:
 
   scoop-test:
     runs-on: windows-latest
+    container:
+      image: mcr.microsoft.com/windows:2004
 
     steps:
       - uses: actions/checkout@v2
@@ -33,6 +35,7 @@ jobs:
         run: |
           Get-Command scoop
           powershell scoop help
+      - uses: dtolnay/rust-toolchain@stable
       - name: Build
         run: cargo build --verbose
       - name: Run tests
