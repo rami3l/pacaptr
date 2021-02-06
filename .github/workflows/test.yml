@@ -28,6 +28,7 @@ jobs:
         run: |
           Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
           iwr -useb get.scoop.sh | iex
+          scoop help
       - name: Build
         run: cargo build --verbose
       - name: Run tests
