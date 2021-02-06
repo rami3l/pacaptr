@@ -54,7 +54,7 @@ impl<'t> Test<'t> {
         self
     }
 
-    pub fn run(&self, verbose: bool) {
+    pub fn _run(&self, verbose: bool) {
         let try_match = |out: &str, patterns: &[&str]| {
             patterns
                 .iter()
@@ -95,6 +95,14 @@ impl<'t> Test<'t> {
 
             try_match(&got, *patterns);
         }
+    }
+
+    pub fn run(&self) {
+        self._run(false)
+    }
+
+    pub fn run_verbose(&self) {
+        self._run(true)
     }
 }
 
