@@ -97,7 +97,7 @@ mod scoop {
         Test::new()
             .pacaptr(&["--using", "scoop", "-S", "wget", "--yes"], &[])
             .output(&["wget", "was installed successfully!"])
-            .pacaptr(&["--using", "scoop", "-Q"])
+            .pacaptr(&["--using", "scoop", "-Q"], &[])
             .output(&["wget", "[main]"])
             .pacaptr(&["--using", "scoop", "-R", "wget", "--yes"], &[])
             .output(&["wget", "was uninstalled."])
