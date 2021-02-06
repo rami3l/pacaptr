@@ -21,21 +21,14 @@ jobs:
 
   scoop-test:
     runs-on: windows-latest
-    container:
-      image: mcr.microsoft.com/windows:2004
 
     steps:
       - uses: actions/checkout@v2
-      - name: Install scoop
-        run: |
-          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-          iwr -useb get.scoop.sh | iex
-          refreshenv
+      - uses: MinoruSekine/setup-scoop@v1
       - name: Verity scoop installation
         run: |
-          Get-Command scoop
           powershell scoop help
-      - uses: dtolnay/rust-toolchain@stable
+          Get-Command scoop
       - name: Build
         run: cargo build --verbose
       - name: Run tests
