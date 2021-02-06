@@ -52,11 +52,7 @@ impl Runner for Publish {
         println!(":: Uploading binary and sha256...");
         let gh_ref = env::var("GITHUB_REF")?;
         let tag = get_ver(gh_ref);
-        cmd!("gh release create {tag} {asset}.tar.gz {asset}.tar.gz.sha256")
-            .run()
-            .or_else(|_| {
-                cmd!("gh release upload {tag} {asset}.tar.gz {asset}.tar.gz.sha256").run()
-            })?;
+        cmd!("gh release upload {tag} {asset}.tar.gz {asset}.tar.gz.sha256").run()?;
 
         /*
         #[cfg(target_os = "windows")]
