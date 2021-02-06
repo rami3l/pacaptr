@@ -11,7 +11,7 @@ mod homebrew {
         Test::new()
             .pacaptr(&["-Si", "curl"], &[])
             .output(&["curl is keg-only"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -20,7 +20,7 @@ mod homebrew {
         Test::new()
             .pacaptr(&["-Si", "curl"], &[])
             .output(&["curl is not keg-only"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -33,7 +33,7 @@ mod homebrew {
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["brew uninstall wget", "Uninstalling /usr/local/Cellar/wget"])
-            .run(false)
+            .run_verbose()
     }
 }
 
@@ -46,7 +46,7 @@ mod chocolatey {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
             .output(&["GNU Wget is a free software package"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -55,7 +55,7 @@ mod chocolatey {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
             .output(&["GNU Wget is not a free software package"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -66,7 +66,42 @@ mod chocolatey {
             .output(&["The install of wget was successful."])
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["Wget has been successfully uninstalled."])
-            .run(false)
+            .run_verbose()
+    }
+}
+
+#[cfg(target_os = "windows")]
+mod scoop {
+    use super::Test;
+
+    #[test]
+    fn si_ok() {
+        Test::new()
+            .pacaptr(&["--using", "scoop", "-Si", "wget"], &[])
+            .output(&["Description: A command-line utility for retrieving files using HTTP, HTTPS, FTP, and FTPS protocols."])
+            .run_verbose()
+    }
+
+    #[test]
+    #[should_panic(expected = "Failed with pattern `GNU Wget is not a free software package`")]
+    fn si_fail() {
+        Test::new()
+            .pacaptr(&["--using", "scoop", "-Si", "wget"], &[])
+            .output(&["GNU Wget is not a free software package"])
+            .run_verbose()
+    }
+
+    #[test]
+    #[ignore]
+    fn r() {
+        Test::new()
+            .pacaptr(&["--using", "scoop", "-S", "wget", "--yes"], &[])
+            .output(&["wget", "was installed successfully!"])
+            .pacaptr(&["--using", "scoop", "-Q"], &[])
+            .output(&["wget", "[main]"])
+            .pacaptr(&["--using", "scoop", "-R", "wget", "--yes"], &[])
+            .output(&["wget", "was uninstalled."])
+            .run_verbose()
     }
 }
 
@@ -79,7 +114,7 @@ mod linuxbrew {
         Test::new()
             .pacaptr(&["-Si", "curl"], &[])
             .output(&["Get a file from an HTTP, HTTPS or FTP server"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -92,7 +127,7 @@ mod linuxbrew {
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["brew uninstall wget"])
-            .run(false)
+            .run_verbose()
     }
 }
 
@@ -105,7 +140,7 @@ mod apt {
         Test::new()
             .pacaptr(&["-Si", "screen"], &[])
             .output(&["Package: screen"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -114,7 +149,7 @@ mod apt {
         Test::new()
             .pacaptr(&["-Si", "screen"], &[])
             .output(&["Package: wget"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -129,7 +164,7 @@ mod apt {
             .output(&["apt(-get)? remove", "--yes", "screen"])
             .pacaptr(&["-Qi", "screen"], &[])
             .output(&["Status: deinstall"])
-            .run(false)
+            .run_verbose()
     }
 }
 
@@ -142,7 +177,7 @@ mod apk {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
             .output(&["A network utility to retrieve files from the Web"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -151,7 +186,7 @@ mod apk {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
             .output(&["Why not use curl instead?"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -164,7 +199,7 @@ mod apk {
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["Purging wget"])
-            .run(false)
+            .run_verbose()
     }
 }
 
@@ -177,7 +212,7 @@ mod dnf {
         Test::new()
             .pacaptr(&["-Si", "curl"], &[])
             .output(&["A utility for getting files from remote servers"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -186,7 +221,7 @@ mod dnf {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
             .output(&["Why not use curl instead?"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -199,7 +234,7 @@ mod dnf {
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["dnf remove", "-y", "wget", "Removed:", "Complete!"])
-            .run(false)
+            .run_verbose()
     }
 }
 
@@ -212,7 +247,7 @@ mod zypper {
         Test::new()
             .pacaptr(&["-Si", "curl"], &[])
             .output(&["A Tool for Transferring Data from URLs"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -221,7 +256,7 @@ mod zypper {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
             .output(&["Why not use curl instead?"])
-            .run(false)
+            .run_verbose()
     }
 
     #[test]
@@ -234,6 +269,6 @@ mod zypper {
             .output(&["GNU Wget"])
             .pacaptr(&["-R", "wget", "--yes"], &[])
             .output(&["zypper remove", "-y", "wget", "Removing wget"])
-            .run(false)
+            .run_verbose()
     }
 }

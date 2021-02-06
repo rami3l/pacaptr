@@ -107,7 +107,7 @@ impl PackageManager for Dnf {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .run(cmd, PmMode::Mute, Default::default())
+            .run(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
         search(&String::from_utf8(out_bytes)?);
@@ -125,7 +125,7 @@ impl PackageManager for Dnf {
         self.just_run(
             Cmd::new_sudo(&["dnf", "remove"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -135,7 +135,7 @@ impl PackageManager for Dnf {
         self.just_run(
             Cmd::new_sudo(&["dnf", "install"]).kws(kws).flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }
@@ -145,7 +145,7 @@ impl PackageManager for Dnf {
         self.just_run(
             Cmd::new(&["dnf", "clean", "expire-cache"]).flags(flags),
             Default::default(),
-            Strategies {
+            &Strategies {
                 prompt: PromptStrategy::CustomPrompt,
                 ..Default::default()
             },
@@ -158,7 +158,7 @@ impl PackageManager for Dnf {
         self.just_run(
             Cmd::new(&["dnf", "clean", "packages"]).flags(flags),
             Default::default(),
-            Strategies {
+            &Strategies {
                 prompt: PromptStrategy::CustomPrompt,
                 ..Default::default()
             },
@@ -172,7 +172,7 @@ impl PackageManager for Dnf {
         self.just_run(
             Cmd::new(&["dnf", "clean", "all"]).flags(flags),
             Default::default(),
-            Strategies {
+            &Strategies {
                 prompt: PromptStrategy::CustomPrompt,
                 ..Default::default()
             },
@@ -218,7 +218,7 @@ impl PackageManager for Dnf {
         self.just_run(
             Cmd::new_sudo(&["dnf", "upgrade"]).kws(kws).flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }
@@ -235,7 +235,7 @@ impl PackageManager for Dnf {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            INSTALL_STRAT.clone(),
+            &INSTALL_STRAT,
         )
         .await
     }

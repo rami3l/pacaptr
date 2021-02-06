@@ -63,7 +63,7 @@ impl PackageManager for Tlmgr {
         self.just_run(
             Cmd::new(&["tlmgr", "remove"]).kws(kws).flags(flags),
             Default::default(),
-            CHECK_DRY_STRAT.clone(),
+            &CHECK_DRY_STRAT,
         )
         .await
     }
@@ -73,7 +73,7 @@ impl PackageManager for Tlmgr {
         self.just_run(
             Cmd::new(&["tlmgr", "install"]).kws(kws).flags(flags),
             Default::default(),
-            CHECK_DRY_STRAT.clone(),
+            &CHECK_DRY_STRAT,
         )
         .await
     }
@@ -110,7 +110,7 @@ impl PackageManager for Tlmgr {
         self.just_run(
             Cmd::new(cmd).kws(kws).flags(flags),
             Default::default(),
-            CHECK_DRY_STRAT.clone(),
+            &CHECK_DRY_STRAT,
         )
         .await
     }
@@ -127,7 +127,7 @@ impl PackageManager for Tlmgr {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            CHECK_DRY_STRAT.clone(),
+            &CHECK_DRY_STRAT,
         )
         .await
     }

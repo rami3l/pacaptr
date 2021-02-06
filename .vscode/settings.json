@@ -29,6 +29,7 @@
         "printf",
         "proto",
         "rdepends",
+        "refreshenv",
         "repoquery",
         "rmtree",
         "rustfmt",

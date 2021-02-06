@@ -32,7 +32,9 @@ Run `pacman -Syu` on the OS of your choice!
 
 `pacaptr` supports the following package managers:
 
-- Windows: `chocolatey`
+- Windows: `chocolatey`, `scoop`
+  - As for now, if both `scoop` and `choco` are installed, `scoop` will be the default.
+  - You can edit the default package manager in your [config](#configuration) if you would like to change this behavior.
 - macOS: `homebrew`, `macports`
 - Linux: `apt`, `apk`, `dnf`, `zypper`
 - External: `conda`, `linuxbrew`, `pip`, `tlmgr`

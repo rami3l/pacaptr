@@ -32,7 +32,7 @@ lazy_static  = "1.4.0"
 regex        = { version = "1.4.3", default-features = false, features = ["std", "perf"] }
 serde        = { version = "1.0.123", features = ["derive"] }
 thiserror    = "1.0.23"
-tokio        = { version = "1.1.1", features = [
+tokio        = { version = "1.2.0", features = [
   "io-std",
   "io-util",
   "macros",
@@ -40,7 +40,7 @@ tokio        = { version = "1.1.1", features = [
   "rt-multi-thread",
   "sync",
 ] }
-tokio-stream = "0.1.2"
+tokio-stream = "0.1.3"
 tokio-util   = { version = "0.6.3", features = ["codec"] }
 which        = "4.0.2"
 

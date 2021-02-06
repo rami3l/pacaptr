@@ -23,7 +23,7 @@ lazy_static! {
 
 impl Chocolatey {
     async fn check_dry_run(&self, cmd: Cmd) -> Result<()> {
-        self.just_run(cmd, Default::default(), CHECK_DRY_STRAT.clone())
+        self.just_run(cmd, Default::default(), &CHECK_DRY_STRAT)
             .await
     }
 }
@@ -66,7 +66,7 @@ impl PackageManager for Chocolatey {
         self.just_run(
             Cmd::new(&["choco", "uninstall"]).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -78,7 +78,7 @@ impl PackageManager for Chocolatey {
                 .kws(kws)
                 .flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -93,7 +93,7 @@ impl PackageManager for Chocolatey {
         self.just_run(
             Cmd::new(cmd).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }
@@ -120,7 +120,7 @@ impl PackageManager for Chocolatey {
         self.just_run(
             Cmd::new(cmd).kws(kws).flags(flags),
             Default::default(),
-            PROMPT_STRAT.clone(),
+            &PROMPT_STRAT,
         )
         .await
     }

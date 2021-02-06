@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  windows-test:
+  choco-test:
     runs-on: windows-latest
 
     steps:
@@ -15,11 +15,28 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo test chocolatey --verbose
       - name: Run heavy tests
-        run: cargo test --verbose -- --ignored
+        run: cargo test chocolatey --verbose -- --ignored
 
-  macos-test:
+  scoop-test:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: MinoruSekine/setup-scoop@v1
+      - name: Verity scoop installation
+        run: |
+          powershell scoop help
+          Get-Command scoop
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo test scoop --verbose
+      - name: Run heavy tests
+        run: cargo test scoop --verbose -- --ignored
+
+  homebrew-test:
     runs-on: macos-latest
 
     steps:
@@ -27,11 +44,11 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo test homebrew --verbose
       - name: Run heavy tests
-        run: cargo test --verbose -- --ignored
+        run: cargo test homebrew --verbose -- --ignored
 
-  debian-test:
+  apt-test:
     runs-on: ubuntu-latest
     container:
       image: docker://rust:latest
@@ -49,7 +66,7 @@ jobs:
       - name: Run heavy tests
         run: cargo test apt --verbose -- --ignored
 
-  fedora-test:
+  dnf-test:
     runs-on: ubuntu-latest
     container:
       image: docker://fedora:latest
@@ -67,7 +84,7 @@ jobs:
       - name: Run heavy tests
         run: cargo test dnf --verbose -- --ignored
 
-  opensuse-test:
+  zypper-test:
     runs-on: ubuntu-latest
     container:
       image: docker://opensuse/leap:latest
@@ -90,7 +107,7 @@ jobs:
       - name: Run heavy tests
         run: $HOME/.cargo/bin/cargo test zypper --verbose -- --ignored --test-threads=1
 
-  alpine-test:
+  apk-test:
     runs-on: ubuntu-latest
     container:
       image: docker://rust:alpine

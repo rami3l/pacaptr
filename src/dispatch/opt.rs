@@ -144,7 +144,7 @@ impl Opts {
     /// Automatically detect the name of the package manager in question.
     pub fn detect_pm_str<'s>() -> &'s str {
         let pairs: &[(&str, &str)] = match () {
-            _ if cfg!(target_os = "windows") => &[("choco", "")],
+            _ if cfg!(target_os = "windows") => &[("scoop", ""), ("choco", "")],
 
             _ if cfg!(target_os = "macos") => &[
                 ("brew", "/usr/local/bin/brew"),
@@ -154,7 +154,7 @@ impl Opts {
             _ if cfg!(target_os = "linux") => &[
                 ("apk", "/sbin/apk"),
                 ("apt", "/usr/bin/apt"),
-                ("apt-get", "/usr/bin/apt-get"),
+                // ("apt-get", "/usr/bin/apt-get"),
                 ("dnf", "/usr/bin/dnf"),
                 ("zypper", "/usr/bin/zypper"),
             ],
@@ -209,6 +209,9 @@ impl Opts {
         match pm_str {
             // Chocolatey
             "choco" => Box::new(chocolatey::Chocolatey { cfg }),
+
+            // Scoop
+            "scoop" => Box::new(scoop::Scoop { cfg }),
 
             // Homebrew/Linuxbrew
             "brew" => Box::new(homebrew::Homebrew { cfg }),
