@@ -28,6 +28,10 @@ jobs:
         run: |
           Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
           iwr -useb get.scoop.sh | iex
+          refreshenv
+      - name: Verity scoop installation
+        run: |
+          Get-Command scoop
           powershell scoop help
       - name: Build
         run: cargo build --verbose
