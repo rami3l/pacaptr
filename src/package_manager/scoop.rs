@@ -38,7 +38,7 @@ impl PackageManager for Scoop {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.just_run_default(Cmd::new(&["scoop", "list"]).flags(flags))
+            self.just_run_default(Cmd::new(&["powershell", "scoop", "list"]).flags(flags))
                 .await
         } else {
             self.qs(kws, flags).await
@@ -78,20 +78,26 @@ impl PackageManager for Scoop {
             };
         }
 
-        run!(&["scoop", "list"]).await?;
+        run!(&["powershell", "scoop", "list"]).await?;
         Ok(())
     }
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["scoop", "status"]).kws(kws).flags(flags))
-            .await
+        self.just_run_default(
+            Cmd::new(&["powershell", "scoop", "status"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["scoop", "uninstall"]).kws(kws).flags(flags),
+            Cmd::new(&["powershell", "scoop", "uninstall"])
+                .kws(kws)
+                .flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -101,7 +107,7 @@ impl PackageManager for Scoop {
     /// Rn removes a package and skips the generation of configuration backup files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["scoop", "uninstall", "--purge"])
+            Cmd::new(&["powershell", "scoop", "uninstall", "--purge"])
                 .kws(kws)
                 .flags(flags),
             Default::default(),
@@ -113,7 +119,9 @@ impl PackageManager for Scoop {
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new(&["scoop", "install"]).kws(kws).flags(flags),
+            Cmd::new(&["powershell", "scoop", "install"])
+                .kws(kws)
+                .flags(flags),
             Default::default(),
             &INSTALL_STRAT,
         )
@@ -124,7 +132,9 @@ impl PackageManager for Scoop {
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let kws: &[&str] = if kws.is_empty() { &["*"] } else { kws };
         self.just_run(
-            Cmd::new(&["scoop", "cache", "rm"]).kws(kws).flags(flags),
+            Cmd::new(&["powershell", "scoop", "cache", "rm"])
+                .kws(kws)
+                .flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -138,20 +148,41 @@ impl PackageManager for Scoop {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["scoop", "info"]).kws(kws).flags(flags))
-            .await
+        self.just_run_default(
+            Cmd::new(&["powershell", "scoop", "info"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["scoop", "search"]).kws(kws).flags(flags))
-            .await
+        self.just_run_default(
+            Cmd::new(&["powershell", "scoop", "search"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
+    }
+
+    /// Sy refreshes the local package database.
+    async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.just_run_default(Cmd::new(&["powershell", "scoop", "update"]).flags(flags))
+            .await?;
+        if !kws.is_empty() {
+            self.s(kws, flags).await?;
+        }
+        Ok(())
     }
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        let kws: &[&str] = if kws.is_empty() { &["*"] } else { kws };
         self.just_run(
-            Cmd::new(&["scoop", "update"]).kws(kws).flags(flags),
+            Cmd::new(&["powershell", "scoop", "update"])
+                .kws(kws)
+                .flags(flags),
             Default::default(),
             &INSTALL_STRAT,
         )
@@ -160,6 +191,7 @@ impl PackageManager for Scoop {
 
     /// Suy refreshes the local package database, then updates outdated packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.sy(&[], flags).await?;
         self.su(kws, flags).await
     }
 }
