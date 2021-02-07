@@ -31,7 +31,7 @@ impl Runner for BumpChoco {
         );
 
         println!(":: Downloading release binary...");
-        cmd!("iwr {release_uri} -OutFile ./release.tar.gz").run()?;
+        cmd!("powershell iwr {release_uri} -OutFile ./release.tar.gz").run()?;
 
         println!(":: Extracting release binary...");
         let bin_out_dir = "./dist/choco/tools/";
@@ -78,7 +78,7 @@ impl Runner for BumpChoco {
             .run()?;
 
         println!(":: Packing up NuGet package...");
-        cmd!("choco pack {nuspec_path}} --verbose").run()?;
+        cmd!("choco pack {nuspec_path} --verbose").run()?;
 
         println!(":: Pushing to choco repository...");
         let ver = ver.as_ref();
