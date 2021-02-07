@@ -12,6 +12,7 @@ use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use tokio::try_join;
 use tokio_util::codec::{BytesCodec, FramedRead};
+use which::which;
 
 /// Different ways in which a command shall be dealt with.
 #[derive(Copy, Clone, Debug)]
@@ -349,8 +350,7 @@ pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
 /// Check if an executable exists by name (consult `$PATH`) or by path.
 /// To check by one parameter only, pass `""` as another.
 pub fn is_exe(name: &str, path: &str) -> bool {
-    (!path.is_empty() && std::path::Path::new(path).exists())
-        || (!name.is_empty() && which::which(name).is_ok())
+    (!path.is_empty() && which(path).is_ok()) || (!name.is_empty() && which(name).is_ok())
 }
 
 /// Helper function to turn an `AsyncRead` to a `Stream`.
