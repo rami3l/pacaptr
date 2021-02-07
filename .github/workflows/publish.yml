@@ -55,12 +55,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cargo xtask bump-tap
 
-  # this scripts packs up a Chocolatey package and pushes it to Choco repository
   bump-choco-version:
     name: Publish app on Chocolatey
     runs-on: windows-latest
     needs: [publish]
-    if: ${{ !contains(github.ref, '-') }}
+    # if: ${{ !contains(github.ref, '-') }}
 
     steps:
       - name: Checkout
