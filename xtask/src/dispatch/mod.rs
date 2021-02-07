@@ -1,10 +1,7 @@
-mod bump_tap;
-mod publish;
+pub mod bump_tap;
+pub mod publish;
 
-use self::bump_tap::BumpTap;
-use self::publish::Publish;
 use anyhow::Result;
-use clap::Clap;
 use regex::Regex;
 use std::env;
 
@@ -13,20 +10,6 @@ const CORE: &str = "pacaptr";
 
 /// The project homepage.
 const HOMEPAGE: &str = "https://github.com/rami3l/pacaptr";
-
-/// The command line options to be collected.
-#[derive(Debug, Clap)]
-#[clap(
-    about = clap::crate_description!(),
-    version = clap::crate_version!(),
-    author = clap::crate_authors!(),
-    setting = clap::AppSettings::ColoredHelp,
-    setting = clap::AppSettings::ArgRequiredElseHelp,
-)]
-pub enum Opts {
-    Publish(Publish),
-    BumpTap(BumpTap),
-}
 
 pub trait Runner {
     fn run(self) -> Result<()>;

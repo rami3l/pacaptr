@@ -1,14 +1,12 @@
 use super::{get_ver_from_env, Runner, HOMEPAGE};
 use crate::replace;
 use anyhow::{anyhow, Result};
-use clap::Clap;
 use xshell::{cmd, write_file};
 
 const BIN_MAC: &str = "pacaptr-macos-amd64.tar.gz";
 const BIN_LINUX: &str = "pacaptr-linux-amd64.tar.gz";
 
-#[derive(Debug, Clap)]
-#[clap(about = "Bump homebrew tap formula version")]
+#[derive(Debug)]
 pub struct BumpTap {}
 
 impl Runner for BumpTap {

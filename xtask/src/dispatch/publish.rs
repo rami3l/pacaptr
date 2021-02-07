@@ -1,17 +1,12 @@
 use super::{get_ver_from_env, Runner, CORE};
 use anyhow::Result;
-use clap::Clap;
 use xshell::{cmd, write_file};
 
 const LINUX_MUSL: &str = "x86_64-unknown-linux-musl";
 
-#[derive(Debug, Clap)]
-#[clap(about = "Build release and upload to GitHub releases.")]
+#[derive(Debug)]
 pub struct Publish {
-    #[clap(long, alias = "exe", about = "Name of the executable")]
     pub artifact: String,
-
-    #[clap(long, about = "Name of the asset")]
     pub asset: String,
 }
 
