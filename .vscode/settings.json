@@ -6,6 +6,7 @@
         "Tazpkg",
         "Tlmgr",
         "Zypper",
+        "algos",
         "binutils",
         "choco",
         "clippy",
@@ -42,6 +43,7 @@
         "svenstaro",
         "sysupgrade",
         "untrusted",
+        "verif",
         "xshell",
         "xtask"
     ]

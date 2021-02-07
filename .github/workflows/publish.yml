@@ -24,14 +24,14 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            artifact_name: pacaptr.exe
-            asset_name: pacaptr-windows-amd64
+            # artifact_name: pacaptr.exe
+            # asset_name: pacaptr-windows-amd64
           - os: macos-latest
-            artifact_name: pacaptr
-            asset_name: pacaptr-macos-amd64
+            # artifact_name: pacaptr
+            # asset_name: pacaptr-macos-amd64
           - os: ubuntu-latest
-            artifact_name: pacaptr
-            asset_name: pacaptr-linux-amd64
+            # artifact_name: pacaptr
+            # asset_name: pacaptr-linux-amd64
 
     steps:
       - uses: dtolnay/rust-toolchain@stable
@@ -40,7 +40,7 @@ jobs:
       - name: Publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cargo xtask publish --artifact='${{ matrix.artifact_name }}' --asset='${{ matrix.asset_name }}'
+        run: cargo xtask publish
 
   bump-tap-version:
     name: Bump formula version for homebrew
@@ -56,101 +56,16 @@ jobs:
         run: cargo xtask bump-tap
 
   # this scripts packs up a Chocolatey package and pushes it to Choco repository
-  publish-choco:
+  bump-choco-version:
     name: Publish app on Chocolatey
     runs-on: windows-latest
     needs: [publish]
     if: ${{ !contains(github.ref, '-') }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Get the version
-        id: ver
-        run: |
-          import re
-          version = re.sub('refs/\w+/', '' ,'${{ github.ref }}')
-          print('::set-output name=tag::{}'.format(version))
-          # Remove suffix '-take.X' in the tag
-          version = re.sub('-?take\.\d+', '', version)
-          # Pop off the leading 'v' in the tag
-          version = re.sub('^v', '', version)
-          print('::set-output name=ver::{}'.format(version))
-        shell: python
-
-      - name: Download release
-        run: iwr https://github.com/${{ github.repository }}/releases/download/${{ steps.ver.outputs.tag }}/pacaptr-windows-amd64.tar.gz -OutFile ./release.tar.gz
-
-      - name: Extract release
-        run: tar xvf ./release.tar.gz -C ./dist/choco/tools/
-
-      - name: Add license
-        run: cp LICENSE dist/choco/tools/LICENSE.txt
-
-      - name: Generate Nuspec from template
-        id: replace
-        shell: python
-        run: |
-          import re
-          from xml.sax.saxutils import escape
-          version = '${{ steps.ver.outputs.ver }}'
-          # with open('README.md', 'r', encoding='utf8') as desc_file:
-          #     description = desc_file.read()
-          with open(
-                  'dist/choco/pacaptr.template.nuspec', 'r',
-                  encoding='utf8') as template_file:
-              template = template_file.read()
-          template = re.sub('\{version\}', escape(version), template)
-          # template = re.sub('\{description\}', escape(description), template)
-          with open('dist/choco/pacaptr.nuspec', 'w', encoding='utf8') as output:
-              output.write(template)
-
-      - name: Generate verification.txt
-        shell: python
-        run: |
-          import re
-          from hashlib import sha1, sha256, sha3_256, blake2b
-
-          repository = 'https://github.com/${{ github.repository }}'
-          release_uri = repository + '/releases/download/${{ steps.ver.outputs.tag }}/pacaptr-windows-amd64.tar.gz'
-          file_path = 'dist/choco/tools/pacaptr.exe'
-
-          hash_algorithms = [sha1(), sha256(), sha3_256(), blake2b()]
-          hash_result = ""
-
-          chunk_size = 64 * 1024
-          with open(file_path, 'rb') as f:
-              while True:
-                  buf = f.read(chunk_size)
-                  if len(buf) == 0: break
-                  for a in hash_algorithms:
-                      a.update(buf)
-              for a in hash_algorithms:
-                  hash_result += "{}: {}\n".format(a.name, a.hexdigest())
-
-          with open(
-                  'dist/choco/tools/VERIFICATION.template.txt', 'r',
-                  encoding='utf8') as template_file:
-              template = template_file.read()
-          template = re.sub('\{repository\}', repository, template)
-          template = re.sub('\{release_file\}', release_uri, template)
-          template = re.sub('\{checksums\}', hash_result, template)
-
-          with open('dist/choco/tools/VERIFICATION.txt', 'w', encoding='utf8') as output:
-              output.write(template)
-
-      - run: rm dist/choco/tools/VERIFICATION.template.txt
-
-      - name: Check nuget template
-        run: |
-          echo "NuGet spec file:"
-          cat dist/choco/pacaptr.nuspec
-
-      - name: Set choco api key
-        run: choco apikey --key ${{ secrets.CHOCO_API_KEY }} --source https://push.chocolatey.org --verbose
-
-      - name: Pack up NuGet package
-        run: choco pack dist/choco/pacaptr.nuspec --verbose
-
-      - name: Push to choco repository
-        run: choco push pacaptr.${{ steps.ver.outputs.ver }}.nupkg --source https://push.chocolatey.org --verbose
+      - name: Generate new formula
+        env:
+          CHOCO_API_KEY: ${{ secrets.CHOCO_API_KEY }}
+        run: cargo xtask bump-choco
