@@ -13,8 +13,8 @@ pub struct BumpTap {}
 
 impl Runner for BumpTap {
     fn run(self) -> Result<()> {
-        if !cfg!(target_os = "unix") {
-            panic!("This action is meant to run under *nix.")
+        if cfg!(target_os = "windows") {
+            panic!("This action is not meant to run under windows.")
         }
 
         let version = get_ver_from_env()?;
