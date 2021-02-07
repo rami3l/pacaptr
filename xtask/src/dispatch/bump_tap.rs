@@ -53,7 +53,7 @@ impl Runner for BumpTap {
         cmd!("cat {formula}").run()?;
 
         println!(":: Uploading new Formula");
-        cmd!("gh release upload {formula}").run()?;
+        cmd!("gh release upload {version} {formula}").run()?;
 
         Ok(())
     }
