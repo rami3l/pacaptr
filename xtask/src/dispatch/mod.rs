@@ -1,8 +1,7 @@
 pub mod bump_tap;
 pub mod publish;
 
-use anyhow::Result;
-use regex::Regex;
+use anyhow::{anyhow, Result};
 use std::env;
 
 /// The name of the executable.
@@ -16,17 +15,19 @@ pub trait Runner {
 }
 
 /// Strip the `refs/*/` prefix from `GITHUB_REF` to get a version string.
-fn get_ver<S: AsRef<str>>(gh_ref: S) -> String {
-    Regex::new("refs/.*/")
-        .unwrap()
-        .replace(gh_ref.as_ref(), "")
-        .to_string()
+fn get_ver(gh_ref: impl AsRef<str>) -> Result<String> {
+    gh_ref
+        .as_ref()
+        .split('/')
+        .nth(2)
+        .ok_or_else(|| anyhow!("Failed to find `refs/*/` prefix in GITHUB_REF"))
+        .map(|s| s.to_owned())
 }
 
 /// Strip the `refs/*/` prefix from `GITHUB_REF` to get a version string.
 /// Where the value of `GITHUB_REF` is read from environment variables.
 fn get_ver_from_env() -> Result<String> {
-    Ok(get_ver(env::var("GITHUB_REF")?))
+    get_ver(env::var("GITHUB_REF")?)
 }
 
 #[macro_export]

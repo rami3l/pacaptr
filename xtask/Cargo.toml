@@ -9,5 +9,7 @@ version = "0.1.0"
 [dependencies]
 anyhow    = "1.0.38"
 pico-args = "0.4.0"
-regex     = { version = "1.4.3", default-features = false, features = ["std", "perf"] }
 xshell    = "0.1.8"
+
+# Candidates
+# regex = { version = "1.4.3", default-features = false, features = ["std"] }
