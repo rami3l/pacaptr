@@ -59,7 +59,7 @@ jobs:
     name: Publish app on Chocolatey
     runs-on: windows-latest
     needs: [publish]
-    # if: ${{ !contains(github.ref, '-') }}
+    if: ${{ !contains(github.ref, '-') }}
 
     steps:
       - name: Checkout
