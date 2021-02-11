@@ -37,7 +37,7 @@ pub enum Error {
 
     /// All other cases of `io::Error`.
     #[error(transparent)]
-    IOError(#[from] io::Error),
+    IoError(#[from] io::Error),
 
     /// A package manager operation is not implemented.
     #[error("Operation `{op}` is unimplemented for `{pm}`")]

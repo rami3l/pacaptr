@@ -164,9 +164,7 @@ impl Opts {
 
         pairs
             .iter()
-            .find(|(name, path)| is_exe(name, path))
-            .map(|p| p.0)
-            // .find_map(|(name, path)| is_exe(name, path).then(|| *name))
+            .find_map(|(name, path)| is_exe(name, path).then(|| *name))
             .unwrap_or("unknown")
     }
 
@@ -337,10 +335,10 @@ mod tests {
         }};
     }
 
-    struct MockPM {}
+    struct MockPm {}
 
     #[async_trait]
-    impl PackageManager for MockPM {
+    impl PackageManager for MockPm {
         /// Get the name of the package manager.
         fn name(&self) -> String {
             "mockpm".into()
@@ -508,8 +506,8 @@ mod tests {
     }
 
     impl Opts {
-        fn make_mock(&self) -> MockPM {
-            MockPM {}
+        fn make_mock(&self) -> MockPm {
+            MockPm {}
         }
     }
 
