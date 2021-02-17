@@ -125,23 +125,25 @@ impl Cmd {
 }
 
 /// Helper macro to implement `exec_checkerr` and `exec_checkall`.
-/// Take contents from the input stream `$src` and copy to `$out1` and `$out2`,
-/// and finally return `$out2`.
-/// The boolean `$mute1` decides whether to mute `$out1`.
-macro_rules! exec_tee {
-    ( $src:expr, $out1:expr, $out2:expr, $mute1:expr  ) => {{
-        while let Some(mb) = $src.next().await {
-            let b = mb?;
-            let b = b.as_ref();
-            if $mute1 {
-                $out2.write_all(b).await?;
-            } else {
-                try_join!($out1.write_all(b), $out2.write_all(b))?;
-            }
+/// Take contents from the input stream `src` and copy to `out` and a `Vec<u8>`,
+/// and finally return the `Vec<u8>`.
+/// The boolean `mute` decides whether to mute `out`.
+async fn exec_tee<S, O>(src: &mut S, out: &mut O, mute: bool) -> Result<Vec<u8>>
+where
+    S: Stream<Item = std::result::Result<Bytes, std::io::Error>> + Unpin,
+    O: AsyncWriteExt + Unpin,
+{
+    let mut out1 = Vec::<u8>::new();
+    while let Some(mb) = src.next().await {
+        let b = mb?;
+        let b = b.as_ref();
+        if mute {
+            out1.write_all(b).await?;
+        } else {
+            try_join!(out.write_all(b), out1.write_all(b))?;
         }
-
-        $out2
-    }};
+    }
+    Ok(out1)
 }
 
 impl Cmd {
@@ -201,9 +203,8 @@ impl Cmd {
             Ok(status.code())
         });
 
-        let mut out = Vec::<u8>::new();
         let mut stdout = tokio::io::stdout();
-        let contents = exec_tee!(merged_reader, stdout, out, mute);
+        let contents = exec_tee(&mut merged_reader, &mut stdout, mute).await?;
 
         Ok(Output {
             contents,
@@ -235,9 +236,8 @@ impl Cmd {
             Ok(status.code())
         });
 
-        let mut out = Vec::<u8>::new();
         let mut stderr = tokio::io::stderr();
-        let contents = exec_tee!(stderr_reader, stderr, out, mute);
+        let contents = exec_tee(&mut stderr_reader, &mut stderr, mute).await?;
 
         Ok(Output {
             contents,
