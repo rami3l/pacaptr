@@ -11,6 +11,11 @@ pub mod tlmgr;
 pub mod unknown;
 pub mod zypper;
 
+pub use {
+    apk::Apk, apt::Apt, chocolatey::Chocolatey, conda::Conda, dnf::Dnf, homebrew::Homebrew,
+    macports::Macports, pip::Pip, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, zypper::Zypper,
+};
+
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::{Cmd, Mode, Output, StatusCode};
@@ -61,23 +66,31 @@ pub trait PackageManager: Sync {
     fn name(&self) -> String;
 
     /// Get the config of the package manager.
-    fn cfg(&self) -> Config;
+    fn cfg(&self) -> &Config;
+
+    /// Wrap the `PackageManager` instance in a box.
+    fn boxed<'a>(self) -> Box<dyn PackageManager + 'a>
+    where
+        Self: Sized + 'a,
+    {
+        Box::new(self)
+    }
 
     /// Get the `StatusCode` to be returned.
     async fn code(&self) -> StatusCode {
-        self._code(None).await
+        self.get_set_code(None).await
     }
 
     /// Set the `StatusCode` to be returned.
     async fn set_code(&self, to: StatusCode) {
-        self._code(Some(to)).await;
+        self.get_set_code(Some(to)).await;
     }
 
     /// Get/Set the `StatusCode` to be returned.
     /// If `to` is `Some(n)`, then the current `StatusCode` will be reset to `n`.
     /// Then the current `StatusCode` will be returned.
     #[doc(hidden)]
-    async fn _code(&self, to: Option<StatusCode>) -> StatusCode {
+    async fn get_set_code(&self, to: Option<StatusCode>) -> StatusCode {
         lazy_static! {
             static ref CODE: Mutex<StatusCode> = Mutex::new(0);
         }

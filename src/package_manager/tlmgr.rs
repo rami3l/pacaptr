@@ -23,8 +23,8 @@ impl PackageManager for Tlmgr {
         "tlmgr".into()
     }
 
-    fn cfg(&self) -> Config {
-        self.cfg.clone()
+    fn cfg(&self) -> &Config {
+        &self.cfg
     }
 
     /// Q generates a list of installed packages.

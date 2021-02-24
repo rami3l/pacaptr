@@ -1,6 +1,7 @@
 use super::config::Config;
+use crate::dispatch::detect_pm;
 use crate::error::{Error, Result};
-use crate::exec::{is_exe, StatusCode};
+use crate::exec::StatusCode;
 use crate::package_manager::*;
 use clap::{self, Clap};
 use std::iter::FromIterator;
@@ -133,39 +134,11 @@ impl Opts {
             .filter(|&&x| x)
             .count();
         if count != 1 {
-            Err(Error::ArgParseError {
+            return Err(Error::ArgParseError {
                 msg: "exactly 1 operation expected".into(),
-            })
-        } else {
-            Ok(())
+            });
         }
-    }
-
-    /// Automatically detect the name of the package manager in question.
-    pub fn detect_pm_str<'s>() -> &'s str {
-        let pairs: &[(&str, &str)] = match () {
-            _ if cfg!(target_os = "windows") => &[("scoop", ""), ("choco", "")],
-
-            _ if cfg!(target_os = "macos") => &[
-                ("brew", "/usr/local/bin/brew"),
-                ("port", "/opt/local/bin/port"),
-            ],
-
-            _ if cfg!(target_os = "linux") => &[
-                ("apk", "/sbin/apk"),
-                ("apt", "/usr/bin/apt"),
-                // ("apt-get", "/usr/bin/apt-get"),
-                ("dnf", "/usr/bin/dnf"),
-                ("zypper", "/usr/bin/zypper"),
-            ],
-
-            _ => &[],
-        };
-
-        pairs
-            .iter()
-            .find_map(|(name, path)| is_exe(name, path).then(|| *name))
-            .unwrap_or("unknown")
+        Ok(())
     }
 
     /// Generate the PackageManager instance according it's name.
@@ -201,54 +174,57 @@ impl Opts {
             .using
             .as_deref()
             .or_else(|| cfg.default_pm.as_deref())
-            .unwrap_or_else(Opts::detect_pm_str);
+            .unwrap_or_else(detect_pm);
 
         #[allow(clippy::match_single_binding)]
         match pm_str {
             // Chocolatey
-            "choco" => Box::new(chocolatey::Chocolatey { cfg }),
+            "choco" => Chocolatey { cfg }.boxed(),
 
             // Scoop
-            "scoop" => Box::new(scoop::Scoop { cfg }),
+            "scoop" => Scoop { cfg }.boxed(),
 
             // Homebrew/Linuxbrew
-            "brew" => Box::new(homebrew::Homebrew { cfg }),
+            "brew" => Homebrew { cfg }.boxed(),
 
             // Macports
-            "port" if cfg!(target_os = "macos") => Box::new(macports::Macports { cfg }),
+            "port" if cfg!(target_os = "macos") => Macports { cfg }.boxed(),
 
             // Apk for Alpine
-            "apk" => Box::new(apk::Apk { cfg }),
+            "apk" => Apk { cfg }.boxed(),
 
             // Apt for Debian/Ubuntu/Termux (new versions)
-            "apt" => Box::new(apt::Apt { cfg }),
+            "apt" => Apt { cfg }.boxed(),
 
             // Dnf for RedHat
-            "dnf" => Box::new(dnf::Dnf { cfg }),
+            "dnf" => Dnf { cfg }.boxed(),
 
             // Zypper for SUSE
-            "zypper" => Box::new(zypper::Zypper { cfg }),
+            "zypper" => Zypper { cfg }.boxed(),
 
             // * External Package Managers *
 
             // Conda
-            "conda" => Box::new(conda::Conda { cfg }),
+            "conda" => Conda { cfg }.boxed(),
 
             // Pip
-            "pip" => Box::new(pip::Pip {
+            "pip" => Pip {
                 cmd: "pip".into(),
                 cfg,
-            }),
-            "pip3" => Box::new(pip::Pip {
+            }
+            .boxed(),
+
+            "pip3" => Pip {
                 cmd: "pip3".into(),
                 cfg,
-            }),
+            }
+            .boxed(),
 
             // Tlmgr
-            "tlmgr" => Box::new(tlmgr::Tlmgr { cfg }),
+            "tlmgr" => Tlmgr { cfg }.boxed(),
 
             // Unknown package manager X
-            x => Box::new(unknown::Unknown { name: x.into() }),
+            x => Unknown::new(x).boxed(),
         }
     }
 
@@ -335,7 +311,17 @@ mod tests {
         }};
     }
 
-    struct MockPm {}
+    struct MockPm {
+        pub cfg: Config,
+    }
+
+    impl MockPm {
+        pub fn new() -> Self {
+            MockPm {
+                cfg: Default::default(),
+            }
+        }
+    }
 
     #[async_trait]
     impl PackageManager for MockPm {
@@ -344,8 +330,8 @@ mod tests {
             "mockpm".into()
         }
 
-        fn cfg(&self) -> Config {
-            Config::default()
+        fn cfg(&self) -> &Config {
+            &self.cfg
         }
 
         // ! WARNING!
@@ -505,12 +491,6 @@ mod tests {
         }
     }
 
-    impl Opts {
-        fn make_mock(&self) -> MockPm {
-            MockPm {}
-        }
-    }
-
     #[test]
     #[should_panic(expected = "should run: suy")]
     async fn simple_syu() {
@@ -520,7 +500,7 @@ mod tests {
         assert!(opt.sync);
         assert!(opt.y);
         assert!(opt.u);
-        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
+        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
     }
 
     #[test]
@@ -537,7 +517,7 @@ mod tests {
         assert!(opt.sync);
         assert!(opt.y);
         assert!(opt.u);
-        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
+        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
     }
 
     #[test]
@@ -547,7 +527,7 @@ mod tests {
 
         assert!(opt.sync);
         assert!(opt.w);
-        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
+        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
     }
 
     #[test]
@@ -560,7 +540,7 @@ mod tests {
         assert!(opt.sync);
         assert!(opt.dry_run);
         assert!(opt.no_confirm);
-        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
+        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
     }
 
     #[test]
@@ -580,7 +560,7 @@ mod tests {
         let mut flags = opt.extra_flags.iter();
         assert_eq!(flags.next(), Some(&String::from("--proxy=localhost:1234")));
         assert_eq!(flags.next(), None);
-        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
+        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
     }
 
     #[test]
@@ -592,6 +572,6 @@ mod tests {
         assert!(opt.query);
         assert!(opt.n);
         assert_eq!(opt.s, 1);
-        opt.dispatch_from(Box::new(opt.make_mock())).await.unwrap();
+        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
     }
 }

@@ -3,6 +3,16 @@ use crate::dispatch::config::Config;
 
 pub struct Unknown {
     pub name: String,
+    pub cfg: Config,
+}
+
+impl Unknown {
+    pub fn new(name: &str) -> Self {
+        Unknown {
+            name: name.to_owned(),
+            cfg: Default::default(),
+        }
+    }
 }
 
 impl PackageManager for Unknown {
@@ -11,7 +21,7 @@ impl PackageManager for Unknown {
         format!("unknown package manager: {}", self.name)
     }
 
-    fn cfg(&self) -> Config {
-        Default::default()
+    fn cfg(&self) -> &Config {
+        &self.cfg
     }
 }
