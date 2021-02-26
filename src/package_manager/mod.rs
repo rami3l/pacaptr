@@ -32,25 +32,25 @@ macro_rules! make_op_body {
     }};
 }
 
-macro_rules! make_pm {(
+macro_rules! decl_pm {(
         $(
             $( #[$meta:meta] )*
             async fn $method:ident;
         )*
     ) => {
-        /// The behaviors of a Pack(age)Manager.
+        /// The behaviors of a Package Manager.
         /// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
         /// and https://wiki.archlinux.org/index.php/Pacman
         #[async_trait]
-        pub trait PackageManager: Sync {
+        pub trait Pm: Sync {
             /// Get the name of the package manager.
             fn name(&self) -> String;
 
             /// Get the config of the package manager.
             fn cfg(&self) -> &Config;
 
-            /// Wrap the `PackageManager` instance in a box.
-            fn boxed<'a>(self) -> Box<dyn PackageManager + 'a>
+            /// Wrap the `Pm` instance in a box.
+            fn boxed<'a>(self) -> Box<dyn Pm + 'a>
             where
                 Self: Sized + 'a,
             {
@@ -95,7 +95,7 @@ macro_rules! make_pm {(
     };
 }
 
-make_pm! {
+decl_pm! {
    /// Q generates a list of installed packages.
    async fn q;
 
@@ -190,10 +190,10 @@ make_pm! {
    async fn u;
 }
 
-/// Extra implementation helper functions for `PackageManager`,
+/// Extra implementation helper functions for `Pm`,
 /// focusing on the ability to run subcommands (`Cmd`s) in a configured and PM-specific context.
 #[async_trait]
-pub trait PmHelper: PackageManager {
+pub trait PmHelper: Pm {
     /// A helper method to simplify direct command invocation.
     async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: &Strategies) -> Result<Output> {
         let cfg = self.cfg();
@@ -278,7 +278,7 @@ pub trait PmHelper: PackageManager {
 }
 
 /// Different ways in which a command shall be dealt with.
-/// This is a `PackageManager` specified version intended to be used along with `Strategies`.
+/// This is a `Pm` specified version intended to be used along with `Strategies`.
 #[derive(Copy, Clone, Debug)]
 pub enum PmMode {
     /// Silently collect all the `stdout`/`stderr` combined. Print nothing.
@@ -404,7 +404,7 @@ mod tests {
     struct MockPM {}
 
     #[async_trait]
-    impl PackageManager for MockPM {
+    impl Pm for MockPM {
         /// Get the name of the package manager.
         fn name(&self) -> String {
             "mockpm".into()

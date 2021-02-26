@@ -1,8 +1,7 @@
-use super::config::Config;
-use crate::dispatch::detect_pm;
+use crate::dispatch::{detect_pm, make_pm, Config};
 use crate::error::{Error, Result};
 use crate::exec::StatusCode;
-use crate::package_manager::*;
+use crate::package_manager::Pm;
 use clap::{self, Clap};
 use std::iter::FromIterator;
 
@@ -141,8 +140,8 @@ impl Opts {
         Ok(())
     }
 
-    /// Generate the PackageManager instance according it's name.
-    pub fn make_pm(&self, cfg: Config) -> Box<dyn PackageManager> {
+    /// Generate the `Pm` instance according it's name.
+    pub fn make_pm(&self, cfg: Config) -> Box<dyn Pm> {
         // The precedence of CLI config is higher than dotfile config.
 
         let cfg = {
@@ -172,98 +171,57 @@ impl Opts {
             }
         };
 
-        let pm_str: &str = self
+        let pm_str = self
             .using
             .as_deref()
             .or_else(|| cfg.default_pm.as_deref())
-            .unwrap_or_else(detect_pm);
+            .unwrap_or_else(detect_pm)
+            .to_owned();
 
-        #[allow(clippy::match_single_binding)]
-        match pm_str {
-            // Chocolatey
-            "choco" => Chocolatey { cfg }.boxed(),
-
-            // Scoop
-            "scoop" => Scoop { cfg }.boxed(),
-
-            // Homebrew/Linuxbrew
-            "brew" => Homebrew { cfg }.boxed(),
-
-            // Macports
-            "port" if cfg!(target_os = "macos") => Macports { cfg }.boxed(),
-
-            // Apk for Alpine
-            "apk" => Apk { cfg }.boxed(),
-
-            // Apt for Debian/Ubuntu/Termux (new versions)
-            "apt" => Apt { cfg }.boxed(),
-
-            // Dnf for RedHat
-            "dnf" => Dnf { cfg }.boxed(),
-
-            // Zypper for SUSE
-            "zypper" => Zypper { cfg }.boxed(),
-
-            // * External Package Managers *
-
-            // Conda
-            "conda" => Conda { cfg }.boxed(),
-
-            // Pip
-            "pip" => Pip {
-                cmd: "pip".into(),
-                cfg,
-            }
-            .boxed(),
-
-            "pip3" => Pip {
-                cmd: "pip3".into(),
-                cfg,
-            }
-            .boxed(),
-
-            // Tlmgr
-            "tlmgr" => Tlmgr { cfg }.boxed(),
-
-            // Unknown package manager X
-            x => Unknown::new(x).boxed(),
-        }
+        make_pm(&pm_str, cfg)
     }
 
     /// Execute the job according to the flags received and the package manager detected.
-    pub async fn dispatch_from(&self, pm: Box<dyn PackageManager>) -> Result<StatusCode> {
+    pub async fn dispatch_from(&self, pm: Box<dyn Pm>) -> Result<StatusCode> {
         self.check()?;
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
         let flags: Vec<&str> = self.extra_flags.iter().map(|s| s.as_ref()).collect();
 
-        let mut options = "".to_owned();
+        // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
+        let options = {
+            let mut options = "".to_owned();
 
-        macro_rules! collect_options {(
-                ops: [$( $op:ident ), *],
-                flags: [$( $flag:ident ), *],
-                counters: [$($counter: ident), *]
-            ) => {
-                $(if self.$op {
-                    options.push_str(&stringify!($op)[0..1].to_uppercase());
-                })*
-                $(if self.$flag {
-                    options.push_str(stringify!($flag));
-                })*
-                $(for _ in 0..self.$counter {
-                    options.push_str(stringify!($counter));
-                })*
+            // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in ASCII order,
+            // ! eg. `Suy` instead of `Syu`.
+            // ! Then, in order to stay coherent with Rust coding style the method name should be `suy`.
+
+            macro_rules! collect_options {(
+                    ops: [$( $op:ident ), *],
+                    flags: [$( $flag:ident ), *],
+                    counters: [$($counter: ident), *]
+                ) => {
+                    $(if self.$op {
+                        options.push_str(&stringify!($op)[0..1].to_uppercase());
+                    })*
+                    $(if self.$flag {
+                        options.push_str(stringify!($flag));
+                    })*
+                    $(for _ in 0..self.$counter {
+                        options.push_str(stringify!($counter));
+                    })*
+                };
+            }
+
+            collect_options! {
+                ops: [query, remove, sync, update],
+                flags: [e, g, k, l, m, n, o, p, u, w, y],
+                counters: [c, i, s]
             };
-        }
 
-        collect_options! {
-            ops: [query, remove, sync, update],
-            flags: [e, g, k, l, m, n, o, p, u, w, y],
-            counters: [c, i, s]
+            let mut chars: Vec<char> = options.chars().collect();
+            chars.sort_unstable();
+            String::from_iter(chars)
         };
-
-        let mut chars: Vec<char> = options.chars().collect();
-        chars.sort_unstable();
-        options = String::from_iter(chars);
 
         macro_rules! dispatch_match {
             ($( $method:ident ), *) => {
@@ -321,7 +279,7 @@ mod tests {
         )*
     ) => {
             #[async_trait]
-            impl PackageManager for MockPm {
+            impl Pm for MockPm {
                 /// Get the name of the package manager.
                 fn name(&self) -> String {
                     "mockpm".into()

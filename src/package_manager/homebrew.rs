@@ -1,6 +1,4 @@
-use super::{
-    DryRunStrategy, NoCacheStrategy, PackageManager, PmHelper, PmMode, PromptStrategy, Strategies,
-};
+use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::{Error, Result};
 use crate::exec::{self, Cmd};
@@ -27,7 +25,7 @@ lazy_static! {
 impl PmHelper for Homebrew {}
 
 #[async_trait]
-impl PackageManager for Homebrew {
+impl Pm for Homebrew {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "brew".into()

@@ -1,4 +1,4 @@
-use super::{NoCacheStrategy, PackageManager, PmHelper, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::Cmd;
@@ -24,7 +24,7 @@ lazy_static! {
 impl PmHelper for Macports {}
 
 #[async_trait]
-impl PackageManager for Macports {
+impl Pm for Macports {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "port".into()

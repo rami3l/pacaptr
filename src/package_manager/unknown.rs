@@ -1,4 +1,4 @@
-use super::PackageManager;
+use super::Pm;
 use crate::dispatch::config::Config;
 
 pub struct Unknown {
@@ -15,7 +15,7 @@ impl Unknown {
     }
 }
 
-impl PackageManager for Unknown {
+impl Pm for Unknown {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         format!("unknown package manager: {}", self.name)

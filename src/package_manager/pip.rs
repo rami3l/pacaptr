@@ -1,4 +1,4 @@
-use super::{PackageManager, PmHelper, PmMode, PromptStrategy, Strategies};
+use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::{self, Cmd};
@@ -21,7 +21,7 @@ lazy_static! {
 impl PmHelper for Pip {}
 
 #[async_trait]
-impl PackageManager for Pip {
+impl Pm for Pip {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "pip".into()

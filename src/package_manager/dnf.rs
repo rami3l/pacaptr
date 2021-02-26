@@ -1,4 +1,4 @@
-use super::{NoCacheStrategy, PackageManager, PmHelper, PmMode, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
 use crate::error::Result;
 use crate::exec::{self, Cmd};
 use crate::print::PROMPT_RUN;
@@ -25,7 +25,7 @@ lazy_static! {
 impl PmHelper for Dnf {}
 
 #[async_trait]
-impl PackageManager for Dnf {
+impl Pm for Dnf {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "dnf".into()

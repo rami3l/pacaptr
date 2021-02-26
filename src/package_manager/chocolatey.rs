@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, PackageManager, PmHelper, PromptStrategy, Strategies};
+use super::{DryRunStrategy, Pm, PmHelper, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::Cmd;
@@ -32,7 +32,7 @@ impl PmHelper for Chocolatey {}
 
 // Windows is so special! It's better not to "sudo" automatically.
 #[async_trait]
-impl PackageManager for Chocolatey {
+impl Pm for Chocolatey {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "choco".into()

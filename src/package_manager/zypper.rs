@@ -1,6 +1,4 @@
-use super::{
-    DryRunStrategy, NoCacheStrategy, PackageManager, PmHelper, PmMode, PromptStrategy, Strategies,
-};
+use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::{self, Cmd};
@@ -38,7 +36,7 @@ impl Zypper {
 impl PmHelper for Zypper {}
 
 #[async_trait]
-impl PackageManager for Zypper {
+impl Pm for Zypper {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "zypper".into()
