@@ -1,4 +1,4 @@
-use super::{PackageManager, PmMode, PromptStrategy, Strategies};
+use super::{PackageManager, PmHelper, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::{self, Cmd};
@@ -17,6 +17,8 @@ lazy_static! {
         ..Default::default()
     };
 }
+
+impl PmHelper for Pip {}
 
 #[async_trait]
 impl PackageManager for Pip {

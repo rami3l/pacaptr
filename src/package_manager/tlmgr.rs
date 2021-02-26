@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, PackageManager, Strategies};
+use super::{DryRunStrategy, PackageManager, PmHelper, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::Cmd;
@@ -15,6 +15,8 @@ lazy_static! {
         ..Default::default()
     };
 }
+
+impl PmHelper for Tlmgr {}
 
 #[async_trait]
 impl PackageManager for Tlmgr {

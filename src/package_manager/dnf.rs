@@ -1,4 +1,4 @@
-use super::{NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, PackageManager, PmHelper, PmMode, PromptStrategy, Strategies};
 use crate::error::Result;
 use crate::exec::{self, Cmd};
 use crate::print::PROMPT_RUN;
@@ -21,6 +21,8 @@ lazy_static! {
         ..Default::default()
     };
 }
+
+impl PmHelper for Dnf {}
 
 #[async_trait]
 impl PackageManager for Dnf {

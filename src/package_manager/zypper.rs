@@ -1,4 +1,6 @@
-use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
+use super::{
+    DryRunStrategy, NoCacheStrategy, PackageManager, PmHelper, PmMode, PromptStrategy, Strategies,
+};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::{self, Cmd};
@@ -7,13 +9,6 @@ use lazy_static::lazy_static;
 
 pub struct Zypper {
     pub cfg: Config,
-}
-
-impl Zypper {
-    async fn check_dry(&self, cmd: Cmd) -> Result<()> {
-        self.just_run(cmd, Default::default(), &CHECK_DRY_STRAT)
-            .await
-    }
 }
 
 lazy_static! {
@@ -32,6 +27,15 @@ lazy_static! {
         dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
     };
 }
+
+impl Zypper {
+    async fn check_dry(&self, cmd: Cmd) -> Result<()> {
+        self.just_run(cmd, Default::default(), &CHECK_DRY_STRAT)
+            .await
+    }
+}
+
+impl PmHelper for Zypper {}
 
 #[async_trait]
 impl PackageManager for Zypper {

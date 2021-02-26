@@ -1,4 +1,4 @@
-use super::{NoCacheStrategy, PackageManager, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, PackageManager, PmHelper, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::Cmd;
@@ -20,6 +20,8 @@ lazy_static! {
         ..Default::default()
     };
 }
+
+impl PmHelper for Apt {}
 
 #[async_trait]
 impl PackageManager for Apt {

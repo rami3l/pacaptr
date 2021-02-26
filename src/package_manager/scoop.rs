@@ -1,4 +1,4 @@
-use super::{PackageManager, PromptStrategy, Strategies};
+use super::{PackageManager, PmHelper, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::{Error, Result};
 use crate::exec::{self, Cmd};
@@ -22,6 +22,8 @@ lazy_static! {
         ..Default::default()
     };
 }
+
+impl PmHelper for Scoop {}
 
 // Windows is so special! It's better not to "sudo" automatically.
 #[async_trait]

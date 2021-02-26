@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, PackageManager, PromptStrategy, Strategies};
+use super::{DryRunStrategy, PackageManager, PmHelper, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::Cmd;
@@ -27,6 +27,8 @@ impl Chocolatey {
             .await
     }
 }
+
+impl PmHelper for Chocolatey {}
 
 // Windows is so special! It's better not to "sudo" automatically.
 #[async_trait]

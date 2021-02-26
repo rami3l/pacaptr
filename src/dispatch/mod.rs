@@ -3,6 +3,7 @@ mod opt;
 
 use crate::exec::is_exe;
 
+pub use self::config::Config;
 pub use self::opt::Opts;
 
 /// Detect the name of the package manager to be used in auto dispatch.
