@@ -262,7 +262,7 @@ impl Cmd {
             match tokio::task::block_in_place(move || {
                 prompt(
                     "Proceed",
-                    "[Yes/all/no]",
+                    "[YES/All/No/^C]",
                     &["", "y", "yes", "a", "all", "n", "no"],
                     false,
                 )
