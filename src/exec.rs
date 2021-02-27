@@ -348,14 +348,14 @@ pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.
-/// To check by one parameter only, pass `""` as another.
+/// To check by one parameter only, pass `""` to the other one.
 pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && which(path).is_ok()) || (!name.is_empty() && which(name).is_ok())
 }
 
 /// Helper function to turn an `AsyncRead` to a `Stream`.
 // See also: https://stackoverflow.com/a/59327560
-pub fn into_bytes<R: AsyncRead>(reader: R) -> impl Stream<Item = tokio::io::Result<Bytes>> {
+pub fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = tokio::io::Result<Bytes>> {
     FramedRead::new(reader, BytesCodec::new()).map_ok(|bytes| bytes.freeze())
 }
 

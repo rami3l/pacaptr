@@ -1,13 +1,13 @@
+mod cmd;
 pub mod config;
-mod opt;
 
+pub use self::cmd::Opts;
 pub use self::config::Config;
-pub use self::opt::Opts;
 use crate::exec::is_exe;
 use crate::package_manager::*;
 
 /// Detect the name of the package manager to be used in auto dispatch.
-pub fn detect_pm<'s>() -> &'s str {
+pub fn detect_pm_str<'s>() -> &'s str {
     let pairs: &[(&str, &str)] = match () {
         _ if cfg!(target_os = "windows") => &[("scoop", ""), ("choco", "")],
 
@@ -34,9 +34,13 @@ pub fn detect_pm<'s>() -> &'s str {
 }
 
 /// Generate the `Pm` instance according it's name, feeding it with the current `Config`.
-pub fn make_pm(pm_str: &str, cfg: Config) -> Box<dyn Pm> {
+pub fn yield_pm(cfg: Config) -> Box<dyn Pm> {
+    // If the `Pm` to be used is not stated in any config,
+    // we should fall back to automatic detection.
+    let pm = cfg.default_pm.as_deref().unwrap_or_else(detect_pm_str);
+
     #[allow(clippy::match_single_binding)]
-    match pm_str {
+    match pm {
         // Chocolatey
         "choco" => Chocolatey { cfg }.boxed(),
 

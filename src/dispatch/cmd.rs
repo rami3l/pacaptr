@@ -1,4 +1,4 @@
-use crate::dispatch::{detect_pm, make_pm, Config};
+use crate::dispatch::{yield_pm, Config};
 use crate::error::{Error, Result};
 use crate::exec::StatusCode;
 use crate::package_manager::Pm;
@@ -28,7 +28,7 @@ pub struct Opts {
     #[clap(short = 'U', long)]
     update: bool,
 
-    // Main flags and flagcounters
+    // Main flags and flagcounters.
     // ! WARNING
     // ! Some long flag names are completely different for different operations,
     // ! but I think mose of us just use the shorthand form anyway...
@@ -81,7 +81,7 @@ pub struct Opts {
     #[clap(short, long = "refresh", about = "(-S) refresh")]
     y: bool,
 
-    // Other Pacaptr flags
+    // Other Pacaptr flags.
     #[clap(
         long = "using",
         alias = "package-manager",
@@ -140,45 +140,16 @@ impl Opts {
         Ok(())
     }
 
-    /// Generate the `Pm` instance according it's name.
-    pub fn make_pm(&self, cfg: Config) -> Box<dyn Pm> {
-        // The precedence of CLI config is higher than dotfile config.
-
-        let cfg = {
-            macro_rules! make_actual_cfg {
-                (
-                    $other: ident,
-                    bool: ($( $bool_field:ident ), *),
-                    retain: ($( $retain_field:ident ), *),
-                ) => {
-                    Config {
-                        $($bool_field: self.$bool_field || $other.$bool_field,)*
-                        $($retain_field: $other.$retain_field,)*
-                    }
-                };
-            }
-            make_actual_cfg! {
-                cfg,
-                bool: (
-                    dry_run,
-                    needed,
-                    no_confirm,
-                    no_cache
-                ),
-                retain: (
-                    default_pm
-                ),
-            }
-        };
-
-        let pm_str = self
-            .using
-            .as_deref()
-            .or_else(|| cfg.default_pm.as_deref())
-            .unwrap_or_else(detect_pm)
-            .to_owned();
-
-        make_pm(&pm_str, cfg)
+    /// Generate current config by merging current CLI flags with the dotfile.
+    /// The precedence of the CLI flags is highter than the dotfile.
+    fn merge_cfg(&self, dotfile: Config) -> Config {
+        Config {
+            dry_run: self.dry_run || dotfile.dry_run,
+            needed: self.needed || dotfile.dry_run,
+            no_confirm: self.no_confirm || dotfile.no_confirm,
+            no_cache: self.no_cache || dotfile.no_cache,
+            default_pm: self.using.clone().or(dotfile.default_pm),
+        }
     }
 
     /// Execute the job according to the flags received and the package manager detected.
@@ -243,7 +214,8 @@ impl Opts {
     }
 
     pub async fn dispatch(&self) -> Result<StatusCode> {
-        self.dispatch_from(self.make_pm(Config::load()?)).await
+        let cfg = self.merge_cfg(Config::load()?);
+        self.dispatch_from(yield_pm(cfg)).await
     }
 }
 
