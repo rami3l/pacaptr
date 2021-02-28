@@ -6,9 +6,9 @@ pub use is_root::is_root;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::process::Stdio;
+use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::io::{AsyncRead, AsyncWriteExt};
 use tokio::process::Command as Exec;
-use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use tokio::try_join;
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -248,14 +248,12 @@ impl Cmd {
     /// Execute a command and collect its `stderr`.
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     /// The user will be prompted if (s)he wishes to continue with the command execution.
-    #[allow(clippy::mutex_atomic)]
     async fn exec_prompt(self, mute: bool) -> Result<Output> {
         lazy_static! {
-            static ref ALL_YES: Mutex<bool> = Mutex::new(false);
+            static ref ALL_YES: AtomicBool = AtomicBool::new(false);
         }
 
-        let mut all_yes = ALL_YES.lock().await;
-        let proceed: bool = if *all_yes {
+        let proceed: bool = if ALL_YES.load(Ordering::SeqCst) {
             true
         } else {
             print_cmd(&self, PROMPT_PENDING);
@@ -274,7 +272,7 @@ impl Cmd {
                 "y" | "yes" | "" => true,
                 // You can also say `All` to answer `Yes` to all the other questions that follow.
                 "a" | "all" => {
-                    *all_yes = true;
+                    ALL_YES.store(true, Ordering::SeqCst);
                     true
                 }
                 // Or you can say `No`.
