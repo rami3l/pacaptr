@@ -262,7 +262,7 @@ impl Cmd {
             match tokio::task::block_in_place(move || {
                 prompt(
                     "Proceed",
-                    "[Yes/all/no]",
+                    "[YES/All/No/^C]",
                     &["", "y", "yes", "a", "all", "n", "no"],
                     false,
                 )
@@ -348,7 +348,7 @@ pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.
-/// To check by one parameter only, pass `""` as another.
+/// To check by one parameter only, pass `""` to the other one.
 pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && which(path).is_ok()) || (!name.is_empty() && which(name).is_ok())
 }

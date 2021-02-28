@@ -1,4 +1,4 @@
-use super::{PackageManager, PromptStrategy, Strategies};
+use super::{Pm, PmHelper, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::{Error, Result};
 use crate::exec::{self, Cmd};
@@ -23,16 +23,18 @@ lazy_static! {
     };
 }
 
+impl PmHelper for Scoop {}
+
 // Windows is so special! It's better not to "sudo" automatically.
 #[async_trait]
-impl PackageManager for Scoop {
+impl Pm for Scoop {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "scoop".into()
     }
 
-    fn cfg(&self) -> Config {
-        self.cfg.clone()
+    fn cfg(&self) -> &Config {
+        &self.cfg
     }
 
     /// Q generates a list of installed packages.

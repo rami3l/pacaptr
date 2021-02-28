@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
+use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::{self, Cmd};
@@ -7,13 +7,6 @@ use lazy_static::lazy_static;
 
 pub struct Zypper {
     pub cfg: Config,
-}
-
-impl Zypper {
-    async fn check_dry(&self, cmd: Cmd) -> Result<()> {
-        self.just_run(cmd, Default::default(), &CHECK_DRY_STRAT)
-            .await
-    }
 }
 
 lazy_static! {
@@ -33,15 +26,24 @@ lazy_static! {
     };
 }
 
+impl Zypper {
+    async fn check_dry(&self, cmd: Cmd) -> Result<()> {
+        self.just_run(cmd, Default::default(), &CHECK_DRY_STRAT)
+            .await
+    }
+}
+
+impl PmHelper for Zypper {}
+
 #[async_trait]
-impl PackageManager for Zypper {
+impl Pm for Zypper {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "zypper".into()
     }
 
-    fn cfg(&self) -> Config {
-        self.cfg.clone()
+    fn cfg(&self) -> &Config {
+        &self.cfg
     }
 
     /// Q generates a list of installed packages.

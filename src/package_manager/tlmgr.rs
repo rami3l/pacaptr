@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, PackageManager, Strategies};
+use super::{DryRunStrategy, Pm, PmHelper, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::Cmd;
@@ -16,15 +16,17 @@ lazy_static! {
     };
 }
 
+impl PmHelper for Tlmgr {}
+
 #[async_trait]
-impl PackageManager for Tlmgr {
+impl Pm for Tlmgr {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "tlmgr".into()
     }
 
-    fn cfg(&self) -> Config {
-        self.cfg.clone()
+    fn cfg(&self) -> &Config {
+        &self.cfg
     }
 
     /// Q generates a list of installed packages.

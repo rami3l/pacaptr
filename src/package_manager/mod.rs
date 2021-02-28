@@ -11,37 +11,17 @@ pub mod tlmgr;
 pub mod unknown;
 pub mod zypper;
 
-use crate::dispatch::config::Config;
+pub use {
+    apk::Apk, apt::Apt, chocolatey::Chocolatey, conda::Conda, dnf::Dnf, homebrew::Homebrew,
+    macports::Macports, pip::Pip, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, zypper::Zypper,
+};
+
+use crate::dispatch::Config;
 use crate::error::Result;
 use crate::exec::{Cmd, Mode, Output, StatusCode};
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex;
-
-/*
-macro_rules! make_pm {(
-        $(
-            $( #[$meta:meta] )*
-            $method:ident
-        ),*
-    ) => {
-        $( $(#[$meta] )*
-        fn $method(&self, _kws: &[&str], _flags: &[&str]) -> BoxFuture<'_, crate::error::Result<()>>
-        {
-            Box::pin(async move {
-                let name = self.name();
-                ::std::result::Result::Err(anyhow::anyhow!(
-                    format!(
-                        "Operation `{}` unimplemented for `{}`",
-                        stringify!($method),
-                        name,
-                    ),
-                ))
-            })
-        })*
-    };
-}
-*/
 
 macro_rules! make_op_body {
     ( $self:ident, $method:ident ) => {{
@@ -52,44 +32,168 @@ macro_rules! make_op_body {
     }};
 }
 
-/// The behaviors of a Pack(age)Manager.
-/// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
-/// and https://wiki.archlinux.org/index.php/Pacman
+macro_rules! decl_pm {(
+        $(
+            $( #[$meta:meta] )*
+            async fn $method:ident;
+        )*
+    ) => {
+        /// The behaviors of a Package Manager.
+        /// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
+        /// and https://wiki.archlinux.org/index.php/Pacman
+        #[async_trait]
+        pub trait Pm: Sync {
+            /// Get the name of the package manager.
+            fn name(&self) -> String;
+
+            /// Get the config of the package manager.
+            fn cfg(&self) -> &Config;
+
+            /// Wrap the `Pm` instance in a box.
+            fn boxed<'a>(self) -> Box<dyn Pm + 'a>
+            where
+                Self: Sized + 'a,
+            {
+                Box::new(self)
+            }
+
+            /// Get the `StatusCode` to be returned.
+            async fn code(&self) -> StatusCode {
+                self.get_set_code(None).await
+            }
+
+            /// Set the `StatusCode` to be returned.
+            async fn set_code(&self, to: StatusCode) {
+                self.get_set_code(Some(to)).await;
+            }
+
+            /// Get/Set the `StatusCode` to be returned.
+            /// If `to` is `Some(n)`, then the current `StatusCode` will be reset to `n`.
+            /// Then the current `StatusCode` will be returned.
+            #[doc(hidden)]
+            async fn get_set_code(&self, to: Option<StatusCode>) -> StatusCode {
+                lazy_static! {
+                    static ref CODE: Mutex<StatusCode> = Mutex::new(0);
+                }
+
+                let mut code = CODE.lock().await;
+                if let Some(n) = to {
+                    *code = n;
+                }
+
+                *code
+            }
+
+            // * Automatically generated methods below... *
+            $(
+                $(#[$meta] )*
+                async fn $method(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
+                    make_op_body!(self, $method)
+                }
+            )*
+        }
+    };
+}
+
+decl_pm! {
+   /// Q generates a list of installed packages.
+   async fn q;
+
+   /// Qc shows the changelog of a package.
+   async fn qc;
+
+   /// Qe lists packages installed explicitly (not as dependencies).
+   async fn qe;
+
+   /// Qi displays local package information: name, version, description, etc.
+   async fn qi;
+
+   /// Qk verifies one or more packages.
+   async fn qk;
+
+   /// Ql displays files provided by local package.
+   async fn ql;
+
+   /// Qm lists packages that are installed but are not available in any installation source (anymore).
+   async fn qm;
+
+   /// Qo queries the package which provides FILE.
+   async fn qo;
+
+   /// Qp queries a package supplied on the command line rather than an entry in the package management database.
+   async fn qp;
+
+   /// Qs searches locally installed package for names or descriptions.
+   async fn qs;
+
+   /// Qu lists packages which have an update available.
+   async fn qu;
+
+   /// R removes a single package, leaving all of its dependencies installed.
+   async fn r;
+
+   /// Rn removes a package and skips the generation of configuration backup files.
+   async fn rn;
+
+   /// Rns removes a package and its dependencies which are not required by any other installed package,
+   /// and skips the generation of configuration backup files.
+   async fn rns;
+
+   /// Rs removes a package and its dependencies which are not required by any other installed package,
+   /// and not explicitly installed by the user.
+   async fn rs;
+
+   /// Rss removes a package and its dependencies which are not required by any other installed package.
+   async fn rss;
+
+   /// S installs one or more packages by name.
+   async fn s;
+
+   /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+   async fn sc;
+
+   /// Scc removes all files from the cache.
+   async fn scc;
+
+   /// Sccc ...
+   /// What is this?
+   async fn sccc;
+
+   /// Sg lists all packages belonging to the GROUP.
+   async fn sg;
+
+   /// Si displays remote package information: name, version, description, etc.
+   async fn si;
+
+   /// Sii displays packages which require X to be installed, aka reverse dependencies.
+   async fn sii;
+
+   /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
+   async fn sl;
+
+   /// Ss searches for package(s) by searching the expression in name, description, short description.
+   async fn ss;
+
+   /// Su updates outdated packages.
+   async fn su;
+
+   /// Suy refreshes the local package database, then updates outdated packages.
+   async fn suy;
+
+   /// Sw retrieves all packages from the server, but does not install/upgrade anything.
+   async fn sw;
+
+   /// Sy refreshes the local package database.
+   async fn sy;
+
+   /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
+   async fn u;
+}
+
+/// Extra implementation helper functions for `Pm`,
+/// focusing on the ability to run subcommands (`Cmd`s) in a configured and PM-specific context.
 #[async_trait]
-pub trait PackageManager: Sync {
-    /// Get the name of the package manager.
-    fn name(&self) -> String;
-
-    /// Get the config of the package manager.
-    fn cfg(&self) -> Config;
-
-    /// Get the `StatusCode` to be returned.
-    async fn code(&self) -> StatusCode {
-        self._code(None).await
-    }
-
-    /// Set the `StatusCode` to be returned.
-    async fn set_code(&self, to: StatusCode) {
-        self._code(Some(to)).await;
-    }
-
-    /// Get/Set the `StatusCode` to be returned.
-    /// If `to` is `Some(n)`, then the current `StatusCode` will be reset to `n`.
-    /// Then the current `StatusCode` will be returned.
-    #[doc(hidden)]
-    async fn _code(&self, to: Option<StatusCode>) -> StatusCode {
-        lazy_static! {
-            static ref CODE: Mutex<StatusCode> = Mutex::new(0);
-        }
-
-        let mut code = CODE.lock().await;
-        if let Some(n) = to {
-            *code = n;
-        }
-
-        *code
-    }
-
+pub trait PmHelper: Pm {
     /// A helper method to simplify direct command invocation.
     async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: &Strategies) -> Result<Output> {
         let cfg = self.cfg();
@@ -171,166 +275,10 @@ pub trait PackageManager: Sync {
         self.just_run(cmd, Default::default(), &Default::default())
             .await
     }
-
-    // ! WARNING!
-    // ! Dirty copy-paste!
-
-    /// Q generates a list of installed packages.
-    async fn q(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, q)
-    }
-
-    /// Qc shows the changelog of a package.
-    async fn qc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, qc)
-    }
-
-    /// Qe lists packages installed explicitly (not as dependencies).
-    async fn qe(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, qe)
-    }
-
-    /// Qi displays local package information: name, version, description, etc.
-    async fn qi(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, qi)
-    }
-
-    /// Qk verifies one or more packages.
-    async fn qk(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, qk)
-    }
-
-    /// Ql displays files provided by local package.
-    async fn ql(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, ql)
-    }
-
-    /// Qm lists packages that are installed but are not available in any installation source (anymore).
-    async fn qm(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, qm)
-    }
-
-    /// Qo queries the package which provides FILE.
-    async fn qo(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, qo)
-    }
-
-    /// Qp queries a package supplied on the command line rather than an entry in the package management database.
-    async fn qp(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, qp)
-    }
-
-    /// Qs searches locally installed package for names or descriptions.
-    async fn qs(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, qs)
-    }
-
-    /// Qu lists packages which have an update available.
-    async fn qu(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, qu)
-    }
-
-    /// R removes a single package, leaving all of its dependencies installed.
-    async fn r(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, r)
-    }
-
-    /// Rn removes a package and skips the generation of configuration backup files.
-    async fn rn(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, rn)
-    }
-
-    /// Rns removes a package and its dependencies which are not required by any other installed package,
-    /// and skips the generation of configuration backup files.
-    async fn rns(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, rns)
-    }
-
-    /// Rs removes a package and its dependencies which are not required by any other installed package,
-    /// and not explicitly installed by the user.
-    async fn rs(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, rs)
-    }
-
-    /// Rss removes a package and its dependencies which are not required by any other installed package.
-    async fn rss(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, rss)
-    }
-
-    /// S installs one or more packages by name.
-    async fn s(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, s)
-    }
-
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
-    async fn sc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, sc)
-    }
-
-    /// Scc removes all files from the cache.
-    async fn scc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, scc)
-    }
-
-    /// Sccc ...
-    /// What is this?
-    async fn sccc(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, sccc)
-    }
-
-    /// Sg lists all packages belonging to the GROUP.
-    async fn sg(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, sg)
-    }
-
-    /// Si displays remote package information: name, version, description, etc.
-    async fn si(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, si)
-    }
-
-    /// Sii displays packages which require X to be installed, aka reverse dependencies.
-    async fn sii(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, sii)
-    }
-
-    /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
-    async fn sl(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, sl)
-    }
-
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
-    async fn ss(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, ss)
-    }
-
-    /// Su updates outdated packages.
-    async fn su(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, su)
-    }
-
-    /// Suy refreshes the local package database, then updates outdated packages.
-    async fn suy(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, suy)
-    }
-
-    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
-    async fn sw(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, sw)
-    }
-
-    /// Sy refreshes the local package database.
-    async fn sy(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, sy)
-    }
-
-    /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
-    async fn u(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-        make_op_body!(self, u)
-    }
 }
 
 /// Different ways in which a command shall be dealt with.
-/// This is a `PackageManager` specified version intended to be used along with `Strategies`.
+/// This is a `Pm` specified version intended to be used along with `Strategies`.
 #[derive(Copy, Clone, Debug)]
 pub enum PmMode {
     /// Silently collect all the `stdout`/`stderr` combined. Print nothing.
@@ -456,7 +404,7 @@ mod tests {
     struct MockPM {}
 
     #[async_trait]
-    impl PackageManager for MockPM {
+    impl Pm for MockPM {
         /// Get the name of the package manager.
         fn name(&self) -> String {
             "mockpm".into()

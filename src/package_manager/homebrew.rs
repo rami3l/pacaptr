@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
+use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::{Error, Result};
 use crate::exec::{self, Cmd};
@@ -22,32 +22,17 @@ lazy_static! {
     };
 }
 
-/*
-impl Homebrew {
-    /// Search the output of `brew info` to see if a `pack` is a formula and a cask at the same time.
-    async fn is_homonym(&self, pack: &str, flags: &[&str]) -> Result<bool> {
-        let out_bytes = Cmd::new(&["brew", "info"])
-            .kws(&[pack])
-            .flags(flags)
-            .exec(Mode::Mute)
-            .await?
-            .contents;
-        let out = String::from_utf8(out_bytes)?;
-        let pat = "as a formula. For the cask, use homebrew/cask/";
-        Ok(!exec::grep(&out, &[pat]).is_empty())
-    }
-}
-*/
+impl PmHelper for Homebrew {}
 
 #[async_trait]
-impl PackageManager for Homebrew {
+impl Pm for Homebrew {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "brew".into()
     }
 
-    fn cfg(&self) -> Config {
-        self.cfg.clone()
+    fn cfg(&self) -> &Config {
+        &self.cfg
     }
 
     /// Q generates a list of installed packages.

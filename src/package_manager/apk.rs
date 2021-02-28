@@ -1,4 +1,4 @@
-use super::{NoCacheStrategy, PackageManager, PmMode, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
 use crate::dispatch::config::Config;
 use crate::error::Result;
 use crate::exec::{self, Cmd};
@@ -22,15 +22,17 @@ lazy_static! {
     };
 }
 
+impl PmHelper for Apk {}
+
 #[async_trait]
-impl PackageManager for Apk {
+impl Pm for Apk {
     /// Get the name of the package manager.
     fn name(&self) -> String {
         "apk".into()
     }
 
-    fn cfg(&self) -> Config {
-        self.cfg.clone()
+    fn cfg(&self) -> &Config {
+        &self.cfg
     }
 
     /// Q generates a list of installed packages.

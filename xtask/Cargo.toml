@@ -1,15 +1,15 @@
 [package]
 authors = ["rami3l <rami3l@outlook.com>"]
 edition = "2018"
-name    = "xtask"
+name = "xtask"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow       = "1.0.38"
+anyhow = "1.0.38"
 const_format = "0.2.13"
-pico-args    = "0.4.0"
-regex        = { version = "1.4.3", default-features = false, features = ["std", "unicode-perl"] }
-xml-rs       = "0.8.3"
-xshell       = "0.1.8"
+pico-args = "0.4.0"
+regex = { version = "1.4.3", default-features = false, features = ["std", "unicode-perl"] }
+xml-rs = "0.8.3"
+xshell = "0.1.8"
