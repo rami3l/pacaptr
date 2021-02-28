@@ -176,7 +176,7 @@ mod apk {
     fn si_ok() {
         Test::new()
             .pacaptr(&["-Si", "wget"], &[])
-            .output(&["A network utility to retrieve files from the Web"])
+            .output(&["Network utility to retrieve files from the Web"])
             .run_verbose()
     }
 
