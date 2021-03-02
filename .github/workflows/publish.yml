@@ -18,7 +18,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          prerelease: ${{ !contains(github.ref, '-') }}
+          prerelease: ${{ contains(github.ref, '-') }}
 
   publish:
     name: Publish for ${{ matrix.os }}
