@@ -42,19 +42,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cargo xtask publish
 
-  bump-tap-version:
-    name: Bump formula version for homebrew
-    needs: [publish]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Generate new formula
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cargo xtask bump-tap
-
   bump-choco-version:
     name: Publish app on Chocolatey
     runs-on: windows-latest
@@ -64,7 +51,40 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Generate new formula
+
+      - name: Publish to choco
         env:
           CHOCO_API_KEY: ${{ secrets.CHOCO_API_KEY }}
         run: cargo xtask bump-choco
+
+  bump-tap-version:
+    name: Bump formula version for homebrew
+    needs: [publish]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Generate new formula as `pacaptr.rb`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cargo xtask bump-tap
+
+      - name: Checkout tap
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_ACTIONS_TOKEN }}
+          repository: rami3l/homebrew-tap
+          path: homebrew-tap
+
+      - name: Overwrite formula
+        run: |
+          cp ./pacaptr.rb homebrew-tap/pacaptr.rb
+          ls homebrew-tap
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v2
+        with:
+          path: homebrew-tap
+          token: ${{ secrets.GH_ACTIONS_TOKEN }}
