@@ -12,9 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Create release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create ${GITHUB_REF#refs/*/}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          prerelease: ${{ !contains(github.ref, '-') }}
 
   publish:
     name: Publish for ${{ matrix.os }}
@@ -88,3 +92,5 @@ jobs:
         with:
           path: homebrew-tap
           token: ${{ secrets.GH_ACTIONS_TOKEN }}
+          title: "feat: add `pacaptr` ${{ github.ref }}"
+          commit-message: "feat: add `pacaptr` ${{ github.ref }}"
