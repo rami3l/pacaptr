@@ -5,11 +5,10 @@
 ![pacaptr][socialify badge]
 
 <!--
-![Rust Badge](https://img.shields.io/badge/WARNING-Rusty-red?logo=rust&style=flat-square)
-![Arch Linux Badge](https://img.shields.io/badge/BTW-I--Use--Arch-blue?logo=arch-linux&style=flat-square)
+[pacaptr-logo]: https://user-images.githubusercontent.com/33851577/110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png
 -->
 
-![Interface Concept](https://user-images.githubusercontent.com/33851577/97274042-619d5900-1834-11eb-812f-a54a18186740.png)
+[socialify badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&forks=1&issues=1&logo=https%3A%2F%2Fuser-images.githubusercontent.com%2F33851577%2F110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png&owner=1&pattern=Charlie%20Brown&pulls=1&stargazers=1&theme=Light
 
 `pac·apt·r` (pacapt<sup>REVISED</sup>) is a wrapper for many package managers with pacman-style command syntax, started as a Rust port of [icy/pacapt].
 
@@ -17,9 +16,31 @@ It's highly recommended to set `pacman` as the alias of `pacaptr` on your non-Ar
 
 Run `pacman -Syu` on the OS of your choice!
 
+```smalltalk
+> pacaptr -S neofetch
+  Pending `brew reinstall neofetch`
+  Proceed [YES/All/No/^C]? y
+  Running `brew reinstall neofetch`
+==> Downloading https://homebrew.bintray.com/bottles/neofetch-7.1.0
+########################################################### 100.0%
+==> Reinstalling neofetch
+==> Pouring neofetch-7.1.0.big_sur.bottle.tar.gz
+🍺  /usr/local/Cellar/neofetch/7.1.0: 6 files, 351.7KB
+```
+
+<!--
+
+![Rust Badge](https://img.shields.io/badge/WARNING-Rusty-red?logo=rust&style=flat-square)
+![Arch Linux Badge](https://img.shields.io/badge/BTW-I--Use--Arch-blue?logo=arch-linux&style=flat-square)
+
+-->
+
+---
+
 ## Contents
 
 - [pacaptr](#pacaptr)
+
   - [Contents](#contents)
   - [Supported Package Managers](#supported-package-managers)
   - [Installation](#installation)
@@ -27,6 +48,8 @@ Run `pacman -Syu` on the OS of your choice!
   - [General Tips](#general-tips)
   - [Platform-Specific Tips](#platform-specific-tips)
   - [Postscript](#postscript)
+
+---
 
 ## Supported Package Managers
 
@@ -257,7 +280,6 @@ Initially, I found [icy/pacapt] which does just that, and I made this project to
 
 After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
 
-[socialify badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&forks=1&issues=1&logo=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2Fd%2Fd5%2FRust_programming_language_black_logo.svg%2F1200px-Rust_programming_language_black_logo.svg.png&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Light
 [pacman rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt
 [pacapt/#117]: https://github.com/icy/pacapt/issues/117
