@@ -1,7 +1,7 @@
 use crate::dispatch::{yield_pm, Config};
 use crate::error::{Error, Result};
 use crate::exec::StatusCode;
-use crate::package_manager::Pm;
+use crate::pm::Pm;
 use clap::{self, Clap};
 use std::iter::FromIterator;
 

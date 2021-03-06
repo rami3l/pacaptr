@@ -31,20 +31,23 @@ pub enum Mode {
     /// This will work with a colored `stdout`.
     CheckErr,
 
-    /// A CUSTOM prompt implemented by `pacaptr`.
-    /// Like `CheckErr`, but will ask for confirmation before proceeding.
+    /// A CUSTOM prompt implemented by a `pacaptr` module itself.
+    /// Like [`CheckErr`], but will ask for confirmation before proceeding.
     Prompt,
 }
 
 pub type StatusCode = i32;
 
-/// Representation of what a command returns.
+/// Output of running a [`Cmd`].
 #[derive(Debug, Clone)]
 pub struct Output {
     /// The captured `stdout`,
-    /// and if `Mode::CheckAll`, mixed with captured `stderr`.
+    /// and if set to [`Mode::CheckAll`], mixed with captured `stderr`.
     pub contents: Vec<u8>,
-    /// `Some(n)` for exit code, `None` for signals.
+
+    /// The status code returned by the [`Cmd`].
+    ///
+    /// Here we use [`Some(n)`] for exit code, [`None`] for signals.
     pub code: Option<StatusCode>,
 }
 
@@ -57,10 +60,11 @@ impl Default for Output {
     }
 }
 
-/// A command to be executed, provided in `command-keywords-flags` form.  
-/// For example, `[brew install]-[curl fish]-[--dry-run]`).
+/// A command to be executed, provided in `command-flags-keywords` form
+/// (eg. `[brew install]-[--dry-run]-[curl fish]`).
 #[derive(Debug, Clone, Default)]
 pub struct Cmd {
+    /// Flag indicating If a **normal admin** needs to run this command with `sudo`.
     pub sudo: bool,
     pub cmd: Vec<String>,
     pub kws: Vec<String>,
@@ -94,12 +98,14 @@ impl Cmd {
         self
     }
 
-    /// Determine if this command needs to run with `sudo -S`.
+    /// Determine if this command actually needs to run with `sudo -S`.
+    ///
+    /// If a **normal admin** needs to run it with `sudo`, and we are not `root`, then this is the case.
     pub fn needs_sudo(&self) -> bool {
         self.sudo && !is_root()
     }
 
-    /// Convert a `Cmd` object into a `subprocess::Exec`.
+    /// Convert a [`Cmd`] object into an [`Exec`].
     pub fn build(self) -> Exec {
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
         // ! but not `zypper install curl -y`.
@@ -124,10 +130,16 @@ impl Cmd {
     }
 }
 
-/// Helper macro to implement `exec_checkerr` and `exec_checkall`.
-/// Take contents from the input stream `src` and copy to `out` and a `Vec<u8>`,
-/// and finally return the `Vec<u8>`.
-/// The boolean `mute` decides whether to mute `out`.
+/// Helper to implement [`exec_checkerr`] and [`exec_checkall`].
+///
+/// Take contents from an input stream and copy to an output stream (optional) and a [`Vec<u8>`],
+/// then return the [`Vec<u8>`].
+///
+/// # Arguments
+///
+/// * `src` - The input stream to read from.
+/// * `out` - The output stream to write to (only if `mute` is [`true`]).
+/// * `mute` - Whether to mute `out`.
 async fn exec_tee<S, O>(src: &mut S, out: &mut O, mute: bool) -> Result<Vec<u8>>
 where
     S: Stream<Item = std::result::Result<Bytes, std::io::Error>> + Unpin,
@@ -147,9 +159,9 @@ where
 }
 
 impl Cmd {
-    /// Execute a command and return its output.  
-    /// The exact behavior depends on the `mode` passed in.  
-    /// See `exec::Mode`'s documentation for more info.
+    /// Execute a [`Cmd`] and return its output.
+    ///
+    /// The exact behavior depends on the [`Mode`] passed in (see [`exec::Mode`] for more info).
     pub async fn exec(self, mode: Mode) -> Result<Output> {
         match mode {
             Mode::PrintCmd => {
@@ -169,7 +181,8 @@ impl Cmd {
         }
     }
 
-    /// Execute a command and return its `stdout` and `stderr`.
+    /// Execute a [`Cmd`] and return its `stdout` and `stderr`.
+    ///
     /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
     async fn exec_checkall(self, mute: bool) -> Result<Output> {
         use Error::*;
@@ -212,7 +225,7 @@ impl Cmd {
         })
     }
 
-    /// Execute a command and collect its `stderr`.  
+    /// Execute a [`Cmd`] and collect its `stderr`.  
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     async fn exec_checkerr(self, mute: bool) -> Result<Output> {
         use Error::*;
@@ -245,9 +258,11 @@ impl Cmd {
         })
     }
 
-    /// Execute a command and collect its `stderr`.
+    /// Execute a [`Cmd`] and collect its `stderr`.
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
-    /// The user will be prompted if (s)he wishes to continue with the command execution.
+    ///
+    /// This function behaves just like [`exec_checkerr`], but in addition,
+    /// the user will be prompted if (s)he wishes to continue with the command execution.
     async fn exec_prompt(self, mute: bool) -> Result<Output> {
         lazy_static! {
             static ref ALL_YES: AtomicBool = AtomicBool::new(false);
@@ -308,7 +323,8 @@ impl std::fmt::Display for Cmd {
 
 /// Prompt and get the output string.
 /// This action won't end until an expected answer is found.
-/// If `case_sensitive == false`, then `expected` should be all lower case patterns.
+///
+/// If `case_sensitive` is `false`, then `expected` should be all lower case patterns.
 pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
     use std::io::Write;
     loop {
@@ -346,13 +362,15 @@ pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.
+///
 /// To check by one parameter only, pass `""` to the other one.
 pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && which(path).is_ok()) || (!name.is_empty() && which(name).is_ok())
 }
 
-/// Helper function to turn an `AsyncRead` to a `Stream`.
-// See also: https://stackoverflow.com/a/59327560
+/// Helper function to turn an [`AsyncRead`] to a [`Stream`].
+///
+/// *Shamelessly copied from [StackOverflow](https://stackoverflow.com/a/59327560).*
 pub fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = tokio::io::Result<Bytes>> {
     FramedRead::new(reader, BytesCodec::new()).map_ok(|bytes| bytes.freeze())
 }

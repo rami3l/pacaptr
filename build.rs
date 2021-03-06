@@ -7,7 +7,7 @@ use std::fs;
 use std::io::Write;
 use std::path::Path;
 
-const PM_IMPL_DIR: &str = "src/package_manager/";
+const PM_IMPL_DIR: &str = "src/pm/";
 const COMPAT_TABLE_PATH: &str = "docs/compatibility_table.md";
 const METHODS: &[&str] = &[
     "q", "qc", "qe", "qi", "qk", "ql", "qm", "qo", "qp", "qs", "qu", "r", "rn", "rns", "rs", "rss",

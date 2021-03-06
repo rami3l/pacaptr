@@ -4,7 +4,7 @@ pub mod config;
 pub use self::cmd::Opts;
 pub use self::config::Config;
 use crate::exec::is_exe;
-use crate::package_manager::*;
+use crate::pm::*;
 
 /// Detect the name of the package manager to be used in auto dispatch.
 pub fn detect_pm_str<'s>() -> &'s str {
