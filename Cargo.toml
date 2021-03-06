@@ -14,9 +14,9 @@ readme = "README.md"
 
 edition = "2018"
 include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
-build = "build.rs"
+# build = "build.rs"
 name = "pacaptr"
-version = "0.11.0"
+version = "0.11.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
