@@ -70,6 +70,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Get current tag
+        uses: olegtarasov/get-tag@v2.1
+        id: get_tag
+
       - name: Generate new formula as `pacaptr.rb`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -92,5 +96,5 @@ jobs:
         with:
           path: homebrew-tap
           token: ${{ secrets.GH_ACTIONS_TOKEN }}
-          title: "feat: add `pacaptr` ${{ github.ref }}"
-          commit-message: "feat: add `pacaptr` ${{ github.ref }}"
+          title: "feat: add `pacaptr` ${{ steps.get_tag.outputs.tag }}"
+          commit-message: "feat: add `pacaptr` ${{ steps.get_tag.outputs.tag }}"
