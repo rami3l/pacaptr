@@ -95,12 +95,6 @@ impl Pm for Dnf {
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     // TODO: Is this right?
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let search = |contents: &str| {
-            exec::grep(contents, kws)
-                .iter()
-                .for_each(|ln| println!("{}", ln))
-        };
-
         let cmd = &["rpm", "-qa"];
         let cmd = Cmd::new(cmd).flags(flags);
         if !self.cfg.dry_run {
@@ -110,7 +104,7 @@ impl Pm for Dnf {
             .run(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
-        search(&String::from_utf8(out_bytes)?);
+        exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
         Ok(())
     }
 

@@ -66,12 +66,6 @@ impl Pm for Homebrew {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let search = |contents: &str| {
-            exec::grep(contents, kws)
-                .iter()
-                .for_each(|ln| println!("{}", ln))
-        };
-
         macro_rules! run {
             ( $cmd: expr ) => {
                 async {
@@ -84,7 +78,7 @@ impl Pm for Homebrew {
                         .await?
                         .contents;
 
-                    search(&String::from_utf8(out_bytes)?);
+                    exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
                     Ok::<(), Error>(())
                 }
             };
@@ -131,7 +125,7 @@ impl Pm for Homebrew {
         let err_msg = String::from_utf8(err_bytes)?;
 
         let pattern = "Unknown command: rmtree";
-        if !exec::grep(&err_msg, &[pattern]).is_empty() {
+        if !exec::grep(&err_msg, &[pattern])?.is_empty() {
             print::print_msg(
                 "`rmtree` is not installed. You may install it with the following command:",
                 PROMPT_INFO,

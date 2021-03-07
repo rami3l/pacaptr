@@ -7,6 +7,7 @@ use futures::{Stream, StreamExt, TryStreamExt};
 pub use is_root::is_root;
 use lazy_static::lazy_static;
 use regex::Regex;
+use std::iter::FromIterator;
 use std::process::Stdio;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::io::{AsyncRead, AsyncWriteExt};
@@ -352,15 +353,31 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
 }
 
 /// Find all lines in the given `text` that matches all the `patterns`.
-pub fn grep(text: &str, patterns: &[&str]) -> Vec<String> {
-    let rs: Vec<Regex> = patterns
+///
+/// We suppose that all patterns are legal regular expressions.
+/// An error message will be printed if this is not the case.
+/// If there is no legal patterns, the output [`Vec`] will be empty.
+pub fn grep<'a>(text: &'a str, patterns: &[&str]) -> Result<Vec<&'a str>> {
+    let rs: Vec<Regex> = Result::from_iter(patterns.iter().map(|&pat| {
+        Regex::new(pat).map_err(|_e| Error::OtherError(format!("Pattern `{}` is ill-formed.", pat)))
+    }))?;
+
+    let res = if !rs.is_empty() {
+        text.lines()
+            .filter(|line| rs.iter().all(|regex| regex.is_match(line)))
+            .collect()
+    } else {
+        vec![]
+    };
+    Ok(res)
+}
+
+/// Print the result of [`grep`] line by line.
+pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
+    grep(text, patterns)?
         .iter()
-        .map(|&pat| Regex::new(pat).unwrap())
-        .collect();
-    text.lines()
-        .filter(|&line| rs.iter().all(|regex| regex.is_match(line)))
-        .map(|s| s.to_owned())
-        .collect()
+        .for_each(|ln| println!("{}", ln));
+    Ok(())
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.

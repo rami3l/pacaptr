@@ -75,12 +75,6 @@ impl Pm for Zypper {
 
     /// Qm lists packages that are installed but are not available in any installation source (anymore).
     async fn qm(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let search = |contents: &str, pattern: &str| {
-            exec::grep(contents, &[pattern])
-                .iter()
-                .for_each(|ln| println!("{}", ln))
-        };
-
         let cmd = &["zypper", "search", "-si"];
         let cmd = Cmd::new(cmd).kws(kws).flags(flags);
         let out_bytes = self
@@ -89,7 +83,7 @@ impl Pm for Zypper {
             .contents;
         let out = String::from_utf8(out_bytes)?;
 
-        search(&out, "System Packages");
+        exec::grep_print(&out, &["System Packages"])?;
         Ok(())
     }
 

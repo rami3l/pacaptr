@@ -54,12 +54,6 @@ impl Pm for Scoop {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let search = |contents: &str| {
-            exec::grep(contents, kws)
-                .iter()
-                .for_each(|ln| println!("{}", ln))
-        };
-
         macro_rules! run {
             ( $cmd: expr ) => {
                 async {
@@ -72,7 +66,7 @@ impl Pm for Scoop {
                         .await?
                         .contents;
 
-                    search(&String::from_utf8(out_bytes)?);
+                    exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
                     Ok::<(), Error>(())
                 }
             };

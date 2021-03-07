@@ -23,6 +23,7 @@ pub struct Config {
 impl Config {
     pub fn load() -> Result<Self> {
         let crate_name = clap::crate_name!();
+        // The configuration file is `$HOME/.config/pacaptr/pacaptr.toml`.
         let config = dirs::home_dir()
             .ok_or_else(|| Error::ConfigError {
                 msg: "$HOME path not found".into(),

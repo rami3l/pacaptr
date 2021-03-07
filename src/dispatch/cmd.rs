@@ -4,6 +4,7 @@ use crate::exec::StatusCode;
 use crate::pm::Pm;
 use clap::{self, Clap};
 use std::iter::FromIterator;
+use tokio::task;
 
 /// The command line options to be collected.
 #[derive(Debug, Clap)]
@@ -214,7 +215,8 @@ impl Opts {
     }
 
     pub async fn dispatch(&self) -> Result<StatusCode> {
-        let cfg = self.merge_cfg(Config::load()?);
+        let dotfile = task::block_in_place(Config::load);
+        let cfg = self.merge_cfg(dotfile?);
         self.dispatch_from(yield_pm(cfg)).await
     }
 }
