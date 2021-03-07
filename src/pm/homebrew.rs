@@ -22,8 +22,6 @@ lazy_static! {
     };
 }
 
-impl PmHelper for Homebrew {}
-
 #[async_trait]
 impl Pm for Homebrew {
     /// Get the name of the package manager.

@@ -21,8 +21,6 @@ lazy_static! {
     };
 }
 
-impl PmHelper for Apt {}
-
 #[async_trait]
 impl Pm for Apt {
     /// Get the name of the package manager.

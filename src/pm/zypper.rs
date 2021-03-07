@@ -33,8 +33,6 @@ impl Zypper {
     }
 }
 
-impl PmHelper for Zypper {}
-
 #[async_trait]
 impl Pm for Zypper {
     /// Get the name of the package manager.

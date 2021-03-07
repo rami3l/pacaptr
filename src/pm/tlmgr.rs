@@ -16,8 +16,6 @@ lazy_static! {
     };
 }
 
-impl PmHelper for Tlmgr {}
-
 #[async_trait]
 impl Pm for Tlmgr {
     /// Get the name of the package manager.

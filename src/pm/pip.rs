@@ -18,8 +18,6 @@ lazy_static! {
     };
 }
 
-impl PmHelper for Pip {}
-
 #[async_trait]
 impl Pm for Pip {
     /// Get the name of the package manager.

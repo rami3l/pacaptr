@@ -22,8 +22,6 @@ lazy_static! {
     };
 }
 
-impl PmHelper for Apk {}
-
 #[async_trait]
 impl Pm for Apk {
     /// Get the name of the package manager.

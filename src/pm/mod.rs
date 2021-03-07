@@ -1,3 +1,5 @@
+//! Here is where the things really happen. If you want to add package manager support, please declare submodules here.
+
 pub mod apk;
 pub mod apt;
 pub mod chocolatey;
@@ -39,8 +41,9 @@ macro_rules! decl_pm {(
         )*
     ) => {
         /// The behaviors of a Package Manager.
-        /// For method explanation see: https://wiki.archlinux.org/index.php/Pacman/Rosetta
-        /// and https://wiki.archlinux.org/index.php/Pacman
+        ///
+        /// For method explanation see: <https://wiki.archlinux.org/index.php/Pacman/Rosetta>
+        /// and <https://wiki.archlinux.org/index.php/Pacman>
         #[async_trait]
         pub trait Pm: Sync {
             /// Get the name of the package manager.
@@ -276,6 +279,8 @@ pub trait PmHelper: Pm {
             .await
     }
 }
+
+impl<P: Pm> PmHelper for P {}
 
 /// Different ways in which a command shall be dealt with.
 /// This is a `Pm` specified version intended to be used along with `Strategies`.

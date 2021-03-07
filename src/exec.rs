@@ -1,3 +1,5 @@
+//! This module handles launching of subprocesses and their results.
+
 use crate::error::{Error, Result};
 use crate::print::*;
 use bytes::Bytes;
@@ -130,7 +132,7 @@ impl Cmd {
     }
 }
 
-/// Helper to implement [`exec_checkerr`] and [`exec_checkall`].
+/// Helper to implement [`Cmd::exec_checkerr`] and [`Cmd::exec_checkall`].
 ///
 /// Take contents from an input stream and copy to an output stream (optional) and a [`Vec<u8>`],
 /// then return the [`Vec<u8>`].

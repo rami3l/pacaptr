@@ -1,3 +1,5 @@
+//! This module handles output format.
+
 use crate::exec::Cmd;
 use colored::Colorize;
 

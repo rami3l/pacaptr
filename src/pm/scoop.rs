@@ -23,8 +23,6 @@ lazy_static! {
     };
 }
 
-impl PmHelper for Scoop {}
-
 // Windows is so special! It's better not to "sudo" automatically.
 #[async_trait]
 impl Pm for Scoop {

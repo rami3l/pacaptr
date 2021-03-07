@@ -28,8 +28,6 @@ impl Chocolatey {
     }
 }
 
-impl PmHelper for Chocolatey {}
-
 // Windows is so special! It's better not to "sudo" automatically.
 #[async_trait]
 impl Pm for Chocolatey {

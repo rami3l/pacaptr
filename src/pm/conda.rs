@@ -18,8 +18,6 @@ lazy_static! {
     };
 }
 
-impl PmHelper for Conda {}
-
 #[async_trait]
 impl Pm for Conda {
     /// Get the name of the package manager.
