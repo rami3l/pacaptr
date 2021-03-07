@@ -5,9 +5,9 @@ use crate::print::*;
 use bytes::Bytes;
 use futures::{Stream, StreamExt, TryStreamExt};
 pub use is_root::is_root;
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::iter::FromIterator;
 use std::process::Stdio;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::io::{AsyncRead, AsyncWriteExt};
@@ -358,9 +358,13 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
 /// An error message will be printed if this is not the case.
 /// If there is no legal patterns, the output [`Vec`] will be empty.
 pub fn grep<'a>(text: &'a str, patterns: &[&str]) -> Result<Vec<&'a str>> {
-    let rs: Vec<Regex> = Result::from_iter(patterns.iter().map(|&pat| {
-        Regex::new(pat).map_err(|_e| Error::OtherError(format!("Pattern `{}` is ill-formed.", pat)))
-    }))?;
+    let rs: Vec<Regex> = patterns
+        .iter()
+        .map(|&pat| {
+            Regex::new(pat)
+                .map_err(|_e| Error::OtherError(format!("Pattern `{}` is ill-formed.", pat)))
+        })
+        .try_collect()?;
 
     let res = if !rs.is_empty() {
         text.lines()

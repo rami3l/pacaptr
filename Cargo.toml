@@ -30,7 +30,7 @@ regex = "1.4.3"
 xshell = "0.1.9"
 
 [dependencies]
-async-trait = "0.1.45"
+async-trait = "0.1.47"
 bytes = "1.0.1"
 clap = "3.0.0-beta.2"
 colored = "2.0.0"
@@ -38,6 +38,7 @@ confy = "0.4.0"
 dirs = "3.0.1"
 futures = "0.3.13"
 is-root = "0.1.2"
+itertools = "0.10.0"
 lazy_static = "1.4.0"
 regex = { version = "1.4.3", default-features = false, features = ["std", "perf"] }
 serde = { version = "1.0.124", features = ["derive"] }
