@@ -14,6 +14,7 @@ readme = "README.md"
 
 edition = "2018"
 include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
+exclude = ["dist/**/*", "docs/**/*"]
 # build = "build.rs"
 name = "pacaptr"
 version = "0.11.1"
