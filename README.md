@@ -10,7 +10,7 @@
 
 [socialify badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&forks=1&issues=1&logo=https%3A%2F%2Fuser-images.githubusercontent.com%2F33851577%2F110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png&owner=1&pattern=Charlie%20Brown&pulls=1&stargazers=1&theme=Light
 
-`pac·apt·r` is a wrapper for many package managers with pacman-style command syntax, started as a Rust port of [icy/pacapt].
+`pac·apt·r`, or the _PACman AdaPTeR_, is a wrapper for many package managers with pacman-style command syntax, started as a Rust port of [icy/pacapt].
 
 It's highly recommended to set `pacman` as the alias of `pacaptr` on your non-ArchLinux OS.
 
