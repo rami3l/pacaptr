@@ -56,10 +56,14 @@ Run `pacman -Syu` on the OS of your choice!
 `pacaptr` supports the following package managers:
 
 - Windows: `chocolatey`, `scoop`
+
   - As for now, if both `scoop` and `choco` are installed, `scoop` will be the default.
   - You can edit the default package manager in your [config](#configuration) if you would like to change this behavior.
+
 - macOS: `homebrew`, `macports`
+
 - Linux: `apt`, `apk`, `dnf`, `zypper`
+
 - External: `conda`, `linuxbrew`, `pip`, `tlmgr`
   - Require `pacaptr --using <name>` to invoke (see [general tips](#general-tips)).
 
@@ -134,9 +138,15 @@ cargo deb
 
 </details>
 
-## Configuration
+## Configuration (WIP)
 
-The configuration file is `$HOME/.config/pacaptr/pacaptr.toml`.
+The default configuration file is `$HOME/.config/pacaptr/pacaptr.toml`.
+
+I decided not to trash user's `$HOME` without their permission, so:
+
+- If the user hasn't yet specified any path to look at, we will look for the config file in the default path.
+
+- If the config file is not present anyway, a default one will be loaded with `Default::default`, and no files will be written.
 
 <details><summary>Example</summary>
 

@@ -1,4 +1,4 @@
-use crate::dispatch::{yield_pm, Config};
+use crate::dispatch::Config;
 use crate::error::{Error, Result};
 use crate::exec::StatusCode;
 use crate::pm::Pm;
@@ -217,7 +217,7 @@ impl Opts {
     pub async fn dispatch(&self) -> Result<StatusCode> {
         let dotfile = task::block_in_place(Config::load);
         let cfg = self.merge_cfg(dotfile?);
-        self.dispatch_from(yield_pm(cfg)).await
+        self.dispatch_from(cfg.into()).await
     }
 }
 

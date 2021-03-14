@@ -1,5 +1,10 @@
 use crate::error::{Error, Result};
 use serde::{Deserialize, Serialize};
+use std::env;
+use std::path::{Path, PathBuf};
+
+/// The environment variable name for custom config file path.
+const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";
 
 /// Configurations that may vary when running the package manager.
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
@@ -21,21 +26,45 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn load() -> Result<Self> {
+    /// The default config file path is `$HOME/.config/pacaptr/pacaptr.toml`.
+    ///
+    /// This method will almost always success, and will only fail if `$HOME` is not found.
+    pub fn default_path() -> Result<PathBuf> {
         let crate_name = clap::crate_name!();
-        // The configuration file is `$HOME/.config/pacaptr/pacaptr.toml`.
-        let config = dirs::home_dir()
+        dirs::home_dir()
             .ok_or_else(|| Error::ConfigError {
                 msg: "$HOME path not found".into(),
+            })
+            .map(|p| {
+                p.join(".config")
+                    .join(crate_name)
+                    .join(&format!("{}.toml", crate_name))
+            })
+    }
+
+    /// The custom config file path is specified by the `PACAPTR_CONFIG` environment variable.
+    pub fn custom_path() -> Result<PathBuf> {
+        env::var(CONFIG_ENV_VAR)
+            .map_err(|e| Error::ConfigError {
+                msg: format!("Config path environment variable not found: {}", e),
+            })
+            .map(|p| Path::new(&p).to_owned())
+    }
+
+    /// Load up the config file from the user-specified path.
+    ///
+    /// I decided not to trash user's `$HOME` without their permission, so:
+    /// - If the user hasn't yet specified any path to look at, we will look for the config file in the default path.
+    /// - If the config file is not present anyway, a default one will be loaded with [`Default::default`], and no files will be written.
+    pub fn load() -> Result<Self> {
+        let path = Config::custom_path().or_else(|_| Config::default_path())?;
+        let res = if path.exists() {
+            confy::load_path(&path).map_err(|_e| Error::ConfigError {
+                msg: format!("Failed to read config at `{:?}`", &path),
             })?
-            .join(".config")
-            .join(crate_name)
-            .join(&format!("{}.toml", crate_name));
-        // dbg!(&config);
-        let res = confy::load_path(config).map_err(|_e| Error::ConfigError {
-            msg: "Failed to read config".into(),
-        })?;
-        // dbg!(&res);
+        } else {
+            Default::default()
+        };
         Ok(res)
     }
 }

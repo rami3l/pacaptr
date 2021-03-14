@@ -37,60 +37,62 @@ pub fn detect_pm_str<'s>() -> &'s str {
         .unwrap_or("unknown")
 }
 
-/// Generate the `Pm` instance according it's name, feeding it with the current `Config`.
-pub fn yield_pm(cfg: Config) -> Box<dyn Pm> {
-    // If the `Pm` to be used is not stated in any config,
-    // we should fall back to automatic detection.
-    let pm = cfg.default_pm.as_deref().unwrap_or_else(detect_pm_str);
+impl From<Config> for Box<dyn Pm> {
+    /// Generate the `Pm` instance according it's name, feeding it with the current `Config`.
+    fn from(cfg: Config) -> Self {
+        // If the `Pm` to be used is not stated in any config,
+        // we should fall back to automatic detection.
+        let pm = cfg.default_pm.as_deref().unwrap_or_else(detect_pm_str);
 
-    #[allow(clippy::match_single_binding)]
-    match pm {
-        // Chocolatey
-        "choco" => Chocolatey { cfg }.boxed(),
+        #[allow(clippy::match_single_binding)]
+        match pm {
+            // Chocolatey
+            "choco" => Chocolatey { cfg }.boxed(),
 
-        // Scoop
-        "scoop" => Scoop { cfg }.boxed(),
+            // Scoop
+            "scoop" => Scoop { cfg }.boxed(),
 
-        // Homebrew/Linuxbrew
-        "brew" => Homebrew { cfg }.boxed(),
+            // Homebrew/Linuxbrew
+            "brew" => Homebrew { cfg }.boxed(),
 
-        // Macports
-        "port" if cfg!(target_os = "macos") => Macports { cfg }.boxed(),
+            // Macports
+            "port" if cfg!(target_os = "macos") => Macports { cfg }.boxed(),
 
-        // Apk for Alpine
-        "apk" => Apk { cfg }.boxed(),
+            // Apk for Alpine
+            "apk" => Apk { cfg }.boxed(),
 
-        // Apt for Debian/Ubuntu/Termux (new versions)
-        "apt" => Apt { cfg }.boxed(),
+            // Apt for Debian/Ubuntu/Termux (new versions)
+            "apt" => Apt { cfg }.boxed(),
 
-        // Dnf for RedHat
-        "dnf" => Dnf { cfg }.boxed(),
+            // Dnf for RedHat
+            "dnf" => Dnf { cfg }.boxed(),
 
-        // Zypper for SUSE
-        "zypper" => Zypper { cfg }.boxed(),
+            // Zypper for SUSE
+            "zypper" => Zypper { cfg }.boxed(),
 
-        // * External Package Managers *
+            // * External Package Managers *
 
-        // Conda
-        "conda" => Conda { cfg }.boxed(),
+            // Conda
+            "conda" => Conda { cfg }.boxed(),
 
-        // Pip
-        "pip" => Pip {
-            cmd: "pip".into(),
-            cfg,
+            // Pip
+            "pip" => Pip {
+                cmd: "pip".into(),
+                cfg,
+            }
+            .boxed(),
+
+            "pip3" => Pip {
+                cmd: "pip3".into(),
+                cfg,
+            }
+            .boxed(),
+
+            // Tlmgr
+            "tlmgr" => Tlmgr { cfg }.boxed(),
+
+            // Unknown package manager X
+            x => Unknown::new(x).boxed(),
         }
-        .boxed(),
-
-        "pip3" => Pip {
-            cmd: "pip3".into(),
-            cfg,
-        }
-        .boxed(),
-
-        // Tlmgr
-        "tlmgr" => Tlmgr { cfg }.boxed(),
-
-        // Unknown package manager X
-        x => Unknown::new(x).boxed(),
     }
 }
