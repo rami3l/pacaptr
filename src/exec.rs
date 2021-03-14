@@ -104,7 +104,7 @@ impl Cmd {
     /// Determine if this command actually needs to run with `sudo -S`.
     ///
     /// If a **normal admin** needs to run it with `sudo`, and we are not `root`, then this is the case.
-    pub fn needs_sudo(&self) -> bool {
+    pub fn should_sudo(&self) -> bool {
         self.sudo && !is_root()
     }
 
@@ -113,7 +113,7 @@ impl Cmd {
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
         // ! but not `zypper install curl -y`.
         // ! So we place the flags first, and then keywords.
-        if self.needs_sudo() {
+        if self.should_sudo() {
             let mut builder = Exec::new("sudo");
             builder
                 .arg("-S")
@@ -309,7 +309,7 @@ impl Cmd {
 
 impl std::fmt::Display for Cmd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let sudo_prefix: &str = if self.needs_sudo() { "sudo -S " } else { "" };
+        let sudo_prefix: &str = if self.should_sudo() { "sudo -S " } else { "" };
         let mut res = sudo_prefix.to_owned();
         let cmd_str = self
             .cmd
@@ -317,7 +317,7 @@ impl std::fmt::Display for Cmd {
             .chain(&self.flags)
             .chain(&self.kws)
             .map(|s| s.as_ref())
-            .collect::<Vec<&str>>()
+            .collect_vec()
             .join(" ");
         res.push_str(&cmd_str);
         write!(f, "{}", res)
