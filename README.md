@@ -244,7 +244,7 @@ default_pm = "choco"
 
 - Please note that `cask` is for `macOS` only.
 
-- ~~Automatic `brew cask` invocation~~: This is not supported anymore since `v0.8.0`, as `homebrew` is natively supporting it!
+- ~~Automatic `brew cask` invocation~~: Abandoned since `v0.8.0`, as `homebrew` is natively supporting it!
 
 - Be careful when a formula and a cask share the same name, eg. `docker`.
 
