@@ -40,75 +40,90 @@ Run `pacman -Syu` on the OS of your choice!
 ## Contents
 
 - [pacaptr](#pacaptr)
-
   - [Contents](#contents)
   - [Supported Package Managers](#supported-package-managers)
+    - [Windows](#windows)
+    - [macOS](#macos)
+    - [Linux](#linux)
+    - [External](#external)
+    - [Notes](#notes)
   - [Installation](#installation)
+    - [With `brew`](#with-brew)
+    - [With `choco`](#with-choco)
+    - [With `cargo`](#with-cargo)
+    - [Packaging for `Debian`](#packaging-for-debian)
   - [Configuration](#configuration)
   - [General Tips](#general-tips)
+    - [`--using`, `--pm`](#--using---pm)
+    - [Automatic `sudo` invocation (since `v0.9.0`)](#automatic-sudo-invocation-since-v090)
+    - [Extra flags support](#extra-flags-support)
+    - [`--dryrun`, `--dry-run`](#--dryrun---dry-run)
+    - [`--yes`, `--noconfirm`, `--no-confirm`](#--yes---noconfirm---no-confirm)
+    - [`--nocache`, `--no-cache`](#--nocache---no-cache)
   - [Platform-Specific Tips](#platform-specific-tips)
+    - [`brew`](#brew)
+    - [`choco`](#choco)
+    - [`pip`](#pip)
   - [Postscript](#postscript)
 
 ---
 
 ## Supported Package Managers
 
-`pacaptr` supports the following package managers:
+`pacaptr` currently supports the following package managers (in order of precedence):
 
-- Windows: `chocolatey`, `scoop`
+### Windows
 
-  - As for now, if both `scoop` and `choco` are installed, `scoop` will be the default.
-  - You can edit the default package manager in your [config](#configuration) if you would like to change this behavior.
+[`choco`](#choco), `scoop`
 
-- macOS: `homebrew`, `macports`
+### macOS
 
-- Linux: `apt`, `apk`, `dnf`, `zypper`
+[`brew`](#brew), `port`
 
-- External: `conda`, `linuxbrew`, `pip`, `tlmgr`
-  - Require `pacaptr --using <name>` to invoke (see [general tips](#general-tips)).
+### Linux
 
-Support for more package managers will be added Soon™.
+`apt`, `apk`, `dnf`, `zypper`
 
-Notes:
+### External
 
-- Please refer to the [compatibility table] for more details.
-- Don't miss the [general](#general-tips) & [platform-specific](#platform-specific-tips) tips below!
+`conda`, `brew`, [`pip`/`pip3`](#pip), `tlmgr`
+
+These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
+
+### Notes
+
+As for now, the precedence is still (unfortunately) hardcoded. For example, if both `scoop` and `choco` are installed, `scoop` will be the default. You can however edit the default package manager in your [config](#configuration).
+
+Please refer to the [compatibility table] for more details on which operations are supported.
+
+Feel free to open a feature/pull request to add support for other package managers :)
 
 ## Installation
 
-PPAs might be added when appropriate.
+[We needs your help](https://github.com/rami3l/pacaptr/issues/5) to achieve binary distribution of `pacaptr` on more platforms!
 
-<details>
-<summary><code>macOS/homebrew</code> & <code>External/linuxbrew</code> install</summary>
+### With `brew`
 
 ```bash
-# Short version:
 brew install rami3l/tap/pacaptr
-
-# Which is equivalent to this:
-brew tap rami3l/tap
-brew install pacaptr
 ```
 
-</details>
+### With `choco`
 
-<details><summary><code>Windows/chocolatey</code> install</summary>
-  
 ```powershell
 choco install pacaptr
 ```
 
-</details>
+### With `cargo`
 
-<details><summary>Install from source</summary>
+As for now, uploading `pacaptr` to crates.io has been blocked by [cargo/#4468](https://github.com/rust-lang/cargo/issues/4468), so we have to stick with GitHub when building from source:
 
 ```bash
-# To install (short version):
+# To install:
 cargo install --git https://github.com/rami3l/pacaptr.git
 
-# To install (long version):
-git clone https://github.com/rami3l/pacaptr.git
-cd pacaptr
+# To clone and install (for Rustaceans):
+git clone https://github.com/rami3l/pacaptr.git && cd pacaptr
 cargo install --path .
 
 # To uninstall:
@@ -127,16 +142,12 @@ For `Alpine Linux` users, `cargo build` won't just work, please try this instead
 RUSTFLAGS="-C target-feature=-crt-static" cargo build
 ```
 
-</details>
-
-<details><summary>Packaging for <code>Debian</code></summary>
+### Packaging for `Debian`
 
 ```bash
 cargo install cargo-deb
 cargo deb
 ```
-
-</details>
 
 ## Configuration
 
@@ -167,84 +178,88 @@ default_pm = "choco"
 
 ## General Tips
 
-- `--using`, `--pm`: Use this flag to explicitly specify the underlying package manager to be invoked.
+### `--using`, `--pm`
 
-  ```bash
-  # Here we force the use of `choco`,
-  # so the following output is platform-independent:
-  pacaptr --using choco -Su --dryrun
-  # Canceled: choco upgrade all
-  ```
+Use this flag to explicitly specify the underlying package manager to be invoked.
 
-  This can be useful when you are running Linux and you want to use `linuxbrew`, for example. In that case, you can `--using brew`.
+```bash
+# Here we force the use of `choco`,
+# so the following output is platform-independent:
+pacaptr --using choco -Su --dryrun
+# Canceled: choco upgrade all
+```
 
-- Automatic `sudo` invocation (since `v0.9.0`):
+This can be useful when you are running Linux and you want to use `linuxbrew`, for example. In that case, you can `--using brew`.
 
-  - If you are not `root` and you wish to do something requiring `sudo`, `pacaptr` will do it for you by invoking `sudo -S`.
-  - This feature is currently available for `apk`, `apt`, `dnf`, `macports` and `zypper`.
+### Automatic `sudo` invocation (since `v0.9.0`)
 
-- Extra flags support:
+If you are not `root` and you wish to do something requiring `sudo`, `pacaptr` will do it for you by invoking `sudo -S`.
 
-  - The flags after a `--` will be passed directly to the underlying package manager:
+This feature is currently available for `apk`, `apt`, `dnf`, `port` and `zypper`.
 
-    ```bash
-    pacaptr -h
-    # USAGE:
-    #     pacaptr [FLAGS] [KEYWORDS]... [-- <EXTRA_FLAGS>...]
+### Extra flags support
 
-    pacaptr -S curl docker --dryrun -- --proxy=localhost:1234
-    # Canceled: foo install curl --proxy=localhost:1234
-    # Canceled: foo install docker --proxy=localhost:1234
-    ```
+The flags after a `--` will be passed directly to the underlying package manager:
 
-    Here `foo` is the name of your package manager.
-    (The actual output is platform-specific, which largely depends on if `foo` can actually read the flags given.)
+```bash
+pacaptr -h
+# USAGE:
+#     pacaptr [FLAGS] [KEYWORDS]... [-- <EXTRA_FLAGS>...]
 
-- `--dryrun`, `--dry-run`: Use this flag to just print out the command to be executed
-  (sometimes with a --dry-run flag to activate the package manager's dryrun option).
+pacaptr -S curl docker --dryrun -- --proxy=localhost:1234
+# Canceled: foo install curl --proxy=localhost:1234
+# Canceled: foo install docker --proxy=localhost:1234
+```
 
-  - `Pending` means that the command execution has been blocked by a prompt; `Canceled` means it has been canceled in a dry run; `Running` means that it has started running.
+Here `foo` is the name of your package manager.
+(The actual output is platform-specific, which largely depends on if `foo` can actually read the flags given.)
 
-  - Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
-    For instance:
+### `--dryrun`, `--dry-run`
 
-    ```bash
-    # Nothing will be installed,
-    # as `brew install curl` won't run:
-    pacaptr -S curl --dryrun
-    # Canceled: brew install curl
+Use this flag to just print out the command to be executed
+(sometimes with a --dry-run flag to activate the package manager's dryrun option).
 
-    # Nothing will be deleted here,
-    # but `brew cleanup --dry-run` is actually running:
-    pacaptr -Sc --dryrun
-    # Running: brew cleanup --dry-run
-    # .. (showing the files to be removed)
+`Pending` means that the command execution has been blocked by a prompt; `Canceled` means it has been canceled in a dry run; `Running` means that it has started running.
 
-    # To remove the forementioned files,
-    # run the command above again without `--dryrun`:
-    pacaptr -Sc
-    # Running: brew cleanup
-    # .. (cleaning up)
-    ```
+Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
+For instance:
 
-- `--yes`, `--noconfirm`, `--no-confirm`:
-  Use this flag to trigger the corresponding flag of your package manager (if possible) in order to answer "yes" to every incoming question.
+```bash
+# Nothing will be installed,
+# as `brew install curl` won't run:
+pacaptr -S curl --dryrun
+# Canceled: brew install curl
 
-  - This option is useful when you don't want to be asked during installation, for example.
-  - ... But it can be potentially dangerous if you don't know what you're doing!
+# Nothing will be deleted here,
+# but `brew cleanup --dry-run` is actually running:
+pacaptr -Sc --dryrun
+# Running: brew cleanup --dry-run
+# .. (showing the files to be removed)
 
-- `--nocache`, `--no-cache`:
-  Use this flag to remove cache after package installation.
-  - This option is useful when you want to reduce `Docker` image size, for example.
+# To remove the forementioned files,
+# run the command above again without `--dryrun`:
+pacaptr -Sc
+# Running: brew cleanup
+# .. (cleaning up)
+```
+
+### `--yes`, `--noconfirm`, `--no-confirm`
+
+Use this flag to trigger the corresponding flag of your package manager (if possible) in order to answer "yes" to every incoming question.
+
+This option is useful when you don't want to be asked during installation, for example, but it can also be dangerous if you don't know what you're doing!
+
+### `--nocache`, `--no-cache`
+
+Use this flag to remove cache after package installation.
+
+This option is useful when you want to reduce `Docker` image size, for example.
 
 ## Platform-Specific Tips
 
-<details>
-<summary><code>macOS/homebrew</code> & <code>External/linuxbrew</code></summary>
+### `brew`
 
 - Please note that `cask` is for `macOS` only.
-
-- ~~Automatic `brew cask` invocation~~: Abandoned since `v0.8.0`, as `homebrew` is natively supporting it!
 
 - Be careful when a formula and a cask share the same name, eg. `docker`.
 
@@ -268,19 +283,13 @@ default_pm = "choco"
   brew tap beeftornado/rmtree
   ```
 
-</details>
-
-<details><summary><code>Windows/chocolatey</code></summary>
+### `choco`
 
 - Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
-</details>
-
-<details><summary><code>External/pip</code></summary>
+### `pip`
 
 - Use `pacaptr --using pip3` if you want to run the `pip3` command.
-
-</details>
 
 ## Postscript
 
