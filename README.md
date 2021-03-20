@@ -74,7 +74,7 @@ Run `pacman -Syu` on the OS of your choice!
 
 ### Windows
 
-[`choco`](#choco), `scoop`
+`scoop`, [`choco`](#choco)
 
 ### macOS
 
