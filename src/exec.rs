@@ -3,18 +3,18 @@
 use crate::error::{Error, Result};
 use crate::print::*;
 use bytes::Bytes;
-use futures::{Stream, StreamExt, TryStreamExt};
+use futures::prelude::*;
 pub use is_root::is_root;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::process::Stdio;
 use std::sync::atomic::{AtomicBool, Ordering};
-use tokio::io::{AsyncRead, AsyncWriteExt};
+use tokio::io::{self, AsyncRead, AsyncWrite};
 use tokio::process::Command as Exec;
 use tokio::task::JoinHandle;
-use tokio::try_join;
 use tokio_util::codec::{BytesCodec, FramedRead};
+use tokio_util::compat::*;
 use which::which;
 
 /// Different ways in which a command shall be dealt with.
@@ -143,22 +143,22 @@ impl Cmd {
 /// * `src` - The input stream to read from.
 /// * `out` - The output stream to write to (only if `mute` is [`true`]).
 /// * `mute` - Whether to mute `out`.
-async fn exec_tee<S, O>(src: &mut S, out: &mut O, mute: bool) -> Result<Vec<u8>>
+async fn exec_tee<S, O>(src: &mut S, out: O, mute: bool) -> Result<Vec<u8>>
 where
-    S: Stream<Item = std::result::Result<Bytes, std::io::Error>> + Unpin,
-    O: AsyncWriteExt + Unpin,
+    S: Stream<Item = std::result::Result<Bytes, io::Error>> + Unpin,
+    O: AsyncWrite + Unpin,
 {
-    let mut out1 = Vec::<u8>::new();
-    while let Some(mb) = src.next().await {
-        let b = mb?;
-        let b = b.as_ref();
-        if mute {
-            out1.write_all(b).await?;
-        } else {
-            try_join!(out.write_all(b), out1.write_all(b))?;
-        }
+    let mut buf = Vec::<u8>::new();
+    let buf_sink = (&mut buf).into_sink::<Bytes>();
+
+    if mute {
+        src.forward(buf_sink).await?;
+    } else {
+        let out_sink = out.compat_write().into_sink::<Bytes>();
+        src.forward(buf_sink.fanout(out_sink)).await?;
     }
-    Ok(out1)
+
+    Ok(buf)
 }
 
 impl Cmd {
@@ -219,7 +219,7 @@ impl Cmd {
             Ok(status.code())
         });
 
-        let mut stdout = tokio::io::stdout();
+        let mut stdout = io::stdout();
         let contents = exec_tee(&mut merged_reader, &mut stdout, mute).await?;
 
         Ok(Output {
@@ -252,7 +252,7 @@ impl Cmd {
             Ok(status.code())
         });
 
-        let mut stderr = tokio::io::stderr();
+        let mut stderr = io::stderr();
         let contents = exec_tee(&mut stderr_reader, &mut stderr, mute).await?;
 
         Ok(Output {
@@ -394,7 +394,7 @@ pub fn is_exe(name: &str, path: &str) -> bool {
 /// Helper function to turn an [`AsyncRead`] to a [`Stream`].
 ///
 /// *Shamelessly copied from [StackOverflow](https://stackoverflow.com/a/59327560).*
-pub fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = tokio::io::Result<Bytes>> {
+pub fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = io::Result<Bytes>> {
     FramedRead::new(reader, BytesCodec::new()).map_ok(|bytes| bytes.freeze())
 }
 
