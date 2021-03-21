@@ -149,12 +149,12 @@ where
     O: AsyncWrite + Unpin,
 {
     let mut buf = Vec::<u8>::new();
-    let buf_sink = (&mut buf).into_sink::<Bytes>();
+    let buf_sink = (&mut buf).into_sink();
 
     if mute {
         src.forward(buf_sink).await?;
     } else {
-        let out_sink = out.compat_write().into_sink::<Bytes>();
+        let out_sink = out.compat_write().into_sink();
         src.forward(buf_sink.fanout(out_sink)).await?;
     }
 
@@ -366,22 +366,18 @@ pub fn grep<'a>(text: &'a str, patterns: &[&str]) -> Result<Vec<&'a str>> {
         })
         .try_collect()?;
 
-    let res = if !rs.is_empty() {
+    Ok(if !rs.is_empty() {
         text.lines()
             .filter(|line| rs.iter().all(|regex| regex.is_match(line)))
-            .collect()
+            .collect_vec()
     } else {
         vec![]
-    };
-    Ok(res)
+    })
 }
 
 /// Print the result of [`grep`] line by line.
 pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
-    grep(text, patterns)?
-        .iter()
-        .for_each(|ln| println!("{}", ln));
-    Ok(())
+    grep(text, patterns).map(|lns| lns.iter().for_each(|ln| println!("{}", ln)))
 }
 
 /// Check if an executable exists by name (consult `$PATH`) or by path.
