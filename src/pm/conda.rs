@@ -4,7 +4,7 @@ use crate::error::Result;
 use crate::exec::{self, Cmd};
 use crate::print::{self, PROMPT_RUN};
 use async_trait::async_trait;
-use futures::stream::{self, TryStreamExt};
+use futures::prelude::*;
 use lazy_static::lazy_static;
 
 pub struct Conda {
@@ -100,7 +100,8 @@ impl Pm for Conda {
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let kws: Vec<String> = kws.iter().map(|&s| format!("*{}*", s)).collect();
 
-        stream::iter(kws.iter().map(Ok))
+        stream::iter(kws)
+            .map(Ok)
             .try_for_each(|kw| async move {
                 self.just_run_default(Cmd::new(&["conda", "search"]).kws(&[kw]).flags(flags))
                     .await
