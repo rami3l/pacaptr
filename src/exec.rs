@@ -141,9 +141,8 @@ impl Cmd {
 /// # Arguments
 ///
 /// * `src` - The input stream to read from.
-/// * `out` - The output stream to write to (only if `mute` is [`true`]).
-/// * `mute` - Whether to mute `out`.
-async fn exec_tee<S, O>(src: &mut S, out: O, mute: bool) -> Result<Vec<u8>>
+/// * `out` - The optional output stream to write to.
+async fn exec_tee<S, O>(src: &mut S, out: Option<O>) -> Result<Vec<u8>>
 where
     S: Stream<Item = std::result::Result<Bytes, io::Error>> + Unpin,
     O: AsyncWrite + Unpin,
@@ -151,11 +150,11 @@ where
     let mut buf = Vec::<u8>::new();
     let buf_sink = (&mut buf).into_sink();
 
-    if mute {
-        src.forward(buf_sink).await?;
-    } else {
+    if let Some(out) = out {
         let out_sink = out.compat_write().into_sink();
         src.forward(buf_sink.fanout(out_sink)).await?;
+    } else {
+        src.forward(buf_sink).await?;
     }
 
     Ok(buf)
@@ -220,7 +219,7 @@ impl Cmd {
         });
 
         let mut stdout = io::stdout();
-        let contents = exec_tee(&mut merged_reader, &mut stdout, mute).await?;
+        let contents = exec_tee(&mut merged_reader, (!mute).then(|| &mut stdout)).await?;
 
         Ok(Output {
             contents,
@@ -253,7 +252,7 @@ impl Cmd {
         });
 
         let mut stderr = io::stderr();
-        let contents = exec_tee(&mut stderr_reader, &mut stderr, mute).await?;
+        let contents = exec_tee(&mut stderr_reader, (!mute).then(|| &mut stderr)).await?;
 
         Ok(Output {
             contents,
