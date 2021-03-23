@@ -42,7 +42,7 @@ is-root = "0.1.2"
 itertools = "0.10.0"
 lazy_static = "1.4.0"
 regex = { version = "1.4.5", default-features = false, features = ["std", "perf"] }
-serde = { version = "1.0.124", features = ["derive"] }
+serde = { version = "1.0.125", features = ["derive"] }
 thiserror = "1.0.24"
 tokio = { version = "1.4.0", features = [
   "io-std",
