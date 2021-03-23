@@ -78,7 +78,7 @@ impl Pm for Macports {
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["port", "uninstall"]).kws(kws).flags(flags),
+            Cmd::with_sudo(&["port", "uninstall"]).kws(kws).flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -88,7 +88,7 @@ impl Pm for Macports {
     /// Rss removes a package and its dependencies which are not required by any other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["port", "uninstall", "--follow-dependencies"])
+            Cmd::with_sudo(&["port", "uninstall", "--follow-dependencies"])
                 .kws(kws)
                 .flags(flags),
             Default::default(),
@@ -100,7 +100,7 @@ impl Pm for Macports {
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["port", "install"]).kws(kws).flags(flags),
+            Cmd::with_sudo(&["port", "install"]).kws(kws).flags(flags),
             Default::default(),
             &INSTALL_STRAT,
         )
@@ -115,7 +115,7 @@ impl Pm for Macports {
             &["port", "clean", "--all"]
         };
         self.just_run(
-            Cmd::new_sudo(cmd).kws(kws).flags(flags),
+            Cmd::with_sudo(cmd).kws(kws).flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -130,7 +130,7 @@ impl Pm for Macports {
             &["port", "clean", "--all"]
         };
         self.just_run(
-            Cmd::new_sudo(cmd).kws(kws).flags(flags),
+            Cmd::with_sudo(cmd).kws(kws).flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -157,7 +157,7 @@ impl Pm for Macports {
             &["port", "upgrade"]
         };
         self.just_run(
-            Cmd::new_sudo(cmd).kws(kws).flags(flags),
+            Cmd::with_sudo(cmd).kws(kws).flags(flags),
             Default::default(),
             &INSTALL_STRAT,
         )

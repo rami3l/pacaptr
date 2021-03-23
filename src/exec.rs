@@ -82,7 +82,7 @@ impl Cmd {
         }
     }
 
-    pub fn new_sudo<S: AsRef<str>>(cmd: &[S]) -> Self {
+    pub fn with_sudo<S: AsRef<str>>(cmd: &[S]) -> Self {
         Self::new(cmd).sudo(true)
     }
 

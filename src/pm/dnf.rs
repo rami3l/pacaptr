@@ -117,7 +117,7 @@ impl Pm for Dnf {
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["dnf", "remove"]).kws(kws).flags(flags),
+            Cmd::with_sudo(&["dnf", "remove"]).kws(kws).flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -127,7 +127,7 @@ impl Pm for Dnf {
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["dnf", "install"]).kws(kws).flags(flags),
+            Cmd::with_sudo(&["dnf", "install"]).kws(kws).flags(flags),
             Default::default(),
             &INSTALL_STRAT,
         )
@@ -210,7 +210,7 @@ impl Pm for Dnf {
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["dnf", "upgrade"]).kws(kws).flags(flags),
+            Cmd::with_sudo(&["dnf", "upgrade"]).kws(kws).flags(flags),
             Default::default(),
             &INSTALL_STRAT,
         )
@@ -225,7 +225,7 @@ impl Pm for Dnf {
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["dnf", "install", "--downloadonly"])
+            Cmd::with_sudo(&["dnf", "install", "--downloadonly"])
                 .kws(kws)
                 .flags(flags),
             Default::default(),

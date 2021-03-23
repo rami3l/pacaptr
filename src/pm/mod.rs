@@ -230,10 +230,8 @@ pub trait PmHelper: Pm {
         }
 
         let res = match &strat.dry_run {
-            DryRunStrategy::PrintCmd if self.cfg().dry_run => {
-                cmd.clone().exec(Mode::PrintCmd).await?
-            }
-            DryRunStrategy::WithFlags(v) if self.cfg().dry_run => {
+            DryRunStrategy::PrintCmd if cfg.dry_run => cmd.clone().exec(Mode::PrintCmd).await?,
+            DryRunStrategy::WithFlags(v) if cfg.dry_run => {
                 cmd.flags.extend(v.to_owned());
                 // * A dry run with extra flags does not need `sudo`.
                 cmd = cmd.sudo(false);

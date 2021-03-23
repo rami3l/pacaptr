@@ -59,7 +59,7 @@ impl Pm for Apt {
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(
-            Cmd::new_sudo(&["apt", "upgrade", "--trivial-only"])
+            Cmd::with_sudo(&["apt", "upgrade", "--trivial-only"])
                 .kws(kws)
                 .flags(flags),
         )
@@ -69,7 +69,7 @@ impl Pm for Apt {
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["apt", "remove"]).kws(kws).flags(flags),
+            Cmd::with_sudo(&["apt", "remove"]).kws(kws).flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -79,7 +79,7 @@ impl Pm for Apt {
     /// Rn removes a package and skips the generation of configuration backup files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["apt", "purge"]).kws(kws).flags(flags),
+            Cmd::with_sudo(&["apt", "purge"]).kws(kws).flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -89,7 +89,7 @@ impl Pm for Apt {
     /// Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
     async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["apt", "autoremove", "--purge"])
+            Cmd::with_sudo(&["apt", "autoremove", "--purge"])
                 .kws(kws)
                 .flags(flags),
             Default::default(),
@@ -102,7 +102,7 @@ impl Pm for Apt {
     /// and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["apt", "autoremove"]).kws(kws).flags(flags),
+            Cmd::with_sudo(&["apt", "autoremove"]).kws(kws).flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -117,7 +117,7 @@ impl Pm for Apt {
             &["apt", "install", "--reinstall"]
         };
         self.just_run(
-            Cmd::new_sudo(cmd).kws(kws).flags(flags),
+            Cmd::with_sudo(cmd).kws(kws).flags(flags),
             Default::default(),
             &INSTALL_STRAT,
         )
@@ -127,7 +127,7 @@ impl Pm for Apt {
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["apt", "clean"]).kws(kws).flags(flags),
+            Cmd::with_sudo(&["apt", "clean"]).kws(kws).flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -137,7 +137,7 @@ impl Pm for Apt {
     /// Scc removes all files from the cache.
     async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run(
-            Cmd::new_sudo(&["apt", "autoclean"]).kws(kws).flags(flags),
+            Cmd::with_sudo(&["apt", "autoclean"]).kws(kws).flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -166,13 +166,13 @@ impl Pm for Apt {
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
             self.just_run(
-                Cmd::new_sudo(&["apt", "upgrade"]).flags(flags),
+                Cmd::with_sudo(&["apt", "upgrade"]).flags(flags),
                 Default::default(),
                 &PROMPT_STRAT,
             )
             .await?;
             self.just_run(
-                Cmd::new_sudo(&["apt", "dist-upgrade"]).flags(flags),
+                Cmd::with_sudo(&["apt", "dist-upgrade"]).flags(flags),
                 Default::default(),
                 &INSTALL_STRAT,
             )
@@ -191,7 +191,7 @@ impl Pm for Apt {
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.just_run_default(
-            Cmd::new_sudo(&["apt", "install", "--download-only"])
+            Cmd::with_sudo(&["apt", "install", "--download-only"])
                 .kws(kws)
                 .flags(flags),
         )
@@ -200,7 +200,7 @@ impl Pm for Apt {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new_sudo(&["apt", "update"]).kws(kws).flags(flags))
+        self.just_run_default(Cmd::with_sudo(&["apt", "update"]).kws(kws).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;
