@@ -6,12 +6,9 @@ use pacaptr::{
 
 #[tokio::main]
 async fn main() {
-    let opt = Opts::parse();
-    match opt.dispatch().await {
-        Ok(n) => std::process::exit(n),
-        Err(e) => {
-            print_err(e, PROMPT_ERROR);
-            std::process::exit(1);
-        }
-    }
+    let code = Opts::parse().dispatch().await.unwrap_or_else(|e| {
+        print_err(e, PROMPT_ERROR);
+        1
+    });
+    std::process::exit(code)
 }
