@@ -1,6 +1,8 @@
 use clap::Clap;
-use pacaptr::dispatch::Opts;
-use pacaptr::print::{print_err, PROMPT_ERROR};
+use pacaptr::{
+    dispatch::Opts,
+    print::{print_err, PROMPT_ERROR},
+};
 
 #[tokio::main]
 async fn main() {

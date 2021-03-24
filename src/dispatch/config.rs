@@ -1,7 +1,9 @@
 use crate::error::{Error, Result};
 use serde::{Deserialize, Serialize};
-use std::env;
-use std::path::{Path, PathBuf};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 
 /// The environment variable name for custom config file path.
 const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";

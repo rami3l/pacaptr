@@ -1,7 +1,9 @@
 use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
-use crate::dispatch::config::Config;
-use crate::error::Result;
-use crate::exec::{self, Cmd};
+use crate::{
+    dispatch::config::Config,
+    error::Result,
+    exec::{self, Cmd},
+};
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 

@@ -18,9 +18,11 @@ pub use {
     macports::Macports, pip::Pip, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, zypper::Zypper,
 };
 
-use crate::dispatch::Config;
-use crate::error::Result;
-use crate::exec::{Cmd, Mode, Output, StatusCode};
+use crate::{
+    dispatch::Config,
+    error::Result,
+    exec::{Cmd, Mode, Output, StatusCode},
+};
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex;

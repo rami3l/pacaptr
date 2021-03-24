@@ -1,8 +1,10 @@
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
-use crate::error::Result;
-use crate::exec::{self, Cmd};
-use crate::print::PROMPT_RUN;
-use crate::{dispatch::config::Config, print};
+use crate::{
+    dispatch::config::Config,
+    error::Result,
+    exec::{self, Cmd},
+    print::{self, PROMPT_RUN},
+};
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 

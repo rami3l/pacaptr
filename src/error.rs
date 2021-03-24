@@ -1,8 +1,7 @@
 //! This module defines the basic error type used in this crate.
 
 use thiserror::Error;
-use tokio::io;
-use tokio::task::JoinError;
+use tokio::{io, task::JoinError};
 
 pub type Result<T> = std::result::Result<T, Error>;
 

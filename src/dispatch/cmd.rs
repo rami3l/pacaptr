@@ -1,7 +1,9 @@
-use crate::dispatch::Config;
-use crate::error::{Error, Result};
-use crate::exec::StatusCode;
-use crate::pm::Pm;
+use crate::{
+    dispatch::Config,
+    error::{Error, Result},
+    exec::StatusCode,
+    pm::Pm,
+};
 use clap::{self, Clap};
 use std::iter::FromIterator;
 use tokio::task;

@@ -1,20 +1,28 @@
 //! This module handles launching of subprocesses and their results.
 
-use crate::error::{Error, Result};
-use crate::print::*;
+use crate::{
+    error::{Error, Result},
+    print::*,
+};
 use bytes::Bytes;
 use futures::prelude::*;
 pub use is_root::is_root;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::process::Stdio;
-use std::sync::atomic::{AtomicBool, Ordering};
-use tokio::io::{self, AsyncRead, AsyncWrite};
-use tokio::process::Command as Exec;
-use tokio::task::JoinHandle;
-use tokio_util::codec::{BytesCodec, FramedRead};
-use tokio_util::compat::*;
+use std::{
+    process::Stdio,
+    sync::atomic::{AtomicBool, Ordering},
+};
+use tokio::{
+    io::{self, AsyncRead, AsyncWrite},
+    process::Command as Exec,
+    task::JoinHandle,
+};
+use tokio_util::{
+    codec::{BytesCodec, FramedRead},
+    compat::*,
+};
 use which::which;
 
 /// Different ways in which a command shall be dealt with.

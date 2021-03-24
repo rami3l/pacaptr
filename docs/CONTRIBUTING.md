@@ -9,8 +9,15 @@ Please note that this project is in a very early stage, and the conventions and 
 - [Contributing to `pacaptr`](#contributing-to-pacaptr)
   - [Contents](#contents)
   - [Style Conventions](#style-conventions)
+  - [More Docs](#more-docs)
 
 ## Style Conventions
 
 - Rust code: `rustfmt`, default settings.
 - Commit message: See [Semantic Commit Messages](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716).
+
+## More Docs
+
+```bash
+cargo doc --document-private-items --open
+```
