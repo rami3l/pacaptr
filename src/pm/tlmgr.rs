@@ -16,7 +16,7 @@ lazy_static! {
 
 #[async_trait]
 impl Pm for Tlmgr {
-    /// Get the name of the package manager.
+    /// Gets the name of the package manager.
     fn name(&self) -> String {
         "tlmgr".into()
     }

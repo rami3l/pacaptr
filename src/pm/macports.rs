@@ -21,7 +21,7 @@ lazy_static! {
 
 #[async_trait]
 impl Pm for Macports {
-    /// Get the name of the package manager.
+    /// Gets the name of the package manager.
     fn name(&self) -> String {
         "port".into()
     }

@@ -129,7 +129,7 @@ pub struct Opts {
 }
 
 impl Opts {
-    /// Check if an Opt object is malformed.
+    /// Checks if an Opt object is malformed.
     fn check(&self) -> Result<()> {
         let count = [self.query, self.remove, self.sync, self.update]
             .iter()
@@ -143,7 +143,7 @@ impl Opts {
         Ok(())
     }
 
-    /// Generate current config by merging current CLI flags with the dotfile.
+    /// Generates current config by merging current CLI flags with the dotfile.
     /// The precedence of the CLI flags is highter than the dotfile.
     fn merge_cfg(&self, dotfile: Config) -> Config {
         Config {
@@ -155,7 +155,7 @@ impl Opts {
         }
     }
 
-    /// Execute the job according to the flags received and the package manager detected.
+    /// Executes the job according to the flags received and the package manager detected.
     pub async fn dispatch_from(&self, pm: Box<dyn Pm>) -> Result<StatusCode> {
         self.check()?;
         let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
@@ -256,7 +256,7 @@ mod tests {
     ) => {
             #[async_trait]
             impl Pm for MockPm {
-                /// Get the name of the package manager.
+                /// Gets the name of the package manager.
                 fn name(&self) -> String {
                     "mockpm".into()
                 }

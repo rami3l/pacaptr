@@ -8,7 +8,7 @@ pub mod config;
 pub use self::{cmd::Opts, config::Config};
 use crate::{exec::is_exe, pm::*};
 
-/// Detect the name of the package manager to be used in auto dispatch.
+/// Detects the name of the package manager to be used in auto dispatch.
 pub fn detect_pm_str<'s>() -> &'s str {
     let pairs: &[(&str, &str)] = match () {
         _ if cfg!(target_os = "windows") => &[("scoop", ""), ("choco", "")],
@@ -36,7 +36,7 @@ pub fn detect_pm_str<'s>() -> &'s str {
 }
 
 impl From<Config> for Box<dyn Pm> {
-    /// Generate the `Pm` instance according it's name, feeding it with the current `Config`.
+    /// Generates the `Pm` instance according it's name, feeding it with the current `Config`.
     fn from(cfg: Config) -> Self {
         // If the `Pm` to be used is not stated in any config,
         // we should fall back to automatic detection.

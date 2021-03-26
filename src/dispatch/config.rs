@@ -44,7 +44,7 @@ impl Config {
             })
     }
 
-    /// The custom config file path is specified by the `PACAPTR_CONFIG` environment variable.
+    /// Gets the custom config file path specified by the `PACAPTR_CONFIG` environment variable.
     pub fn custom_path() -> Result<PathBuf> {
         env::var(CONFIG_ENV_VAR)
             .map_err(|e| Error::ConfigError {
@@ -53,7 +53,7 @@ impl Config {
             .map(|p| Path::new(&p).to_owned())
     }
 
-    /// Load up the config file from the user-specified path.
+    /// Loads up the config file from the user-specified path.
     ///
     /// I decided not to trash user's `$HOME` without their permission, so:
     /// - If the user hasn't yet specified any path to look at, we will look for the config file in the default path.

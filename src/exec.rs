@@ -28,17 +28,17 @@ use which::which;
 /// Different ways in which a command shall be dealt with.
 #[derive(Copy, Clone, Debug)]
 pub enum Mode {
-    /// Solely print out the command that should be executed, and stop.
+    /// Solely prints out the command that should be executed, and stop.
     PrintCmd,
 
-    /// Silently collect all the `stdout`/`stderr` combined. Print nothing.
+    /// Silently collects all the `stdout`/`stderr` combined. Print nothing.
     Mute,
 
-    /// Print out the command which should be executed, run it and collect its `stdout`/`stderr` combined.
+    /// Prints out the command which should be executed, run it and collect its `stdout`/`stderr` combined.
     /// Potentially dangerous as it destroys the colored `stdout`. Use it only if really necessary.
     CheckAll,
 
-    /// Print out the command which should be executed, run it and collect its `stderr`.
+    /// Prints out the command which should be executed, run it and collect its `stderr`.
     /// This will work with a colored `stdout`.
     CheckErr,
 
@@ -109,14 +109,14 @@ impl Cmd {
         self
     }
 
-    /// Determine if this command actually needs to run with `sudo -S`.
+    /// Determines if this command actually needs to run with `sudo -S`.
     ///
     /// If a **normal admin** needs to run it with `sudo`, and we are not `root`, then this is the case.
     pub fn should_sudo(&self) -> bool {
         self.sudo && !is_root()
     }
 
-    /// Convert a [`Cmd`] object into an [`Exec`].
+    /// Converts a [`Cmd`] object into an [`Exec`].
     pub fn build(self) -> Exec {
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
         // ! but not `zypper install curl -y`.
@@ -143,7 +143,7 @@ impl Cmd {
 
 /// Helper to implement [`Cmd::exec_checkerr`] and [`Cmd::exec_checkall`].
 ///
-/// Take contents from an input stream and copy to an output stream (optional) and a [`Vec<u8>`],
+/// Takes contents from an input stream and copy to an output stream (optional) and a [`Vec<u8>`],
 /// then return the [`Vec<u8>`].
 ///
 /// # Arguments
@@ -191,7 +191,7 @@ impl Cmd {
         }
     }
 
-    /// Execute a [`Cmd`] and return its `stdout` and `stderr`.
+    /// Executes a [`Cmd`] and return its `stdout` and `stderr`.
     ///
     /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
     async fn exec_checkall(self, mute: bool) -> Result<Output> {
@@ -235,7 +235,7 @@ impl Cmd {
         })
     }
 
-    /// Execute a [`Cmd`] and collect its `stderr`.  
+    /// Executes a [`Cmd`] and collect its `stderr`.  
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     async fn exec_checkerr(self, mute: bool) -> Result<Output> {
         use Error::*;
@@ -268,7 +268,7 @@ impl Cmd {
         })
     }
 
-    /// Execute a [`Cmd`] and collect its `stderr`.
+    /// Executes a [`Cmd`] and collect its `stderr`.
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     ///
     /// This function behaves just like [`exec_checkerr`], but in addition,
@@ -331,7 +331,7 @@ impl std::fmt::Display for Cmd {
     }
 }
 
-/// Prompt and get the output string.
+/// Gives a prompt and gets the output string.
 /// This action won't end until an expected answer is found.
 ///
 /// If `case_sensitive` is `false`, then `expected` should be all lower case patterns.
@@ -359,7 +359,7 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
     }
 }
 
-/// Find all lines in the given `text` that matches all the `patterns`.
+/// Finds all lines in the given `text` that matches all the `patterns`.
 ///
 /// We suppose that all patterns are legal regular expressions.
 /// An error message will be printed if this is not the case.
@@ -382,19 +382,19 @@ pub fn grep<'a>(text: &'a str, patterns: &[&str]) -> Result<Vec<&'a str>> {
     })
 }
 
-/// Print the result of [`grep`] line by line.
+/// Prints the result of [`grep`] line by line.
 pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
     grep(text, patterns).map(|lns| lns.iter().for_each(|ln| println!("{}", ln)))
 }
 
-/// Check if an executable exists by name (consult `$PATH`) or by path.
+/// Checks if an executable exists by name (consult `$PATH`) or by path.
 ///
 /// To check by one parameter only, pass `""` to the other one.
 pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && which(path).is_ok()) || (!name.is_empty() && which(name).is_ok())
 }
 
-/// Helper function to turn an [`AsyncRead`] to a [`Stream`].
+/// Turns an [`AsyncRead`] into a [`Stream`].
 ///
 /// *Shamelessly copied from [StackOverflow](https://stackoverflow.com/a/59327560).*
 pub fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = io::Result<Bytes>> {

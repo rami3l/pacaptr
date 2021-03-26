@@ -16,7 +16,7 @@ impl Unknown {
 }
 
 impl Pm for Unknown {
-    /// Get the name of the package manager.
+    /// Gets the name of the package manager.
     fn name(&self) -> String {
         format!("unknown package manager: {}", self.name)
     }

@@ -48,10 +48,10 @@ macro_rules! decl_pm {(
         /// and <https://wiki.archlinux.org/index.php/Pacman>
         #[async_trait]
         pub trait Pm: Sync {
-            /// Get the name of the package manager.
+            /// Gets the name of the package manager.
             fn name(&self) -> String;
 
-            /// Get the config of the package manager.
+            /// Gets the config of the package manager.
             fn cfg(&self) -> &Config;
 
             /// Wrap the `Pm` instance in a box.
@@ -62,7 +62,7 @@ macro_rules! decl_pm {(
                 Box::new(self)
             }
 
-            /// Get the `StatusCode` to be returned.
+            /// Gets the `StatusCode` to be returned.
             async fn code(&self) -> StatusCode {
                 self.get_set_code(None).await
             }
@@ -72,7 +72,7 @@ macro_rules! decl_pm {(
                 self.get_set_code(Some(to)).await;
             }
 
-            /// Get/Set the `StatusCode` to be returned.
+            /// Gets/Set the `StatusCode` to be returned.
             /// If `to` is `Some(n)`, then the current `StatusCode` will be reset to `n`.
             /// Then the current `StatusCode` will be returned.
             #[doc(hidden)]
@@ -289,11 +289,11 @@ pub enum PmMode {
     /// Silently collect all the `stdout`/`stderr` combined. Print nothing.
     Mute,
 
-    /// Print out the command which should be executed, run it and collect its `stdout`/`stderr` combined.
+    /// Prints out the command which should be executed, run it and collect its `stdout`/`stderr` combined.
     /// Potentially dangerous as it destroys the colored `stdout`. Use it only if really necessary.
     CheckAll,
 
-    /// Print out the command which should be executed, run it and collect its `stderr`.
+    /// Prints out the command which should be executed, run it and collect its `stderr`.
     /// This will work with a colored `stdout`.
     CheckErr,
 }
@@ -326,7 +326,7 @@ pub struct Strategies<S = String> {
 /// How a dry run is dealt with.
 #[derive(Debug, Clone)]
 pub enum DryRunStrategy<S = String> {
-    /// Print the command to be run, and stop.
+    /// Prints the command to be run, and stop.
     PrintCmd,
     /// Invoke the corresponding package manager with the flags given.
     WithFlags(Vec<S>),
@@ -410,7 +410,7 @@ mod tests {
 
     #[async_trait]
     impl Pm for MockPM {
-        /// Get the name of the package manager.
+        /// Gets the name of the package manager.
         fn name(&self) -> String {
             "mockpm".into()
         }

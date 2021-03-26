@@ -37,7 +37,7 @@ impl Zypper {
 
 #[async_trait]
 impl Pm for Zypper {
-    /// Get the name of the package manager.
+    /// Gets the name of the package manager.
     fn name(&self) -> String {
         "zypper".into()
     }

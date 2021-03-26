@@ -35,7 +35,7 @@ macro_rules! question_format {
     };
 }
 
-/// Print out the command after the given prompt.
+/// Prints out the command after the given prompt.
 pub fn print_cmd(cmd: &Cmd, prompt: &str) {
     println!(
         cmd_format!(),
@@ -45,7 +45,7 @@ pub fn print_cmd(cmd: &Cmd, prompt: &str) {
     )
 }
 
-/// Print out a message after the given prompt.
+/// Prints out a message after the given prompt.
 pub fn print_msg(msg: &str, prompt: &str) {
     println!(
         msg_format!(),
@@ -55,7 +55,7 @@ pub fn print_msg(msg: &str, prompt: &str) {
     );
 }
 
-/// Print out an error after the given prompt.
+/// Prints out an error after the given prompt.
 pub fn print_err(err: impl std::fmt::Display, prompt: &str) {
     let err = format!("{:#}", err);
     eprintln!(
@@ -66,7 +66,7 @@ pub fn print_err(err: impl std::fmt::Display, prompt: &str) {
     );
 }
 
-/// Print out a question after the given prompt.
+/// Prints out a question after the given prompt.
 pub fn print_question(question: &str, options: &str) {
     print!(
         question_format!(),

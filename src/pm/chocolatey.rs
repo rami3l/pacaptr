@@ -30,7 +30,7 @@ impl Chocolatey {
 // Windows is so special! It's better not to "sudo" automatically.
 #[async_trait]
 impl Pm for Chocolatey {
-    /// Get the name of the package manager.
+    /// Gets the name of the package manager.
     fn name(&self) -> String {
         "choco".into()
     }
