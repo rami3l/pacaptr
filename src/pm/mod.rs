@@ -24,7 +24,7 @@ use crate::{
     exec::{Cmd, Mode, Output, StatusCode},
 };
 use async_trait::async_trait;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
 
 macro_rules! make_op_body {
@@ -77,15 +77,11 @@ macro_rules! decl_pm {(
             /// Then the current `StatusCode` will be returned.
             #[doc(hidden)]
             async fn get_set_code(&self, to: Option<StatusCode>) -> StatusCode {
-                lazy_static! {
-                    static ref CODE: Mutex<StatusCode> = Mutex::new(0);
-                }
-
+                static CODE: Lazy<Mutex<StatusCode>> = Lazy::new(|| Mutex::new(0));
                 let mut code = CODE.lock().await;
                 if let Some(n) = to {
                     *code = n;
                 }
-
                 *code
             }
 
