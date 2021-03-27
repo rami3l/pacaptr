@@ -100,7 +100,7 @@ Feel free to open a feature/pull request to add support for other package manage
 
 ## Installation
 
-[We needs your help](https://github.com/rami3l/pacaptr/issues/5) to achieve binary distribution of `pacaptr` on more platforms!
+[We need your help](https://github.com/rami3l/pacaptr/issues/5) to achieve binary distribution of `pacaptr` on more platforms!
 
 ### With `brew`
 
