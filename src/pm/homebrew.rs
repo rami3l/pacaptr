@@ -6,23 +6,22 @@ use crate::{
     print::{self, PROMPT_INFO, PROMPT_RUN},
 };
 use async_trait::async_trait;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 pub struct Homebrew {
     pub cfg: Config,
 }
 
-lazy_static! {
-    static ref PROMPT_STRAT: Strategies = Strategies {
-        prompt: PromptStrategy::CustomPrompt,
-        ..Default::default()
-    };
-    static ref INSTALL_STRAT: Strategies = Strategies {
-        prompt: PromptStrategy::CustomPrompt,
-        no_cache: NoCacheStrategy::Scc,
-        ..Default::default()
-    };
-}
+static PROMPT_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+    prompt: PromptStrategy::CustomPrompt,
+    ..Default::default()
+});
+
+static INSTALL_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+    prompt: PromptStrategy::CustomPrompt,
+    no_cache: NoCacheStrategy::Scc,
+    ..Default::default()
+});
 
 #[async_trait]
 impl Pm for Homebrew {

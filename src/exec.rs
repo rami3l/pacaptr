@@ -8,7 +8,7 @@ use bytes::Bytes;
 use futures::prelude::*;
 pub use is_root::is_root;
 use itertools::Itertools;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::{
     process::Stdio,
@@ -274,9 +274,7 @@ impl Cmd {
     /// This function behaves just like [`exec_checkerr`], but in addition,
     /// the user will be prompted if (s)he wishes to continue with the command execution.
     async fn exec_prompt(self, mute: bool) -> Result<Output> {
-        lazy_static! {
-            static ref ALL_YES: AtomicBool = AtomicBool::new(false);
-        }
+        static ALL_YES: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
         let proceed: bool = if ALL_YES.load(Ordering::SeqCst) {
             true

@@ -5,28 +5,28 @@ use crate::{
     exec::{self, Cmd},
 };
 use async_trait::async_trait;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 pub struct Zypper {
     pub cfg: Config,
 }
 
-lazy_static! {
-    static ref CHECK_DRY_STRAT: Strategies = Strategies {
-        dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-        ..Default::default()
-    };
-    static ref PROMPT_STRAT: Strategies = Strategies {
-        prompt: PromptStrategy::native_prompt(&["-y"]),
-        dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-        ..Default::default()
-    };
-    static ref INSTALL_STRAT: Strategies = Strategies {
-        prompt: PromptStrategy::native_prompt(&["-y"]),
-        no_cache: NoCacheStrategy::Scc,
-        dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-    };
-}
+static CHECK_DRY_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+    dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+    ..Default::default()
+});
+
+static PROMPT_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+    prompt: PromptStrategy::native_prompt(&["-y"]),
+    dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+    ..Default::default()
+});
+
+static INSTALL_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+    prompt: PromptStrategy::native_prompt(&["-y"]),
+    no_cache: NoCacheStrategy::Scc,
+    dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+});
 
 impl Zypper {
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {

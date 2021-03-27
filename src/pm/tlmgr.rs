@@ -1,18 +1,16 @@
 use super::{DryRunStrategy, Pm, PmHelper, Strategies};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 use async_trait::async_trait;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 pub struct Tlmgr {
     pub cfg: Config,
 }
 
-lazy_static! {
-    static ref CHECK_DRY_STRAT: Strategies = Strategies {
-        dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-        ..Default::default()
-    };
-}
+static CHECK_DRY_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+    dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+    ..Default::default()
+});
 
 #[async_trait]
 impl Pm for Tlmgr {

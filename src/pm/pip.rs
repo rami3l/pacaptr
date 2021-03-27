@@ -6,19 +6,17 @@ use crate::{
     print::{self, PROMPT_RUN},
 };
 use async_trait::async_trait;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 pub struct Pip {
     pub cmd: String,
     pub cfg: Config,
 }
 
-lazy_static! {
-    static ref PROMPT_STRAT: Strategies = Strategies {
-        prompt: PromptStrategy::native_prompt(&["-y"]),
-        ..Default::default()
-    };
-}
+static PROMPT_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+    prompt: PromptStrategy::native_prompt(&["-y"]),
+    ..Default::default()
+});
 
 #[async_trait]
 impl Pm for Pip {

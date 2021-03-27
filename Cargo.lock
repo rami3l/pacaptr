@@ -538,7 +538,7 @@ dependencies = [
  "futures",
  "is-root",
  "itertools",
- "lazy_static",
+ "once_cell",
  "prettytable-rs",
  "regex",
  "respector",

@@ -2,23 +2,22 @@ use super::{DryRunStrategy, Pm, PmHelper, PromptStrategy, Strategies};
 use crate::exec::Cmd;
 use crate::{dispatch::config::Config, error::Result};
 use async_trait::async_trait;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 pub struct Chocolatey {
     pub cfg: Config,
 }
 
-lazy_static! {
-    static ref PROMPT_STRAT: Strategies = Strategies {
-        prompt: PromptStrategy::native_prompt(&["--yes"]),
-        dry_run: DryRunStrategy::with_flags(&["--what-if"]),
-        ..Default::default()
-    };
-    static ref CHECK_DRY_STRAT: Strategies = Strategies {
-        dry_run: DryRunStrategy::with_flags(&["--what-if"]),
-        ..Default::default()
-    };
-}
+static PROMPT_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+    prompt: PromptStrategy::native_prompt(&["--yes"]),
+    dry_run: DryRunStrategy::with_flags(&["--what-if"]),
+    ..Default::default()
+});
+
+static CHECK_DRY_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+    dry_run: DryRunStrategy::with_flags(&["--what-if"]),
+    ..Default::default()
+});
 
 impl Chocolatey {
     async fn check_dry_run(&self, cmd: Cmd) -> Result<()> {
