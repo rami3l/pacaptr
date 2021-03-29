@@ -55,7 +55,7 @@ tokio = { version = "1.4.0", features = [
 ] }
 tokio-stream = "0.1.5"
 tokio-util = { version = "0.6.5", features = ["codec", "compat"] }
-which = "4.0.2"
+which = "4.1.0"
 
 [package.metadata.deb]
 copyright = "2020, Rami3L"
