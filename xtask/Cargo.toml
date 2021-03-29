@@ -8,7 +8,7 @@ version = "0.1.0"
 
 [dependencies]
 anyhow = "1.0.38"
-const_format = "0.2.13"
+const_format = "0.2.14"
 pico-args = "0.4.0"
 regex = { version = "1.4.5", default-features = false, features = ["std", "unicode-perl"] }
 xml-rs = "0.8.3"
