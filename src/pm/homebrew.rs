@@ -134,7 +134,6 @@ impl Pm for Homebrew {
             print::print_msg("`brew tap beeftornado/rmtree`", PROMPT_INFO);
             return Err(Error::OtherError("`rmtree` required".into()));
         }
-
         Ok(())
     }
 

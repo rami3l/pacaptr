@@ -87,7 +87,7 @@ macro_rules! decl_pm {(
 
             // * Automatically generated methods below... *
             $(
-                $(#[$meta] )*
+                $(#[$meta])*
                 async fn $method(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
                     make_op_body!(self, $method)
                 }

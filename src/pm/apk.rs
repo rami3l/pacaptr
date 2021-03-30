@@ -78,8 +78,7 @@ impl Pm for Apk {
             .run(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
-        exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
-        Ok(())
+        exec::grep_print(&String::from_utf8(out_bytes)?, kws)
     }
 
     /// Qu lists packages which have an update available.

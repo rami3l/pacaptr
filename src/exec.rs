@@ -5,7 +5,7 @@ use crate::{
     print::*,
 };
 use bytes::Bytes;
-use futures::prelude::*;
+use futures::{future::Either, prelude::*};
 pub use is_root::is_root;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
@@ -158,12 +158,13 @@ where
     let mut buf = Vec::<u8>::new();
     let buf_sink = (&mut buf).into_sink();
 
-    if let Some(out) = out {
+    let sink = if let Some(out) = out {
         let out_sink = out.compat_write().into_sink();
-        src.forward(buf_sink.fanout(out_sink)).await?;
+        Either::Left(buf_sink.fanout(out_sink))
     } else {
-        src.forward(buf_sink).await?;
-    }
+        Either::Right(buf_sink)
+    };
+    src.forward(sink).await?;
 
     Ok(buf)
 }
@@ -357,7 +358,6 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
 ///
 /// We suppose that all patterns are legal regular expressions.
 /// An error message will be printed if this is not the case.
-/// If there is no legal patterns, the output [`Vec`] will be empty.
 pub fn grep<'a>(text: &'a str, patterns: &[&str]) -> Result<Vec<&'a str>> {
     patterns
         .iter()
@@ -366,7 +366,7 @@ pub fn grep<'a>(text: &'a str, patterns: &[&str]) -> Result<Vec<&'a str>> {
                 .map_err(|_e| Error::OtherError(format!("Pattern `{}` is ill-formed.", pat)))
         })
         .try_collect()
-        .map(|rs: Vec<_>| {
+        .map(|rs: Vec<Regex>| {
             text.lines()
                 .filter(|line| rs.iter().all(|regex| regex.is_match(line)))
                 .collect_vec()
