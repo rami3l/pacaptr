@@ -314,16 +314,14 @@ impl Cmd {
 
 impl std::fmt::Display for Cmd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let sudo_prefix: &str = if self.should_sudo() { "sudo -S " } else { "" };
-        let mut res = sudo_prefix.to_owned();
-        let cmd_str = self
+        let sudo: &str = self.should_sudo().then(|| "sudo -S ").unwrap_or_default();
+        let cmd = self
             .cmd
             .iter()
             .chain(&self.flags)
             .chain(&self.kws)
             .join(" ");
-        res.push_str(&cmd_str);
-        write!(f, "{}", res)
+        write!(f, "{}{}", sudo, cmd)
     }
 }
 
