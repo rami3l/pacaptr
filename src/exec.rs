@@ -321,8 +321,6 @@ impl std::fmt::Display for Cmd {
             .iter()
             .chain(&self.flags)
             .chain(&self.kws)
-            .map(|s| s.as_ref())
-            .collect_vec()
             .join(" ");
         res.push_str(&cmd_str);
         write!(f, "{}", res)
@@ -363,21 +361,18 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
 /// An error message will be printed if this is not the case.
 /// If there is no legal patterns, the output [`Vec`] will be empty.
 pub fn grep<'a>(text: &'a str, patterns: &[&str]) -> Result<Vec<&'a str>> {
-    let rs: Vec<Regex> = patterns
+    patterns
         .iter()
         .map(|&pat| {
             Regex::new(pat)
                 .map_err(|_e| Error::OtherError(format!("Pattern `{}` is ill-formed.", pat)))
         })
-        .try_collect()?;
-
-    Ok(if !rs.is_empty() {
-        text.lines()
-            .filter(|line| rs.iter().all(|regex| regex.is_match(line)))
-            .collect_vec()
-    } else {
-        vec![]
-    })
+        .try_collect()
+        .map(|rs: Vec<_>| {
+            text.lines()
+                .filter(|line| rs.iter().all(|regex| regex.is_match(line)))
+                .collect_vec()
+        })
 }
 
 /// Prints the result of [`grep`] line by line.
