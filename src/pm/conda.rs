@@ -43,8 +43,7 @@ impl Pm for Conda {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = &["conda", "list"];
-        let cmd = Cmd::new(cmd).flags(flags);
+        let cmd = Cmd::new(&["conda", "list"]).flags(flags);
         if !self.cfg.dry_run {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
@@ -99,12 +98,10 @@ impl Pm for Conda {
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let kws: Vec<String> = kws.iter().map(|&s| format!("*{}*", s)).collect();
-
         stream::iter(kws)
             .map(Ok)
-            .try_for_each(|kw| async move {
+            .try_for_each(|kw| {
                 self.just_run_default(Cmd::new(&["conda", "search"]).kws(&[kw]).flags(flags))
-                    .await
             })
             .await
     }

@@ -28,22 +28,26 @@ use which::which;
 /// Different ways in which a command shall be dealt with.
 #[derive(Copy, Clone, Debug)]
 pub enum Mode {
-    /// Solely prints out the command that should be executed, and stop.
+    /// Solely prints out the command that should be executed and stops.
     PrintCmd,
 
-    /// Silently collects all the `stdout`/`stderr` combined. Print nothing.
+    /// Silently collects all the `stdout`/`stderr` combined. Prints nothing.
     Mute,
 
-    /// Prints out the command which should be executed, run it and collect its `stdout`/`stderr` combined.
-    /// Potentially dangerous as it destroys the colored `stdout`. Use it only if really necessary.
+    /// Prints out the command which should be executed, runs it and collects its `stdout`/`stderr` combined.
+    ///
+    /// This is potentially dangerous as it destroys the colored `stdout`. Use it only if really necessary.
     CheckAll,
 
-    /// Prints out the command which should be executed, run it and collect its `stderr`.
+    /// Prints out the command which should be executed, runs it and collects its `stderr`.
+    ///
     /// This will work with a colored `stdout`.
     CheckErr,
 
     /// A CUSTOM prompt implemented by a `pacaptr` module itself.
-    /// Like [`CheckErr`], but will ask for confirmation before proceeding.
+    ///
+    /// Prints out the command which should be executed, runs it and collects its `stderr`.
+    /// Also, this will ask for confirmation before proceeding.
     Prompt,
 }
 
@@ -52,8 +56,7 @@ pub type StatusCode = i32;
 /// Output of running a [`Cmd`].
 #[derive(Debug, Clone)]
 pub struct Output {
-    /// The captured `stdout`,
-    /// and if set to [`Mode::CheckAll`], mixed with captured `stderr`.
+    /// The captured `stdout`, and if set to [`Mode::CheckAll`], mixed with captured `stderr`.
     pub contents: Vec<u8>,
 
     /// The status code returned by the [`Cmd`].
@@ -144,7 +147,7 @@ impl Cmd {
 /// Helper to implement [`Cmd::exec_checkerr`] and [`Cmd::exec_checkall`].
 ///
 /// Takes contents from an input stream and copy to an output stream (optional) and a [`Vec<u8>`],
-/// then return the [`Vec<u8>`].
+/// then returns the [`Vec<u8>`].
 ///
 /// # Arguments
 ///
@@ -170,7 +173,7 @@ where
 }
 
 impl Cmd {
-    /// Execute a [`Cmd`] and return its output.
+    /// Executes a [`Cmd`] and returns its output.
     ///
     /// The exact behavior depends on the [`Mode`] passed in (see [`exec::Mode`] for more info).
     pub async fn exec(self, mode: Mode) -> Result<Output> {
@@ -192,7 +195,7 @@ impl Cmd {
         }
     }
 
-    /// Executes a [`Cmd`] and return its `stdout` and `stderr`.
+    /// Executes a [`Cmd`] and returns its `stdout` and `stderr`.
     ///
     /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
     async fn exec_checkall(self, mute: bool) -> Result<Output> {
@@ -236,7 +239,7 @@ impl Cmd {
         })
     }
 
-    /// Executes a [`Cmd`] and collect its `stderr`.  
+    /// Executes a [`Cmd`] and collects its `stderr`.  
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     async fn exec_checkerr(self, mute: bool) -> Result<Output> {
         use Error::*;
@@ -269,7 +272,7 @@ impl Cmd {
         })
     }
 
-    /// Executes a [`Cmd`] and collect its `stderr`.
+    /// Executes a [`Cmd`] and collects its `stderr`.
     /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
     ///
     /// This function behaves just like [`exec_checkerr`], but in addition,

@@ -184,25 +184,25 @@ impl Pm for Apk {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = if kws.is_empty() {
-            Cmd::with_sudo(&["apk", "upgrade"]).kws(kws).flags(flags)
+        let cmd = Cmd::with_sudo(if kws.is_empty() {
+            &["apk", "upgrade"]
         } else {
-            Cmd::with_sudo(&["apk", "add", "-u"]).kws(kws).flags(flags)
-        };
+            &["apk", "add", "-u"]
+        })
+        .kws(kws)
+        .flags(flags);
         self.just_run(cmd, Default::default(), &INSTALL_STRAT).await
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = if kws.is_empty() {
-            Cmd::with_sudo(&["apk", "upgrade", "-U", "-a"])
-                .kws(kws)
-                .flags(flags)
+        let cmd = Cmd::with_sudo(if kws.is_empty() {
+            &["apk", "upgrade", "-U", "-a"]
         } else {
-            Cmd::with_sudo(&["apk", "add", "-U", "-u"])
-                .kws(kws)
-                .flags(flags)
-        };
+            &["apk", "add", "-U", "-u"]
+        })
+        .kws(kws)
+        .flags(flags);
         self.just_run(cmd, Default::default(), &INSTALL_STRAT).await
     }
 

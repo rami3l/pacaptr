@@ -98,13 +98,14 @@ impl Pm for Tlmgr {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd: &[&str] = if kws.is_empty() {
-            &["tlmgr", "update", "--self", "--all"]
-        } else {
-            &["tlmgr", "update", "--self"]
-        };
         self.just_run(
-            Cmd::new(cmd).kws(kws).flags(flags),
+            Cmd::new(if kws.is_empty() {
+                &["tlmgr", "update", "--self", "--all"]
+            } else {
+                &["tlmgr", "update", "--self"]
+            })
+            .kws(kws)
+            .flags(flags),
             Default::default(),
             &CHECK_DRY_STRAT,
         )

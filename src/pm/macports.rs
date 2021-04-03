@@ -106,13 +106,14 @@ impl Pm for Macports {
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd: &[&str] = if flags.is_empty() {
-            &["port", "clean", "--all", "inactive"]
-        } else {
-            &["port", "clean", "--all"]
-        };
         self.just_run(
-            Cmd::with_sudo(cmd).kws(kws).flags(flags),
+            Cmd::with_sudo(if flags.is_empty() {
+                &["port", "clean", "--all", "inactive"]
+            } else {
+                &["port", "clean", "--all"]
+            })
+            .kws(kws)
+            .flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -121,13 +122,14 @@ impl Pm for Macports {
 
     /// Scc removes all files from the cache.
     async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd: &[&str] = if flags.is_empty() {
-            &["port", "clean", "--all", "installed"]
-        } else {
-            &["port", "clean", "--all"]
-        };
         self.just_run(
-            Cmd::with_sudo(cmd).kws(kws).flags(flags),
+            Cmd::with_sudo(if flags.is_empty() {
+                &["port", "clean", "--all", "installed"]
+            } else {
+                &["port", "clean", "--all"]
+            })
+            .kws(kws)
+            .flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -148,13 +150,14 @@ impl Pm for Macports {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd: &[&str] = if flags.is_empty() {
-            &["port", "upgrade", "outdated"]
-        } else {
-            &["port", "upgrade"]
-        };
         self.just_run(
-            Cmd::with_sudo(cmd).kws(kws).flags(flags),
+            Cmd::with_sudo(if flags.is_empty() {
+                &["port", "upgrade", "outdated"]
+            } else {
+                &["port", "upgrade"]
+            })
+            .kws(kws)
+            .flags(flags),
             Default::default(),
             &INSTALL_STRAT,
         )

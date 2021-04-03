@@ -1,4 +1,5 @@
-//! Here is where the things really happen. If you want to add package manager support, please declare submodules here.
+//! Here is where the things really happen.
+//! If you want to add package manager support, please declare submodules here.
 
 pub mod apk;
 pub mod apt;
@@ -54,7 +55,7 @@ macro_rules! decl_pm {(
             /// Gets the config of the package manager.
             fn cfg(&self) -> &Config;
 
-            /// Wrap the `Pm` instance in a box.
+            /// Wraps the `Pm` instance in a box.
             fn boxed<'a>(self) -> Box<dyn Pm + 'a>
             where
                 Self: Sized + 'a,
@@ -67,12 +68,12 @@ macro_rules! decl_pm {(
                 self.get_set_code(None).await
             }
 
-            /// Set the `StatusCode` to be returned.
+            /// Sets the `StatusCode` to be returned.
             async fn set_code(&self, to: StatusCode) {
                 self.get_set_code(Some(to)).await;
             }
 
-            /// Gets/Set the `StatusCode` to be returned.
+            /// Gets/Sets the `StatusCode` to be returned.
             /// If `to` is `Some(n)`, then the current `StatusCode` will be reset to `n`.
             /// Then the current `StatusCode` will be returned.
             #[doc(hidden)]

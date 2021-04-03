@@ -77,8 +77,7 @@ impl Pm for Zypper {
 
     /// Qm lists packages that are installed but are not available in any installation source (anymore).
     async fn qm(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = &["zypper", "search", "-si"];
-        let cmd = Cmd::new(cmd).kws(kws).flags(flags);
+        let cmd = Cmd::new(&["zypper", "search", "-si"]).kws(kws).flags(flags);
         let out_bytes = self
             .run(cmd, PmMode::Mute, &Default::default())
             .await?
@@ -181,12 +180,16 @@ impl Pm for Zypper {
 
     /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd: &[&str] = if kws.is_empty() {
-            &["zypper", "packages", "-R"]
-        } else {
-            &["zypper", "packages", "-r"]
-        };
-        self.check_dry(Cmd::new(cmd).kws(kws).flags(flags)).await
+        self.check_dry(
+            Cmd::new(if kws.is_empty() {
+                &["zypper", "packages", "-R"]
+            } else {
+                &["zypper", "packages", "-r"]
+            })
+            .kws(kws)
+            .flags(flags),
+        )
+        .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.

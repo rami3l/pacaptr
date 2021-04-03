@@ -108,13 +108,14 @@ impl Pm for Apt {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd: &[&str] = if self.cfg.needed {
-            &["apt", "install"]
-        } else {
-            &["apt", "install", "--reinstall"]
-        };
         self.just_run(
-            Cmd::with_sudo(cmd).kws(kws).flags(flags),
+            Cmd::with_sudo(if self.cfg.needed {
+                &["apt", "install"]
+            } else {
+                &["apt", "install", "--reinstall"]
+            })
+            .kws(kws)
+            .flags(flags),
             Default::default(),
             &INSTALL_STRAT,
         )

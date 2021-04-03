@@ -139,15 +139,16 @@ impl Pm for Homebrew {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = if self.cfg.needed {
-            &["brew", "install"]
-        } else {
-            // If the package is not installed, `brew reinstall` behaves just like `brew install`,
-            // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
-            &["brew", "reinstall"]
-        };
         self.just_run(
-            Cmd::new(cmd).kws(kws).flags(flags),
+            Cmd::new(if self.cfg.needed {
+                &["brew", "install"]
+            } else {
+                // If the package is not installed, `brew reinstall` behaves just like `brew install`,
+                // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
+                &["brew", "reinstall"]
+            })
+            .kws(kws)
+            .flags(flags),
             Default::default(),
             &INSTALL_STRAT,
         )

@@ -96,8 +96,7 @@ impl Pm for Dnf {
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     // TODO: Is this right?
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = &["rpm", "-qa"];
-        let cmd = Cmd::new(cmd).flags(flags);
+        let cmd = Cmd::new(&["rpm", "-qa"]).flags(flags);
         if !self.cfg.dry_run {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
@@ -183,13 +182,16 @@ impl Pm for Dnf {
 
     /// Sg lists all packages belonging to the GROUP.
     async fn sg(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd: &[&str] = if kws.is_empty() {
-            &["dnf", "group", "list"]
-        } else {
-            &["dnf", "group", "info"]
-        };
-        self.just_run_default(Cmd::new(cmd).kws(kws).flags(flags))
-            .await
+        self.just_run_default(
+            Cmd::new(if kws.is_empty() {
+                &["dnf", "group", "list"]
+            } else {
+                &["dnf", "group", "info"]
+            })
+            .kws(kws)
+            .flags(flags),
+        )
+        .await
     }
 
     /// Sl displays a list of all packages in all installation sources that are handled by the packages management.

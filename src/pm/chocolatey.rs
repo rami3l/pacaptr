@@ -83,13 +83,14 @@ impl Pm for Chocolatey {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd: &[&str] = if self.cfg.needed {
-            &["choco", "install"]
-        } else {
-            &["choco", "install", "--force"]
-        };
         self.just_run(
-            Cmd::new(cmd).kws(kws).flags(flags),
+            Cmd::new(if self.cfg.needed {
+                &["choco", "install"]
+            } else {
+                &["choco", "install", "--force"]
+            })
+            .kws(kws)
+            .flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
@@ -110,13 +111,14 @@ impl Pm for Chocolatey {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd: &[&str] = if kws.is_empty() {
-            &["choco", "upgrade", "all"]
-        } else {
-            &["choco", "upgrade"]
-        };
         self.just_run(
-            Cmd::new(cmd).kws(kws).flags(flags),
+            Cmd::new(if kws.is_empty() {
+                &["choco", "upgrade", "all"]
+            } else {
+                &["choco", "upgrade"]
+            })
+            .kws(kws)
+            .flags(flags),
             Default::default(),
             &PROMPT_STRAT,
         )
