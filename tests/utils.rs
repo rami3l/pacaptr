@@ -48,7 +48,9 @@ impl<'t> Test<'t> {
 
     pub fn output(mut self, out: &'t [&str]) -> Self {
         // Guard against `self.output()` without `self.pending_input` being set.
-        let cmd = std::mem::replace(&mut self.pending_input, None)
+        let cmd = self
+            .pending_input
+            .take()
             .expect("Expect an input before an output");
         self.sequence.push((cmd, out));
         self

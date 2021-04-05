@@ -259,19 +259,13 @@ pub trait PmHelper: Pm {
 
     /// A helper method to simplify direct command invocation.
     /// It is just like `run`, but intended to be used only for its side effects.
-    async fn just_run(&self, cmd: Cmd, mode: PmMode, strat: &Strategies) -> Result<()>
-    where
-        Self: Sized,
-    {
-        self.run(cmd, mode, strat).await.map(|_| ())
+    async fn just_run(&self, cmd: Cmd, mode: PmMode, strat: &Strategies) -> Result<()> {
+        self.run(cmd, mode, strat).await.map(drop)
     }
 
     /// A helper method to simplify direct command invocation.
     /// It is just like `run`, but intended to be used only for its side effects, and always with default mode (`CheckErr` for now) and strategies.
-    async fn just_run_default(&self, cmd: Cmd) -> Result<()>
-    where
-        Self: Sized,
-    {
+    async fn just_run_default(&self, cmd: Cmd) -> Result<()> {
         self.just_run(cmd, Default::default(), &Default::default())
             .await
     }

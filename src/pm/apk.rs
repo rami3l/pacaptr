@@ -69,8 +69,7 @@ impl Pm for Apk {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = &["apk", "info", "-d"];
-        let cmd = Cmd::new(cmd).flags(flags);
+        let cmd = Cmd::new(&["apk", "info", "-d"]).flags(flags);
         if !self.cfg.dry_run {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
