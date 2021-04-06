@@ -33,7 +33,7 @@ impl Config {
     /// This method will almost always success, and will only fail if `$HOME` is not found.
     pub fn default_path() -> Result<PathBuf> {
         let crate_name = clap::crate_name!();
-        dirs::home_dir()
+        dirs_next::home_dir()
             .ok_or_else(|| Error::ConfigError {
                 msg: "$HOME path not found".into(),
             })
