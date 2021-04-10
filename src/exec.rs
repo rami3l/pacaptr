@@ -280,11 +280,11 @@ impl Cmd {
     async fn exec_prompt(self, mute: bool) -> Result<Output> {
         static ALL_YES: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
-        let proceed: bool = if ALL_YES.load(Ordering::SeqCst) {
+        let proceed = if ALL_YES.load(Ordering::SeqCst) {
             true
         } else {
             print_cmd(&self, PROMPT_PENDING);
-            match tokio::task::block_in_place(move || {
+            let answer = tokio::task::block_in_place(move || {
                 prompt(
                     "Proceed",
                     "[YES/All/No/^C]",
@@ -292,9 +292,8 @@ impl Cmd {
                     false,
                 )
                 .to_lowercase()
-            })
-            .as_ref()
-            {
+            });
+            match answer.as_ref() {
                 // The default answer is `Yes`
                 "y" | "yes" | "" => true,
                 // You can also say `All` to answer `Yes` to all the other questions that follow.
@@ -345,14 +344,9 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
         if !case_sensitive {
             answer = answer.to_lowercase();
         }
-        if let Some('\n') = answer.chars().next_back() {
-            answer.pop();
-        }
-        if let Some('\r') = answer.chars().next_back() {
-            answer.pop();
-        }
+        let answer = answer.trim();
         if expected.iter().any(|&x| x == answer) {
-            break answer;
+            break answer.to_owned();
         }
     }
 }

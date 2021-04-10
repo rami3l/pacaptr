@@ -60,13 +60,13 @@ impl Config {
     /// - If the config file is not present anyway, a default one will be loaded with [`Default::default`], and no files will be written.
     pub fn load() -> Result<Self> {
         let path = Config::custom_path().or_else(|_| Config::default_path())?;
-        let res = if path.exists() {
-            confy::load_path(&path).map_err(|_e| Error::ConfigError {
-                msg: format!("Failed to read config at `{:?}`", &path),
-            })?
-        } else {
-            Default::default()
-        };
-        Ok(res)
+        path.exists()
+            .then(|| {
+                confy::load_path(&path).map_err(|_e| Error::ConfigError {
+                    msg: format!("Failed to read config at `{:?}`", &path),
+                })
+            })
+            .transpose()
+            .map(|cfg| cfg.unwrap_or_default())
     }
 }
