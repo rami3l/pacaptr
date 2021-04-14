@@ -42,7 +42,7 @@ is-root = "0.1.2"
 itertools = "0.10.0"
 once_cell = "1.7.2"
 regex = { version = "1.4.5", default-features = false, features = ["std", "perf"] }
-respector = "0.1.1"
+respector = "0.1.2"
 serde = { version = "1.0.125", features = ["derive"] }
 thiserror = "1.0.24"
 tokio = { version = "1.5.0", features = [
