@@ -724,9 +724,9 @@ checksum = "24d5f089152e60f62d28b835fbff2cd2e8dc0baf1ac13343bef92ab7eed84548"
 
 [[package]]
 name = "respector"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f6a91658072269afd4a4e95023217f733a4a4ecf9c6180ac686fed3241c9730"
+checksum = "2a548ca87e0a94a4ee93d3a7f83c881825a2eb8dbdfb1e4238fa3bcd2c564b77"
 
 [[package]]
 name = "rust-argon2"
