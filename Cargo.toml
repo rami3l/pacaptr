@@ -31,7 +31,7 @@ regex = "1.4.5"
 xshell = "0.1.9"
 
 [dependencies]
-async-trait = "0.1.48"
+async-trait = "0.1.49"
 bytes = "1.0.1"
 clap = "3.0.0-beta.2"
 colored = "2.0.0"
