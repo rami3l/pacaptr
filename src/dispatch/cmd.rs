@@ -163,35 +163,32 @@ impl Opts {
 
         // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
         let options = {
-            let mut options = "".to_owned();
-
             // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in ASCII order,
             // ! eg. `Suy` instead of `Syu`.
             // ! Then, in order to stay coherent with Rust coding style the method name should be `suy`.
-
             macro_rules! collect_options {(
-                    ops: [$( $op:ident ), *],
-                    flags: [$( $flag:ident ), *],
-                    counters: [$($counter: ident), *]
-                ) => {
-                    $(if self.$op {
-                        options.push_str(&stringify!($op)[0..1].to_uppercase());
-                    })*
-                    $(if self.$flag {
-                        options.push_str(stringify!($flag));
-                    })*
-                    $(for _ in 0..self.$counter {
-                        options.push_str(stringify!($counter));
-                    })*
-                };
-            }
+                ops: [$( $op:ident ), *],
+                flags: [$( $flag:ident ), *],
+                counters: [$( $counter:ident), *] $(,)?
+            ) => {{
+                let mut options = String::new();
+                $(if self.$op {
+                    options.push_str(&stringify!($op)[0..1].to_uppercase());
+                })*
+                $(if self.$flag {
+                    options.push_str(stringify!($flag));
+                })*
+                $(for _ in 0..self.$counter {
+                    options.push_str(stringify!($counter));
+                })*
+                options
+            }};}
 
-            collect_options! {
+            let options = collect_options! {
                 ops: [query, remove, sync, update],
                 flags: [e, g, k, l, m, n, o, p, u, w, y],
-                counters: [c, i, s]
+                counters: [c, i, s],
             };
-
             let mut chars: Vec<char> = options.chars().collect();
             chars.sort_unstable();
             String::from_iter(chars)
@@ -254,27 +251,26 @@ mod tests {
             async fn $method:ident;
         )*
     ) => {
-            #[async_trait]
-            impl Pm for MockPm {
-                /// Gets the name of the package manager.
-                fn name(&self) -> String {
-                    "mockpm".into()
-                }
-
-                fn cfg(&self) -> &Config {
-                    &self.cfg
-                }
-
-                // * Automatically generated methods below... *
-                $(
-                    $(#[$meta] )*
-                    async fn $method(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-                        make_mock_op_body!(self, kws, flags, $method)
-                    }
-                )*
+        #[async_trait]
+        impl Pm for MockPm {
+            /// Gets the name of the package manager.
+            fn name(&self) -> String {
+                "mockpm".into()
             }
-        };
-    }
+
+            fn cfg(&self) -> &Config {
+                &self.cfg
+            }
+
+            // * Automatically generated methods below... *
+            $(
+                $( #[$meta] )*
+                async fn $method(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+                    make_mock_op_body!(self, kws, flags, $method)
+                }
+            )*
+        }
+    };}
 
     impl_pm_mock! {
        /// Q generates a list of installed packages.

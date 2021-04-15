@@ -57,11 +57,10 @@ pub fn print_msg(msg: &str, prompt: &str) {
 
 /// Prints out an error after the given prompt.
 pub fn print_err(err: impl std::fmt::Display, prompt: &str) {
-    let err = format!("{:#}", err);
     eprintln!(
         msg_format!(),
         prompt.bright_red().bold(),
-        err,
+        format!("{:#}", err),
         indent = PROMPT_INDENT
     );
 }

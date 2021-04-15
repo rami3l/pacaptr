@@ -5,7 +5,7 @@ use crate::{
     print::*,
 };
 use bytes::Bytes;
-use futures::{future::Either, prelude::*};
+use futures::prelude::*;
 pub use is_root::is_root;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
@@ -86,23 +86,23 @@ pub struct Cmd {
 }
 
 impl Cmd {
-    pub fn new<S: AsRef<str>>(cmd: &[S]) -> Self {
+    pub fn new(cmd: &[impl AsRef<str>]) -> Self {
         Self {
             cmd: cmd.iter().map(|s| s.as_ref().into()).collect(),
             ..Default::default()
         }
     }
 
-    pub fn with_sudo<S: AsRef<str>>(cmd: &[S]) -> Self {
+    pub fn with_sudo(cmd: &[impl AsRef<str>]) -> Self {
         Self::new(cmd).sudo(true)
     }
 
-    pub fn kws<S: AsRef<str>>(mut self, kws: &[S]) -> Self {
+    pub fn kws(mut self, kws: &[impl AsRef<str>]) -> Self {
         self.kws = kws.iter().map(|s| s.as_ref().into()).collect();
         self
     }
 
-    pub fn flags<S: AsRef<str>>(mut self, flags: &[S]) -> Self {
+    pub fn flags(mut self, flags: &[impl AsRef<str>]) -> Self {
         self.flags = flags.iter().map(|s| s.as_ref().into()).collect();
         self
     }
@@ -163,12 +163,12 @@ where
 
     let sink = if let Some(out) = out {
         let out_sink = out.compat_write().into_sink();
-        Either::Left(buf_sink.fanout(out_sink))
+        buf_sink.fanout(out_sink).left_sink()
     } else {
-        Either::Right(buf_sink)
+        buf_sink.right_sink()
     };
-    src.forward(sink).await?;
 
+    src.forward(sink).await?;
     Ok(buf)
 }
 
@@ -355,7 +355,7 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
 ///
 /// We suppose that all patterns are legal regular expressions.
 /// An error message will be printed if this is not the case.
-pub fn grep<'a>(text: &'a str, patterns: &[&str]) -> Result<Vec<&'a str>> {
+pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
     patterns
         .iter()
         .map(|&pat| {

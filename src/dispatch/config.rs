@@ -1,9 +1,6 @@
 use crate::error::{Error, Result};
 use serde::{Deserialize, Serialize};
-use std::{
-    env,
-    path::{Path, PathBuf},
-};
+use std::{env, path::PathBuf};
 
 /// The environment variable name for custom config file path.
 const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";
@@ -50,7 +47,7 @@ impl Config {
             .map_err(|e| Error::ConfigError {
                 msg: format!("Config path environment variable not found: {}", e),
             })
-            .map(|p| Path::new(&p).to_owned())
+            .map(PathBuf::from)
     }
 
     /// Loads up the config file from the user-specified path.
@@ -61,12 +58,11 @@ impl Config {
     pub fn load() -> Result<Self> {
         let path = Config::custom_path().or_else(|_| Config::default_path())?;
         path.exists()
-            .then(|| {
-                confy::load_path(&path).map_err(|_e| Error::ConfigError {
-                    msg: format!("Failed to read config at `{:?}`", &path),
-                })
-            })
+            .then(|| confy::load_path(&path))
             .transpose()
+            .map_err(|_e| Error::ConfigError {
+                msg: format!("Failed to read config at `{:?}`", &path),
+            })
             .map(|cfg| cfg.unwrap_or_default())
     }
 }
