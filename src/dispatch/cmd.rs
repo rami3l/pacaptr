@@ -195,7 +195,7 @@ impl Opts {
         };
 
         macro_rules! dispatch_match {
-            ($( $method:ident ), *) => {
+            ($( $method:ident ), * $(,)?) => {
                 match options.to_lowercase().as_ref() {
                     $(stringify!($method) => pm.$method(&kws, &flags).await,)*
                     _ => Err(Error::ArgParseError {
@@ -207,7 +207,7 @@ impl Opts {
 
         dispatch_match![
             q, qc, qe, qi, qk, ql, qm, qo, qp, qs, qu, r, rn, rns, rs, rss, s, sc, scc, sccc, sg,
-            si, sii, sl, ss, su, suy, sw, sy, u
+            si, sii, sl, ss, su, suy, sw, sy, u,
         ]?;
 
         Ok(pm.code().await)
