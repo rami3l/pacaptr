@@ -75,6 +75,9 @@ section = "utility"
 [workspace]
 members = [".", "xtask"]
 
+[profile.dev]
+split-debuginfo = "unpacked"
+
 [profile.release]
 codegen-units = 1
 debug = 0
