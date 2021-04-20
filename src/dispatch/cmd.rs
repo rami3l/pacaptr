@@ -131,16 +131,14 @@ pub struct Opts {
 impl Opts {
     /// Checks if an Opt object is malformed.
     fn check(&self) -> Result<()> {
-        let count = [self.query, self.remove, self.sync, self.update]
-            .iter()
-            .filter(|&x| *x)
+        let count = std::array::IntoIter::new([self.query, self.remove, self.sync, self.update])
+            .filter(|&x| x)
             .count();
-        if count != 1 {
-            return Err(Error::ArgParseError {
+        (count == 1)
+            .then(|| ())
+            .ok_or_else(|| Error::ArgParseError {
                 msg: format!("exactly 1 operation expected, found {}", count),
-            });
-        }
-        Ok(())
+            })
     }
 
     /// Generates current config by merging current CLI flags with the dotfile.
