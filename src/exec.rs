@@ -155,7 +155,7 @@ impl Cmd {
 /// * `out` - The optional output stream to write to.
 async fn exec_tee<S, O>(src: &mut S, out: Option<O>) -> Result<Vec<u8>>
 where
-    S: Stream<Item = std::result::Result<Bytes, io::Error>> + Unpin,
+    S: Stream<Item = io::Result<Bytes>> + Unpin,
     O: AsyncWrite + Unpin,
 {
     let mut buf = Vec::<u8>::new();
