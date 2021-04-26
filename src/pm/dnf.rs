@@ -6,6 +6,7 @@ use crate::{
     print::{self, PROMPT_RUN},
 };
 use async_trait::async_trait;
+use futures::prelude::*;
 use once_cell::sync::Lazy;
 
 pub struct Dnf {
@@ -64,7 +65,14 @@ impl Pm for Dnf {
 
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.si(kws, flags).await
+        let cmds: &[&[&str]] = &[
+            &["dnf", "info", "--installed"],
+            &["dnf", "repoquery", "--deplist"],
+        ];
+        stream::iter(cmds)
+            .map(Ok)
+            .try_for_each(|&cmd| self.just_run_default(Cmd::new(cmd).kws(kws).flags(flags)))
+            .await
     }
 
     /// Ql displays files provided by local package.
@@ -176,7 +184,10 @@ impl Pm for Dnf {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["dnf", "info"]).kws(kws).flags(flags))
+        let cmds: &[&[&str]] = &[&["dnf", "info"], &["dnf", "repoquery", "--deplist"]];
+        stream::iter(cmds)
+            .map(Ok)
+            .try_for_each(|&cmd| self.just_run_default(Cmd::new(cmd).kws(kws).flags(flags)))
             .await
     }
 
