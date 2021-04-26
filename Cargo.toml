@@ -17,7 +17,7 @@ include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
 exclude = ["dist/**/*", "docs/**/*"]
 # build = "build.rs"
 name = "pacaptr"
-version = "0.11.3"
+version = "0.11.4"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -28,7 +28,7 @@ prettytable-rs = "0.8.0"
 regex = "1.4.6"
 
 [dev-dependencies]
-xshell = "0.1.9"
+xshell = "0.1.10"
 
 [dependencies]
 async-trait = "0.1.50"
