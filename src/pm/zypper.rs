@@ -120,12 +120,11 @@ impl Pm for Zypper {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(&["zypper", "remove"]).kws(kws).flags(flags),
-            Default::default(),
-            &STRAT_PROMPT,
-        )
-        .await
+        Cmd::with_sudo(&["zypper", "remove"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .await
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
