@@ -564,8 +564,8 @@ dependencies = [
  "once_cell",
  "prettytable-rs",
  "regex",
- "respector",
  "serde",
+ "tap",
  "thiserror",
  "tokio",
  "tokio-stream",
@@ -723,12 +723,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
-name = "respector"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a548ca87e0a94a4ee93d3a7f83c881825a2eb8dbdfb1e4238fa3bcd2c564b77"
-
-[[package]]
 name = "rust-argon2"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -797,6 +791,12 @@ dependencies = [
  "quote",
  "unicode-xid",
 ]
+
+[[package]]
+name = "tap"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "term"
