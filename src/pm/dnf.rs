@@ -8,17 +8,23 @@ use crate::{
 use async_trait::async_trait;
 use futures::prelude::*;
 use once_cell::sync::Lazy;
+use tap::prelude::*;
 
 pub struct Dnf {
     pub cfg: Config,
 }
 
-static PROMPT_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
     prompt: PromptStrategy::native_prompt(&["-y"]),
     ..Default::default()
 });
 
-static INSTALL_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT_CUSTOM: Lazy<Strategies> = Lazy::new(|| Strategies {
+    prompt: PromptStrategy::CustomPrompt,
+    ..Default::default()
+});
+
+static STRAT_INSTALL: Lazy<Strategies> = Lazy::new(|| Strategies {
     prompt: PromptStrategy::native_prompt(&["-y"]),
     no_cache: NoCacheStrategy::Sccc,
     ..Default::default()
@@ -55,24 +61,22 @@ impl Pm for Dnf {
 
     /// Qe lists packages installed explicitly (not as dependencies).
     async fn qe(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(
-            Cmd::new(&["dnf", "repoquery", "--userinstalled"])
-                .kws(kws)
-                .flags(flags),
-        )
-        .await
+        Cmd::new(&["dnf", "repoquery", "--userinstalled"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run_default(cmd))
+            .await
     }
 
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmds: &[&[&str]] = &[
+        stream::iter(&[
             &["dnf", "info", "--installed"],
             &["dnf", "repoquery", "--deplist"],
-        ];
-        stream::iter(cmds)
-            .map(Ok)
-            .try_for_each(|&cmd| self.just_run_default(Cmd::new(cmd).kws(kws).flags(flags)))
-            .await
+        ])
+        .map(Ok)
+        .try_for_each(|&cmd| self.just_run_default(Cmd::new(cmd).kws(kws).flags(flags)))
+        .await
     }
 
     /// Ql displays files provided by local package.
@@ -124,68 +128,50 @@ impl Pm for Dnf {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(&["dnf", "remove"]).kws(kws).flags(flags),
-            Default::default(),
-            &PROMPT_STRAT,
-        )
-        .await
+        Cmd::with_sudo(&["dnf", "remove"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(&["dnf", "install"]).kws(kws).flags(flags),
-            Default::default(),
-            &INSTALL_STRAT,
-        )
-        .await
+        Cmd::with_sudo(&["dnf", "install"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(&["dnf", "clean", "expire-cache"]).flags(flags),
-            Default::default(),
-            &Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
-        )
-        .await
+        Cmd::new(&["dnf", "clean", "expire-cache"])
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT_CUSTOM))
+            .await
     }
 
     /// Scc removes all files from the cache.
     async fn scc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(&["dnf", "clean", "packages"]).flags(flags),
-            Default::default(),
-            &Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
-        )
-        .await
+        Cmd::new(&["dnf", "clean", "packages"])
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT_CUSTOM))
+            .await
     }
 
     /// Sccc ...
     /// What is this?
     async fn sccc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(&["dnf", "clean", "all"]).flags(flags),
-            Default::default(),
-            &Strategies {
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
-        )
-        .await
+        Cmd::new(&["dnf", "clean", "all"])
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT_CUSTOM))
+            .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmds: &[&[&str]] = &[&["dnf", "info"], &["dnf", "repoquery", "--deplist"]];
-        stream::iter(cmds)
+        stream::iter(&[&["dnf", "info"][..], &["dnf", "repoquery", "--deplist"]])
             .map(Ok)
             .try_for_each(|&cmd| self.just_run_default(Cmd::new(cmd).kws(kws).flags(flags)))
             .await
@@ -193,26 +179,24 @@ impl Pm for Dnf {
 
     /// Sg lists all packages belonging to the GROUP.
     async fn sg(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(
-            Cmd::new(if kws.is_empty() {
-                &["dnf", "group", "list"]
-            } else {
-                &["dnf", "group", "info"]
-            })
-            .kws(kws)
-            .flags(flags),
-        )
+        Cmd::new(if kws.is_empty() {
+            &["dnf", "group", "list"]
+        } else {
+            &["dnf", "group", "info"]
+        })
+        .kws(kws)
+        .flags(flags)
+        .pipe(|cmd| self.just_run_default(cmd))
         .await
     }
 
     /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(
-            Cmd::new(&["dnf", "list", "available"])
-                .kws(kws)
-                .flags(flags),
-        )
-        .await
+        Cmd::new(&["dnf", "list", "available"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run_default(cmd))
+            .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
@@ -223,12 +207,11 @@ impl Pm for Dnf {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(&["dnf", "upgrade"]).kws(kws).flags(flags),
-            Default::default(),
-            &INSTALL_STRAT,
-        )
-        .await
+        Cmd::with_sudo(&["dnf", "upgrade"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .await
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
@@ -238,14 +221,11 @@ impl Pm for Dnf {
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(&["dnf", "install", "--downloadonly"])
-                .kws(kws)
-                .flags(flags),
-            Default::default(),
-            &INSTALL_STRAT,
-        )
-        .await
+        Cmd::with_sudo(&["dnf", "install", "--downloadonly"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .await
     }
 
     /// Sy refreshes the local package database.

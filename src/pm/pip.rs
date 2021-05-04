@@ -7,13 +7,14 @@ use crate::{
 };
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
+use tap::prelude::*;
 
 pub struct Pip {
     pub cmd: String,
     pub cfg: Config,
 }
 
-static PROMPT_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
     prompt: PromptStrategy::native_prompt(&["-y"]),
     ..Default::default()
 });
@@ -57,36 +58,29 @@ impl Pm for Pip {
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(
-            Cmd::new(&[self.cmd.as_ref(), "list", "--outdated"])
-                .kws(kws)
-                .flags(flags),
-        )
-        .await
+        Cmd::new(&[self.cmd.as_ref(), "list", "--outdated"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run_default(cmd))
+            .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(&[self.cmd.as_ref(), "uninstall"])
-                .kws(kws)
-                .flags(flags),
-            Default::default(),
-            &PROMPT_STRAT,
-        )
-        .await
+        Cmd::new(&[self.cmd.as_ref(), "uninstall"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(&[self.cmd.as_ref(), "install"])
-                .kws(kws)
-                .flags(flags),
-            Default::default(),
-            &PROMPT_STRAT,
-        )
-        .await
+        Cmd::new(&[self.cmd.as_ref(), "install"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
@@ -103,23 +97,21 @@ impl Pm for Pip {
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(
-            Cmd::new(&[self.cmd.as_ref(), "search"])
-                .kws(kws)
-                .flags(flags),
-        )
-        .await
+        Cmd::new(&[self.cmd.as_ref(), "search"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run_default(cmd))
+            .await
     }
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if !kws.is_empty() {
-            self.just_run_default(
-                Cmd::new(&[self.cmd.as_ref(), "install", "--upgrade"])
-                    .kws(kws)
-                    .flags(flags),
-            )
-            .await
+            Cmd::new(&[self.cmd.as_ref(), "install", "--upgrade"])
+                .kws(kws)
+                .flags(flags)
+                .pipe(|cmd| self.just_run_default(cmd))
+                .await
         } else {
             Err(crate::error::Error::OperationUnimplementedError {
                 op: "su".into(),
@@ -130,11 +122,10 @@ impl Pm for Pip {
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(
-            Cmd::new(&[self.cmd.as_ref(), "download"])
-                .kws(kws)
-                .flags(flags),
-        )
-        .await
+        Cmd::new(&[self.cmd.as_ref(), "download"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run_default(cmd))
+            .await
     }
 }

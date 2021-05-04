@@ -2,17 +2,18 @@ use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategies};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
+use tap::prelude::*;
 
 pub struct Macports {
     pub cfg: Config,
 }
 
-static PROMPT_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
     prompt: PromptStrategy::CustomPrompt,
     ..Default::default()
 });
 
-static INSTALL_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_INSTALL: Lazy<Strategies> = Lazy::new(|| Strategies {
     prompt: PromptStrategy::CustomPrompt,
     no_cache: NoCacheStrategy::Scc,
     ..Default::default()
@@ -74,65 +75,54 @@ impl Pm for Macports {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(&["port", "uninstall"]).kws(kws).flags(flags),
-            Default::default(),
-            &PROMPT_STRAT,
-        )
-        .await
+        Cmd::with_sudo(&["port", "uninstall"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .await
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(&["port", "uninstall", "--follow-dependencies"])
-                .kws(kws)
-                .flags(flags),
-            Default::default(),
-            &PROMPT_STRAT,
-        )
-        .await
+        Cmd::with_sudo(&["port", "uninstall", "--follow-dependencies"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(&["port", "install"]).kws(kws).flags(flags),
-            Default::default(),
-            &INSTALL_STRAT,
-        )
-        .await
+        Cmd::with_sudo(&["port", "install"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(if flags.is_empty() {
-                &["port", "clean", "--all", "inactive"]
-            } else {
-                &["port", "clean", "--all"]
-            })
-            .kws(kws)
-            .flags(flags),
-            Default::default(),
-            &PROMPT_STRAT,
-        )
+        Cmd::with_sudo(if flags.is_empty() {
+            &["port", "clean", "--all", "inactive"]
+        } else {
+            &["port", "clean", "--all"]
+        })
+        .kws(kws)
+        .flags(flags)
+        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
         .await
     }
 
     /// Scc removes all files from the cache.
     async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(if flags.is_empty() {
-                &["port", "clean", "--all", "installed"]
-            } else {
-                &["port", "clean", "--all"]
-            })
-            .kws(kws)
-            .flags(flags),
-            Default::default(),
-            &PROMPT_STRAT,
-        )
+        Cmd::with_sudo(if flags.is_empty() {
+            &["port", "clean", "--all", "installed"]
+        } else {
+            &["port", "clean", "--all"]
+        })
+        .kws(kws)
+        .flags(flags)
+        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
         .await
     }
 
@@ -150,17 +140,14 @@ impl Pm for Macports {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::with_sudo(if flags.is_empty() {
-                &["port", "upgrade", "outdated"]
-            } else {
-                &["port", "upgrade"]
-            })
-            .kws(kws)
-            .flags(flags),
-            Default::default(),
-            &INSTALL_STRAT,
-        )
+        Cmd::with_sudo(if flags.is_empty() {
+            &["port", "upgrade", "outdated"]
+        } else {
+            &["port", "upgrade"]
+        })
+        .kws(kws)
+        .flags(flags)
+        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
         .await
     }
 

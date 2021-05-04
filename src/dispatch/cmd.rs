@@ -5,6 +5,7 @@ use crate::{
     pm::Pm,
 };
 use clap::{self, Clap};
+use itertools::Itertools;
 use std::iter::FromIterator;
 use tokio::task;
 
@@ -156,8 +157,8 @@ impl Opts {
     /// Executes the job according to the flags received and the package manager detected.
     pub async fn dispatch_from(&self, pm: Box<dyn Pm>) -> Result<StatusCode> {
         self.check()?;
-        let kws: Vec<&str> = self.keywords.iter().map(|s| s.as_ref()).collect();
-        let flags: Vec<&str> = self.extra_flags.iter().map(|s| s.as_ref()).collect();
+        let kws = self.keywords.iter().map(|s| s.as_ref()).collect_vec();
+        let flags = self.extra_flags.iter().map(|s| s.as_ref()).collect_vec();
 
         // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
         let options = {

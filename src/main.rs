@@ -3,7 +3,7 @@ use pacaptr::{
     dispatch::Opts,
     print::{print_err, PROMPT_ERROR},
 };
-use tap::TapFallible;
+use tap::prelude::*;
 
 #[tokio::main]
 async fn main() {

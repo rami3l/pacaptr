@@ -7,17 +7,18 @@ use crate::{
 };
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
+use tap::prelude::*;
 
 pub struct Homebrew {
     pub cfg: Config,
 }
 
-static PROMPT_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
     prompt: PromptStrategy::CustomPrompt,
     ..Default::default()
 });
 
-static INSTALL_STRAT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_INSTALL: Lazy<Strategies> = Lazy::new(|| Strategies {
     prompt: PromptStrategy::CustomPrompt,
     no_cache: NoCacheStrategy::Scc,
     ..Default::default()
@@ -102,28 +103,26 @@ impl Pm for Homebrew {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(&["brew", "uninstall"]).kws(kws).flags(flags),
-            Default::default(),
-            &PROMPT_STRAT,
-        )
-        .await
+        Cmd::new(&["brew", "uninstall"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .await
     }
 
     /// Rss removes a package and its dependencies which are not required by any other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let err_bytes = self
-            .run(
-                Cmd::new(&["brew", "rmtree"]).kws(kws).flags(flags),
-                Default::default(),
-                &Strategies {
-                    dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-                    ..Default::default()
-                },
-            )
+        let strat = Strategies {
+            dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+            ..Default::default()
+        };
+        let err_msg = Cmd::new(&["brew", "rmtree"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd, Default::default(), &strat))
             .await?
-            .contents;
-        let err_msg = String::from_utf8(err_bytes)?;
+            .contents
+            .pipe(String::from_utf8)?;
 
         let pattern = "Unknown command: rmtree";
         if !exec::grep(&err_msg, &[pattern])?.is_empty() {
@@ -139,48 +138,45 @@ impl Pm for Homebrew {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(if self.cfg.needed {
-                &["brew", "install"]
-            } else {
-                // If the package is not installed, `brew reinstall` behaves just like `brew install`,
-                // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
-                &["brew", "reinstall"]
-            })
-            .kws(kws)
-            .flags(flags),
-            Default::default(),
-            &INSTALL_STRAT,
-        )
+        Cmd::new(if self.cfg.needed {
+            &["brew", "install"]
+        } else {
+            // If the package is not installed, `brew reinstall` behaves just like `brew install`,
+            // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
+            &["brew", "reinstall"]
+        })
+        .kws(kws)
+        .flags(flags)
+        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
         .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(&["brew", "cleanup"]).kws(kws).flags(flags),
-            Default::default(),
-            &Strategies {
-                dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
-        )
-        .await
+        let strat = Strategies {
+            dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+            prompt: PromptStrategy::CustomPrompt,
+            ..Default::default()
+        };
+        Cmd::new(&["brew", "cleanup"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &strat))
+            .await
     }
 
     /// Scc removes all files from the cache.
     async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(&["brew", "cleanup", "-s"]).kws(kws).flags(flags),
-            Default::default(),
-            &Strategies {
-                dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-                prompt: PromptStrategy::CustomPrompt,
-                ..Default::default()
-            },
-        )
-        .await
+        let strat = Strategies {
+            dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+            prompt: PromptStrategy::CustomPrompt,
+            ..Default::default()
+        };
+        Cmd::new(&["brew", "cleanup", "-s"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &strat))
+            .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
@@ -203,12 +199,11 @@ impl Pm for Homebrew {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(&["brew", "upgrade"]).kws(kws).flags(flags),
-            Default::default(),
-            &INSTALL_STRAT,
-        )
-        .await
+        Cmd::new(&["brew", "upgrade"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .await
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
@@ -219,12 +214,11 @@ impl Pm for Homebrew {
 
     /// Sw retrieves all packages from the server, but does not install/upgrade anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run(
-            Cmd::new(&["brew", "fetch"]).kws(kws).flags(flags),
-            Default::default(),
-            &PROMPT_STRAT,
-        )
-        .await
+        Cmd::new(&["brew", "fetch"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .await
     }
 
     /// Sy refreshes the local package database.
