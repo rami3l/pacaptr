@@ -2,10 +2,7 @@ use anyhow::{Context, Result};
 use itertools::Itertools;
 use prettytable::{Cell, Row, Table};
 use regex::Regex;
-use std::collections::BTreeMap;
-use std::fs;
-use std::io::Write;
-use std::path::Path;
+use std::{collections::BTreeMap, fs, io::Write, path::Path};
 
 const PM_IMPL_DIR: &str = "src/pm/";
 const COMPAT_TABLE_PATH: &str = "docs/compatibility_table.md";
@@ -62,27 +59,24 @@ fn main() -> Result<()> {
     // `row!["", "q", "qc", "qe", ..]`
     table.add_row(make_row("", METHODS));
 
-    for (file, items) in &impls {
+    impls.iter().try_for_each(|(file, items)| {
         let data = METHODS
             .iter()
             .map(|&method| {
-                let &has_impl = items
+                items
                     .get(method)
-                    .expect("Implementation details not registered");
-                if has_impl {
-                    "*"
-                } else {
-                    ""
-                }
+                    .expect("Implementation details not registered")
+                    .then(|| "*")
+                    .unwrap_or("")
             })
-            .collect::<Vec<_>>();
+            .collect_vec();
 
-        table.add_row(make_row(
-            file.to_str()
-                .context("Failed to convert `file: OsString` to `&str`")?,
-            &data,
-        ));
-    }
+        file.to_str()
+            .map(|file| {
+                table.add_row(make_row(file, &data));
+            })
+            .context("Failed to convert `file: OsString` to `&str`")
+    })?;
 
     table.set_format(*prettytable::format::consts::FORMAT_CLEAN);
 
