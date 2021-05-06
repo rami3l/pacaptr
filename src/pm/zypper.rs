@@ -192,12 +192,10 @@ impl Pm for Zypper {
 
     /// Su updates outdated packages.
     async fn su(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.check_dry(Cmd::with_sudo(&["zypper", "--no-refresh", "dist-upgrade"]).flags(flags))
-            .await?;
-        if self.cfg.no_cache {
-            self.sccc(_kws, flags).await?;
-        }
-        Ok(())
+        Cmd::with_sudo(&["zypper", "--no-refresh", "dist-upgrade"])
+            .flags(flags)
+            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .await
     }
 
     /// Suy refreshes the local package database, then updates outdated packages.
