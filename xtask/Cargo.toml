@@ -12,4 +12,4 @@ const_format = "0.2.14"
 pico-args = "0.4.1"
 regex = { version = "1.5.4", default-features = false, features = ["std", "unicode-perl"] }
 xml-rs = "0.8.3"
-xshell = "0.1.9"
+xshell = "0.1.12"
