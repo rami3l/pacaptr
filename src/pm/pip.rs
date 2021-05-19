@@ -1,4 +1,4 @@
-use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategies};
+use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::Result,
@@ -14,7 +14,7 @@ pub struct Pip {
     pub cfg: Config,
 }
 
-static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_prompt(&["-y"]),
     ..Default::default()
 });
@@ -33,7 +33,7 @@ impl Pm for Pip {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.just_run_default(Cmd::new(&[self.cmd.as_ref(), "list"]).flags(flags))
+            self.run(Cmd::new(&[self.cmd.as_ref(), "list"]).flags(flags))
                 .await
         } else {
             self.qs(kws, flags).await
@@ -49,7 +49,7 @@ impl Pm for Pip {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .run(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
@@ -61,7 +61,7 @@ impl Pm for Pip {
         Cmd::new(&[self.cmd.as_ref(), "list", "--outdated"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -70,7 +70,7 @@ impl Pm for Pip {
         Cmd::new(&[self.cmd.as_ref(), "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -79,19 +79,19 @@ impl Pm for Pip {
         Cmd::new(&[self.cmd.as_ref(), "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&[self.cmd.as_ref(), "cache", "purge"]).flags(flags))
+        self.run(Cmd::new(&[self.cmd.as_ref(), "cache", "purge"]).flags(flags))
             .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&[self.cmd.as_ref(), "show"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&[self.cmd.as_ref(), "show"]).kws(kws).flags(flags))
             .await
     }
 
@@ -100,7 +100,7 @@ impl Pm for Pip {
         Cmd::new(&[self.cmd.as_ref(), "search"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -110,7 +110,7 @@ impl Pm for Pip {
             Cmd::new(&[self.cmd.as_ref(), "install", "--upgrade"])
                 .kws(kws)
                 .flags(flags)
-                .pipe(|cmd| self.just_run_default(cmd))
+                .pipe(|cmd| self.run(cmd))
                 .await
         } else {
             Err(crate::error::Error::OperationUnimplementedError {
@@ -125,7 +125,7 @@ impl Pm for Pip {
         Cmd::new(&[self.cmd.as_ref(), "download"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 }

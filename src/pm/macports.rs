@@ -1,4 +1,4 @@
-use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
@@ -8,12 +8,12 @@ pub struct Macports {
     pub cfg: Config,
 }
 
-static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     ..Default::default()
 });
 
-static STRAT_INSTALL: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     no_cache: NoCacheStrategy::Scc,
     ..Default::default()
@@ -32,13 +32,13 @@ impl Pm for Macports {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["port", "installed"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["port", "installed"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["port", "log"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["port", "log"]).kws(kws).flags(flags))
             .await
     }
 
@@ -49,13 +49,13 @@ impl Pm for Macports {
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["port", "contents"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["port", "contents"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["port", "provides"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["port", "provides"]).kws(kws).flags(flags))
             .await
     }
 
@@ -63,13 +63,13 @@ impl Pm for Macports {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["port", "-v", "installed"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["port", "-v", "installed"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["port", "outdated"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["port", "outdated"]).kws(kws).flags(flags))
             .await
     }
 
@@ -78,7 +78,7 @@ impl Pm for Macports {
         Cmd::with_sudo(&["port", "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -87,7 +87,7 @@ impl Pm for Macports {
         Cmd::with_sudo(&["port", "uninstall", "--follow-dependencies"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -96,7 +96,7 @@ impl Pm for Macports {
         Cmd::with_sudo(&["port", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -109,7 +109,7 @@ impl Pm for Macports {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
         .await
     }
 
@@ -122,19 +122,19 @@ impl Pm for Macports {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
         .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["port", "info"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["port", "info"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["port", "search"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["port", "search"]).kws(kws).flags(flags))
             .await
     }
 
@@ -147,7 +147,7 @@ impl Pm for Macports {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
         .await
     }
 
@@ -159,7 +159,7 @@ impl Pm for Macports {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["port", "selfupdate"]).flags(flags))
+        self.run(Cmd::new(&["port", "selfupdate"]).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;

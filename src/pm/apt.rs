@@ -1,4 +1,4 @@
-use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
@@ -8,12 +8,12 @@ pub struct Apt {
     pub cfg: Config,
 }
 
-static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_prompt(&["--yes"]),
     ..Default::default()
 });
 
-static STRAT_INSTALL: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_prompt(&["--yes"]),
     no_cache: NoCacheStrategy::Scc,
     ..Default::default()
@@ -32,25 +32,25 @@ impl Pm for Apt {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apt", "list"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["apt", "list"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["dpkg-query", "-s"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["dpkg-query", "-s"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["dpkg-query", "-S"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["dpkg-query", "-S"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qp queries a package supplied on the command line rather than an entry in the package management database.
     async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["dpkg-deb", "-I"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["dpkg-deb", "-I"]).kws(kws).flags(flags))
             .await
     }
 
@@ -59,7 +59,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "upgrade", "--trivial-only"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -68,7 +68,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -77,7 +77,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "purge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -86,7 +86,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "autoremove", "--purge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -96,7 +96,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "autoremove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -109,7 +109,7 @@ impl Pm for Apt {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
         .await
     }
 
@@ -118,7 +118,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "clean"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -127,25 +127,25 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "autoclean"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apt", "show"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["apt", "show"]).kws(kws).flags(flags))
             .await
     }
 
     /// Sii displays packages which require X to be installed, aka reverse dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apt", "rdepends"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["apt", "rdepends"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apt", "search"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["apt", "search"]).kws(kws).flags(flags))
             .await
     }
 
@@ -154,11 +154,11 @@ impl Pm for Apt {
         if kws.is_empty() {
             Cmd::with_sudo(&["apt", "upgrade"])
                 .flags(flags)
-                .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+                .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
                 .await?;
             Cmd::with_sudo(&["apt", "dist-upgrade"])
                 .flags(flags)
-                .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+                .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
                 .await
         } else {
             self.s(kws, flags).await
@@ -176,13 +176,13 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "install", "--download-only"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::with_sudo(&["apt", "update"]).kws(kws).flags(flags))
+        self.run(Cmd::with_sudo(&["apt", "update"]).kws(kws).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;

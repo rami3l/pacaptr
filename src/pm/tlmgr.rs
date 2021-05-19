@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, Pm, PmHelper, Strategies};
+use super::{DryRunStrategy, Pm, PmHelper, Strategy};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
@@ -8,7 +8,7 @@ pub struct Tlmgr {
     pub cfg: Config,
 }
 
-static STRAT_CHECK_DRY: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
     ..Default::default()
 });
@@ -34,13 +34,13 @@ impl Pm for Tlmgr {
         Cmd::new(&["tlmgr", "info", "--only-installed"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
     /// Qk verifies one or more packages.
     async fn qk(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["tlmgr", "check", "files"]).flags(flags))
+        self.run(Cmd::new(&["tlmgr", "check", "files"]).flags(flags))
             .await
     }
 
@@ -49,7 +49,7 @@ impl Pm for Tlmgr {
         Cmd::new(&["tlmgr", "info", "--only-installed", "--list"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -58,7 +58,7 @@ impl Pm for Tlmgr {
         Cmd::new(&["tlmgr", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_CHECK_DRY))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY))
             .await
     }
 
@@ -67,20 +67,19 @@ impl Pm for Tlmgr {
         Cmd::new(&["tlmgr", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_CHECK_DRY))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY))
             .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["tlmgr", "info"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["tlmgr", "info"]).kws(kws).flags(flags))
             .await
     }
 
     /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
     async fn sl(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["tlmgr", "info"]).flags(flags))
-            .await
+        self.run(Cmd::new(&["tlmgr", "info"]).flags(flags)).await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
@@ -88,7 +87,7 @@ impl Pm for Tlmgr {
         Cmd::new(&["tlmgr", "search", "--global"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -101,7 +100,7 @@ impl Pm for Tlmgr {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_CHECK_DRY))
+        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY))
         .await
     }
 
@@ -115,7 +114,7 @@ impl Pm for Tlmgr {
         Cmd::new(&["tlmgr", "install", "--file"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_CHECK_DRY))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY))
             .await
     }
 }

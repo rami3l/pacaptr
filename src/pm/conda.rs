@@ -1,4 +1,4 @@
-use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategies};
+use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::Result,
@@ -14,7 +14,7 @@ pub struct Conda {
     pub cfg: Config,
 }
 
-static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_prompt(&["-y"]),
     ..Default::default()
 });
@@ -33,8 +33,7 @@ impl Pm for Conda {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.just_run_default(Cmd::new(&["conda", "list"]).flags(flags))
-                .await
+            self.run(Cmd::new(&["conda", "list"]).flags(flags)).await
         } else {
             self.qs(kws, flags).await
         }
@@ -49,7 +48,7 @@ impl Pm for Conda {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .run(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
@@ -61,7 +60,7 @@ impl Pm for Conda {
         Cmd::new(&["conda", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -70,7 +69,7 @@ impl Pm for Conda {
         Cmd::new(&["conda", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -78,7 +77,7 @@ impl Pm for Conda {
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["conda", "clean", "--all"])
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -87,7 +86,7 @@ impl Pm for Conda {
         Cmd::new(&["conda", "search", "--info"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -95,9 +94,7 @@ impl Pm for Conda {
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         stream::iter(kws)
             .map(|&s| Ok(format!("*{}*", s)))
-            .try_for_each(|kw| {
-                self.just_run_default(Cmd::new(&["conda", "search"]).kws(&[kw]).flags(flags))
-            })
+            .try_for_each(|kw| self.run(Cmd::new(&["conda", "search"]).kws(&[kw]).flags(flags)))
             .await
     }
 
@@ -106,7 +103,7 @@ impl Pm for Conda {
         Cmd::new(&["conda", "update", "--all"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 

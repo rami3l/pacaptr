@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, Pm, PmHelper, PromptStrategy, Strategies};
+use super::{DryRunStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::exec::Cmd;
 use crate::{dispatch::config::Config, error::Result};
 use async_trait::async_trait;
@@ -9,20 +9,20 @@ pub struct Chocolatey {
     pub cfg: Config,
 }
 
-static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_prompt(&["--yes"]),
     dry_run: DryRunStrategy::with_flags(&["--what-if"]),
     ..Default::default()
 });
 
-static STRAT_CHECK_DRY: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
     dry_run: DryRunStrategy::with_flags(&["--what-if"]),
     ..Default::default()
 });
 
 impl Chocolatey {
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
-        self.just_run(cmd, Default::default(), &STRAT_CHECK_DRY)
+        self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY)
             .await
     }
 }
@@ -64,7 +64,7 @@ impl Pm for Chocolatey {
         Cmd::new(&["choco", "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -73,7 +73,7 @@ impl Pm for Chocolatey {
         Cmd::new(&["choco", "uninstall", "--removedependencies"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -86,7 +86,7 @@ impl Pm for Chocolatey {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
         .await
     }
 
@@ -111,7 +111,7 @@ impl Pm for Chocolatey {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
         .await
     }
 

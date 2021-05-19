@@ -1,4 +1,4 @@
-use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
+use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::Result,
@@ -12,18 +12,18 @@ pub struct Zypper {
     pub cfg: Config,
 }
 
-static STRAT_CHECK_DRY: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
     ..Default::default()
 });
 
-static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_prompt(&["-y"]),
     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
     ..Default::default()
 });
 
-static STRAT_INSTALL: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_prompt(&["-y"]),
     no_cache: NoCacheStrategy::Scc,
     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
@@ -31,7 +31,7 @@ static STRAT_INSTALL: Lazy<Strategies> = Lazy::new(|| Strategies {
 
 impl Zypper {
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
-        self.just_run(cmd, Default::default(), &STRAT_CHECK_DRY)
+        self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY)
             .await
     }
 }
@@ -52,7 +52,7 @@ impl Pm for Zypper {
         if kws.is_empty() {
             Cmd::new(&["rpm", "-qa", "--qf", "%{NAME} %{VERSION}\\n"])
                 .flags(flags)
-                .pipe(|cmd| self.just_run_default(cmd))
+                .pipe(|cmd| self.run(cmd))
                 .await
         } else {
             self.qs(kws, flags).await
@@ -61,7 +61,7 @@ impl Pm for Zypper {
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["rpm", "-q", "changelog"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["rpm", "-q", "changelog"]).kws(kws).flags(flags))
             .await
     }
 
@@ -72,7 +72,7 @@ impl Pm for Zypper {
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["rpm", "-ql"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["rpm", "-ql"]).kws(kws).flags(flags))
             .await
     }
 
@@ -80,7 +80,7 @@ impl Pm for Zypper {
     async fn qm(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(&["zypper", "search", "-si"]).kws(kws).flags(flags);
         let out_bytes = self
-            .run(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
         let out = String::from_utf8(out_bytes)?;
@@ -91,13 +91,13 @@ impl Pm for Zypper {
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["rpm", "-qf"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["rpm", "-qf"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qp queries a package supplied on the command line rather than an entry in the package management database.
     async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["rpm", "-qip"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["rpm", "-qip"]).kws(kws).flags(flags))
             .await
     }
 
@@ -123,7 +123,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(&["zypper", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -132,7 +132,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(&["zypper", "remove", "--clean-deps"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -141,19 +141,19 @@ impl Pm for Zypper {
         Cmd::with_sudo(&["zypper", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        let strat = Strategies {
+        let strat = Strategy {
             prompt: PromptStrategy::CustomPrompt,
             ..Default::default()
         };
         Cmd::with_sudo(&["zypper", "clean"])
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &strat))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &strat))
             .await
     }
 
@@ -194,7 +194,7 @@ impl Pm for Zypper {
     async fn su(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["zypper", "--no-refresh", "dist-upgrade"])
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -202,7 +202,7 @@ impl Pm for Zypper {
     async fn suy(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["zypper", "dist-upgrade"])
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -211,7 +211,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(&["zypper", "install", "--download-only"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 

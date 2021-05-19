@@ -1,4 +1,4 @@
-use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::Result,
@@ -13,12 +13,12 @@ pub struct Apk {
     pub cfg: Config,
 }
 
-static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     ..Default::default()
 });
 
-static STRAT_INSTALL: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     no_cache: NoCacheStrategy::with_flags(&["--no-cache"]),
     ..Default::default()
@@ -38,8 +38,7 @@ impl Pm for Apk {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.just_run_default(Cmd::new(&["apk", "info"]).flags(flags))
-                .await
+            self.run(Cmd::new(&["apk", "info"]).flags(flags)).await
         } else {
             self.qs(kws, flags).await
         }
@@ -52,7 +51,7 @@ impl Pm for Apk {
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apk", "info", "-L"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["apk", "info", "-L"]).kws(kws).flags(flags))
             .await
     }
 
@@ -61,7 +60,7 @@ impl Pm for Apk {
         Cmd::new(&["apk", "info", "--who-owns"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -74,7 +73,7 @@ impl Pm for Apk {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .run(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)
@@ -83,7 +82,7 @@ impl Pm for Apk {
     /// Qu lists packages which have an update available.
     //? Is that the right way to input '<'?
     async fn qu(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apk", "version", "-l", "<"]).flags(flags))
+        self.run(Cmd::new(&["apk", "version", "-l", "<"]).flags(flags))
             .await
     }
 
@@ -92,7 +91,7 @@ impl Pm for Apk {
         Cmd::with_sudo(&["apk", "del"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -101,7 +100,7 @@ impl Pm for Apk {
         Cmd::with_sudo(&["apk", "del", "--purge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -110,7 +109,7 @@ impl Pm for Apk {
         Cmd::with_sudo(&["apk", "del", "--purge", "-r"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -125,7 +124,7 @@ impl Pm for Apk {
         Cmd::with_sudo(&["apk", "add"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -133,7 +132,7 @@ impl Pm for Apk {
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apk", "cache", "-v", "clean"])
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -141,31 +140,31 @@ impl Pm for Apk {
     async fn scc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["rm", "-vrf", "/var/cache/apk/*"])
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apk", "info", "-a"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["apk", "info", "-a"]).kws(kws).flags(flags))
             .await
     }
 
     /// Sii displays packages which require X to be installed, aka reverse dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apk", "info", "-r"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["apk", "info", "-r"]).kws(kws).flags(flags))
             .await
     }
 
     /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apk", "search"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["apk", "search"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["apk", "search", "-v"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["apk", "search", "-v"]).kws(kws).flags(flags))
             .await
     }
 
@@ -178,7 +177,7 @@ impl Pm for Apk {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
         .await
     }
 
@@ -191,7 +190,7 @@ impl Pm for Apk {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
         .await
     }
 
@@ -200,13 +199,13 @@ impl Pm for Apk {
         Cmd::new(&["apk", "fetch"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::with_sudo(&["apk", "update"]).kws(kws).flags(flags))
+        self.run(Cmd::with_sudo(&["apk", "update"]).kws(kws).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;
@@ -219,7 +218,7 @@ impl Pm for Apk {
         Cmd::with_sudo(&["apk", "add", "--allow-untrusted"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 }

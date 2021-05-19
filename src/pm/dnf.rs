@@ -1,4 +1,4 @@
-use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategies};
+use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::Result,
@@ -14,17 +14,17 @@ pub struct Dnf {
     pub cfg: Config,
 }
 
-static STRAT_PROMPT: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_prompt(&["-y"]),
     ..Default::default()
 });
 
-static STRAT_PROMPT_CUSTOM: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_PROMPT_CUSTOM: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     ..Default::default()
 });
 
-static STRAT_INSTALL: Lazy<Strategies> = Lazy::new(|| Strategies {
+static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_prompt(&["-y"]),
     no_cache: NoCacheStrategy::Sccc,
     ..Default::default()
@@ -44,10 +44,8 @@ impl Pm for Dnf {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.just_run_default(
-                Cmd::new(&["rpm", "-qa", "--qf", "%{NAME} %{VERSION}\\n"]).flags(flags),
-            )
-            .await
+            self.run(Cmd::new(&["rpm", "-qa", "--qf", "%{NAME} %{VERSION}\\n"]).flags(flags))
+                .await
         } else {
             self.qs(kws, flags).await
         }
@@ -55,7 +53,7 @@ impl Pm for Dnf {
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["rpm", "-q", "changelog"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["rpm", "-q", "changelog"]).kws(kws).flags(flags))
             .await
     }
 
@@ -64,7 +62,7 @@ impl Pm for Dnf {
         Cmd::new(&["dnf", "repoquery", "--userinstalled"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -75,31 +73,31 @@ impl Pm for Dnf {
             &["dnf", "repoquery", "--deplist"],
         ])
         .map(Ok)
-        .try_for_each(|&cmd| self.just_run_default(Cmd::new(cmd).kws(kws).flags(flags)))
+        .try_for_each(|&cmd| self.run(Cmd::new(cmd).kws(kws).flags(flags)))
         .await
     }
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["rpm", "-ql"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["rpm", "-ql"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qm lists packages that are installed but are not available in any installation source (anymore).
     async fn qm(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["dnf", "list", "extras"]).flags(flags))
+        self.run(Cmd::new(&["dnf", "list", "extras"]).flags(flags))
             .await
     }
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["rpm", "-qf"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["rpm", "-qf"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qp queries a package supplied on the command line rather than an entry in the package management database.
     async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["rpm", "-qip"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["rpm", "-qip"]).kws(kws).flags(flags))
             .await
     }
 
@@ -113,7 +111,7 @@ impl Pm for Dnf {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .run(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Default::default())
             .await?
             .contents;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
@@ -122,7 +120,7 @@ impl Pm for Dnf {
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["dnf", "list", "updates"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["dnf", "list", "updates"]).kws(kws).flags(flags))
             .await
     }
 
@@ -131,7 +129,7 @@ impl Pm for Dnf {
         Cmd::with_sudo(&["dnf", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -140,7 +138,7 @@ impl Pm for Dnf {
         Cmd::with_sudo(&["dnf", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -148,7 +146,7 @@ impl Pm for Dnf {
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["dnf", "clean", "expire-cache"])
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT_CUSTOM))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT_CUSTOM))
             .await
     }
 
@@ -156,7 +154,7 @@ impl Pm for Dnf {
     async fn scc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["dnf", "clean", "packages"])
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT_CUSTOM))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT_CUSTOM))
             .await
     }
 
@@ -165,7 +163,7 @@ impl Pm for Dnf {
     async fn sccc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["dnf", "clean", "all"])
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_PROMPT_CUSTOM))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT_CUSTOM))
             .await
     }
 
@@ -173,7 +171,7 @@ impl Pm for Dnf {
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         stream::iter(&[&["dnf", "info"][..], &["dnf", "repoquery", "--deplist"]])
             .map(Ok)
-            .try_for_each(|&cmd| self.just_run_default(Cmd::new(cmd).kws(kws).flags(flags)))
+            .try_for_each(|&cmd| self.run(Cmd::new(cmd).kws(kws).flags(flags)))
             .await
     }
 
@@ -186,7 +184,7 @@ impl Pm for Dnf {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.just_run_default(cmd))
+        .pipe(|cmd| self.run(cmd))
         .await
     }
 
@@ -195,13 +193,13 @@ impl Pm for Dnf {
         Cmd::new(&["dnf", "list", "available"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run_default(cmd))
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.just_run_default(Cmd::new(&["dnf", "search"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["dnf", "search"]).kws(kws).flags(flags))
             .await
     }
 
@@ -210,7 +208,7 @@ impl Pm for Dnf {
         Cmd::with_sudo(&["dnf", "upgrade"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -224,14 +222,14 @@ impl Pm for Dnf {
         Cmd::with_sudo(&["dnf", "install", "--downloadonly"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.just_run(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.sc(&[], flags).await?;
-        self.just_run_default(Cmd::new(&["dnf", "check-update"]).flags(flags))
+        self.run(Cmd::new(&["dnf", "check-update"]).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;

@@ -192,12 +192,12 @@ decl_pm! {
    async fn u;
 }
 
-/// Extra implementation helper functions for `Pm`,
-/// focusing on the ability to run subcommands (`Cmd`s) in a configured and PM-specific context.
+/// Extra implementation helper functions for [`Pm`],
+/// focusing on the ability to run commands ([`Cmd`]s) in a configured and [`Pm`]-specific context.
 #[async_trait]
 pub trait PmHelper: Pm {
-    /// A helper method to simplify direct command invocation.
-    async fn run(&self, mut cmd: Cmd, mode: PmMode, strat: &Strategies) -> Result<Output> {
+    /// Executes a command in the context of the [`Pm`] implementation. Returns the [`Output`] of this command.
+    async fn check_output(&self, mut cmd: Cmd, mode: PmMode, strat: &Strategy) -> Result<Output> {
         let cfg = self.cfg();
 
         // `--dry-run` should apply to both the main command and the cleanup.
@@ -257,16 +257,15 @@ pub trait PmHelper: Pm {
         Ok(res)
     }
 
-    /// A helper method to simplify direct command invocation.
-    /// It is just like `run`, but intended to be used only for its side effects.
-    async fn just_run(&self, cmd: Cmd, mode: PmMode, strat: &Strategies) -> Result<()> {
-        self.run(cmd, mode, strat).await.map(drop)
+    /// Executes a command in the context of the [`Pm`] implementation,
+    /// with custom [`PmMode`] and [`Strategy`].
+    async fn run_with(&self, cmd: Cmd, mode: PmMode, strat: &Strategy) -> Result<()> {
+        self.check_output(cmd, mode, strat).await.map(drop)
     }
 
-    /// A helper method to simplify direct command invocation.
-    /// It is just like `run`, but intended to be used only for its side effects, and always with default mode (`CheckErr` for now) and strategies.
-    async fn just_run_default(&self, cmd: Cmd) -> Result<()> {
-        self.just_run(cmd, Default::default(), &Default::default())
+    /// Executes a command in the context of the [`Pm`] implementation with default settings.
+    async fn run(&self, cmd: Cmd) -> Result<()> {
+        self.run_with(cmd, Default::default(), &Default::default())
             .await
     }
 }
@@ -274,7 +273,7 @@ pub trait PmHelper: Pm {
 impl<P: Pm> PmHelper for P {}
 
 /// Different ways in which a command shall be dealt with.
-/// This is a `Pm` specified version intended to be used along with `Strategies`.
+/// This is a [`Pm`] specified version intended to be used along with [`Strategy`].
 #[derive(Copy, Clone, Debug)]
 pub enum PmMode {
     /// Silently collect all the `stdout`/`stderr` combined. Print nothing.
@@ -305,13 +304,13 @@ impl From<PmMode> for Mode {
     }
 }
 
-/// The intrinsic properties of a command of a specific package manager
+/// A set of intrinsic properties of a command in the context of a specific package manager,
 /// indicating how it is run.
 #[derive(Clone, Debug, Default)]
-pub struct Strategies<S = String> {
-    dry_run: DryRunStrategy<S>,
-    prompt: PromptStrategy<S>,
-    no_cache: NoCacheStrategy<S>,
+pub struct Strategy<S = String> {
+    pub dry_run: DryRunStrategy<S>,
+    pub prompt: PromptStrategy<S>,
+    pub no_cache: NoCacheStrategy<S>,
 }
 
 /// How a dry run is dealt with.
@@ -390,37 +389,3 @@ impl<S> Default for NoCacheStrategy<S> {
         NoCacheStrategy::None
     }
 }
-
-/*
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tokio::test;
-
-    struct MockPM {}
-
-    #[async_trait]
-    impl Pm for MockPM {
-        /// Gets the name of the package manager.
-        fn name(&self) -> String {
-            "mockpm".into()
-        }
-
-        fn cfg(&self) -> Config {
-            Config::default()
-        }
-    }
-
-    #[test]
-    async fn simple_run() {
-        println!("Starting!");
-        let cmd = Cmd::new(&["bash", "-c"])
-            .kws(&[r#"printf "Hello\n"; sleep 3; printf "World\n"; sleep 3; printf "!\n""#]);
-        let res = MockPM {}
-            .run(cmd, PmMode::CheckErr, Default::default())
-            .await
-            .unwrap();
-        dbg!(res);
-    }
-}
-*/
