@@ -15,7 +15,7 @@ pub struct Pip {
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_prompt(&["-y"]),
+    prompt: PromptStrategy::native_no_confirm(&["-y"]),
     ..Default::default()
 });
 

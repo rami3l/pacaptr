@@ -9,6 +9,7 @@ pub mod dnf;
 pub mod homebrew;
 pub mod macports;
 pub mod pip;
+pub mod portage;
 pub mod scoop;
 pub mod tlmgr;
 pub mod unknown;
@@ -16,7 +17,8 @@ pub mod zypper;
 
 pub use {
     apk::Apk, apt::Apt, chocolatey::Chocolatey, conda::Conda, dnf::Dnf, homebrew::Homebrew,
-    macports::Macports, pip::Pip, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, zypper::Zypper,
+    macports::Macports, pip::Pip, portage::Portage, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown,
+    zypper::Zypper,
 };
 
 use crate::{
@@ -217,8 +219,14 @@ pub trait PmHelper: Pm {
                             curr_cmd.exec(mode.into()).await
                         }
                         PromptStrategy::CustomPrompt => curr_cmd.exec(Mode::Prompt).await,
-                        PromptStrategy::NativePrompt { no_confirm: v } => {
+                        PromptStrategy::NativeNoConfirm(v) => {
                             if no_confirm {
+                                curr_cmd.flags.extend(v.to_owned());
+                            }
+                            curr_cmd.exec(mode.into()).await
+                        }
+                        PromptStrategy::NativeConfirm(v) => {
+                            if !no_confirm {
                                 curr_cmd.flags.extend(v.to_owned());
                             }
                             curr_cmd.exec(mode.into()).await
@@ -341,18 +349,21 @@ pub enum PromptStrategy<S = String> {
     None,
     /// There is no prompt, but a custom prompt is added.
     CustomPrompt,
-    /// There is a native prompt provided by the package manager.
-    NativePrompt {
-        /// Flags required to bypass native prompt.
-        no_confirm: Vec<S>,
-    },
+    /// There is a native prompt provided by the package manager
+    /// that can be disabled with a flag.
+    NativeNoConfirm(Vec<S>),
+    /// There is a native prompt provided by the package manager
+    /// that can be enabled with a flag.
+    NativeConfirm(Vec<S>),
 }
 
 impl PromptStrategy<String> {
-    pub fn native_prompt(no_confirm: &[&str]) -> Self {
-        Self::NativePrompt {
-            no_confirm: no_confirm.iter().map(|&s| s.to_owned()).collect(),
-        }
+    pub fn native_no_confirm(no_confirm: &[&str]) -> Self {
+        Self::NativeNoConfirm(no_confirm.iter().map(|&s| s.to_owned()).collect())
+    }
+
+    pub fn native_confirm(confirm: &[&str]) -> Self {
+        Self::NativeConfirm(confirm.iter().map(|&s| s.to_owned()).collect())
     }
 }
 

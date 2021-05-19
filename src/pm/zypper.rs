@@ -18,13 +18,13 @@ static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
 });
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_prompt(&["-y"]),
+    prompt: PromptStrategy::native_no_confirm(&["-y"]),
     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
     ..Default::default()
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_prompt(&["-y"]),
+    prompt: PromptStrategy::native_no_confirm(&["-y"]),
     no_cache: NoCacheStrategy::Scc,
     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
 });

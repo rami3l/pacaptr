@@ -8,6 +8,7 @@
  homebrew.rs    *  *       *       *               *   *   *               *    *  *   *              *   *        *   *   *    *   *    
  macports.rs    *  *       *       *       *       *   *   *               *    *  *   *              *            *   *   *        *    
  pip.rs         *                                  *   *   *                    *  *                  *            *   *        *        
+ portage.rs     *          *       *       *       *   *   *           *        *  *   *              *            *   *   *        *    
  scoop.rs       *          *                       *   *   *  *                 *  *   *              *            *   *   *        *    
  tlmgr.rs       *          *   *   *                       *                    *                     *        *   *   *   *            * 
  zypper.rs      *  *       *       *   *   *   *   *   *   *               *    *  *   *              *        *   *   *   *    *   *   * 

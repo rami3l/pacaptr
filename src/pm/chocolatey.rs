@@ -10,7 +10,7 @@ pub struct Chocolatey {
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_prompt(&["--yes"]),
+    prompt: PromptStrategy::native_no_confirm(&["--yes"]),
     dry_run: DryRunStrategy::with_flags(&["--what-if"]),
     ..Default::default()
 });

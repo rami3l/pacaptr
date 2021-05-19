@@ -9,12 +9,12 @@ pub struct Apt {
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_prompt(&["--yes"]),
+    prompt: PromptStrategy::native_no_confirm(&["--yes"]),
     ..Default::default()
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_prompt(&["--yes"]),
+    prompt: PromptStrategy::native_no_confirm(&["--yes"]),
     no_cache: NoCacheStrategy::Scc,
     ..Default::default()
 });

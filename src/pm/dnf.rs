@@ -15,7 +15,7 @@ pub struct Dnf {
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_prompt(&["-y"]),
+    prompt: PromptStrategy::native_no_confirm(&["-y"]),
     ..Default::default()
 });
 
@@ -25,7 +25,7 @@ static STRAT_PROMPT_CUSTOM: Lazy<Strategy> = Lazy::new(|| Strategy {
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_prompt(&["-y"]),
+    prompt: PromptStrategy::native_no_confirm(&["-y"]),
     no_cache: NoCacheStrategy::Sccc,
     ..Default::default()
 });

@@ -21,7 +21,7 @@ pub fn detect_pm_str<'s>() -> &'s str {
         _ if cfg!(target_os = "linux") => &[
             ("apk", "/sbin/apk"),
             ("apt", "/usr/bin/apt"),
-            // ("apt-get", "/usr/bin/apt-get"),
+            ("emerge", "/usr/bin/emerge"),
             ("dnf", "/usr/bin/dnf"),
             ("zypper", "/usr/bin/zypper"),
         ],
@@ -55,6 +55,9 @@ impl From<Config> for Box<dyn Pm> {
 
             // Macports
             "port" if cfg!(target_os = "macos") => Macports { cfg }.boxed(),
+
+            // Portage for Gentoo
+            "emerge" => Portage { cfg }.boxed(),
 
             // Apk for Alpine
             "apk" => Apk { cfg }.boxed(),
