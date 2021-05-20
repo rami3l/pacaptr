@@ -48,21 +48,21 @@ Run `pacman -Syu` on the OS of your choice!
     - [External](#external)
     - [Notes](#notes)
   - [Installation](#installation)
-    - [With `brew`](#with-brew)
-    - [With `choco`](#with-choco)
-    - [With `cargo`](#with-cargo)
+    - [`brew`](#brew)
+    - [`choco`](#choco)
+    - [`cargo`](#cargo)
     - [Packaging for `Debian`](#packaging-for-debian)
   - [Configuration](#configuration)
   - [General Tips](#general-tips)
     - [`--using`, `--pm`](#--using---pm)
-    - [Automatic `sudo` invocation (since `v0.9.0`)](#automatic-sudo-invocation-since-v090)
+    - [Automatic `sudo` invocation](#automatic-sudo-invocation)
     - [Extra flags support](#extra-flags-support)
     - [`--dryrun`, `--dry-run`](#--dryrun---dry-run)
     - [`--yes`, `--noconfirm`, `--no-confirm`](#--yes---noconfirm---no-confirm)
     - [`--nocache`, `--no-cache`](#--nocache---no-cache)
   - [Platform-Specific Tips](#platform-specific-tips)
-    - [`brew`](#brew)
-    - [`choco`](#choco)
+    - [`brew`](#brew-1)
+    - [`choco`](#choco-1)
     - [`pip`](#pip)
   - [Postscript](#postscript)
 
@@ -82,7 +82,7 @@ Run `pacman -Syu` on the OS of your choice!
 
 ### Linux
 
-`apt`, `apk`, `dnf`, `zypper`
+`apt`, `apk`, `dnf`, `emerge`, `zypper`
 
 ### External
 
@@ -102,19 +102,19 @@ Feel free to open a feature/pull request to add support for other package manage
 
 [We need your help](https://github.com/rami3l/pacaptr/issues/5) to achieve binary distribution of `pacaptr` on more platforms!
 
-### With `brew`
+### `brew`
 
 ```bash
 brew install rami3l/tap/pacaptr
 ```
 
-### With `choco`
+### `choco`
 
 ```powershell
 choco install pacaptr
 ```
 
-### With `cargo`
+### `cargo`
 
 As for now, uploading `pacaptr` to crates.io has been blocked by [cargo/#4468](https://github.com/rust-lang/cargo/issues/4468), so we have to stick with GitHub when building from source:
 
@@ -191,7 +191,7 @@ pacaptr --using choco -Su --dryrun
 
 This can be useful when you are running Linux and you want to use `linuxbrew`, for example. In that case, you can `--using brew`.
 
-### Automatic `sudo` invocation (since `v0.9.0`)
+### Automatic `sudo` invocation
 
 If you are not `root` and you wish to do something requiring `sudo`, `pacaptr` will do it for you by invoking `sudo -S`.
 
