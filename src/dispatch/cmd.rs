@@ -4,7 +4,7 @@ use crate::{
     exec::StatusCode,
     pm::Pm,
 };
-use clap::{self, Clap};
+use clap::{self, AppSettings, ArgGroup, Clap};
 use itertools::Itertools;
 use std::iter::FromIterator;
 use tokio::task;
@@ -15,21 +15,22 @@ use tokio::task;
     about = clap::crate_description!(),
     version = clap::crate_version!(),
     author = clap::crate_authors!(),
-    setting = clap::AppSettings::ColoredHelp,
-    setting = clap::AppSettings::ArgRequiredElseHelp,
+    setting = AppSettings::ColoredHelp,
+    setting = AppSettings::ArgRequiredElseHelp,
+    group = ArgGroup::new("operations").required(true),
 )]
 pub struct Opts {
     // Operations include Query, Remove, Sync, etc.
-    #[clap(short = 'Q', long)]
+    #[clap(group = "operations", short = 'Q', long)]
     query: bool,
 
-    #[clap(short = 'R', long)]
+    #[clap(group = "operations", short = 'R', long)]
     remove: bool,
 
-    #[clap(short = 'S', long)]
+    #[clap(group = "operations", short = 'S', long)]
     sync: bool,
 
-    #[clap(short = 'U', long)]
+    #[clap(group = "operations", short = 'U', long)]
     update: bool,
 
     // Main flags and flagcounters.
@@ -130,18 +131,6 @@ pub struct Opts {
 }
 
 impl Opts {
-    /// Checks if an Opt object is malformed.
-    fn check(&self) -> Result<()> {
-        let count = std::array::IntoIter::new([self.query, self.remove, self.sync, self.update])
-            .filter(|&x| x)
-            .count();
-        (count == 1)
-            .then(|| ())
-            .ok_or_else(|| Error::ArgParseError {
-                msg: format!("exactly 1 operation expected, found {}", count),
-            })
-    }
-
     /// Generates current config by merging current CLI flags with the dotfile.
     /// The precedence of the CLI flags is highter than the dotfile.
     fn merge_cfg(&self, dotfile: Config) -> Config {
@@ -156,7 +145,6 @@ impl Opts {
 
     /// Executes the job according to the flags received and the package manager detected.
     pub async fn dispatch_from(&self, pm: Box<dyn Pm>) -> Result<StatusCode> {
-        self.check()?;
         let kws = self.keywords.iter().map(|s| s.as_ref()).collect_vec();
         let flags = self.extra_flags.iter().map(|s| s.as_ref()).collect_vec();
 
