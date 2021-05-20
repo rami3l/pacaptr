@@ -425,16 +425,4 @@ mod tests {
         assert_eq!(flags.next(), None);
         opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
     }
-
-    #[test]
-    #[should_panic(expected = "exactly 1 operation expected")]
-    async fn too_many_ops() {
-        let opt = dbg!(Opts::parse_from(&["pacaptr", "-SQns", "docker"]));
-
-        assert!(opt.sync);
-        assert!(opt.query);
-        assert!(opt.n);
-        assert_eq!(opt.s, 1);
-        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
-    }
 }
