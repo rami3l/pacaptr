@@ -22,6 +22,7 @@ use tokio::{
 use tokio_util::{
     codec::{BytesCodec, FramedRead},
     compat::*,
+    either::Either,
 };
 use which::which;
 
@@ -195,43 +196,48 @@ impl Cmd {
         }
     }
 
-    /// Executes a [`Cmd`] and returns its `stdout` and `stderr`.
+    /// Inner implementation of [`Cmd::exec_checkerr`] and [`Cmd::exec_checkall`].
     ///
-    /// If `mute` is `false`, then its normal `stdout/stderr` will be printed in the console too.
-    async fn exec_checkall(self, mute: bool) -> Result<Output> {
+    /// `merge == false` goes to [`Cmd::exec_checkerr`], and [`Cmd::exec_checkall`] otherwise.
+    async fn exec_check_output(self, mute: bool, merge: bool) -> Result<Output> {
+        use tokio_stream::StreamExt;
         use Error::*;
 
-        let mut child = self
-            .build()
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .map_err(CmdSpawnError)?;
-        let stdout_reader =
-            child
-                .stdout
-                .take()
-                .map(into_bytes)
-                .ok_or_else(|| CmdNoHandleError {
-                    handle: "stdout".into(),
-                })?;
-        let stderr_reader =
-            child
-                .stderr
-                .take()
-                .map(into_bytes)
-                .ok_or_else(|| CmdNoHandleError {
-                    handle: "stderr".into(),
-                })?;
-        let mut merged_reader = tokio_stream::StreamExt::merge(stdout_reader, stderr_reader);
+        let mut cmd = self.build();
+        cmd.stderr(Stdio::piped());
+        if merge {
+            cmd.stdout(Stdio::piped());
+        }
+        let mut child = cmd.spawn().map_err(CmdSpawnError)?;
+
+        macro_rules! make_reader {
+            ( $st:expr, $name:expr $(,)? ) => {
+                $st.take().map(into_bytes).ok_or_else(|| CmdNoHandleError {
+                    handle: $name.into(),
+                })
+            };
+        }
+
+        let stderr_reader = make_reader!(child.stderr, "stderr")?;
+        let mut reader = if merge {
+            let stdout_reader = make_reader!(child.stdout, "stdout")?;
+            StreamExt::merge(stdout_reader, stderr_reader).left_stream()
+        } else {
+            stderr_reader.right_stream()
+        };
+
+        let mut out = if merge {
+            Either::Left(io::stdout())
+        } else {
+            Either::Right(io::stderr())
+        };
 
         let code: JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
             let status = child.wait().await.map_err(CmdWaitError)?;
             Ok(status.code())
         });
 
-        let mut stdout = io::stdout();
-        let contents = exec_tee(&mut merged_reader, (!mute).then(|| &mut stdout)).await?;
+        let contents = exec_tee(&mut reader, (!mute).then(|| &mut out)).await?;
 
         Ok(Output {
             contents,
@@ -239,45 +245,27 @@ impl Cmd {
         })
     }
 
-    /// Executes a [`Cmd`] and collects its `stderr`.  
-    /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
-    async fn exec_checkerr(self, mute: bool) -> Result<Output> {
-        use Error::*;
-
-        let mut child = self
-            .build()
-            .stderr(Stdio::piped())
-            .spawn()
-            .map_err(CmdSpawnError)?;
-        let mut stderr_reader =
-            child
-                .stderr
-                .take()
-                .map(into_bytes)
-                .ok_or_else(|| CmdNoHandleError {
-                    handle: "stderr".into(),
-                })?;
-
-        let code: JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
-            let status = child.wait().await.map_err(CmdWaitError)?;
-            Ok(status.code())
-        });
-
-        let mut stderr = io::stderr();
-        let contents = exec_tee(&mut stderr_reader, (!mute).then(|| &mut stderr)).await?;
-
-        Ok(Output {
-            contents,
-            code: code.await.map_err(CmdJoinError)??,
-        })
+    /// Executes a [`Cmd`] and returns its `stdout` and `stderr`.
+    ///
+    /// If `mute` is `false`, then normal `stdout/stderr` output will be printed to `stdout` too.
+    pub async fn exec_checkall(self, mute: bool) -> Result<Output> {
+        self.exec_check_output(mute, true).await
     }
 
     /// Executes a [`Cmd`] and collects its `stderr`.
-    /// If `mute` is `false`, then its normal `stderr` will be printed in the console too.
+    ///
+    /// If `mute` is `false`, then its `stderr` output will be printed to `stderr` too.
+    pub async fn exec_checkerr(self, mute: bool) -> Result<Output> {
+        self.exec_check_output(mute, false).await
+    }
+
+    /// Executes a [`Cmd`] and collects its `stderr`.
+    ///
+    /// If `mute` is `false`, then its `stderr` output will be printed to `stderr` too.
     ///
     /// This function behaves just like [`exec_checkerr`], but in addition,
     /// the user will be prompted if (s)he wishes to continue with the command execution.
-    async fn exec_prompt(self, mute: bool) -> Result<Output> {
+    pub async fn exec_prompt(self, mute: bool) -> Result<Output> {
         static ALL_YES: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
         let proceed = if ALL_YES.load(Ordering::SeqCst) {
@@ -384,24 +372,7 @@ pub fn is_exe(name: &str, path: &str) -> bool {
 
 /// Turns an [`AsyncRead`] into a [`Stream`].
 ///
-/// *Shamelessly copied from [StackOverflow](https://stackoverflow.com/a/59327560).*
+/// _Shamelessly copied from [StackOverflow](https://stackoverflow.com/a/59327560)._
 pub fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = io::Result<Bytes>> {
     FramedRead::new(reader, BytesCodec::new()).map_ok(|bytes| bytes.freeze())
 }
-
-/*
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tokio::test;
-
-    #[test]
-    async fn simple_run() {
-        println!("Starting!");
-        let cmd = Cmd::new(&["bash", "-c"])
-            .kws(&[r#"printf "Hello\n"; sleep 3; printf "World\n"; sleep 3; printf "!\n""#]);
-        let res = cmd.exec_checkall(false).await.unwrap();
-        dbg!(res);
-    }
-}
-*/
