@@ -210,17 +210,18 @@ impl Cmd {
         }
         let mut child = cmd.spawn().map_err(CmdSpawnError)?;
 
-        macro_rules! make_reader {
-            ( $st:expr, $name:expr $(,)? ) => {
-                $st.take().map(into_bytes).ok_or_else(|| CmdNoHandleError {
-                    handle: $name.into(),
-                })
-            };
+        fn make_reader(
+            st: Option<impl AsyncRead>,
+            name: &str,
+        ) -> Result<impl Stream<Item = io::Result<Bytes>>> {
+            st.map(into_bytes).ok_or_else(|| CmdNoHandleError {
+                handle: name.into(),
+            })
         }
 
-        let stderr_reader = make_reader!(child.stderr, "stderr")?;
+        let stderr_reader = make_reader(child.stderr.take(), "stderr")?;
         let mut reader = if merge {
-            let stdout_reader = make_reader!(child.stdout, "stdout")?;
+            let stdout_reader = make_reader(child.stdout.take(), "stdout")?;
             StreamExt::merge(stdout_reader, stderr_reader).left_stream()
         } else {
             stderr_reader.right_stream()
