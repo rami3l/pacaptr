@@ -16,7 +16,7 @@ use tokio::task;
     version = clap::crate_version!(),
     author = clap::crate_authors!(),
     global_setting = AppSettings::ColoredHelp,
-    setting = AppSettings::ArgRequiredElseHelp,
+    setting = AppSettings::SubcommandRequiredElseHelp,
 )]
 pub struct Opts {
     /// Main operations, flags and flagcounters.
@@ -27,6 +27,8 @@ pub struct Opts {
 
     // Other Pacaptr flags.
     #[clap(
+        global = true,
+        number_of_values = 1,
         long = "using",
         alias = "package-manager",
         visible_alias = "pm",
@@ -628,5 +630,30 @@ pub(super) mod tests {
         assert_eq!(flags.next(), Some(&String::from("--proxy=localhost:1234")));
         assert_eq!(flags.next(), None);
         opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
+    async fn using() {
+        let opt = dbg!(Opts::parse_from(&[
+            "pacaptr",
+            "--pm",
+            "mockpm",
+            "-Si",
+            "--yes",
+            "docker",
+            "--",
+            "--proxy=localhost:1234"
+        ]));
+        let subcmd = &opt.operations;
+
+        assert!(opt.no_confirm);
+        assert!(matches!(subcmd, &Operations::Sync { i, .. } if i == 1));
+        assert_eq!(opt.keywords, &["docker"]);
+
+        let mut flags = opt.extra_flags.iter();
+        assert_eq!(flags.next(), Some(&String::from("--proxy=localhost:1234")));
+        assert_eq!(flags.next(), None);
+        opt.dispatch().await.unwrap();
     }
 }
