@@ -124,7 +124,7 @@ decl_pm! {
    /// Qo queries the package which provides FILE.
    async fn qo;
 
-   /// Qp queries a package supplied on the command line rather than an entry in the package management database.
+   /// Qp queries a package supplied through a file supplied on the command line rather than an entry in the package management database.
    async fn qp;
 
    /// Qs searches locally installed package for names or descriptions.
@@ -201,7 +201,6 @@ pub trait PmHelper: Pm {
     /// Executes a command in the context of the [`Pm`] implementation. Returns the [`Output`] of this command.
     async fn check_output(&self, mut cmd: Cmd, mode: PmMode, strat: &Strategy) -> Result<Output> {
         let cfg = self.cfg();
-
         // `--dry-run` should apply to both the main command and the cleanup.
         macro_rules! run {
             ( $cmd: expr ) => {

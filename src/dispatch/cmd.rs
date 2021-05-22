@@ -4,9 +4,10 @@ use crate::{
     exec::StatusCode,
     pm::Pm,
 };
-use clap::{self, AppSettings, ArgGroup, Clap};
+use clap::{self, AppSettings, Clap};
 use itertools::Itertools;
 use std::iter::FromIterator;
+use tap::prelude::*;
 use tokio::task;
 
 /// The command line options to be collected.
@@ -15,76 +16,14 @@ use tokio::task;
     about = clap::crate_description!(),
     version = clap::crate_version!(),
     author = clap::crate_authors!(),
-    setting = AppSettings::ColoredHelp,
+    global_setting = AppSettings::ColoredHelp,
     setting = AppSettings::ArgRequiredElseHelp,
-    group = ArgGroup::new("operations").required(true),
 )]
 pub struct Opts {
-    // Operations include Query, Remove, Sync, etc.
-    #[clap(group = "operations", short = 'Q', long)]
-    query: bool,
-
-    #[clap(group = "operations", short = 'R', long)]
-    remove: bool,
-
-    #[clap(group = "operations", short = 'S', long)]
-    sync: bool,
-
-    #[clap(group = "operations", short = 'U', long)]
-    update: bool,
-
-    // Main flags and flagcounters.
-    // ! WARNING
-    // ! Some long flag names are completely different for different operations,
-    // ! but I think mose of us just use the shorthand form anyway...
+    // Main operations, flags and flagcounters.
     // see: https://www.archlinux.org/pacman/pacman.8.html
-    #[clap(short, long = "clean", about = "(-S) clean", parse(from_occurrences))]
-    c: u32,
-
-    #[clap(short, long = "explicit", about = "(-Q) explicit")]
-    e: bool,
-
-    #[clap(short, long = "groups", about = "(-Q/S) groups")]
-    g: bool,
-
-    #[clap(short, long = "info", about = "(-Q/S) info", parse(from_occurrences))]
-    i: u32,
-
-    #[clap(short, long = "check", about = "(-Q) check")]
-    k: bool,
-
-    #[clap(short, long = "list", about = "(-Q) list")]
-    l: bool,
-
-    #[clap(short, long = "foreign", about = "(-Q) foreign")]
-    m: bool,
-
-    #[clap(short, long = "nosave", about = "(-R) nosave")]
-    n: bool,
-
-    #[clap(short, long = "owns", about = "(-Q) owns")]
-    o: bool,
-
-    #[clap(short, long = "print", about = "(-Q/R/S) print")]
-    p: bool,
-
-    #[clap(
-        short,
-        long = "search",
-        alias = "recursive",
-        about = "(-S) search | (-R) recursive",
-        parse(from_occurrences)
-    )]
-    s: u32,
-
-    #[clap(short, long = "sysupgrade", about = "(-S) sysupgrade")]
-    u: bool,
-
-    #[clap(short, long = "downloadonly", about = "(-S) downloadonly")]
-    w: bool,
-
-    #[clap(short, long = "refresh", about = "(-S) refresh")]
-    y: bool,
+    #[clap(subcommand)]
+    operations: Operations,
 
     // Other Pacaptr flags.
     #[clap(
@@ -96,38 +35,139 @@ pub struct Opts {
     )]
     using: Option<String>,
 
-    #[clap(long = "dryrun", alias = "dry-run", about = "Perform a dry run")]
+    #[clap(
+        global = true,
+        long = "dryrun",
+        alias = "dry-run",
+        about = "Perform a dry run"
+    )]
     dry_run: bool,
 
-    #[clap(long = "needed", about = "Prevent reinstalling installed packages")]
+    #[clap(
+        global = true,
+        long = "needed",
+        about = "Prevent reinstalling packages already installed"
+    )]
     needed: bool,
 
     #[clap(
-        long = "yes",
+        global = true,
+        long = "no-confirm",
         alias = "noconfirm",
-        alias = "no-confirm",
+        alias = "yes",
         about = "Answer yes to every question"
     )]
     no_confirm: bool,
 
     #[clap(
-        long = "nocache",
-        alias = "no-cache",
+        global = true,
+        long = "no-cache",
+        alias = "nocache",
         about = "Remove cache after installation"
     )]
     no_cache: bool,
 
     // Keywords
-    #[clap(name = "KEYWORDS", about = "Package name or (sometimes) regex")]
+    #[clap(
+        global = true,
+        name = "KEYWORDS",
+        about = "Package name or (sometimes) regex"
+    )]
     keywords: Vec<String>,
 
     // Extra Non-Pacaptr Flags
     #[clap(
         last = true,
+        global = true,
         name = "EXTRA_FLAGS",
         about = "Extra Flags passed directly to backend"
     )]
     extra_flags: Vec<String>,
+}
+
+/// The command line options to be collected.
+#[derive(Debug, Clap)]
+pub enum Operations {
+    #[clap(short_flag = 'Q', long_flag = "query")]
+    Query {
+        #[clap(short, long = "changelog")]
+        c: bool,
+
+        #[clap(short, long = "explicit")]
+        e: bool,
+
+        #[clap(short, long = "info", parse(from_occurrences))]
+        i: u32,
+
+        #[clap(short, long = "check")]
+        k: bool,
+
+        #[clap(short, long = "list")]
+        l: bool,
+
+        #[clap(short, long = "foreign")]
+        m: bool,
+
+        #[clap(short, long = "owns")]
+        o: bool,
+
+        #[clap(short, long = "file")]
+        p: bool,
+
+        #[clap(short, long = "search")]
+        s: bool,
+
+        #[clap(short, long = "upgrades")]
+        u: bool,
+    },
+
+    #[clap(short_flag = 'R', long_flag = "remove")]
+    Remove {
+        #[clap(short, long = "nosave")]
+        n: bool,
+
+        #[clap(short, long = "print")]
+        p: bool,
+
+        #[clap(short, long = "recursive", parse(from_occurrences))]
+        s: u32,
+    },
+
+    #[clap(short_flag = 'S', long_flag = "sync")]
+    Sync {
+        #[clap(short, long = "clean", parse(from_occurrences))]
+        c: u32,
+
+        #[clap(short, long = "groups")]
+        g: bool,
+
+        #[clap(short, long = "info", parse(from_occurrences))]
+        i: u32,
+
+        #[clap(short, long = "list")]
+        l: bool,
+
+        #[clap(short, long = "print")]
+        p: bool,
+
+        #[clap(short, long = "search")]
+        s: bool,
+
+        #[clap(short, long = "sysupgrade")]
+        u: bool,
+
+        #[clap(short, long = "downloadonly")]
+        w: bool,
+
+        #[clap(short, long = "refresh")]
+        y: bool,
+    },
+
+    #[clap(short_flag = 'U', long_flag = "update")]
+    Update {
+        #[clap(short, long = "print")]
+        p: bool,
+    },
 }
 
 impl Opts {
@@ -144,42 +184,91 @@ impl Opts {
     }
 
     /// Executes the job according to the flags received and the package manager detected.
-    pub async fn dispatch_from(&self, pm: Box<dyn Pm>) -> Result<StatusCode> {
-        let kws = self.keywords.iter().map(|s| s.as_ref()).collect_vec();
-        let flags = self.extra_flags.iter().map(|s| s.as_ref()).collect_vec();
-
+    pub async fn dispatch_from(&self, mut cfg: Config) -> Result<StatusCode> {
         // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
         let options = {
             // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in ASCII order,
             // ! eg. `Suy` instead of `Syu`.
             // ! Then, in order to stay coherent with Rust coding style the method name should be `suy`.
+
+            let mut options = "".to_owned();
             macro_rules! collect_options {(
-                ops: [$( $op:ident ), *],
-                flags: [$( $flag:ident ), *],
-                counters: [$( $counter:ident), *] $(,)?
+                op: $op:ident,
+                $( mappings: [$( $key:ident -> $val:ident ), *], )?
+                $( flags: [$( $flag:ident ), *], )?
+                $( counters: [$( $counter:ident ), *], )?
             ) => {{
-                let mut options = String::new();
-                $(if self.$op {
-                    options.push_str(&stringify!($op)[0..1].to_uppercase());
-                })*
-                $(if self.$flag {
+                options.push_str(&stringify!($op)[0..1]);
+                $( $(if $key {
+                    cfg.$val = true;
+                })* )?
+                $( $(if $flag {
                     options.push_str(stringify!($flag));
-                })*
-                $(for _ in 0..self.$counter {
+                })* )?
+                $( $(for _ in 0..$counter {
                     options.push_str(stringify!($counter));
-                })*
-                options
+                })* )?
             }};}
 
-            let options = collect_options! {
-                ops: [query, remove, sync, update],
-                flags: [e, g, k, l, m, n, o, p, u, w, y],
-                counters: [c, i, s],
-            };
-            let mut chars: Vec<char> = options.chars().collect();
-            chars.sort_unstable();
-            String::from_iter(chars)
+            match self.operations {
+                Operations::Query {
+                    c,
+                    e,
+                    i,
+                    k,
+                    l,
+                    m,
+                    o,
+                    p,
+                    s,
+                    u,
+                } => collect_options! {
+                    op: Query,
+                    flags: [c, e, k, l, m, o, p, s, u],
+                    counters: [i],
+                },
+
+                Operations::Remove { n, p, s } => collect_options! {
+                    op: Remove,
+                    mappings: [p -> dry_run],
+                    flags: [n],
+                    counters: [s],
+                },
+
+                Operations::Sync {
+                    c,
+                    g,
+                    i,
+                    l,
+                    p,
+                    s,
+                    u,
+                    w,
+                    y,
+                } => collect_options! {
+                    op: Sync,
+                    mappings: [p -> dry_run],
+                    flags: [g, l, s, u, w, y],
+                    counters: [c, i],
+                },
+
+                Operations::Update { p } => collect_options! {
+                    op: Update,
+                    mappings: [p -> dry_run],
+                },
+            }
+
+            options
+                .chars()
+                .collect_vec()
+                .tap_mut(|chars| chars.sort_unstable())
+                .pipe(String::from_iter)
         };
+
+        let pm: Box<dyn Pm> = cfg.into();
+
+        let kws = self.keywords.iter().map(|s| s.as_ref()).collect_vec();
+        let flags = self.extra_flags.iter().map(|s| s.as_ref()).collect_vec();
 
         macro_rules! dispatch_match {
             ($( $method:ident ), * $(,)?) => {
@@ -203,26 +292,19 @@ impl Opts {
     pub async fn dispatch(&self) -> Result<StatusCode> {
         let dotfile = task::block_in_place(Config::load);
         let cfg = self.merge_cfg(dotfile?);
-        self.dispatch_from(cfg.into()).await
+        self.dispatch_from(cfg).await
     }
 }
 
 #[cfg(test)]
-mod tests {
+pub(super) mod tests {
     use super::*;
     use async_trait::async_trait;
+    use once_cell::sync::Lazy;
     use tokio::test;
 
-    struct MockPm {
+    pub struct MockPm {
         pub cfg: Config,
-    }
-
-    impl MockPm {
-        pub fn new() -> Self {
-            MockPm {
-                cfg: Default::default(),
-            }
-        }
     }
 
     macro_rules! make_mock_op_body {
@@ -284,7 +366,7 @@ mod tests {
        /// Qo queries the package which provides FILE.
        async fn qo;
 
-       /// Qp queries a package supplied on the command line rather than an entry in the package management database.
+       /// Qp queries a package supplied through a file supplied on the command line rather than an entry in the package management database.
        async fn qp;
 
        /// Qs searches locally installed package for names or descriptions.
@@ -354,16 +436,23 @@ mod tests {
        async fn u;
     }
 
+    static MOCK_CFG: Lazy<Config> = Lazy::new(|| Config {
+        default_pm: Some("mockpm".into()),
+        ..Default::default()
+    });
+
     #[test]
     #[should_panic(expected = "should run: suy")]
     async fn simple_syu() {
         let opt = dbg!(Opts::parse_from(&["pacaptr", "-Syu"]));
+        let subcmd = &opt.operations;
 
+        assert!(matches!(subcmd, &Operations::Sync{
+            u, y, ..
+        } if y && u));
         assert!(opt.keywords.is_empty());
-        assert!(opt.sync);
-        assert!(opt.y);
-        assert!(opt.u);
-        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
+
+        opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 
     #[test]
@@ -375,22 +464,24 @@ mod tests {
             "--refresh",
             "--sysupgrade"
         ]));
+        let subcmd = &opt.operations;
 
+        assert!(matches!(subcmd, &Operations::Sync { u, y, .. } if y && u));
         assert!(opt.keywords.is_empty());
-        assert!(opt.sync);
-        assert!(opt.y);
-        assert!(opt.u);
-        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
+
+        opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 
     #[test]
     #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
     async fn simple_si() {
         let opt = dbg!(Opts::parse_from(&["pacaptr", "-Sw", "curl", "wget"]));
+        let subcmd = &opt.operations;
 
-        assert!(opt.sync);
-        assert!(opt.w);
-        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
+        assert!(matches!(subcmd, &Operations::Sync { w, .. } if w));
+        assert_eq!(opt.keywords, &["curl", "wget"]);
+
+        opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 
     #[test]
@@ -399,11 +490,14 @@ mod tests {
         let opt = dbg!(Opts::parse_from(&[
             "pacaptr", "-S", "--dryrun", "--yes", "docker"
         ]));
+        let subcmd = &opt.operations;
 
-        assert!(opt.sync);
         assert!(opt.dry_run);
         assert!(opt.no_confirm);
-        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
+        assert!(matches!(subcmd, &Operations::Sync { .. }));
+        assert_eq!(opt.keywords, &["docker"]);
+
+        opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 
     #[test]
@@ -417,12 +511,15 @@ mod tests {
             "--",
             "--proxy=localhost:1234"
         ]));
+        let subcmd = &opt.operations;
 
-        assert!(opt.sync);
         assert!(opt.no_confirm);
+        assert!(matches!(subcmd, &Operations::Sync { .. }));
+        assert_eq!(opt.keywords, &["docker"]);
+
         let mut flags = opt.extra_flags.iter();
         assert_eq!(flags.next(), Some(&String::from("--proxy=localhost:1234")));
         assert_eq!(flags.next(), None);
-        opt.dispatch_from(Box::new(MockPm::new())).await.unwrap();
+        opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 }

@@ -92,6 +92,13 @@ impl From<Config> for Box<dyn Pm> {
             // Tlmgr
             "tlmgr" => Tlmgr { cfg }.boxed(),
 
+            // Test-only Mock Package Manager
+            #[cfg(test)]
+            "mockpm" => {
+                use self::cmd::tests::MockPm;
+                MockPm { cfg }.boxed()
+            }
+
             // Unknown package manager X
             x => Unknown::new(x).boxed(),
         }

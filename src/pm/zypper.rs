@@ -95,7 +95,7 @@ impl Pm for Zypper {
             .await
     }
 
-    /// Qp queries a package supplied on the command line rather than an entry in the package management database.
+    /// Qp queries a package supplied through a file supplied on the command line rather than an entry in the package management database.
     async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["rpm", "-qip"]).kws(kws).flags(flags))
             .await
