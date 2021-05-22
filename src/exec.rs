@@ -14,6 +14,7 @@ use std::{
     process::Stdio,
     sync::atomic::{AtomicBool, Ordering},
 };
+use tap::prelude::*;
 use tokio::{
     io::{self, AsyncRead, AsyncWrite},
     process::Command as Exec,
@@ -203,12 +204,16 @@ impl Cmd {
         use tokio_stream::StreamExt;
         use Error::*;
 
-        let mut cmd = self.build();
-        cmd.stderr(Stdio::piped());
-        if merge {
-            cmd.stdout(Stdio::piped());
-        }
-        let mut child = cmd.spawn().map_err(CmdSpawnError)?;
+        let mut child = self
+            .build()
+            .stderr(Stdio::piped())
+            .tap_deref_mut(|cmd| {
+                if merge {
+                    cmd.stdout(Stdio::piped());
+                }
+            })
+            .spawn()
+            .map_err(CmdSpawnError)?;
 
         fn make_reader(
             st: Option<impl AsyncRead>,
