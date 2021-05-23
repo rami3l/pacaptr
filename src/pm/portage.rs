@@ -126,10 +126,10 @@ impl Pm for Portage {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["emerge", "-uDN"])
+        Cmd::with_sudo(&["emerge", "-uDN"])
             .kws(if kws.is_empty() { &["@world"] } else { kws })
             .flags(flags)
-            .pipe(|cmd| self.run(cmd))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -141,7 +141,7 @@ impl Pm for Portage {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["emerge", "--sync"]).flags(flags))
+        self.run(Cmd::with_sudo(&["emerge", "--sync"]).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;
