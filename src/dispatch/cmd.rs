@@ -300,7 +300,8 @@ impl Opts {
             // ! eg. `Suy` instead of `Syu`.
             // ! Then, in order to stay coherent with Rust coding style the method name should be `suy`.
 
-            let mut options = "".to_owned();
+            let mut options = String::new();
+
             macro_rules! collect_options {(
                 op: $op:ident,
                 $( mappings: [$( $key:ident -> $val:ident ), *], )?
@@ -367,14 +368,10 @@ impl Opts {
                 },
             }
 
-            options
-                .chars()
-                .collect_vec()
-                .tap_mut(|chars| chars.sort_unstable())
-                .pipe(String::from_iter)
+            options.chars().sorted_unstable().pipe(String::from_iter)
         };
 
-        let pm: Box<dyn Pm> = cfg.into();
+        let pm = cfg.conv::<Box<dyn Pm>>();
 
         let kws = self.keywords.iter().map(|s| s.as_ref()).collect_vec();
         let flags = self.extra_flags.iter().map(|s| s.as_ref()).collect_vec();
@@ -556,9 +553,7 @@ pub(super) mod tests {
         let opt = dbg!(Opts::parse_from(&["pacaptr", "-Syu"]));
         let subcmd = &opt.operations;
 
-        assert!(matches!(subcmd, &Operations::Sync{
-            u, y, ..
-        } if y && u));
+        assert!(matches!(subcmd, &Operations::Sync{ u, y, .. } if y && u));
         assert!(opt.keywords.is_empty());
 
         opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();

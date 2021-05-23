@@ -44,11 +44,9 @@ fn get_ver_from_env() -> Result<String> {
 
 #[macro_export]
 macro_rules! replace {
-    ( $s:expr, $( $x:expr ),* ) => {
-        {
-            let mut s = $s;
-            $(s = s.replace(concat!("{", stringify!($x), "}"), &$x);)*
-            s
-        }
-    };
+    ( $s:expr, $( $x:expr ),* ) => {{
+        let mut s = $s;
+        $(s = s.replace(concat!("{", stringify!($x), "}"), &$x);)*
+        s
+    }};
 }

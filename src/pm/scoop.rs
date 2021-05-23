@@ -1,9 +1,8 @@
-use super::{Pm, PmHelper, PromptStrategy, Strategy};
+use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
-    error::{Error, Result},
+    error::Result,
     exec::{self, Cmd},
-    pm::{NoCacheStrategy, PmMode},
     print::{self, PROMPT_RUN},
 };
 use async_trait::async_trait;
@@ -24,6 +23,22 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     no_cache: NoCacheStrategy::Scc,
     ..Default::default()
 });
+
+impl Scoop {
+    async fn search_regex(&self, cmd: &[&str], kws: &[&str], flags: &[&str]) -> Result<()> {
+        let cmd = Cmd::new(cmd).flags(flags);
+        if !self.cfg.dry_run {
+            print::print_cmd(&cmd, PROMPT_RUN);
+        }
+        let out_bytes = self
+            .check_output(cmd, PmMode::Mute, &Default::default())
+            .await?
+            .contents;
+
+        exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
+        Ok(())
+    }
+}
 
 // Windows is so special! It's better not to "sudo" automatically.
 #[async_trait]
@@ -56,26 +71,8 @@ impl Pm for Scoop {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        macro_rules! run {
-            ( $cmd: expr ) => {
-                async {
-                    let cmd = Cmd::new($cmd).flags(flags);
-                    if !self.cfg.dry_run {
-                        print::print_cmd(&cmd, PROMPT_RUN);
-                    }
-                    let out_bytes = self
-                        .check_output(cmd, PmMode::Mute, &Default::default())
-                        .await?
-                        .contents;
-
-                    exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
-                    Ok::<(), Error>(())
-                }
-            };
-        }
-
-        run!(&["powershell", "scoop", "list"]).await?;
-        Ok(())
+        self.search_regex(&["powershell", "scoop", "list"], kws, flags)
+            .await
     }
 
     /// Qu lists packages which have an update available.

@@ -202,37 +202,32 @@ pub trait PmHelper: Pm {
     async fn check_output(&self, mut cmd: Cmd, mode: PmMode, strat: &Strategy) -> Result<Output> {
         let cfg = self.cfg();
         // `--dry-run` should apply to both the main command and the cleanup.
-        macro_rules! run {
-            ( $cmd: expr ) => {
-                async {
-                    let mut curr_cmd = cmd.clone();
-                    let no_confirm = cfg.no_confirm;
-                    if cfg.no_cache {
-                        if let NoCacheStrategy::WithFlags(v) = &strat.no_cache {
-                            curr_cmd.flags.extend(v.to_owned());
-                        }
-                    }
-                    match &strat.prompt {
-                        PromptStrategy::None => curr_cmd.exec(mode.into()).await,
-                        PromptStrategy::CustomPrompt if no_confirm => {
-                            curr_cmd.exec(mode.into()).await
-                        }
-                        PromptStrategy::CustomPrompt => curr_cmd.exec(Mode::Prompt).await,
-                        PromptStrategy::NativeNoConfirm(v) => {
-                            if no_confirm {
-                                curr_cmd.flags.extend(v.to_owned());
-                            }
-                            curr_cmd.exec(mode.into()).await
-                        }
-                        PromptStrategy::NativeConfirm(v) => {
-                            if !no_confirm {
-                                curr_cmd.flags.extend(v.to_owned());
-                            }
-                            curr_cmd.exec(mode.into()).await
-                        }
-                    }
+
+        async fn run(cfg: &Config, cmd: &Cmd, mode: PmMode, strat: &Strategy) -> Result<Output> {
+            let mut curr_cmd = cmd.clone();
+            let no_confirm = cfg.no_confirm;
+            if cfg.no_cache {
+                if let NoCacheStrategy::WithFlags(v) = &strat.no_cache {
+                    curr_cmd.flags.extend(v.to_owned());
                 }
-            };
+            }
+            match &strat.prompt {
+                PromptStrategy::None => curr_cmd.exec(mode.into()).await,
+                PromptStrategy::CustomPrompt if no_confirm => curr_cmd.exec(mode.into()).await,
+                PromptStrategy::CustomPrompt => curr_cmd.exec(Mode::Prompt).await,
+                PromptStrategy::NativeNoConfirm(v) => {
+                    if no_confirm {
+                        curr_cmd.flags.extend(v.to_owned());
+                    }
+                    curr_cmd.exec(mode.into()).await
+                }
+                PromptStrategy::NativeConfirm(v) => {
+                    if !no_confirm {
+                        curr_cmd.flags.extend(v.to_owned());
+                    }
+                    curr_cmd.exec(mode.into()).await
+                }
+            }
         }
 
         let res = match &strat.dry_run {
@@ -241,9 +236,9 @@ pub trait PmHelper: Pm {
                 cmd.flags.extend(v.to_owned());
                 // * A dry run with extra flags does not need `sudo`.
                 cmd = cmd.sudo(false);
-                run!(&cmd).await?
+                run(&cfg, &cmd, mode, strat).await?
             }
-            _ => run!(&cmd).await?,
+            _ => run(&cfg, &cmd, mode, strat).await?,
         };
 
         // Perform the cleanup.
@@ -260,7 +255,6 @@ pub trait PmHelper: Pm {
         // Reset the current status code.
         // If the code is `None`, then the subprocess ends with a signal.
         self.set_code(res.code.unwrap_or(1)).await;
-
         Ok(res)
     }
 

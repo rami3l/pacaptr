@@ -92,7 +92,7 @@ impl From<Config> for Box<dyn Pm> {
             // Tlmgr
             "tlmgr" => Tlmgr { cfg }.boxed(),
 
-            // Test-only Mock Package Manager
+            // Test-only mock package manager
             #[cfg(test)]
             "mockpm" => {
                 use self::cmd::tests::MockPm;
