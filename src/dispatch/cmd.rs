@@ -578,7 +578,7 @@ pub(super) mod tests {
 
     #[test]
     #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
-    async fn simple_si() {
+    async fn simple_sw() {
         let opt = dbg!(Opts::parse_from(&["pacaptr", "-Sw", "curl", "wget"]));
         let subcmd = &opt.operations;
 
@@ -620,10 +620,8 @@ pub(super) mod tests {
         assert!(opt.no_confirm);
         assert!(matches!(subcmd, &Operations::Sync { .. }));
         assert_eq!(opt.keywords, &["docker"]);
+        assert_eq!(opt.extra_flags, &["--proxy=localhost:1234"]);
 
-        let mut flags = opt.extra_flags.iter();
-        assert_eq!(flags.next(), Some(&String::from("--proxy=localhost:1234")));
-        assert_eq!(flags.next(), None);
         opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 
@@ -645,10 +643,8 @@ pub(super) mod tests {
         assert!(opt.no_confirm);
         assert!(matches!(subcmd, &Operations::Sync { i, .. } if i == 1));
         assert_eq!(opt.keywords, &["docker"]);
+        assert_eq!(opt.extra_flags, &["--proxy=localhost:1234"]);
 
-        let mut flags = opt.extra_flags.iter();
-        assert_eq!(flags.next(), Some(&String::from("--proxy=localhost:1234")));
-        assert_eq!(flags.next(), None);
         opt.dispatch().await.unwrap();
     }
 }
