@@ -3,6 +3,7 @@ use crate::{
     error::{Error, Result},
     exec::StatusCode,
     pm::Pm,
+    print::uppercase_first_char,
 };
 use clap::{self, AppSettings, Clap};
 use itertools::Itertools;
@@ -18,12 +19,12 @@ use tokio::task;
     global_setting = AppSettings::ColoredHelp,
     setting = AppSettings::SubcommandRequiredElseHelp,
 )]
-pub struct Opts {
+pub struct Pacaptr {
     /// Main operations, flags and flagcounters.
     ///
     /// See: https://www.archlinux.org/pacman/pacman.8.html
     #[clap(subcommand)]
-    operations: Operations,
+    ops: Operations,
 
     /// Specify the package manager to be invoked.
     #[clap(
@@ -181,7 +182,7 @@ pub enum Operations {
     },
 }
 
-impl Opts {
+impl Pacaptr {
     /// Generates current config by merging current CLI flags with the dotfile.
     /// The precedence of the CLI flags is highter than the dotfile.
     fn merge_cfg(&self, dotfile: Config) -> Config {
@@ -197,32 +198,27 @@ impl Opts {
     /// Executes the job according to the flags received and the package manager detected.
     pub async fn dispatch_from(&self, mut cfg: Config) -> Result<StatusCode> {
         // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
+        // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in ASCII order,
+        // ! eg. `Suy` instead of `Syu`.
+        // ! Then, in order to stay coherent with Rust coding style the method name should be `suy`.
         let options = {
-            // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in ASCII order,
-            // ! eg. `Suy` instead of `Syu`.
-            // ! Then, in order to stay coherent with Rust coding style the method name should be `suy`.
-
             let mut options = String::new();
 
             macro_rules! collect_options {(
                 op: $op:ident,
                 $( mappings: [$( $key:ident -> $val:ident ), *], )?
                 $( flags: [$( $flag:ident ), *], )?
-                $( counters: [$( $counter:ident ), *], )?
             ) => {{
                 options.push_str(&stringify!($op)[0..1]);
                 $( $(if $key {
                     cfg.$val = true;
                 })* )?
-                $( $(if $flag {
+                $( $(for _ in 0..($flag as u32) {
                     options.push_str(stringify!($flag));
-                })* )?
-                $( $(for _ in 0..$counter {
-                    options.push_str(stringify!($counter));
                 })* )?
             }};}
 
-            match self.operations {
+            match self.ops {
                 Operations::Query {
                     c,
                     e,
@@ -236,15 +232,13 @@ impl Opts {
                     u,
                 } => collect_options! {
                     op: Query,
-                    flags: [c, e, k, l, m, o, p, s, u],
-                    counters: [i],
+                    flags: [c, e, i, k, l, m, o, p, s, u],
                 },
 
                 Operations::Remove { n, p, s } => collect_options! {
                     op: Remove,
                     mappings: [p -> dry_run],
-                    flags: [n],
-                    counters: [s],
+                    flags: [n, s],
                 },
 
                 Operations::Sync {
@@ -260,8 +254,7 @@ impl Opts {
                 } => collect_options! {
                     op: Sync,
                     mappings: [p -> dry_run],
-                    flags: [g, l, s, u, w, y],
-                    counters: [c, i],
+                    flags: [c, g, i, l, s, u, w, y],
                 },
 
                 Operations::Update { p } => collect_options! {
@@ -282,8 +275,10 @@ impl Opts {
             ($( $method:ident ), * $(,)?) => {
                 match options.to_lowercase().as_ref() {
                     $(stringify!($method) => pm.$method(&kws, &flags).await,)*
-                    _ => Err(Error::ArgParseError {
-                        msg: "Invalid flag".into()
+                    invalid => invalid.pipe(uppercase_first_char).pipe(|i| {
+                        Err(Error::ArgParseError {
+                            msg: format!("Invalid flag combination `-{}`", i),
+                        })
                     }),
                 }
             };
@@ -452,8 +447,8 @@ pub(super) mod tests {
     #[test]
     #[should_panic(expected = "should run: suy")]
     async fn simple_syu() {
-        let opt = dbg!(Opts::parse_from(&["pacaptr", "-Syu"]));
-        let subcmd = &opt.operations;
+        let opt = dbg!(Pacaptr::parse_from(&["pacaptr", "-Syu"]));
+        let subcmd = &opt.ops;
 
         assert!(matches!(subcmd, &Operations::Sync{ u, y, .. } if y && u));
         assert!(opt.keywords.is_empty());
@@ -464,13 +459,13 @@ pub(super) mod tests {
     #[test]
     #[should_panic(expected = "should run: suy")]
     async fn long_syu() {
-        let opt = dbg!(Opts::parse_from(&[
+        let opt = dbg!(Pacaptr::parse_from(&[
             "pacaptr",
             "--sync",
             "--refresh",
             "--sysupgrade"
         ]));
-        let subcmd = &opt.operations;
+        let subcmd = &opt.ops;
 
         assert!(matches!(subcmd, &Operations::Sync { u, y, .. } if y && u));
         assert!(opt.keywords.is_empty());
@@ -481,8 +476,8 @@ pub(super) mod tests {
     #[test]
     #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
     async fn simple_sw() {
-        let opt = dbg!(Opts::parse_from(&["pacaptr", "-Sw", "curl", "wget"]));
-        let subcmd = &opt.operations;
+        let opt = dbg!(Pacaptr::parse_from(&["pacaptr", "-Sw", "curl", "wget"]));
+        let subcmd = &opt.ops;
 
         assert!(matches!(subcmd, &Operations::Sync { w, .. } if w));
         assert_eq!(opt.keywords, &["curl", "wget"]);
@@ -493,10 +488,10 @@ pub(super) mod tests {
     #[test]
     #[should_panic(expected = r#"should run: s ["docker"]"#)]
     async fn other_flags() {
-        let opt = dbg!(Opts::parse_from(&[
+        let opt = dbg!(Pacaptr::parse_from(&[
             "pacaptr", "-S", "--dryrun", "--yes", "docker"
         ]));
-        let subcmd = &opt.operations;
+        let subcmd = &opt.ops;
 
         assert!(opt.dry_run);
         assert!(opt.no_confirm);
@@ -509,7 +504,7 @@ pub(super) mod tests {
     #[test]
     #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
     async fn extra_flags() {
-        let opt = dbg!(Opts::parse_from(&[
+        let opt = dbg!(Pacaptr::parse_from(&[
             "pacaptr",
             "-S",
             "--yes",
@@ -517,7 +512,7 @@ pub(super) mod tests {
             "--",
             "--proxy=localhost:1234"
         ]));
-        let subcmd = &opt.operations;
+        let subcmd = &opt.ops;
 
         assert!(opt.no_confirm);
         assert!(matches!(subcmd, &Operations::Sync { .. }));
@@ -530,7 +525,7 @@ pub(super) mod tests {
     #[test]
     #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
     async fn using() {
-        let opt = dbg!(Opts::parse_from(&[
+        let opt = dbg!(Pacaptr::parse_from(&[
             "pacaptr",
             "--pm",
             "mockpm",
@@ -540,7 +535,7 @@ pub(super) mod tests {
             "--",
             "--proxy=localhost:1234"
         ]));
-        let subcmd = &opt.operations;
+        let subcmd = &opt.ops;
 
         assert!(opt.no_confirm);
         assert!(matches!(subcmd, &Operations::Sync { i, .. } if i == 1));

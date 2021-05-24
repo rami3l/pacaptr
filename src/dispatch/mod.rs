@@ -5,7 +5,7 @@
 mod cmd;
 pub mod config;
 
-pub use self::{cmd::Opts, config::Config};
+pub use self::{cmd::Pacaptr, config::Config};
 use crate::{exec::is_exe, pm::*};
 
 /// Detects the name of the package manager to be used in auto dispatch.

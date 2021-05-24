@@ -74,3 +74,21 @@ pub fn print_question(question: &str, options: &str) {
         indent = PROMPT_INDENT
     );
 }
+
+/// Makes the first `char` of a string uppercase.
+///
+/// # Examples
+/// ```rust
+/// use pacaptr::print::uppercase_first_char;
+/// assert_eq!(
+///     uppercase_first_char("hello"),
+///     "Hello",
+/// );
+/// ```
+pub fn uppercase_first_char(s: &str) -> String {
+    let mut chars = s.chars();
+    chars.next().map_or_else(
+        || "".into(),
+        |first| first.to_uppercase().to_string() + chars.as_str(),
+    )
+}
