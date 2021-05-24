@@ -8,22 +8,6 @@ pub mod config;
 pub use self::{cmd::Pacaptr, config::Config};
 use crate::{exec::is_exe, pm::*};
 
-/// The list of `pacman` methods supported by `pacaptr`.
-#[macro_export]
-macro_rules! methods {
-    ( $caller:tt ) => {
-        tt_call::tt_return! {
-            $caller
-            methods = [{
-                q qc qe qi qk ql qm qo qp qs qu
-                r rn rns rs rss
-                s sc scc sccc sg si sii sl ss su suy sw sy
-                u
-            }]
-        }
-    };
-}
-
 /// Detects the name of the package manager to be used in auto dispatch.
 pub fn detect_pm_str<'s>() -> &'s str {
     let pairs: &[(&str, &str)] = match () {

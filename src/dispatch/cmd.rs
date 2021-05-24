@@ -250,7 +250,10 @@ impl Pacaptr {
         let flags = self.extra_flags.iter().map(|s| s.as_ref()).collect_vec();
 
         macro_rules! dispatch_match {(
-            methods = [{ $( $method:ident )* }]
+            methods = [{ $(
+                $( #[$meta:meta] )*
+                async fn $method:ident;
+            )* }]
         ) => {
             match options.to_lowercase().as_ref() {
                 $(stringify!($method) => pm.$method(&kws, &flags).await,)*
@@ -299,7 +302,10 @@ pub(super) mod tests {
     }
 
     macro_rules! impl_pm_mock {(
-        methods = [{ $( $method:ident )* }]
+        methods = [{ $(
+            $( #[$meta:meta] )*
+            async fn $method:ident;
+        )* }]
     ) => {
         #[async_trait]
         impl Pm for MockPm {
