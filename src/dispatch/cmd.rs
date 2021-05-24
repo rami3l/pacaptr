@@ -25,65 +25,44 @@ pub struct Opts {
     #[clap(subcommand)]
     operations: Operations,
 
-    // Other Pacaptr flags.
+    /// Specify the package manager to be invoked.
     #[clap(
         global = true,
         number_of_values = 1,
         long = "using",
         alias = "package-manager",
         visible_alias = "pm",
-        value_name = "pm",
-        about = "Specify the package manager to be invoked"
+        value_name = "pm"
     )]
     using: Option<String>,
 
-    #[clap(
-        global = true,
-        long = "dry-run",
-        visible_alias = "dryrun",
-        about = "Perform a dry run"
-    )]
+    /// Perform a dry run.
+    #[clap(global = true, long = "dry-run", visible_alias = "dryrun")]
     dry_run: bool,
 
-    #[clap(
-        global = true,
-        long = "needed",
-        about = "Prevent reinstalling packages already installed"
-    )]
+    /// Prevent reinstalling packages already installed.
+    #[clap(global = true, long = "needed")]
     needed: bool,
 
+    /// Answer yes to every question.
     #[clap(
         global = true,
         long = "no-confirm",
         visible_alias = "noconfirm",
-        visible_alias = "yes",
-        about = "Answer yes to every question"
+        visible_alias = "yes"
     )]
     no_confirm: bool,
 
-    #[clap(
-        global = true,
-        long = "no-cache",
-        visible_alias = "nocache",
-        about = "Remove cache after installation"
-    )]
+    /// Remove cache after installation.
+    #[clap(global = true, long = "no-cache", visible_alias = "nocache")]
     no_cache: bool,
 
-    // Keywords
-    #[clap(
-        global = true,
-        name = "KEYWORDS",
-        about = "Package name or (sometimes) regex"
-    )]
+    /// Package name or (sometimes) regex.
+    #[clap(global = true, name = "KEYWORDS")]
     keywords: Vec<String>,
 
-    // Extra Non-Pacaptr Flags
-    #[clap(
-        last = true,
-        global = true,
-        name = "EXTRA_FLAGS",
-        about = "Extra Flags passed directly to backend"
-    )]
+    /// Extra Flags passed directly to backend.
+    #[clap(last = true, global = true, name = "EXTRA_FLAGS")]
     extra_flags: Vec<String>,
 }
 
@@ -93,188 +72,111 @@ pub struct Opts {
 #[derive(Debug, Clap)]
 #[clap(about = clap::crate_description!())]
 pub enum Operations {
-    #[clap(
-        short_flag = 'Q',
-        long_flag = "query",
-        about = "Query the package database."
-    )]
+    /// Query the package database.
+    #[clap(short_flag = 'Q', long_flag = "query")]
     Query {
-        #[clap(
-            short,
-            long = "changelog",
-            about = "View the ChangeLog of a package if it exists"
-        )]
+        /// View the ChangeLog of a package if it exists.
+        #[clap(short, long = "changelog")]
         c: bool,
 
-        #[clap(
-            short,
-            long = "explicit",
-            about = "Restrict or filter output to explicitly installed packages"
-        )]
+        /// Restrict or filter output to explicitly installed packages.
+        #[clap(short, long = "explicit")]
         e: bool,
 
-        #[clap(
-            short,
-            long = "info",
-            parse(from_occurrences),
-            about = "Display information on a given package"
-        )]
+        /// Display information on a given package.
+        #[clap(short, long = "info", parse(from_occurrences))]
         i: u32,
 
-        #[clap(
-            short,
-            long = "check",
-            about = "Check that all files owned by the given package(s) are present on the system"
-        )]
+        /// Check that all files owned by the given package(s) are present on the system.
+        #[clap(short, long = "check")]
         k: bool,
 
-        #[clap(
-            short,
-            long = "list",
-            about = "List all files owned by a given package"
-        )]
+        /// List all files owned by a given package.
+        #[clap(short, long = "list")]
         l: bool,
 
-        #[clap(
-            short,
-            long = "foreign",
-            about = "Restrict or filter output to packages that were not found in the sync database(s)"
-        )]
+        /// Restrict or filter output to packages that were not found in the sync database(s).
+        #[clap(short, long = "foreign")]
         m: bool,
 
-        #[clap(
-            short,
-            long = "owns",
-            about = "Search for packages that own the specified file(s)"
-        )]
+        /// Search for packages that own the specified file(s).
+        #[clap(short, long = "owns")]
         o: bool,
 
-        #[clap(
-            short,
-            long = "file",
-            about = "Signifies that the package supplied on the command line is a file and not an entry in the database"
-        )]
+        /// Signifies that the package supplied on the command line is a file and not an entry in the database.
+        #[clap(short, long = "file")]
         p: bool,
 
-        #[clap(
-            short,
-            long = "search",
-            about = "Search each locally-installed package for names or descriptions that match regexp"
-        )]
+        /// Search each locally-installed package for names or descriptions that match regexp.
+        #[clap(short, long = "search")]
         s: bool,
 
-        #[clap(
-            short,
-            long = "upgrades",
-            about = "Restrict or filter output to packages that are out-of-date on the local system"
-        )]
+        /// Restrict or filter output to packages that are out-of-date on the local system.
+        #[clap(short, long = "upgrades")]
         u: bool,
     },
 
-    #[clap(
-        short_flag = 'R',
-        long_flag = "remove",
-        about = "Remove package(s) from the system."
-    )]
+    /// Remove package(s) from the system.
+    #[clap(short_flag = 'R', long_flag = "remove")]
     Remove {
-        #[clap(short, long = "nosave", about = "Ignore file backup designations")]
+        /// Ignore file backup designations.
+        #[clap(short, long = "nosave")]
         n: bool,
 
-        #[clap(
-            short,
-            long = "print",
-            about = "Only print the targets instead of performing the actual operation"
-        )]
+        /// Only print the targets instead of performing the actual operation.
+        #[clap(short, long = "print")]
         p: bool,
 
-        #[clap(
-            short,
-            long = "recursive",
-            parse(from_occurrences),
-            about = "Remove package(s) with all their dependencies that are no longer required"
-        )]
+        /// Remove package(s) with all their dependencies that are no longer required.
+        #[clap(short, long = "recursive", parse(from_occurrences))]
         s: u32,
     },
 
-    #[clap(short_flag = 'S', long_flag = "sync", about = "Synchronize packages.")]
+    /// Synchronize packages.
+    #[clap(short_flag = 'S', long_flag = "sync")]
     Sync {
-        #[clap(
-            short,
-            long = "clean",
-            parse(from_occurrences),
-            about = "Remove packages that are no longer installed from the cache as well as currently unused sync databases to free up disk space"
-        )]
+        /// Remove packages that are no longer installed from the cache as well as currently unused sync databases to free up disk space.
+        #[clap(short, long = "clean", parse(from_occurrences))]
         c: u32,
 
-        #[clap(
-            short,
-            long = "groups",
-            about = "Display all the members for each package group specified"
-        )]
+        /// Display all the members for each package group specified.
+        #[clap(short, long = "groups")]
         g: bool,
 
-        #[clap(
-            short,
-            long = "info",
-            parse(from_occurrences),
-            about = "Display information on a given sync database package"
-        )]
+        /// Display information on a given sync database package.
+        #[clap(short, long = "info", parse(from_occurrences))]
         i: u32,
 
-        #[clap(
-            short,
-            long = "list",
-            about = "List all packages in the specified repositories"
-        )]
+        /// List all packages in the specified repositories.
+        #[clap(short, long = "list")]
         l: bool,
 
-        #[clap(
-            short,
-            long = "print",
-            about = "Only print the targets instead of performing the actual operation"
-        )]
+        /// Only print the targets instead of performing the actual operation.
+        #[clap(short, long = "print")]
         p: bool,
 
-        #[clap(
-            short,
-            long = "search",
-            about = "Search each package in the sync databases for names or descriptions that match regexp"
-        )]
+        /// Search each package in the sync databases for names or descriptions that match regexp.
+        #[clap(short, long = "search")]
         s: bool,
 
-        #[clap(
-            short,
-            long = "sysupgrade",
-            about = "Upgrade all packages that are out-of-date. Each currently-installed package will be examined and upgraded if a newer package exists"
-        )]
+        /// Upgrade all packages that are out-of-date Each currently-installed package will be examined and upgraded if a newer package exists.
+        #[clap(short, long = "sysupgrade")]
         u: bool,
 
-        #[clap(
-            short,
-            long = "downloadonly",
-            about = "Retrieve all packages from the server, but do not install/upgrade anything"
-        )]
+        /// Retrieve all packages from the server, but do not install/upgrade anything.
+        #[clap(short, long = "downloadonly")]
         w: bool,
 
-        #[clap(
-            short,
-            long = "refresh",
-            about = "Download a fresh copy of the master package database from the server"
-        )]
+        /// Download a fresh copy of the master package database from the server.
+        #[clap(short, long = "refresh")]
         y: bool,
     },
 
-    #[clap(
-        short_flag = 'U',
-        long_flag = "update",
-        about = "Upgrade or add package(s) to the system and install the required dependencies from sync repositories."
-    )]
+    /// Upgrade or add package(s) to the system and install the required dependencies from sync repositories.
+    #[clap(short_flag = 'U', long_flag = "update")]
     Update {
-        #[clap(
-            short,
-            long = "print",
-            about = "Only print the targets instead of performing the actual operation"
-        )]
+        /// Only print the targets instead of performing the actual operation.
+        #[clap(short, long = "print")]
         p: bool,
     },
 }
