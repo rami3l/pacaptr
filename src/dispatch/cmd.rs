@@ -201,69 +201,45 @@ impl Pacaptr {
         // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in ASCII order,
         // ! eg. `Suy` instead of `Syu`.
         // ! Then, in order to stay coherent with Rust coding style the method name should be `suy`.
-        let options = {
-            let mut options = String::new();
-
-            macro_rules! collect_options {(
-                op: $op:ident,
+        macro_rules! collect_options {(
+            $( $op:ident {
                 $( mappings: [$( $key:ident -> $val:ident ), *], )?
                 $( flags: [$( $flag:ident ), *], )?
-            ) => {{
-                options.push_str(&stringify!($op)[0..1]);
-                $( $(if $key {
-                    cfg.$val = true;
-                })* )?
-                $( $(for _ in 0..($flag as u32) {
-                    options.push_str(stringify!($flag));
-                })* )?
-            }};}
-
+            }, )*
+        ) => {{
+            let mut options = String::new();
             match self.ops {
-                Operations::Query {
-                    c,
-                    e,
-                    i,
-                    k,
-                    l,
-                    m,
-                    o,
-                    p,
-                    s,
-                    u,
-                } => collect_options! {
-                    op: Query,
-                    flags: [c, e, i, k, l, m, o, p, s, u],
-                },
-
-                Operations::Remove { n, p, s } => collect_options! {
-                    op: Remove,
-                    mappings: [p -> dry_run],
-                    flags: [n, s],
-                },
-
-                Operations::Sync {
-                    c,
-                    g,
-                    i,
-                    l,
-                    p,
-                    s,
-                    u,
-                    w,
-                    y,
-                } => collect_options! {
-                    op: Sync,
-                    mappings: [p -> dry_run],
-                    flags: [c, g, i, l, s, u, w, y],
-                },
-
-                Operations::Update { p } => collect_options! {
-                    op: Update,
-                    mappings: [p -> dry_run],
-                },
+                $( Operations::$op {
+                    $( $( $key,)* )?
+                    $( $( $flag,)* )?
+                } => {
+                    options.push_str(&stringify!($op)[0..1]);
+                    $( $(if $key {
+                        cfg.$val = true;
+                    })* )?
+                    $( $(for _ in 0..($flag as u32) {
+                        options.push_str(stringify!($flag));
+                    })* )?
+                } )*
             }
-
             options.chars().sorted_unstable().pipe(String::from_iter)
+        }};}
+
+        let options = collect_options! {
+            Query {
+                flags: [c, e, i, k, l, m, o, p, s, u],
+            },
+            Remove {
+                mappings: [p -> dry_run],
+                flags: [n, s],
+            },
+            Sync {
+                mappings: [p -> dry_run],
+                flags: [c, g, i, l, s, u, w, y],
+            },
+            Update {
+                mappings: [p -> dry_run],
+            },
         };
 
         let pm = cfg.conv::<Box<dyn Pm>>();
