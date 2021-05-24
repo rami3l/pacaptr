@@ -4,7 +4,6 @@ use crate::{
     exec::StatusCode,
     methods,
     pm::Pm,
-    print::uppercase_first_char,
 };
 use clap::{self, AppSettings, Clap};
 use itertools::Itertools;
@@ -257,10 +256,8 @@ impl Pacaptr {
         ) => {
             match options.to_lowercase().as_ref() {
                 $(stringify!($method) => pm.$method(&kws, &flags).await,)*
-                invalid => invalid.pipe(uppercase_first_char).pipe(|i| {
-                    Err(Error::ArgParseError {
-                        msg: format!("Invalid flag combination `-{}`", i),
-                    })
+                _ => Err(Error::ArgParseError {
+                    msg: format!("Invalid flag combination `-{}`", &options),
                 }),
             }
         };}
