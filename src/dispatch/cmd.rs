@@ -2,6 +2,7 @@ use crate::{
     dispatch::Config,
     error::{Error, Result},
     exec::StatusCode,
+    methods,
     pm::Pm,
     print::uppercase_first_char,
 };
@@ -10,6 +11,7 @@ use itertools::Itertools;
 use std::iter::FromIterator;
 use tap::prelude::*;
 use tokio::task;
+use tt_call::tt_call;
 
 /// The command line options to be collected.
 #[derive(Debug, Clap)]
@@ -210,8 +212,8 @@ impl Pacaptr {
             let mut options = String::new();
             match self.ops {
                 $( Operations::$op {
-                    $( $( $key,)* )?
-                    $( $( $flag,)* )?
+                    $( $( $key, )* )?
+                    $( $( $flag, )* )?
                 } => {
                     options.push_str(&stringify!($op)[0..1]);
                     $( $(if $key {
@@ -247,23 +249,25 @@ impl Pacaptr {
         let kws = self.keywords.iter().map(|s| s.as_ref()).collect_vec();
         let flags = self.extra_flags.iter().map(|s| s.as_ref()).collect_vec();
 
-        macro_rules! dispatch_match {
-            ($( $method:ident ), * $(,)?) => {
-                match options.to_lowercase().as_ref() {
-                    $(stringify!($method) => pm.$method(&kws, &flags).await,)*
-                    invalid => invalid.pipe(uppercase_first_char).pipe(|i| {
-                        Err(Error::ArgParseError {
-                            msg: format!("Invalid flag combination `-{}`", i),
-                        })
-                    }),
-                }
-            };
-        }
+        macro_rules! dispatch_match {(
+            methods = [{ $( $method:ident )* }]
+        ) => {
+            match options.to_lowercase().as_ref() {
+                $(stringify!($method) => pm.$method(&kws, &flags).await,)*
+                invalid => invalid.pipe(uppercase_first_char).pipe(|i| {
+                    Err(Error::ArgParseError {
+                        msg: format!("Invalid flag combination `-{}`", i),
+                    })
+                }),
+            }
+        };}
 
-        dispatch_match![
-            q, qc, qe, qi, qk, ql, qm, qo, qp, qs, qu, r, rn, rns, rs, rss, s, sc, scc, sccc, sg,
-            si, sii, sl, ss, su, suy, sw, sy, u,
-        ]?;
+        // Send `methods!()` to `dispatch_match`, that is,
+        // `dispatch_match!( methods = [{ q qc qe .. }] )`.
+        (tt_call! {
+            macro = [{ methods }]
+            ~~> dispatch_match
+        })?;
 
         Ok(pm.code().await)
     }
@@ -281,6 +285,7 @@ pub(super) mod tests {
     use async_trait::async_trait;
     use once_cell::sync::Lazy;
     use tokio::test;
+    use tt_call::tt_call;
 
     pub struct MockPm {
         pub cfg: Config,
@@ -294,10 +299,7 @@ pub(super) mod tests {
     }
 
     macro_rules! impl_pm_mock {(
-        $(
-            $( #[$meta:meta] )*
-            async fn $method:ident;
-        )*
+        methods = [{ $( $method:ident )* }]
     ) => {
         #[async_trait]
         impl Pm for MockPm {
@@ -311,108 +313,15 @@ pub(super) mod tests {
             }
 
             // * Automatically generated methods below... *
-            $(
-                $( #[$meta] )*
-                async fn $method(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+            $( async fn $method(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
                     make_mock_op_body!(self, kws, flags, $method)
-                }
-            )*
+            } )*
         }
     };}
 
-    impl_pm_mock! {
-       /// Q generates a list of installed packages.
-       async fn q;
-
-       /// Qc shows the changelog of a package.
-       async fn qc;
-
-       /// Qe lists packages installed explicitly (not as dependencies).
-       async fn qe;
-
-       /// Qi displays local package information: name, version, description, etc.
-       async fn qi;
-
-       /// Qk verifies one or more packages.
-       async fn qk;
-
-       /// Ql displays files provided by local package.
-       async fn ql;
-
-       /// Qm lists packages that are installed but are not available in any installation source (anymore).
-       async fn qm;
-
-       /// Qo queries the package which provides FILE.
-       async fn qo;
-
-       /// Qp queries a package supplied through a file supplied on the command line rather than an entry in the package management database.
-       async fn qp;
-
-       /// Qs searches locally installed package for names or descriptions.
-       async fn qs;
-
-       /// Qu lists packages which have an update available.
-       async fn qu;
-
-       /// R removes a single package, leaving all of its dependencies installed.
-       async fn r;
-
-       /// Rn removes a package and skips the generation of configuration backup files.
-       async fn rn;
-
-       /// Rns removes a package and its dependencies which are not required by any other installed package,
-       /// and skips the generation of configuration backup files.
-       async fn rns;
-
-       /// Rs removes a package and its dependencies which are not required by any other installed package,
-       /// and not explicitly installed by the user.
-       async fn rs;
-
-       /// Rss removes a package and its dependencies which are not required by any other installed package.
-       async fn rss;
-
-       /// S installs one or more packages by name.
-       async fn s;
-
-       /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
-       async fn sc;
-
-       /// Scc removes all files from the cache.
-       async fn scc;
-
-       /// Sccc ...
-       /// What is this?
-       async fn sccc;
-
-       /// Sg lists all packages belonging to the GROUP.
-       async fn sg;
-
-       /// Si displays remote package information: name, version, description, etc.
-       async fn si;
-
-       /// Sii displays packages which require X to be installed, aka reverse dependencies.
-       async fn sii;
-
-       /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
-       async fn sl;
-
-       /// Ss searches for package(s) by searching the expression in name, description, short description.
-       async fn ss;
-
-       /// Su updates outdated packages.
-       async fn su;
-
-       /// Suy refreshes the local package database, then updates outdated packages.
-       async fn suy;
-
-       /// Sw retrieves all packages from the server, but does not install/upgrade anything.
-       async fn sw;
-
-       /// Sy refreshes the local package database.
-       async fn sy;
-
-       /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
-       async fn u;
+    tt_call! {
+        macro = [{ methods }]
+        ~~> impl_pm_mock
     }
 
     static MOCK_CFG: Lazy<Config> = Lazy::new(|| Config {
