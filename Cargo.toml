@@ -33,7 +33,8 @@ xshell = "0.1.13"
 [dependencies]
 async-trait = "0.1.50"
 bytes = "1.0.1"
-clap = "3.0.0-beta.2"
+# clap = "3.0.0-beta.2"
+clap = { git = "https://github.com/rami3l/clap", branch = "fix/flag-subcmd" }
 colored = "2.0.0"
 confy = "0.4.0"
 dirs-next = "2.0.0"

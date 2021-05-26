@@ -411,7 +411,7 @@ pub(super) mod tests {
     }
 
     #[test]
-    #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
+    #[should_panic(expected = r#"should run: si ["docker", "--proxy=localhost:1234"]"#)]
     async fn using() {
         let opt = dbg!(Pacaptr::parse_from(&[
             "pacaptr",
@@ -430,6 +430,6 @@ pub(super) mod tests {
         assert_eq!(opt.keywords, &["docker"]);
         assert_eq!(opt.extra_flags, &["--proxy=localhost:1234"]);
 
-        opt.dispatch().await.unwrap();
+        opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 }
