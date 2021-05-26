@@ -7,7 +7,7 @@ repository = "https://github.com/rami3l/pacaptr"
 
 keywords = ["package-management"]
 categories = ["command-line-utilities"]
-description = "A pacman-like wrapper for many package managers."
+description = "Pacman-like syntax wrapper for many package managers."
 
 license = "GPL-3.0"
 readme = "README.md"
