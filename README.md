@@ -116,17 +116,24 @@ choco install pacaptr
 
 ### `cargo`
 
-As for now, uploading `pacaptr` to crates.io has been blocked by [cargo/#4468](https://github.com/rust-lang/cargo/issues/4468), so we have to stick with GitHub when building from source:
+As for now, uploading `pacaptr` to crates.io has been blocked by [cargo/#4468](https://github.com/rust-lang/cargo/issues/4468), so we have to stick with GitHub when building from source.
+
+To install:
 
 ```bash
-# To install:
-cargo install --git https://github.com/rami3l/pacaptr.git
+cargo install pacaptr --git https://github.com/rami3l/pacaptr.git
+```
 
-# To clone and install (for Rustaceans):
+To clone and install (for the interested Rustaceans):
+
+```bash
 git clone https://github.com/rami3l/pacaptr.git && cd pacaptr
 cargo install --path .
+```
 
-# To uninstall:
+To uninstall:
+
+```bash
 cargo uninstall pacaptr
 ```
 
