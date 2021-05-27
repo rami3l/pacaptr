@@ -169,9 +169,16 @@ impl Pm for Dnf {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        stream::iter(&[&["dnf", "info"][..], &["dnf", "repoquery", "--deplist"]])
-            .map(Ok)
-            .try_for_each(|&cmd| self.run(Cmd::new(cmd).kws(kws).flags(flags)))
+        self.run(Cmd::new(&["dnf", "info"]).kws(kws).flags(flags))
+            .await
+    }
+
+    /// Sii displays packages which require X to be installed, aka reverse dependencies.
+    async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        Cmd::new(&["dnf", "repoquery", "--deplist"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
