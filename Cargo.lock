@@ -1015,18 +1015,18 @@ checksum = "b07db065a5cf61a7e4ba64f29e67db906fb1787316516c4e6e5ff0fea1efcd8a"
 
 [[package]]
 name = "xshell"
-version = "0.1.13"
+version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb15bb1b41eb14efe628006294c294e10c366e03a0283b9c2063fc27d97934c6"
+checksum = "c640362f1b150e186b76e88606e4b01a7b2f1d56cc50fcc184ddb683fb567c23"
 dependencies = [
  "xshell-macros",
 ]
 
 [[package]]
 name = "xshell-macros"
-version = "0.1.13"
+version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf7ed94a2c75b9bcc57031229be2b57ee47ba71122f71aabef8610ec66a97e52"
+checksum = "0607c095c96c1d8420ce4a018a0954fb15d73d5eb59b521a05a0f04cffc05059"
 
 [[package]]
 name = "xtask"
