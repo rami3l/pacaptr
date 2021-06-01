@@ -24,6 +24,22 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     ..Default::default()
 });
 
+impl Homebrew {
+    async fn search_regex(&self, cmd: &[&str], kws: &[&str], flags: &[&str]) -> Result<()> {
+        let cmd = Cmd::new(cmd).flags(flags);
+        if !self.cfg.dry_run {
+            print::print_cmd(&cmd, PROMPT_RUN);
+        }
+        let out_bytes = self
+            .check_output(cmd, PmMode::Mute, &Default::default())
+            .await?
+            .contents;
+
+        exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
+        Ok(())
+    }
+}
+
 #[async_trait]
 impl Pm for Homebrew {
     /// Gets the name of the package manager.
@@ -67,28 +83,12 @@ impl Pm for Homebrew {
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        macro_rules! run {
-            ( $cmd: expr ) => {
-                async {
-                    let cmd = Cmd::new($cmd).flags(flags);
-                    if !self.cfg.dry_run {
-                        print::print_cmd(&cmd, PROMPT_RUN);
-                    }
-                    let out_bytes = self
-                        .check_output(cmd, PmMode::Mute, &Default::default())
-                        .await?
-                        .contents;
-
-                    exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
-                    Ok::<(), Error>(())
-                }
-            };
-        }
-
         // ! `brew list` lists all formulae and casks only when using tty.
-        run!(&["brew", "list", "--formula"]).await?;
+        self.search_regex(&["brew", "list", "--formula"], kws, flags)
+            .await?;
         if cfg!(target_os = "macos") {
-            run!(&["brew", "list", "--cask"]).await?;
+            self.search_regex(&["brew", "list", "--cask"], kws, flags)
+                .await?;
         }
 
         Ok(())

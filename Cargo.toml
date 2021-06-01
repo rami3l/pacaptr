@@ -7,7 +7,7 @@ repository = "https://github.com/rami3l/pacaptr"
 
 keywords = ["package-management"]
 categories = ["command-line-utilities"]
-description = "A pacman-like wrapper for many package managers."
+description = "Pacman-like syntax wrapper for many package managers."
 
 license = "GPL-3.0"
 readme = "README.md"
@@ -33,7 +33,8 @@ xshell = "0.1.14"
 [dependencies]
 async-trait = "0.1.50"
 bytes = "1.0.1"
-clap = "3.0.0-beta.2"
+# clap = "3.0.0-beta.2"
+clap = { git = "https://github.com/clap-rs/clap" }
 colored = "2.0.0"
 confy = "0.4.0"
 dirs-next = "2.0.0"
@@ -55,6 +56,7 @@ tokio = { version = "1.6.1", features = [
 ] }
 tokio-stream = "0.1.6"
 tokio-util = { version = "0.6.7", features = ["codec", "compat"] }
+tt-call = "1.0.7"
 which = "4.1.0"
 
 [package.metadata.deb]

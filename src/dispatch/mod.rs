@@ -5,7 +5,7 @@
 mod cmd;
 pub mod config;
 
-pub use self::{cmd::Opts, config::Config};
+pub use self::{cmd::Pacaptr, config::Config};
 use crate::{exec::is_exe, pm::*};
 
 /// Detects the name of the package manager to be used in auto dispatch.
@@ -91,6 +91,13 @@ impl From<Config> for Box<dyn Pm> {
 
             // Tlmgr
             "tlmgr" => Tlmgr { cfg }.boxed(),
+
+            // Test-only mock package manager
+            #[cfg(test)]
+            "mockpm" => {
+                use self::cmd::tests::MockPm;
+                MockPm { cfg }.boxed()
+            }
 
             // Unknown package manager X
             x => Unknown::new(x).boxed(),
