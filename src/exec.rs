@@ -90,7 +90,7 @@ pub struct Cmd {
 impl Cmd {
     pub fn new(cmd: &[impl AsRef<str>]) -> Self {
         Self {
-            cmd: cmd.iter().map(|s| s.as_ref().into()).collect(),
+            cmd: cmd.iter().map(AsRef::as_ref).map_into().collect(),
             ..Default::default()
         }
     }
@@ -99,19 +99,16 @@ impl Cmd {
         Self::new(cmd).sudo(true)
     }
 
-    pub fn kws(mut self, kws: &[impl AsRef<str>]) -> Self {
-        self.kws = kws.iter().map(|s| s.as_ref().into()).collect();
-        self
+    pub fn kws(self, kws: &[impl AsRef<str>]) -> Self {
+        self.tap_mut(|s| s.kws = kws.iter().map(AsRef::as_ref).map_into().collect())
     }
 
-    pub fn flags(mut self, flags: &[impl AsRef<str>]) -> Self {
-        self.flags = flags.iter().map(|s| s.as_ref().into()).collect();
-        self
+    pub fn flags(self, flags: &[impl AsRef<str>]) -> Self {
+        self.tap_mut(|s| s.flags = flags.iter().map(AsRef::as_ref).map_into().collect())
     }
 
-    pub fn sudo(mut self, sudo: bool) -> Self {
-        self.sudo = sudo;
-        self
+    pub fn sudo(self, sudo: bool) -> Self {
+        self.tap_mut(|s| s.sudo = sudo)
     }
 
     /// Determines if this command actually needs to run with `sudo -S`.
@@ -127,21 +124,21 @@ impl Cmd {
         // ! but not `zypper install curl -y`.
         // ! So we place the flags first, and then keywords.
         if self.should_sudo() {
-            let mut builder = Exec::new("sudo");
-            builder
-                .arg("-S")
-                .args(&self.cmd)
-                .args(&self.flags)
-                .args(&self.kws);
-            builder
+            Exec::new("sudo").tap_mut(|builder| {
+                builder
+                    .arg("-S")
+                    .args(&self.cmd)
+                    .args(&self.flags)
+                    .args(&self.kws);
+            })
         } else {
             let (cmd, subcmd) = self
                 .cmd
                 .split_first()
                 .expect("Failed to build Cmd, command is empty");
-            let mut builder = Exec::new(cmd);
-            builder.args(subcmd).args(&self.flags).args(&self.kws);
-            builder
+            Exec::new(cmd).tap_mut(|builder| {
+                builder.args(subcmd).args(&self.flags).args(&self.kws);
+            })
         }
     }
 }
