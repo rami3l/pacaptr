@@ -70,8 +70,8 @@ pub struct Output {
 impl Default for Output {
     fn default() -> Self {
         Output {
-            contents: Default::default(),
             code: Some(0),
+            contents: vec![],
         }
     }
 }

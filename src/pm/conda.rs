@@ -22,8 +22,8 @@ static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
 #[async_trait]
 impl Pm for Conda {
     /// Gets the name of the package manager.
-    fn name(&self) -> String {
-        "conda".into()
+    fn name(&self) -> &str {
+        "conda"
     }
 
     fn cfg(&self) -> &Config {

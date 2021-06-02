@@ -43,8 +43,8 @@ impl Homebrew {
 #[async_trait]
 impl Pm for Homebrew {
     /// Gets the name of the package manager.
-    fn name(&self) -> String {
-        "brew".into()
+    fn name(&self) -> &str {
+        "brew"
     }
 
     fn cfg(&self) -> &Config {

@@ -307,8 +307,8 @@ pub(super) mod tests {
         #[async_trait]
         impl Pm for MockPm {
             /// Gets the name of the package manager.
-            fn name(&self) -> String {
-                "mockpm".into()
+            fn name(&self) -> &str {
+                "mockpm"
             }
 
             fn cfg(&self) -> &Config {

@@ -22,8 +22,8 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 #[async_trait]
 impl Pm for Macports {
     /// Gets the name of the package manager.
-    fn name(&self) -> String {
-        "port".into()
+    fn name(&self) -> &str {
+        "port"
     }
 
     fn cfg(&self) -> &Config {

@@ -44,8 +44,8 @@ impl Scoop {
 #[async_trait]
 impl Pm for Scoop {
     /// Gets the name of the package manager.
-    fn name(&self) -> String {
-        "scoop".into()
+    fn name(&self) -> &str {
+        "scoop"
     }
 
     fn cfg(&self) -> &Config {

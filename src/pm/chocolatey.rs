@@ -31,8 +31,8 @@ impl Chocolatey {
 #[async_trait]
 impl Pm for Chocolatey {
     /// Gets the name of the package manager.
-    fn name(&self) -> String {
-        "choco".into()
+    fn name(&self) -> &str {
+        "choco"
     }
 
     fn cfg(&self) -> &Config {

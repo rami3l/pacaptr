@@ -33,8 +33,8 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 #[async_trait]
 impl Pm for Dnf {
     /// Gets the name of the package manager.
-    fn name(&self) -> String {
-        "dnf".into()
+    fn name(&self) -> &str {
+        "dnf"
     }
 
     fn cfg(&self) -> &Config {

@@ -22,8 +22,8 @@ static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
 #[async_trait]
 impl Pm for Pip {
     /// Gets the name of the package manager.
-    fn name(&self) -> String {
-        "pip".into()
+    fn name(&self) -> &str {
+        "pip"
     }
 
     fn cfg(&self) -> &Config {
@@ -115,7 +115,7 @@ impl Pm for Pip {
         } else {
             Err(crate::error::Error::OperationUnimplementedError {
                 op: "su".into(),
-                pm: self.name(),
+                pm: self.name().into(),
             })
         }
     }

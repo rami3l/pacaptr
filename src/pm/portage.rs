@@ -28,8 +28,8 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 #[async_trait]
 impl Pm for Portage {
     /// Gets the name of the package manager.
-    fn name(&self) -> String {
-        "emerge".into()
+    fn name(&self) -> &str {
+        "emerge"
     }
 
     fn cfg(&self) -> &Config {

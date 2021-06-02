@@ -9,7 +9,7 @@ pub struct Unknown {
 impl Unknown {
     pub fn new(name: &str) -> Self {
         Unknown {
-            name: name.to_owned(),
+            name: format!("unknown package manager: {}", name),
             cfg: Default::default(),
         }
     }
@@ -17,8 +17,8 @@ impl Unknown {
 
 impl Pm for Unknown {
     /// Gets the name of the package manager.
-    fn name(&self) -> String {
-        format!("unknown package manager: {}", self.name)
+    fn name(&self) -> &str {
+        &self.name
     }
 
     fn cfg(&self) -> &Config {

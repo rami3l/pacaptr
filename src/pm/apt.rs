@@ -22,8 +22,8 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 #[async_trait]
 impl Pm for Apt {
     /// Gets the name of the package manager.
-    fn name(&self) -> String {
-        "apt".into()
+    fn name(&self) -> &str {
+        "apt"
     }
 
     fn cfg(&self) -> &Config {

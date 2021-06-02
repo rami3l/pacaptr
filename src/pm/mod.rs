@@ -139,7 +139,7 @@ macro_rules! make_op_body {
     ( $self:ident, $method:ident ) => {{
         Err(crate::error::Error::OperationUnimplementedError {
             op: stringify!($method).into(),
-            pm: $self.name(),
+            pm: $self.name().into(),
         })
     }};
 }
@@ -157,7 +157,7 @@ macro_rules! decl_pm {(
     #[async_trait]
     pub trait Pm: Sync {
         /// Gets the name of the package manager.
-        fn name(&self) -> String;
+        fn name(&self) -> &str;
 
         /// Gets the config of the package manager.
         fn cfg(&self) -> &Config;
