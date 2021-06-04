@@ -188,10 +188,11 @@ macro_rules! decor_pm {
     };
 }
 
-/// The behaviors of a Package Manager.
+/// The feature set of a Package Manager defined by `pacman` commands.
 ///
-/// For method explanation see: <https://wiki.archlinux.org/index.php/Pacman/Rosetta>
-/// and <https://wiki.archlinux.org/index.php/Pacman>
+/// For method explanation see:
+/// - <https://wiki.archlinux.org/index.php/Pacman>
+/// - <https://wiki.archlinux.org/index.php/Pacman/Rosetta>
 #[macro_rules_attribute(decor_pm!)]
 #[async_trait]
 pub trait Pm: Sync {
@@ -201,7 +202,7 @@ pub trait Pm: Sync {
     /// Gets the config of the package manager.
     fn cfg(&self) -> &Config;
 
-    /// Wraps the `Pm` instance in a box.
+    /// Wraps the [`Pm`] instance in a [`Box`].
     fn boxed<'a>(self) -> Box<dyn Pm + 'a>
     where
         Self: Sized + 'a,
@@ -209,19 +210,19 @@ pub trait Pm: Sync {
         Box::new(self)
     }
 
-    /// Gets the `StatusCode` to be returned.
+    /// Gets the [`StatusCode`] to be returned.
     async fn code(&self) -> StatusCode {
         self.get_set_code(None).await
     }
 
-    /// Sets the `StatusCode` to be returned.
+    /// Sets the [`StatusCode`] to be returned.
     async fn set_code(&self, to: StatusCode) {
         self.get_set_code(Some(to)).await;
     }
 
-    /// Gets/Sets the `StatusCode` to be returned.
-    /// If `to` is `Some(n)`, then the current `StatusCode` will be reset to `n`.
-    /// Then the current `StatusCode` will be returned.
+    /// Gets/Sets the [`StatusCode`] to be returned.
+    ///
+    /// If `to` is `Some(n)`, the current [`StatusCode`] will be reset to `n`, then return [`StatusCode`].
     #[doc(hidden)]
     async fn get_set_code(&self, to: Option<StatusCode>) -> StatusCode {
         static CODE: Lazy<Mutex<StatusCode>> = Lazy::new(|| Mutex::new(0));
@@ -316,7 +317,7 @@ impl<P: Pm> PmHelper for P {}
 /// This is a [`Pm`] specified version intended to be used along with [`Strategy`].
 #[derive(Copy, Clone, Debug)]
 pub enum PmMode {
-    /// Silently collect all the `stdout`/`stderr` combined. Print nothing.
+    /// Silently collects all the `stdout`/`stderr` combined. Print nothing.
     Mute,
 
     /// Prints out the command which should be executed, run it and collect its `stdout`/`stderr` combined.
@@ -358,7 +359,7 @@ pub struct Strategy<S = String> {
 pub enum DryRunStrategy<S = String> {
     /// Prints the command to be run, and stop.
     PrintCmd,
-    /// Invoke the corresponding package manager with the flags given.
+    /// Invokes the corresponding package manager with the flags given.
     WithFlags(Vec<S>),
 }
 
@@ -408,16 +409,16 @@ impl<S> Default for PromptStrategy<S> {
 /// How the cache is cleaned when `no_cache` is set to `true`.
 #[derive(Debug, Clone)]
 pub enum NoCacheStrategy<S = String> {
-    /// Do not clean cache.
+    /// Does not clean cache.
     /// This variant MUST be used when implementing cache cleaning methods like `-Sc`.
     None,
-    /// Use `-Sc` to clean the cache.
+    /// Uses `-Sc` to clean the cache.
     Sc,
-    /// Use `-Scc`.
+    /// Uses `-Scc`.
     Scc,
-    /// Use `-Sccc`.
+    /// Uses `-Sccc`.
     Sccc,
-    /// Invoke the corresponding package manager with the flags given.
+    /// Invokes the corresponding package manager with the flags given.
     WithFlags(Vec<S>),
 }
 
