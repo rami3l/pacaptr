@@ -27,6 +27,7 @@ use crate::{
     exec::{Cmd, Mode, Output, StatusCode},
 };
 use async_trait::async_trait;
+use macro_rules_attribute::macro_rules_attribute;
 use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
 use tt_call::tt_call;
@@ -144,68 +145,92 @@ macro_rules! make_op_body {
     }};
 }
 
-macro_rules! decl_pm {(
+macro_rules! _decor_pm {(
+    def = [{
+        $( #[$meta0:meta] )*
+        $vis:vis trait $t:ident : $supert:ident {
+            $( $inner:tt )*
+        }
+    }]
     methods = [{ $(
-        $( #[$meta:meta] )*
+        $( #[$meta1:meta] )*
         async fn $method:ident;
     )* }]
 ) => {
-    /// The behaviors of a Package Manager.
-    ///
-    /// For method explanation see: <https://wiki.archlinux.org/index.php/Pacman/Rosetta>
-    /// and <https://wiki.archlinux.org/index.php/Pacman>
-    #[async_trait]
-    pub trait Pm: Sync {
-        /// Gets the name of the package manager.
-        fn name(&self) -> &str;
-
-        /// Gets the config of the package manager.
-        fn cfg(&self) -> &Config;
-
-        /// Wraps the `Pm` instance in a box.
-        fn boxed<'a>(self) -> Box<dyn Pm + 'a>
-        where
-            Self: Sized + 'a,
-        {
-            Box::new(self)
-        }
-
-        /// Gets the `StatusCode` to be returned.
-        async fn code(&self) -> StatusCode {
-            self.get_set_code(None).await
-        }
-
-        /// Sets the `StatusCode` to be returned.
-        async fn set_code(&self, to: StatusCode) {
-            self.get_set_code(Some(to)).await;
-        }
-
-        /// Gets/Sets the `StatusCode` to be returned.
-        /// If `to` is `Some(n)`, then the current `StatusCode` will be reset to `n`.
-        /// Then the current `StatusCode` will be returned.
-        #[doc(hidden)]
-        async fn get_set_code(&self, to: Option<StatusCode>) -> StatusCode {
-            static CODE: Lazy<Mutex<StatusCode>> = Lazy::new(|| Mutex::new(0));
-            let mut code = CODE.lock().await;
-            if let Some(n) = to {
-                *code = n;
-            }
-            *code
-        }
+    $( #[$meta0] )*
+    $vis trait $t : $supert {
+        $( $inner )*
 
         // * Automatically generated methods below... *
-        $( $( #[$meta] )*
+        $( $( #[$meta1] )*
         async fn $method(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
             make_op_body!(self, $method)
         } )*
     }
 };}
 
-// Send `methods!()` to `decl_pm`, that is,
-// `decl_pm!( methods = [{ q qc qe .. }] )`.
-tt_call! {
-    macro = [{ methods }]
-    ~~> decl_pm
+/// Send `methods!()` to `_decor_pm`, that is:
+///
+/// ```rust
+/// _decor_pm! {
+///     def = [{ pub trait Pm { .. } }]
+///     methods = [{ q qc qe .. }] )
+/// }
+/// ```
+macro_rules! decor_pm {
+    ( $( $def:tt )* ) => {
+        tt_call! {
+            macro = [{ methods }]
+            ~~> _decor_pm! {
+                def = [{ $( $def )* }]
+            }
+        }
+    };
+}
+
+/// The behaviors of a Package Manager.
+///
+/// For method explanation see: <https://wiki.archlinux.org/index.php/Pacman/Rosetta>
+/// and <https://wiki.archlinux.org/index.php/Pacman>
+#[macro_rules_attribute(decor_pm!)]
+#[async_trait]
+pub trait Pm: Sync {
+    /// Gets the name of the package manager.
+    fn name(&self) -> &str;
+
+    /// Gets the config of the package manager.
+    fn cfg(&self) -> &Config;
+
+    /// Wraps the `Pm` instance in a box.
+    fn boxed<'a>(self) -> Box<dyn Pm + 'a>
+    where
+        Self: Sized + 'a,
+    {
+        Box::new(self)
+    }
+
+    /// Gets the `StatusCode` to be returned.
+    async fn code(&self) -> StatusCode {
+        self.get_set_code(None).await
+    }
+
+    /// Sets the `StatusCode` to be returned.
+    async fn set_code(&self, to: StatusCode) {
+        self.get_set_code(Some(to)).await;
+    }
+
+    /// Gets/Sets the `StatusCode` to be returned.
+    /// If `to` is `Some(n)`, then the current `StatusCode` will be reset to `n`.
+    /// Then the current `StatusCode` will be returned.
+    #[doc(hidden)]
+    async fn get_set_code(&self, to: Option<StatusCode>) -> StatusCode {
+        static CODE: Lazy<Mutex<StatusCode>> = Lazy::new(|| Mutex::new(0));
+        let mut code = CODE.lock().await;
+        if let Some(n) = to {
+            *code = n;
+        }
+        *code
+    }
 }
 
 /// Extra implementation helper functions for [`Pm`],
