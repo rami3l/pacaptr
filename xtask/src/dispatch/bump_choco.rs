@@ -1,4 +1,5 @@
-use super::{get_ver_from_env, Runner, ARCHIVE_WINDOWS, ARTIFACT_WINDOWS, HOMEPAGE};
+use super::{get_ver_from_env, names::*, Runner};
+use crate::binary::WIN_X64;
 use crate::replace;
 use anyhow::{anyhow, Result};
 use regex::Regex;
@@ -27,7 +28,7 @@ impl Runner for BumpChoco {
             "{homepage}/releases/download/{tag}/{bin}",
             homepage = HOMEPAGE,
             tag = tag,
-            bin = ARCHIVE_WINDOWS
+            bin = WIN_X64.archive()
         );
 
         println!(":: Downloading release binary...");
@@ -54,7 +55,7 @@ impl Runner for BumpChoco {
         let verif_path = "dist/choco/tools/VERIFICATION.txt";
         let verif_temp_path = "dist/choco/tools/VERIFICATION.template.txt";
         let verif_temp = read_file(verif_temp_path)?;
-        let bin_path = format!("{}{}", bin_out_dir, ARTIFACT_WINDOWS);
+        let bin_path = format!("{}{}", bin_out_dir, WIN_X64.artifact);
         let algos = &["sha1", "sha256"];
         let checksums = {
             let mut checksums = "".to_owned();

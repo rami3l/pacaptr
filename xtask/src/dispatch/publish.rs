@@ -1,50 +1,71 @@
-use super::{get_ver_from_env, Runner, CORE};
-use anyhow::Result;
-use xshell::{cmd, write_file};
+use std::fs;
 
-const LINUX_MUSL: &str = "x86_64-unknown-linux-musl";
+use super::{names::*, Runner};
+use crate::binary::*;
+use anyhow::Result;
+use xshell::cmd;
 
 #[derive(Debug)]
-pub struct Publish {
-    pub artifact: String,
-    pub asset: String,
-}
+pub struct Publish {}
 
 impl Runner for Publish {
     fn run(self) -> Result<()> {
-        let Self { artifact, asset } = self;
+        // let Self { artifact, asset } = self;
 
         cmd!("gh config set prompt disabled").run()?;
 
         // println!(":: Logging into GitHub CLI...");
         // cmd!("gh auth login").run()?;
 
-        println!(":: Building the binary in `release` mode...");
-        if cfg!(target_os = "linux") {
-            // In Linux, we need to add the `musl` target first.
-            cmd!("rustup target add {LINUX_MUSL}").run()?;
-            cmd!("cargo build --verbose --bin {CORE} --release --locked --target={LINUX_MUSL}")
-                .run()?;
-        } else {
-            cmd!("cargo build --verbose --bin {CORE} --release --locked").run()?;
-        }
-
-        println!(":: Zipping the binary...");
-        let bin_dir = if cfg!(target_os = "linux") {
-            format!("./target/{}/release/", LINUX_MUSL)
-        } else {
-            "./target/release/".to_owned()
+        let publish = |b: &BinaryBuilder| {
+            b.build()?;
+            b.zip()?;
+            b.upload()
         };
 
-        cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}").run()?;
+        match () {
+            _ if cfg!(target_os = "linux") => {
+                let linux_x64 = BinaryBuilder::Cross {
+                    bin: LINUX_X64,
+                    rust_target: targets::LINUX_MUSL,
+                };
+                publish(&linux_x64)?;
+            }
+            _ if cfg!(target_os = "windows") => {
+                let win_x64 = BinaryBuilder::Native(WIN_X64);
+                publish(&win_x64)?;
+            }
+            _ if cfg!(target_os = "macos") => {
+                let mac_x64 = BinaryBuilder::Native(MAC_X64);
+                let mac_arm = BinaryBuilder::Cross {
+                    bin: MAC_ARM,
+                    rust_target: targets::MAC_ARM,
+                };
+                publish(&mac_x64)?;
+                publish(&mac_arm)?;
 
-        println!(":: Generating sha256...");
-        let shasum = cmd!("openssl dgst -r -sha256 {asset}.tar.gz").read()?;
-        write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
+                let mac_univ = BinaryBuilder::Cross {
+                    bin: MAC_UNIV,
+                    // ! This is NOT a real rust target. It's here just to fit in.
+                    rust_target: "universal-apple-darwin",
+                };
 
-        println!(":: Uploading binary and sha256...");
-        let tag = get_ver_from_env()?;
-        cmd!("gh release upload {tag} {asset}.tar.gz {asset}.tar.gz.sha256").run()?;
+                let out_dir = &mac_univ.bin_dir();
+                let out_artifact = mac_univ.bin().artifact;
+                let in_dir0 = &mac_x64.bin_dir();
+                let artifact0 = mac_x64.bin().artifact;
+                let in_dir1 = &mac_arm.bin_dir();
+                let artifact1 = mac_arm.bin().artifact;
+                fs::create_dir_all(out_dir)?;
+                cmd!("lipo -create -output {out_dir}{out_artifact} {in_dir0}{artifact0} {in_dir1}{artifact1}")
+                    .run()?;
+                cmd!("chmod +x {out_dir}{out_artifact}").run()?;
+
+                mac_univ.zip()?;
+                mac_univ.upload()?;
+            }
+            _ => panic!("Unsupported publishing platform"),
+        };
 
         Ok(())
     }

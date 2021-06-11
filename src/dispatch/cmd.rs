@@ -21,9 +21,6 @@ use tt_call::tt_call;
     setting = AppSettings::SubcommandRequiredElseHelp,
 )]
 pub struct Pacaptr {
-    /// Main operations, flags and flagcounters.
-    ///
-    /// See: https://www.archlinux.org/pacman/pacman.8.html
     #[clap(subcommand)]
     ops: Operations,
 
@@ -68,9 +65,7 @@ pub struct Pacaptr {
     extra_flags: Vec<String>,
 }
 
-/// Main operations, flags and flagcounters.
-///
-/// See: https://www.archlinux.org/pacman/pacman.8.html
+// For details on operations, flags and flagcounters, see: https://www.archlinux.org/pacman/pacman.8.html
 #[derive(Debug, Clap)]
 #[clap(about = clap::crate_description!())]
 pub enum Operations {
