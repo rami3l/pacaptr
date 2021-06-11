@@ -1,4 +1,4 @@
-use super::{get_ver_from_env, Runner, ARCHIVE_WINDOWS, ARTIFACT_WINDOWS, HOMEPAGE};
+use super::{get_ver_from_env, names::*, Runner};
 use crate::replace;
 use anyhow::{anyhow, Result};
 use regex::Regex;
@@ -27,7 +27,7 @@ impl Runner for BumpChoco {
             "{homepage}/releases/download/{tag}/{bin}",
             homepage = HOMEPAGE,
             tag = tag,
-            bin = ARCHIVE_WINDOWS
+            bin = ARCHIVE_WIN_X64
         );
 
         println!(":: Downloading release binary...");

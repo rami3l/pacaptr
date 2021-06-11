@@ -1,8 +1,6 @@
-use super::{get_ver_from_env, Runner, CORE};
+use super::{get_ver_from_env, names::*, Runner};
 use anyhow::Result;
 use xshell::{cmd, write_file};
-
-const LINUX_MUSL: &str = "x86_64-unknown-linux-musl";
 
 #[derive(Debug)]
 pub struct Publish {
@@ -12,7 +10,8 @@ pub struct Publish {
 
 impl Runner for Publish {
     fn run(self) -> Result<()> {
-        let Self { artifact, asset } = self;
+        // let Self { artifact, asset } = self;
+        let github_env = &std::env::var("GITHUB_ENV")?;
 
         cmd!("gh config set prompt disabled").run()?;
 
@@ -20,16 +19,41 @@ impl Runner for Publish {
         // cmd!("gh auth login").run()?;
 
         println!(":: Building the binary in `release` mode...");
-        if cfg!(target_os = "linux") {
-            // In Linux, we need to add the `musl` target first.
-            cmd!("rustup target add {LINUX_MUSL}").run()?;
-            cmd!("cargo build --verbose --bin {CORE} --release --locked --target={LINUX_MUSL}")
-                .run()?;
-        } else {
-            cmd!("cargo build --verbose --bin {CORE} --release --locked").run()?;
-        }
+        let build_native = || cmd!("cargo build --verbose --bin {CORE} --release --locked").run();
+
+        let build_for_target = |target: &str| {
+            cmd!("rustup target add {target}").run()?;
+            cmd!("cargo build --verbose --bin {CORE} --release --locked --target={target}").run()
+        };
+
+        match () {
+            _ if cfg!(target_os = "linux") => {
+                build_for_target(targets::LINUX_MUSL)?;
+            }
+            _ if cfg!(target_os = "windows") => {
+                build_native()?;
+            }
+            _ if cfg!(target_os = "macos") => {
+                // Set environment variables.
+                let sdk_root = cmd!("xcrun -sdk macosx11.1 --show-sdk-path").read()?;
+                let dev_target =
+                    cmd!("xcrun -sdk macosx11.1 --show-sdk-platform-version").read()?;
+                write_file(github_env, format!("SDKROOT={}", sdk_root))?;
+                write_file(
+                    github_env,
+                    format!("MACOSX_DEPLOYMENT_TARGET={}", dev_target),
+                )?;
+
+                build_native()?;
+                build_for_target(targets::MAC_ARM)?;
+            }
+            _ => panic!("Unsupported publishing platform"),
+        };
 
         println!(":: Zipping the binary...");
+        let zip_bin = |bin_dir| {
+            cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}").run()?;
+        }
         let bin_dir = if cfg!(target_os = "linux") {
             format!("./target/{}/release/", LINUX_MUSL)
         } else {

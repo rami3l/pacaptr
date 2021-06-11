@@ -1,8 +1,8 @@
+mod binary;
 mod dispatch;
 
 use crate::dispatch::{
-    bump_choco::BumpChoco, bump_tap::BumpTap, publish::Publish, Runner, ARTIFACT_LINUX,
-    ARTIFACT_MAC, ARTIFACT_WINDOWS, ASSET_LINUX, ASSET_MAC, ASSET_WINDOWS,
+    bump_choco::BumpChoco, bump_tap::BumpTap, names::*, publish::Publish, Runner,
 };
 use anyhow::Result;
 use pico_args::Arguments;
@@ -59,9 +59,9 @@ fn main() -> Result<()> {
             }
 
             let (artifact, asset) = match () {
-                _ if cfg!(target_os = "windows") => (ARTIFACT_WINDOWS, ASSET_WINDOWS),
-                _ if cfg!(target_os = "macos") => (ARTIFACT_MAC, ASSET_MAC),
-                _ if cfg!(target_os = "linux") => (ARTIFACT_LINUX, ASSET_LINUX),
+                _ if cfg!(target_os = "windows") => (ARTIFACT_WINDOWS, ASSET_WIN_X64),
+                _ if cfg!(target_os = "macos") => (ARTIFACT_MAC, ASSET_MAC_X64),
+                _ if cfg!(target_os = "linux") => (ARTIFACT_LINUX, ASSET_LINUX_X64),
                 _ => panic!("Unsupported publishing platform"),
             };
             let artifact = artifact.to_owned();

@@ -1,4 +1,4 @@
-use super::{get_ver_from_env, Runner, ARCHIVE_LINUX, ARCHIVE_MAC, HOMEPAGE};
+use super::{get_ver_from_env, names::*, Runner};
 use crate::replace;
 use anyhow::{anyhow, Result};
 use xshell::{cmd, read_file, write_file};
@@ -18,8 +18,12 @@ impl Runner for BumpTap {
             homepage = HOMEPAGE,
             tag = version
         );
-        let url_mac = format!("{prefix}/{bin}", prefix = url_prefix, bin = ARCHIVE_MAC);
-        let url_linux = format!("{prefix}/{bin}", prefix = url_prefix, bin = ARCHIVE_LINUX);
+        let url_mac = format!("{prefix}/{bin}", prefix = url_prefix, bin = ARCHIVE_MAC_X64);
+        let url_linux = format!(
+            "{prefix}/{bin}",
+            prefix = url_prefix,
+            bin = ARCHIVE_LINUX_X64
+        );
 
         println!(":: Getting checksums...");
         let sha256_mac = cmd!("curl -L {url_mac}.sha256").read()?;
