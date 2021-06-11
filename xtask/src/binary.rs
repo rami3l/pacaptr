@@ -10,7 +10,7 @@ pub struct Binary<'s> {
 
 impl<'s> Binary<'s> {
     pub fn asset(&self) -> String {
-        format!("{}-{}", self.artifact, self.platform)
+        format!("{}-{}", CORE, self.platform)
     }
 
     pub fn archive(&self) -> String {

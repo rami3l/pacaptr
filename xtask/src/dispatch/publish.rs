@@ -1,3 +1,5 @@
+use std::fs;
+
 use super::{names::*, Runner};
 use crate::binary::*;
 use anyhow::Result;
@@ -48,12 +50,13 @@ impl Runner for Publish {
                     rust_target: "universal-apple-darwin",
                 };
 
-                let out_dir = mac_univ.bin_dir();
-                let out_artifact = &mac_univ.bin().artifact;
-                let in_dir0 = mac_x64.bin_dir();
+                let out_dir = &mac_univ.bin_dir();
+                let out_artifact = mac_univ.bin().artifact;
+                let in_dir0 = &mac_x64.bin_dir();
                 let artifact0 = mac_x64.bin().artifact;
                 let in_dir1 = &mac_arm.bin_dir();
                 let artifact1 = mac_arm.bin().artifact;
+                fs::create_dir_all(out_dir)?;
                 cmd!("lipo -create -output {out_dir}{out_artifact} {in_dir0}{artifact0} {in_dir1}{artifact1}")
                     .run()?;
                 cmd!("chmod +x {out_dir}{out_artifact}").run()?;
