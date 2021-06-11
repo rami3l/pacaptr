@@ -23,6 +23,7 @@
         "dtolnay",
         "eclean",
         "equery",
+        "formatcp",
         "gsudo",
         "impls",
         "itertools",
