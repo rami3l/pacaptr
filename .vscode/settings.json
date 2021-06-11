@@ -2,6 +2,7 @@
     "cSpell.words": [
         "Exherbo",
         "Pkgng",
+        "SDKROOT",
         "Swupd",
         "Tazpkg",
         "Tlmgr",
@@ -9,6 +10,7 @@
         "aarch",
         "algos",
         "binutils",
+        "chmod",
         "choco",
         "clippy",
         "concatcp",

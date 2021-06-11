@@ -1,5 +1,8 @@
 use super::{get_ver_from_env, names::*, Runner};
-use crate::replace;
+use crate::{
+    binary::{LINUX_X64, MAC_UNIV},
+    replace,
+};
 use anyhow::{anyhow, Result};
 use xshell::{cmd, read_file, write_file};
 
@@ -18,11 +21,15 @@ impl Runner for BumpTap {
             homepage = HOMEPAGE,
             tag = version
         );
-        let url_mac = format!("{prefix}/{bin}", prefix = url_prefix, bin = ARCHIVE_MAC_X64);
+        let url_mac = format!(
+            "{prefix}/{bin}",
+            prefix = url_prefix,
+            bin = MAC_UNIV.archive()
+        );
         let url_linux = format!(
             "{prefix}/{bin}",
             prefix = url_prefix,
-            bin = ARCHIVE_LINUX_X64
+            bin = LINUX_X64.archive()
         );
 
         println!(":: Getting checksums...");

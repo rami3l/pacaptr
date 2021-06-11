@@ -1,12 +1,10 @@
-use super::{get_ver_from_env, names::*, Runner};
+use super::{names::*, Runner};
+use crate::binary::*;
 use anyhow::Result;
 use xshell::{cmd, write_file};
 
 #[derive(Debug)]
-pub struct Publish {
-    pub artifact: String,
-    pub asset: String,
-}
+pub struct Publish {}
 
 impl Runner for Publish {
     fn run(self) -> Result<()> {
@@ -18,20 +16,17 @@ impl Runner for Publish {
         // println!(":: Logging into GitHub CLI...");
         // cmd!("gh auth login").run()?;
 
-        println!(":: Building the binary in `release` mode...");
-        let build_native = || cmd!("cargo build --verbose --bin {CORE} --release --locked").run();
-
-        let build_for_target = |target: &str| {
-            cmd!("rustup target add {target}").run()?;
-            cmd!("cargo build --verbose --bin {CORE} --release --locked --target={target}").run()
-        };
-
-        match () {
+        let builds = match () {
             _ if cfg!(target_os = "linux") => {
-                build_for_target(targets::LINUX_MUSL)?;
+                let linux_x64 = BinaryBuilder::Cross {
+                    bin: LINUX_X64,
+                    rust_target: targets::LINUX_MUSL.into(),
+                };
+                vec![linux_x64]
             }
             _ if cfg!(target_os = "windows") => {
-                build_native()?;
+                let win_x64 = BinaryBuilder::Native(WIN_X64);
+                vec![win_x64]
             }
             _ if cfg!(target_os = "macos") => {
                 // Set environment variables.
@@ -44,31 +39,42 @@ impl Runner for Publish {
                     format!("MACOSX_DEPLOYMENT_TARGET={}", dev_target),
                 )?;
 
-                build_native()?;
-                build_for_target(targets::MAC_ARM)?;
+                let mac_x64 = BinaryBuilder::Native(MAC_X64);
+                let mac_arm = BinaryBuilder::Cross {
+                    bin: MAC_ARM,
+                    rust_target: targets::MAC_ARM.into(),
+                };
+                vec![mac_x64, mac_arm]
             }
             _ => panic!("Unsupported publishing platform"),
         };
 
-        println!(":: Zipping the binary...");
-        let zip_bin = |bin_dir| {
-            cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}").run()?;
+        builds.iter().try_for_each(|b| {
+            b.build()?;
+            b.zip()?;
+            b.upload()
+        })?;
+
+        if cfg!(target_os = "macos") {
+            let mac_univ = BinaryBuilder::Cross {
+                bin: MAC_UNIV,
+                // ! This is NOT a real rust target. It's here just to fit in.
+                rust_target: "universal-apple-darwin".into(),
+            };
+            let out_dir = mac_univ.bin_dir();
+            let out_artifact = &mac_univ.bin().artifact;
+            assert_eq!(builds.len(), 2);
+            let in_dir0 = builds[0].bin_dir();
+            let artifact0 = &builds[0].bin().artifact;
+            let in_dir1 = builds[1].bin_dir();
+            let artifact1 = &builds[1].bin().artifact;
+            cmd!("lipo -create -output {out_dir}{out_artifact} {in_dir0}{artifact0} {in_dir1}{artifact1}")
+                .run()?;
+            cmd!("chmod +x {out_dir}{out_artifact}").run()?;
+
+            mac_univ.zip()?;
+            mac_univ.upload()?;
         }
-        let bin_dir = if cfg!(target_os = "linux") {
-            format!("./target/{}/release/", LINUX_MUSL)
-        } else {
-            "./target/release/".to_owned()
-        };
-
-        cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}").run()?;
-
-        println!(":: Generating sha256...");
-        let shasum = cmd!("openssl dgst -r -sha256 {asset}.tar.gz").read()?;
-        write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
-
-        println!(":: Uploading binary and sha256...");
-        let tag = get_ver_from_env()?;
-        cmd!("gh release upload {tag} {asset}.tar.gz {asset}.tar.gz.sha256").run()?;
 
         Ok(())
     }

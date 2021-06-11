@@ -38,16 +38,15 @@ impl BinaryBuilder {
     pub fn build(&self) -> Result<()> {
         println!(":: Building the binary in `release` mode...");
         match self {
-            BinaryBuilder::Native(bin) => {
+            BinaryBuilder::Native(_) => {
                 cmd!("cargo build --verbose --bin {CORE} --release --locked").run()?;
             }
-            BinaryBuilder::Cross {
-                bin,
-                rust_target: target,
-            } => {
-                cmd!("rustup target add {target}").run()?;
-                cmd!("cargo build --verbose --bin {CORE} --release --locked --target={target}")
-                    .run()?;
+            BinaryBuilder::Cross { rust_target, .. } => {
+                cmd!("rustup target add {rust_target}").run()?;
+                cmd!(
+                    "cargo build --verbose --bin {CORE} --release --locked --target={rust_target}"
+                )
+                .run()?;
             }
         }
         Ok(())
@@ -64,8 +63,8 @@ impl BinaryBuilder {
     pub fn zip(&self) -> Result<()> {
         println!(":: Zipping the binary...");
         let bin = self.bin();
-        let asset = bin.asset();
-        let artifact = bin.artifact;
+        let asset = &bin.asset();
+        let artifact = &bin.artifact;
         let bin_dir = self.bin_dir();
         cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}").run()?;
 

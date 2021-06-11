@@ -7,29 +7,11 @@ use regex::Regex;
 use std::env;
 
 pub mod names {
-    use const_format::concatcp;
-
     /// The name of the executable.
     pub const CORE: &str = "pacaptr";
 
     /// The project homepage.
     pub const HOMEPAGE: &str = "https://github.com/rami3l/pacaptr";
-
-    pub const ARTIFACT_WINDOWS: &str = concatcp!(CORE, ".exe");
-    pub const ARTIFACT_MAC: &str = CORE;
-    pub const ARTIFACT_LINUX: &str = CORE;
-
-    pub const ASSET_WIN_X64: &str = concatcp!(CORE, "-windows-amd64");
-    pub const ASSET_MAC_X64: &str = concatcp!(CORE, "-macos-amd64");
-    pub const ASSET_MAC_ARM: &str = concatcp!(CORE, "-macos-aarch64");
-    pub const ASSET_MAC_UNIV: &str = concatcp!(CORE, "-macos-universal");
-    pub const ASSET_LINUX_X64: &str = concatcp!(CORE, "-linux-amd64");
-
-    pub const ARCHIVE_WIN_X64: &str = concatcp!(ASSET_WIN_X64, ".tar.gz");
-    pub const ARCHIVE_MAC_X64: &str = concatcp!(ASSET_MAC_X64, ".tar.gz");
-    pub const ARCHIVE_MAC_ARM: &str = concatcp!(ASSET_MAC_ARM, ".tar.gz");
-    pub const ARCHIVE_MAC_UNIV: &str = concatcp!(ASSET_MAC_UNIV, ".tar.gz");
-    pub const ARCHIVE_LINUX_X64: &str = concatcp!(ASSET_LINUX_X64, ".tar.gz");
 
     pub mod targets {
         pub const MAC_ARM: &str = "aarch64-apple-darwin";
