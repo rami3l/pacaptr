@@ -48,7 +48,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Build
         run: cargo build --verbose
       - name: Run tests
@@ -61,7 +65,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - uses: MinoruSekine/setup-scoop@v1
       - name: Verity scoop installation
         run: |
@@ -79,7 +87,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Build
         run: cargo build --verbose
       - name: Run tests
@@ -95,7 +107,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: apt-get update && apt-get install -y curl build-essential
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
@@ -113,7 +129,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: dnf install -y make automake gcc gcc-c++ kernel-devel
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
@@ -153,7 +173,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - run: apk add -U build-base
       - name: Build
         run: RUSTFLAGS="-C target-feature=-crt-static" cargo build --verbose
