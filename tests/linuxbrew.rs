@@ -8,7 +8,7 @@ fn linuxbrew_si_ok() {
     Test::new()
         .pacaptr(&["-Si", "curl"], &[])
         .output(&["Get a file from an HTTP, HTTPS or FTP server"])
-        .run_verbose()
+        .run()
 }
 
 #[test]
@@ -21,5 +21,5 @@ fn linuxbrew_r() {
         .output(&["GNU Wget"])
         .pacaptr(&["-R", "wget", "--yes"], &[])
         .output(&["brew uninstall wget"])
-        .run_verbose()
+        .run()
 }

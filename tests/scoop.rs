@@ -8,7 +8,7 @@ fn scoop_si_ok() {
     Test::new()
             .pacaptr(&["--using", "scoop", "-Si", "wget"], &[])
             .output(&["Description: A command-line utility for retrieving files using HTTP, HTTPS, FTP, and FTPS protocols."])
-            .run_verbose()
+            .run()
 }
 
 #[test]
@@ -17,7 +17,7 @@ fn scoop_si_fail() {
     Test::new()
         .pacaptr(&["--using", "scoop", "-Si", "wget"], &[])
         .output(&["GNU Wget is not a free software package"])
-        .run_verbose()
+        .run()
 }
 
 #[test]
@@ -30,5 +30,5 @@ fn scoop_r() {
         .output(&["wget", "[main]"])
         .pacaptr(&["--using", "scoop", "-R", "wget", "--yes"], &[])
         .output(&["wget", "was uninstalled."])
-        .run_verbose()
+        .run()
 }

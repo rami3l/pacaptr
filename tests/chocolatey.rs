@@ -8,7 +8,7 @@ fn chocolatey_si_ok() {
     Test::new()
         .pacaptr(&["-Si", "wget"], &[])
         .output(&["GNU Wget is a free software package"])
-        .run_verbose()
+        .run()
 }
 
 #[test]
@@ -17,7 +17,7 @@ fn chocolatey_si_fail() {
     Test::new()
         .pacaptr(&["-Si", "wget"], &[])
         .output(&["GNU Wget is not a free software package"])
-        .run_verbose()
+        .run()
 }
 
 #[test]
@@ -28,5 +28,5 @@ fn chocolatey_r() {
         .output(&["The install of wget was successful."])
         .pacaptr(&["-R", "wget", "--yes"], &[])
         .output(&["Wget has been successfully uninstalled."])
-        .run_verbose()
+        .run()
 }

@@ -8,7 +8,7 @@ fn homebrew_si_ok() {
     Test::new()
         .pacaptr(&["-Si", "curl"], &[])
         .output(&["curl is keg-only"])
-        .run_verbose()
+        .run()
 }
 
 #[test]
@@ -17,7 +17,7 @@ fn homebrew_si_fail() {
     Test::new()
         .pacaptr(&["-Si", "curl"], &[])
         .output(&["curl is not keg-only"])
-        .run_verbose()
+        .run()
 }
 
 #[test]
@@ -30,5 +30,5 @@ fn homebrew_r() {
         .output(&["GNU Wget"])
         .pacaptr(&["-R", "wget", "--yes"], &[])
         .output(&["brew uninstall wget", "Uninstalling /usr/local/Cellar/wget"])
-        .run_verbose()
+        .run()
 }

@@ -8,7 +8,7 @@ fn apt_si_ok() {
     Test::new()
         .pacaptr(&["-Si", "screen"], &[])
         .output(&["Package: screen"])
-        .run_verbose()
+        .run()
 }
 
 #[test]
@@ -17,7 +17,7 @@ fn apt_si_fail() {
     Test::new()
         .pacaptr(&["-Si", "screen"], &[])
         .output(&["Package: wget"])
-        .run_verbose()
+        .run()
 }
 
 #[test]
@@ -32,5 +32,5 @@ fn apt_r() {
         .output(&["apt(-get)? remove", "--yes", "screen"])
         .pacaptr(&["-Qi", "screen"], &[])
         .output(&["Status: deinstall"])
-        .run_verbose()
+        .run()
 }
