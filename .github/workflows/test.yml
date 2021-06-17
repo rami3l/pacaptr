@@ -9,7 +9,6 @@ on:
 jobs:
   asi-build-test:
     runs-on: macos-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -30,7 +29,6 @@ jobs:
 
   musl-build-test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -45,7 +43,6 @@ jobs:
 
   choco-test:
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -62,7 +59,6 @@ jobs:
 
   scoop-test:
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -84,7 +80,6 @@ jobs:
 
   homebrew-test:
     runs-on: macos-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -103,7 +98,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: docker://rust:latest
-
     steps:
       - uses: actions/checkout@v2
       - run: apt-get update && apt-get install -y curl build-essential
@@ -125,7 +119,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: docker://fedora:latest
-
     steps:
       - uses: actions/checkout@v2
       - run: dnf install -y make automake gcc gcc-c++ kernel-devel
@@ -150,7 +143,6 @@ jobs:
     defaults:
       run:
         shell: sh
-
     steps:
       - run: zypper install -y tar gzip curl gcc
       - uses: actions/checkout@v2
@@ -170,7 +162,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: docker://rust:alpine
-
+    env:
+      RUSTFLAGS: "-C target-feature=-crt-static"
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -180,10 +173,10 @@ jobs:
           override: true
       - run: apk add -U build-base
       - name: Build
-        run: RUSTFLAGS="-C target-feature=-crt-static" cargo build --verbose
+        run: cargo build --verbose
       - name: Run unit tests
-        run: RUSTFLAGS="-C target-feature=-crt-static" cargo test tests --verbose
+        run: cargo test tests --verbose
       - name: Run smoke tests
-        run: RUSTFLAGS="-C target-feature=-crt-static" cargo test apk --verbose
+        run: cargo test apk --verbose
       - name: Run heavy tests
-        run: RUSTFLAGS="-C target-feature=-crt-static" cargo test apk --verbose -- --ignored
+        run: cargo test apk --verbose -- --ignored

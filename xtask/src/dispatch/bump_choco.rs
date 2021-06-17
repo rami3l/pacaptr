@@ -57,14 +57,10 @@ impl Runner for BumpChoco {
         let verif_temp = read_file(verif_temp_path)?;
         let bin_path = format!("{}{}", bin_out_dir, WIN_X64.artifact);
         let algos = &["sha1", "sha256"];
-        let checksums = {
-            let mut checksums = "".to_owned();
-            for algo in algos {
-                let line = format!("{}: {}\n", algo, checksum(&bin_path, algo)?);
-                checksums.push_str(&line);
-            }
-            checksums
-        };
+        let checksums = algos
+            .iter()
+            .map(|&algo| checksum(&bin_path, algo).map(|sum| format!("{}: {}\n", algo, sum)))
+            .collect::<Result<String>>()?;
         let verification = {
             let repository = HOMEPAGE;
             replace!(verif_temp, repository, release_uri, checksums)
