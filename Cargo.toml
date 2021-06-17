@@ -29,12 +29,14 @@ regex = "1.5.4"
 
 [dev-dependencies]
 xshell = "0.1.14"
+indoc = "1.0.3"
+pacaptr-macros = { path="./pacaptr-macros" }
 
 [dependencies]
 async-trait = "0.1.50"
 bytes = "1.0.1"
 # clap = "3.0.0-beta.2"
-clap = { git = "https://github.com/clap-rs/clap" }
+clap = { git="https://github.com/clap-rs/clap" }
 colored = "2.0.0"
 confy = "0.4.0"
 dirs-next = "2.0.0"
@@ -43,11 +45,11 @@ is-root = "0.1.2"
 itertools = "0.10.1"
 macro_rules_attribute = "0.0.2"
 once_cell = "1.8.0"
-regex = { version = "1.5.4", default-features = false, features = ["std", "perf"] }
-serde = { version = "1.0.126", features = ["derive"] }
+regex = { version="1.5.4", default-features=false, features=["std", "perf"] }
+serde = { version="1.0.126", features=["derive"] }
 tap = "1.0.1"
 thiserror = "1.0.25"
-tokio = { version = "1.7.0", features = [
+tokio = { version="1.7.0", features=[
   "io-std",
   "io-util",
   "macros",
@@ -56,7 +58,7 @@ tokio = { version = "1.7.0", features = [
   "sync",
 ] }
 tokio-stream = "0.1.6"
-tokio-util = { version = "0.6.7", features = ["codec", "compat"] }
+tokio-util = { version="0.6.7", features=["codec", "compat"] }
 tt-call = "1.0.7"
 which = "4.1.0"
 
@@ -76,7 +78,7 @@ priority = "optional"
 section = "utility"
 
 [workspace]
-members = [".", "xtask"]
+members = [".", "xtask", "pacaptr-macros"]
 
 [profile.dev]
 split-debuginfo = "unpacked"
