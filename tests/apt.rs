@@ -21,6 +21,7 @@ fn apt_si_fail() {
         .run()
 }
 
+/*
 #[test]
 #[ignore]
 fn apt_r() {
@@ -35,6 +36,7 @@ fn apt_r() {
         .output(&["Status: deinstall"])
         .run()
 }
+*/
 
 #[test]
 #[ignore]
