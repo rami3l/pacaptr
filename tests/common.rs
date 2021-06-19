@@ -1,4 +1,4 @@
-use regex::Regex;
+use regex::RegexBuilder;
 use xshell::cmd;
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ enum Input<'i> {
 }
 
 pub struct Test<'t> {
-    sequence: Vec<(Input<'t>, &'t [&'t str])>,
+    sequence: Vec<(Input<'t>, Vec<&'t str>)>,
     pending_input: Option<Input<'t>>,
 }
 
@@ -29,46 +29,43 @@ impl<'t> Test<'t> {
     pub fn pacaptr(mut self, args: &'t [&str], flags: &'t [&str]) -> Self {
         // Guard against consecutive inputs without calling `self.output()`.
         if self.pending_input.is_some() {
-            panic!("Unexpected consecutive inputs")
-        } else {
-            self.pending_input = Some(Input::Pacaptr { args, flags });
+            self = self.output(&[]);
         }
+        self.pending_input = Some(Input::Pacaptr { args, flags });
         self
     }
 
     pub fn exec(mut self, cmd: &'t [&str], kws: &'t [&str]) -> Self {
         // Guard against consecutive inputs without calling `self.output()`.
         if self.pending_input.is_some() {
-            panic!("Unexpected consecutive inputs")
-        } else {
-            self.pending_input = Some(Input::Exec { cmd, kws });
+            self = self.output(&[]);
         }
+        self.pending_input = Some(Input::Exec { cmd, kws });
         self
     }
 
     pub fn output(mut self, out: &'t [&str]) -> Self {
-        // Guard against `self.output()` without `self.pending_input` being set.
-        let cmd = self
-            .pending_input
-            .take()
-            .expect("Expect an input before an output");
-        self.sequence.push((cmd, out));
+        if let Some(cmd) = self.pending_input.take() {
+            self.sequence.push((cmd, out.into()))
+        } else if let Some((_cmd, outs)) = self.sequence.last_mut() {
+            outs.extend(out);
+        } else {
+            panic!("Expect an input before an output");
+        }
         self
     }
 
     pub fn run(&self) {
         let try_match = |out: &str, patterns: &[&str]| {
-            patterns
-                .iter()
-                .map(|&p| (p, Regex::new(p).unwrap()))
-                .for_each(|(p, re)| {
-                    assert!(
-                        re.is_match(out),
-                        "Failed with pattern `{}`, got `{}`",
-                        p,
-                        out
-                    )
-                })
+            patterns.iter().for_each(|p| {
+                let re = RegexBuilder::new(p).multi_line(true).build().unwrap();
+                assert!(
+                    re.is_match(out),
+                    "Failed with pattern `{}`, got `{}`",
+                    p,
+                    out
+                )
+            })
         };
 
         // Prevent running the test before `self.sequence` is configured.
@@ -91,7 +88,7 @@ impl<'t> Test<'t> {
             }
             .unwrap();
             println!("{}", &got);
-            try_match(&got, *patterns);
+            try_match(&got, patterns);
         }
     }
 }

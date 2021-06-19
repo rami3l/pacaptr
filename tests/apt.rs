@@ -2,6 +2,7 @@
 
 mod common;
 use common::*;
+use pacaptr_macros::test_dsl;
 
 #[test]
 fn apt_si_ok() {
@@ -20,6 +21,7 @@ fn apt_si_fail() {
         .run()
 }
 
+/*
 #[test]
 #[ignore]
 fn apt_r() {
@@ -33,4 +35,47 @@ fn apt_r() {
         .pacaptr(&["-Qi", "screen"], &[])
         .output(&["Status: deinstall"])
         .run()
+}
+*/
+
+#[test]
+#[ignore]
+fn apt_long() {
+    // The following does not work because macros are lazy (for now)...
+    // test_dsl!(include_str!("./tests/data/apt.txt"))
+    test_dsl! {
+        r##"
+        # Update package databases
+        in -Sy
+
+        # Simple query that lists all packages
+        # in -Q
+        # ou ^apt$
+
+        # Information of `apt`
+        in -Qi apt
+        ou ^Package: apt$
+        ou ^Status: install ok installed$
+        ou ^Priority: (important|required)$
+
+        # Install and Deinstall a package
+
+        # Display remote package information
+        in -Si screen
+        ou ^Package: screen
+
+        in -Sii screen
+        ou ^Reverse Depends:
+
+        # Now installation
+        in -S screen --yes
+        in ! which screen
+        ou ^/usr/bin/screen
+
+        # Now remove the package
+        in -R screen --yes
+        in -Qi screen
+        ou ^Status: deinstall
+        "##
+    }
 }

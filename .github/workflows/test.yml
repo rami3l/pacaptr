@@ -139,7 +139,7 @@ jobs:
   zypper-test:
     runs-on: ubuntu-latest
     container:
-      image: docker://opensuse/leap:latest
+      image: opensuse/leap:latest
     defaults:
       run:
         shell: sh
