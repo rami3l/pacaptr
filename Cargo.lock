@@ -119,7 +119,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "clap"
 version = "3.0.0-beta.2"
-source = "git+https://github.com/clap-rs/clap#a531d3935a0e06450cfcfa7e17c13002b9b15e4d"
+source = "git+https://github.com/clap-rs/clap#c5cbc750cbb6f38f4c66ebbf88dfd8d5bcdebcd1"
 dependencies = [
  "atty",
  "bitflags",
@@ -136,7 +136,7 @@ dependencies = [
 [[package]]
 name = "clap_derive"
 version = "3.0.0-beta.2"
-source = "git+https://github.com/clap-rs/clap#a531d3935a0e06450cfcfa7e17c13002b9b15e4d"
+source = "git+https://github.com/clap-rs/clap#c5cbc750cbb6f38f4c66ebbf88dfd8d5bcdebcd1"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -863,9 +863,9 @@ dependencies = [
 
 [[package]]
 name = "textwrap"
-version = "0.13.4"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd05616119e612a8041ef58f2b578906cc2531a6069047ae092cfb86a325d835"
+checksum = "f59f5365546b8424b0cc48868ae4fbbbc29a538dcc496b53543525201034f0c2"
 dependencies = [
  "unicode-width",
 ]
@@ -892,9 +892,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.7.0"
+version = "1.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c79ba603c337335df6ba6dd6afc38c38a7d5e1b0c871678439ea973cd62a118e"
+checksum = "5fb2ed024293bb19f7a5dc54fe83bf86532a44c12a2bb8ba40d64a4509395ca2"
 dependencies = [
  "autocfg",
  "bytes",
