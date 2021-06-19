@@ -301,7 +301,7 @@ pub trait PmHelper: Pm {
     /// Executes a command in the context of the [`Pm`] implementation,
     /// with custom [`PmMode`] and [`Strategy`].
     async fn run_with(&self, cmd: Cmd, mode: PmMode, strat: &Strategy) -> Result<()> {
-        self.check_output(cmd, mode, strat).await.map(drop)
+        self.check_output(cmd, mode, strat).await.map(|_| ())
     }
 
     /// Executes a command in the context of the [`Pm`] implementation with default settings.
