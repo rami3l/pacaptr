@@ -5,30 +5,30 @@ use common::*;
 
 #[test]
 fn apk_si_ok() {
-    Test::new()
-        .pacaptr(&["-Si", "wget"], &[])
-        .output(&["Network utility to retrieve files from the Web"])
-        .run()
+    test_dsl! { r##"
+        in -Si wget
+        ou Network utility to retrieve files from the Web
+    "## }
 }
 
 #[test]
 #[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
-fn apk_si_fail() {
-    Test::new()
-        .pacaptr(&["-Si", "wget"], &[])
-        .output(&["Why not use curl instead?"])
-        .run()
+fn apk_si_ok() {
+    test_dsl! { r##"
+        in -Si wget
+        ou Why not use curl instead?
+    "## }
 }
 
 #[test]
 #[ignore]
 fn apk_r() {
-    Test::new()
-        .pacaptr(&["-S", "wget", "--yes"], &[])
-        .output(&["Installing wget"])
-        .exec(&["wget", "-V"], &[])
-        .output(&["GNU Wget"])
-        .pacaptr(&["-R", "wget", "--yes"], &[])
-        .output(&["Purging wget"])
-        .run()
+    test_dsl! { r##"
+        in -S wget --yes
+        ou Installing wget
+        in ! wget -V
+        ou GNU Wget
+        in -R wget --yes
+        ou Purging wget
+    "## }
 }

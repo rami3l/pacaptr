@@ -6,7 +6,7 @@ use common::*;
 #[test]
 fn apt_si_ok() {
     test_dsl! { r##"
-        # Information of `apt`
+        # Information of `screen`
         in -Si screen
         ou ^Package: screen$
     "## }
@@ -16,7 +16,7 @@ fn apt_si_ok() {
 #[should_panic(expected = "Failed with pattern `^Package: wget$`")]
 fn apt_si_fail() {
     test_dsl! { r##"
-        # Information of `apt`
+        # Information of `screen`
         in -Si screen
         ou ^Package: wget$
     "## }
