@@ -1,3 +1,4 @@
+pub use pacaptr_macros::test_dsl;
 use regex::RegexBuilder;
 use xshell::cmd;
 
