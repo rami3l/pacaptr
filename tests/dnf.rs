@@ -7,7 +7,7 @@ use common::*;
 fn dnf_si_ok() {
     test_dsl! { r##"
         in -Si wget
-        ou A utility for getting files from remote servers
+        ou A utility for retrieving files using the HTTP or FTP protocols
     "## }
 }
 
