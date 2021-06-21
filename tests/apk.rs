@@ -13,7 +13,7 @@ fn apk_si_ok() {
 
 #[test]
 #[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
-fn apk_si_ok() {
+fn apk_si_fail() {
     test_dsl! { r##"
         in -Si wget
         ou Why not use curl instead?
