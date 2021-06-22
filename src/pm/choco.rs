@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
-pub struct Chocolatey {
+pub struct Choco {
     pub cfg: Config,
 }
 
@@ -20,7 +20,7 @@ static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
     ..Default::default()
 });
 
-impl Chocolatey {
+impl Choco {
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
         self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY)
             .await
@@ -29,7 +29,7 @@ impl Chocolatey {
 
 // Windows is so special! It's better not to "sudo" automatically.
 #[async_trait]
-impl Pm for Chocolatey {
+impl Pm for Choco {
     /// Gets the name of the package manager.
     fn name(&self) -> &str {
         "choco"

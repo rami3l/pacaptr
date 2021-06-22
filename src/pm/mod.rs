@@ -3,22 +3,21 @@
 
 pub mod apk;
 pub mod apt;
-pub mod chocolatey;
+pub mod brew;
+pub mod choco;
 pub mod conda;
 pub mod dnf;
-pub mod homebrew;
-pub mod macports;
+pub mod emerge;
 pub mod pip;
-pub mod portage;
+pub mod port;
 pub mod scoop;
 pub mod tlmgr;
 pub mod unknown;
 pub mod zypper;
 
 pub use {
-    apk::Apk, apt::Apt, chocolatey::Chocolatey, conda::Conda, dnf::Dnf, homebrew::Homebrew,
-    macports::Macports, pip::Pip, portage::Portage, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown,
-    zypper::Zypper,
+    apk::Apk, apt::Apt, brew::Brew, choco::Choco, conda::Conda, dnf::Dnf, emerge::Emerge, pip::Pip,
+    port::Port, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, zypper::Zypper,
 };
 
 use crate::{

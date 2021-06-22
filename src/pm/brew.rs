@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
-pub struct Homebrew {
+pub struct Brew {
     pub cfg: Config,
 }
 
@@ -24,7 +24,7 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     ..Default::default()
 });
 
-impl Homebrew {
+impl Brew {
     async fn search_regex(&self, cmd: &[&str], kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(cmd).flags(flags);
         if !self.cfg.dry_run {
@@ -41,7 +41,7 @@ impl Homebrew {
 }
 
 #[async_trait]
-impl Pm for Homebrew {
+impl Pm for Brew {
     /// Gets the name of the package manager.
     fn name(&self) -> &str {
         "brew"

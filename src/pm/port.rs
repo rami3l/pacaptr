@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
-pub struct Macports {
+pub struct Port {
     pub cfg: Config,
 }
 
@@ -20,7 +20,7 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 });
 
 #[async_trait]
-impl Pm for Macports {
+impl Pm for Port {
     /// Gets the name of the package manager.
     fn name(&self) -> &str {
         "port"

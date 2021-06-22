@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use itertools::Itertools;
 use prettytable::{Cell, Row, Table};
 use regex::Regex;
-use std::{collections::BTreeMap, fs, io::Write, path::Path};
+use std::{collections::BTreeMap, ffi::OsString, fs, io::Write, iter, path::Path};
 
 const PM_IMPL_DIR: &str = "src/pm/";
 const COMPAT_TABLE_PATH: &str = "docs/compatibility_table.md";
@@ -31,35 +31,29 @@ fn main() -> Result<()> {
     // Tell Cargo that if the given file changes, to rerun this build script.
     println!("cargo:rerun-if-changed={}", PM_IMPL_DIR);
 
-    let paths = fs::read_dir(PM_IMPL_DIR).context("Failed while reading PM_IMPL_DIR")?;
+    let paths: Vec<fs::DirEntry> = fs::read_dir(PM_IMPL_DIR)
+        .context("Failed while reading PM_IMPL_DIR")?
+        .map(|entry| entry.context("Error while reading path"))
+        .try_collect()?;
 
     let excluded_names = ["mod.rs", "unknown.rs"];
+    let impls: BTreeMap<OsString, BTreeMap<String, bool>> = paths
+        .iter()
+        .filter(|entry| !excluded_names.iter().any(|&ex| ex == entry.file_name()))
+        .map(|entry| check_methods(&entry.path()).map(|impl_| (entry.file_name(), impl_)))
+        .try_collect()?;
 
-    let mut impls = BTreeMap::new();
-    for path in paths {
-        let entry = path.context("Error while reading path")?;
-        if excluded_names.iter().any(|&ex| ex == entry.file_name()) {
-            continue;
-        }
-        impls.insert(entry.file_name(), check_methods(entry.path().as_ref())?);
-    }
-
-    let mut table = Table::new();
-    let make_row = |row_name: &str, data: &[&str]| {
-        Row::new({
-            [row_name]
-                .iter()
-                .chain(data.iter())
-                .map(|&s| Cell::new(s))
-                .collect()
-        })
+    let make_row = |name: &str, data: &[&str]| {
+        let row = iter::once(&name)
+            .chain(data)
+            .map(|&s| Cell::new(s))
+            .collect();
+        Row::new(row)
     };
 
-    // Add first row:
-    // `row!["", "q", "qc", "qe", ..]`
-    table.add_row(make_row("", METHODS));
-
-    impls.iter().try_for_each(|(file, items)| {
+    // First row: `row!["", "q", "qc", "qe", ..]`
+    let head = Ok(make_row("", METHODS));
+    let tail = impls.iter().map(|(file, items)| {
         let data = METHODS
             .iter()
             .map(|&method| {
@@ -72,17 +66,14 @@ fn main() -> Result<()> {
             .collect_vec();
 
         file.to_str()
-            .map(|file| {
-                table.add_row(make_row(file, &data));
-            })
             .context("Failed to convert `file: OsString` to `&str`")
-    })?;
-
+            .map(|file| make_row(file, &data))
+    });
+    let mut table: Table = iter::once(head).chain(tail).try_collect()?;
     table.set_format(*prettytable::format::consts::FORMAT_CLEAN);
 
     let mut file =
         fs::File::create(COMPAT_TABLE_PATH).context("Failed while creating compatibility table")?;
-
     file.write_all("```txt\n".as_bytes())?;
     table
         .print(&mut file)

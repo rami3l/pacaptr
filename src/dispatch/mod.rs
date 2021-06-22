@@ -45,19 +45,19 @@ impl From<Config> for Box<dyn Pm> {
         #[allow(clippy::match_single_binding)]
         match pm {
             // Chocolatey
-            "choco" => Chocolatey { cfg }.boxed(),
+            "choco" => Choco { cfg }.boxed(),
 
             // Scoop
             "scoop" => Scoop { cfg }.boxed(),
 
             // Homebrew/Linuxbrew
-            "brew" => Homebrew { cfg }.boxed(),
+            "brew" => Brew { cfg }.boxed(),
 
             // Macports
-            "port" if cfg!(target_os = "macos") => Macports { cfg }.boxed(),
+            "port" if cfg!(target_os = "macos") => Port { cfg }.boxed(),
 
             // Portage for Gentoo
-            "emerge" => Portage { cfg }.boxed(),
+            "emerge" => Emerge { cfg }.boxed(),
 
             // Apk for Alpine
             "apk" => Apk { cfg }.boxed(),

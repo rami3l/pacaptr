@@ -5,7 +5,7 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
-pub struct Portage {
+pub struct Emerge {
     pub cfg: Config,
 }
 
@@ -26,7 +26,7 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 });
 
 #[async_trait]
-impl Pm for Portage {
+impl Pm for Emerge {
     /// Gets the name of the package manager.
     fn name(&self) -> &str {
         "emerge"
