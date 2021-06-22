@@ -5,21 +5,21 @@ use common::*;
 
 #[test]
 fn linuxbrew_si_ok() {
-    Test::new()
-        .pacaptr(&["-Si", "curl"], &[])
-        .output(&["Get a file from an HTTP, HTTPS or FTP server"])
-        .run()
+    test_dsl! { r##"
+        in -Si curl
+        ou Get a file from an HTTP, HTTPS or FTP server
+    "## }
 }
 
 #[test]
 #[ignore]
 fn linuxbrew_r() {
-    Test::new()
-        .pacaptr(&["-S", "wget", "--yes"], &[])
-        .output(&["brew (re)?install wget"])
-        .exec(&["wget", "-V"], &[])
-        .output(&["GNU Wget"])
-        .pacaptr(&["-R", "wget", "--yes"], &[])
-        .output(&["brew uninstall wget"])
-        .run()
+    test_dsl! { r##"
+        in -S wget --yes
+        ou brew (re)?install wget
+        in ! wget -V
+        ou GNU Wget
+        in -R wget --yes
+        ou brew uninstall wget
+    "## }
 }

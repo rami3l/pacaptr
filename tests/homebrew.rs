@@ -5,30 +5,31 @@ use common::*;
 
 #[test]
 fn homebrew_si_ok() {
-    Test::new()
-        .pacaptr(&["-Si", "curl"], &[])
-        .output(&["curl is keg-only"])
-        .run()
+    test_dsl! { r##"
+        in -Si curl
+        ou curl is keg-only
+    "## }
 }
 
 #[test]
 #[should_panic(expected = "Failed with pattern `curl is not keg-only`")]
 fn homebrew_si_fail() {
-    Test::new()
-        .pacaptr(&["-Si", "curl"], &[])
-        .output(&["curl is not keg-only"])
-        .run()
+    test_dsl! { r##"
+        in -Si curl
+        ou curl is not keg-only
+    "## }
 }
 
 #[test]
 #[ignore]
 fn homebrew_r() {
-    Test::new()
-        .pacaptr(&["-S", "wget", "--yes"], &[])
-        .output(&["brew (re)?install wget"])
-        .exec(&["wget", "-V"], &[])
-        .output(&["GNU Wget"])
-        .pacaptr(&["-R", "wget", "--yes"], &[])
-        .output(&["brew uninstall wget", "Uninstalling /usr/local/Cellar/wget"])
-        .run()
+    test_dsl! { r##"
+        in -S wget --yes
+        ou brew (re)?install wget
+        in ! wget -V
+        ou GNU Wget
+        in -R wget --yes
+        ou brew uninstall wget
+        ou Uninstalling /usr/local/Cellar/wget
+    "## }
 }
