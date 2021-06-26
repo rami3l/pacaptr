@@ -82,3 +82,12 @@ fn apt_sii() {
         ou ^Reverse Depends:
     "## }
 }
+
+#[test]
+fn apt_ss() {
+    test_dsl! { r##"
+        in -Ss apt
+        ou apt
+        ou commandline package manager
+    "## }
+}
