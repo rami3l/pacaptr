@@ -89,17 +89,12 @@ impl<'t> Test<'t> {
             //     raise MatchError(some_msg)
             let (sh, sh_args) = cmd_prefix();
             let cmd = match *input {
+                Input::Exec { cmd, kws } => cmd.iter().chain(kws).join(" "),
                 Input::Pacaptr { args, flags } => {
-                    let rest = args.iter().chain(flags).join(" ");
-                    let cmd = format!("cargo run -- {}", rest);
-                    cmd!("{sh}").args(sh_args).arg(&cmd)
-                }
-                Input::Exec { cmd, kws } => {
-                    let cmd = cmd.iter().chain(kws).join(" ");
-                    cmd!("{sh}").args(sh_args).arg(&cmd)
+                    format!("cargo run -- {}", args.iter().chain(flags).join(" "))
                 }
             };
-            let got = cmd.read().unwrap();
+            let got = cmd!("{sh}").args(sh_args).arg(dbg!(&cmd)).read().unwrap();
             println!("{}", &got);
             try_match(&got, patterns);
         })
