@@ -21,6 +21,14 @@ fn zypper_si_fail() {
 }
 
 #[test]
+fn zypper_q() {
+    test_dsl! { r##"
+        in -Q
+        ou ^zypper
+    "## }
+}
+
+#[test]
 #[ignore]
 fn zypper_r() {
     test_dsl! { r##"

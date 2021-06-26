@@ -1,3 +1,4 @@
+use itertools::Itertools;
 pub use pacaptr_macros::test_dsl;
 use regex::RegexBuilder;
 use xshell::cmd;
@@ -12,6 +13,14 @@ enum Input<'i> {
         cmd: &'i [&'i str],
         kws: &'i [&'i str],
     },
+}
+
+/// Returns the platform specific prefix of calling a command encoded as string.
+const fn cmd_prefix() -> (&'static str, &'static [&'static str]) {
+    match () {
+        _ if cfg!(target_os = "windows") => ("powershell", &["-Command"]),
+        _ => ("sh", &["-c"]),
+    }
 }
 
 pub struct Test<'t> {
@@ -74,23 +83,26 @@ impl<'t> Test<'t> {
             panic!("Test sequence not yet configured")
         }
 
-        for (input, patterns) in &self.sequence {
+        self.sequence.iter().for_each(|(input, patterns)| {
             // got = cmd.run()
             // if not matches_all(got, patterns):
             //     raise MatchError(some_msg)
-            let got = match *input {
+            let (sh, sh_args) = cmd_prefix();
+            let cmd = match *input {
                 Input::Pacaptr { args, flags } => {
-                    cmd!("cargo run --").args(args).args(flags).read()
+                    let rest = args.iter().chain(flags).join(" ");
+                    let cmd = format!("cargo run -- {}", rest);
+                    cmd!("{sh}").args(sh_args).arg(&cmd)
                 }
                 Input::Exec { cmd, kws } => {
-                    let (cmd, subcmd) = cmd.split_first().unwrap();
-                    cmd!("{cmd}").args(subcmd).args(kws).read()
+                    let cmd = cmd.iter().chain(kws).join(" ");
+                    cmd!("{sh}").args(sh_args).arg(&cmd)
                 }
-            }
-            .unwrap();
+            };
+            let got = cmd.read().unwrap();
             println!("{}", &got);
             try_match(&got, patterns);
-        }
+        })
     }
 }
 

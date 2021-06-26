@@ -3,7 +3,6 @@ use proc_macro2::{Literal, Span, TokenStream};
 use quote::quote;
 use syn::{Error, Result};
 
-// ! TODO: Implement pipe with Rust.
 enum TestDslItem {
     Im(Vec<String>),
     In(Vec<String>),
