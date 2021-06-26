@@ -41,11 +41,10 @@ fn apt_qo() {
 #[test]
 fn apt_qp_sw() {
     test_dsl! { r##"
-        # Information of `apt`
         in -Sw screenfetch --yes
-        ou ^apt: /usr/share/man/man8/apt.8.gz$
+        ou download only mode
         in -Qp /var/cache/apt/archives/screenfetch_*.deb
-        ou ^Package: screenfetch$
+        ou Package: screenfetch
     "## }
 }
 
@@ -71,7 +70,6 @@ fn apt_r_s() {
 #[test]
 fn apt_si() {
     test_dsl! { r##"
-        # Information of `screen`
         in -Si screen
         ou ^Package: screen$
     "## }
