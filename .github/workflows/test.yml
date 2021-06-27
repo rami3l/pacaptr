@@ -78,7 +78,7 @@ jobs:
       - name: Run heavy tests
         run: cargo test scoop --verbose -- --ignored
 
-  homebrew-test:
+  brew-test:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
@@ -89,15 +89,16 @@ jobs:
           override: true
       - name: Build
         run: cargo build --verbose
+      - run: brew list
       - name: Run tests
-        run: cargo test homebrew --verbose
+        run: cargo test brew --verbose
       - name: Run heavy tests
-        run: cargo test homebrew --verbose -- --ignored
+        run: cargo test brew --verbose -- --ignored
 
   apt-test:
     runs-on: ubuntu-latest
     container:
-      image: docker://rust:latest
+      image: rust:latest
     steps:
       - uses: actions/checkout@v2
       - run: apt-get update && apt-get install -y curl build-essential
@@ -118,7 +119,7 @@ jobs:
   dnf-test:
     runs-on: ubuntu-latest
     container:
-      image: docker://fedora:latest
+      image: fedora:latest
     steps:
       - uses: actions/checkout@v2
       - run: dnf install -y make automake gcc gcc-c++ kernel-devel
@@ -161,7 +162,7 @@ jobs:
   apk-test:
     runs-on: ubuntu-latest
     container:
-      image: docker://rust:alpine
+      image: rust:alpine
     env:
       RUSTFLAGS: "-C target-feature=-crt-static"
     steps:
