@@ -53,7 +53,10 @@ impl Pm for Dnf {
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["rpm", "-q", "changelog"]).kws(kws).flags(flags))
+        Cmd::new(&["rpm", "-q", "--changelog"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -85,7 +88,7 @@ impl Pm for Dnf {
 
     /// Qm lists packages that are installed but are not available in any installation source (anymore).
     async fn qm(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["dnf", "list", "extras"]).flags(flags))
+        self.run(Cmd::new(&["dnf", "list", "--extras"]).flags(flags))
             .await
     }
 
@@ -197,7 +200,7 @@ impl Pm for Dnf {
 
     /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["dnf", "list", "available"])
+        Cmd::new(&["dnf", "list", "--available"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
