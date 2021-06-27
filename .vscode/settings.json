@@ -28,6 +28,7 @@
     "impls",
     "indoc",
     "itertools",
+    "libzypp",
     "litrs",
     "macos",
     "mockpm",

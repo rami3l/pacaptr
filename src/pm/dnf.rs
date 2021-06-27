@@ -113,12 +113,12 @@ impl Pm for Dnf {
         if !self.cfg.dry_run {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
-        let out_bytes = self
+        let out = self
             .check_output(cmd, PmMode::Mute, &Default::default())
             .await?
-            .contents;
-        exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
-        Ok(())
+            .contents
+            .pipe(String::from_utf8)?;
+        exec::grep_print(&out, kws)
     }
 
     /// Qu lists packages which have an update available.

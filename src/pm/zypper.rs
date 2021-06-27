@@ -61,7 +61,10 @@ impl Pm for Zypper {
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["rpm", "-q", "changelog"]).kws(kws).flags(flags))
+        Cmd::new(&["rpm", "-q", "--changelog"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -173,15 +176,18 @@ impl Pm for Zypper {
 
     /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(if kws.is_empty() {
-            &["zypper", "packages", "-R"]
-        } else {
-            &["zypper", "packages", "-r"]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.check_dry(cmd))
-        .await
+        let cmd = &["zypper", "packages", "-R"];
+        if kws.is_empty() {
+            let cmd = Cmd::new(cmd).kws(kws).flags(flags);
+            return self.check_dry(cmd).await;
+        }
+        let cmd = Cmd::new(cmd).flags(flags);
+        let out = self
+            .check_output(cmd, PmMode::Mute, &STRAT_CHECK_DRY)
+            .await?
+            .contents
+            .pipe(String::from_utf8)?;
+        exec::grep_print(&out, kws)
     }
 
     /// Ss searches for package(s) by searching the expression in name, description, short description.
