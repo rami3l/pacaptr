@@ -86,9 +86,9 @@ Run `pacman -Syu` on the OS of your choice!
 
 ### External
 
-`conda`, `brew`, [`pip`/`pip3`](#pip), `tlmgr`
+> These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
 
-These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
+`conda`, `brew`, [`pip`/`pip3`](#pip), `tlmgr`
 
 ### Notes
 
