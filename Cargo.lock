@@ -947,9 +947,9 @@ dependencies = [
 
 [[package]]
 name = "tt-call"
-version = "1.0.7"
+version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a879f817fb174ae8372f5bdb7f36b9f7e4a08c9b54a11277836101aa1911836e"
+checksum = "5e66dcbec4290c69dd03c57e76c2469ea5c7ce109c6dd4351c13055cf71ea055"
 
 [[package]]
 name = "unicode-segmentation"
