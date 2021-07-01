@@ -52,7 +52,9 @@ jobs:
           override: true
       - name: Build
         run: cargo build --verbose
-      - name: Run tests
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
         run: cargo test choco --verbose
       - name: Run heavy tests
         run: cargo test choco --verbose -- --ignored
@@ -73,7 +75,9 @@ jobs:
           Get-Command scoop
       - name: Build
         run: cargo build --verbose
-      - name: Run tests
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
         run: cargo test scoop --verbose
       - name: Run heavy tests
         run: cargo test scoop --verbose -- --ignored
@@ -90,10 +94,36 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - run: brew list
-      - name: Run tests
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
         run: cargo test brew --verbose
       - name: Run heavy tests
         run: cargo test brew --verbose -- --ignored
+
+  port-test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install MacPorts
+        run: |
+          curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
+          source ./macports-ci install
+          sudo port install wget
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Build
+        run: cargo build --verbose
+      - run: port installed
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test port --verbose
+      - name: Run heavy tests
+        run: cargo test port --verbose -- --ignored
 
   apt-test:
     runs-on: ubuntu-latest
