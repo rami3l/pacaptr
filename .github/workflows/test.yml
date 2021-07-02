@@ -7,40 +7,6 @@ on:
       - master
 
 jobs:
-  asi-build-test:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          target: aarch64-apple-darwin
-          override: true
-
-      - name: Set macOS environment variables
-        # if: runner.os == 'macOS'
-        run: |
-          echo "SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)" >> $GITHUB_ENV
-          echo "MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)" >> $GITHUB_ENV
-
-      - name: Build
-        run: cargo build --verbose --release --locked --target=aarch64-apple-darwin
-
-  musl-build-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          target: x86_64-unknown-linux-musl
-          override: true
-
-      - name: Build
-        run: cargo build --verbose --release --locked --target=x86_64-unknown-linux-musl
-
   choco-test:
     runs-on: windows-latest
     steps:
@@ -52,10 +18,12 @@ jobs:
           override: true
       - name: Build
         run: cargo build --verbose
-      - name: Run tests
-        run: cargo test chocolatey --verbose
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test choco --verbose
       - name: Run heavy tests
-        run: cargo test chocolatey --verbose -- --ignored
+        run: cargo test choco --verbose -- --ignored
 
   scoop-test:
     runs-on: windows-latest
@@ -73,12 +41,14 @@ jobs:
           Get-Command scoop
       - name: Build
         run: cargo build --verbose
-      - name: Run tests
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
         run: cargo test scoop --verbose
       - name: Run heavy tests
         run: cargo test scoop --verbose -- --ignored
 
-  homebrew-test:
+  brew-test:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
@@ -86,27 +56,63 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
+          target: aarch64-apple-darwin
           override: true
-      - name: Build
+      - name: Set macOS environment variables
+        # if: runner.os == 'macOS'
+        run: |
+          echo "SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)" >> $GITHUB_ENV
+      - name: Test build for aarch64
+        run: cargo build --verbose --release --locked --target=aarch64-apple-darwin
+      - name: Test native Build
         run: cargo build --verbose
-      - name: Run tests
-        run: cargo test homebrew --verbose
+      # - run: brew list
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test brew --verbose
       - name: Run heavy tests
-        run: cargo test homebrew --verbose -- --ignored
+        run: cargo test brew --verbose -- --ignored
 
-  apt-test:
-    runs-on: ubuntu-latest
-    container:
-      image: docker://rust:latest
+  port-test:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - run: apt-get update && apt-get install -y curl build-essential
+      - name: Install MacPorts
+        run: |
+          curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
+          source ./macports-ci install
+          sudo port install wget
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
       - name: Build
+        run: cargo build --verbose
+      - run: port installed
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test port --verbose
+      - name: Run heavy tests
+        run: cargo test port --verbose -- --ignored
+
+  apt-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # - run: apt-get update && apt-get install -y curl build-essential
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: x86_64-unknown-linux-musl
+          override: true
+      - name: Test build for musl
+        run: cargo build --verbose --release --locked --target=x86_64-unknown-linux-musl
+      - name: Test native Build
         run: cargo build --verbose
       - name: Run unit tests
         run: cargo test tests --verbose
@@ -118,7 +124,7 @@ jobs:
   dnf-test:
     runs-on: ubuntu-latest
     container:
-      image: docker://fedora:latest
+      image: fedora:latest
     steps:
       - uses: actions/checkout@v2
       - run: dnf install -y make automake gcc gcc-c++ kernel-devel
@@ -135,6 +141,28 @@ jobs:
         run: cargo test dnf --verbose
       - name: Run heavy tests
         run: cargo test dnf --verbose -- --ignored
+
+  emerge-test:
+    runs-on: ubuntu-latest
+    container:
+      image: gentoo/stage3
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      # `pacaptr -Ss` might fail without this line.
+      - run: emerge --sync || true
+      - name: Build
+        run: cargo build --verbose
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test emerge --verbose
+      - name: Run heavy tests
+        run: cargo test emerge --verbose -- --ignored
 
   zypper-test:
     runs-on: ubuntu-latest
@@ -161,7 +189,7 @@ jobs:
   apk-test:
     runs-on: ubuntu-latest
     container:
-      image: docker://rust:alpine
+      image: rust:alpine
     env:
       RUSTFLAGS: "-C target-feature=-crt-static"
     steps:
@@ -180,3 +208,25 @@ jobs:
         run: cargo test apk --verbose
       - name: Run heavy tests
         run: cargo test apk --verbose -- --ignored
+
+  pip-conda-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Build
+        run: cargo build --verbose
+      # - name: Run unit tests
+      #   run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: |
+          cargo test pip --verbose
+          cargo test conda --verbose
+      - name: Run heavy tests
+        run: |
+          cargo test pip --verbose -- --ignored
+          cargo test conda --verbose -- --ignored

@@ -345,13 +345,13 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
 /// Finds all lines in the given `text` that matches all the `patterns`.
 ///
 /// We suppose that all patterns are legal regular expressions.
-/// An error message will be printed if this is not the case.
+/// An error message will be returned if this is not the case.
 pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
     patterns
         .iter()
         .map(|&pat| {
             Regex::new(pat)
-                .map_err(|_e| Error::OtherError(format!("Pattern `{}` is ill-formed.", pat)))
+                .map_err(|_e| Error::OtherError(format!("Pattern `{}` is ill-formed", pat)))
         })
         .try_collect()
         .map(|rs: Vec<Regex>| {

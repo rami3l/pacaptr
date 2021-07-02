@@ -1,16 +1,43 @@
 mod test_dsl;
 
 use crate::test_dsl::test_dsl_impl;
+use itertools::Itertools;
 use litrs::StringLit;
 use proc_macro2::TokenStream;
 use quote::quote;
 use std::convert::TryFrom;
 
+/// A DSL (Domain-Specific Language) embedded in Rust, in order to simplify the form of smoke tests.
+///
+/// This macro accepts the source of the Test DSL in a **string literal**.
+/// In this DSL, each line is called an `item`. We now support the following item types:
+/// - `in` item: Run command on `pacaptr`.
+/// - `in !` item: Run command with the system shell (`sh` on Unix,`powershell` on Windows).
+/// - `ou` item: Check the output of the **last** `in` or `in !` item above against a **regex** pattern.
+///
+/// # Examples
+///
+/// ```no_run
+/// #[test]
+/// #[ignore]
+/// fn apt_r_s() {
+///    test_dsl! { r##"
+///        in -Sy               # Refresh with `pacaptr -Sy`.
+///        in -S screen --yes   # Install `screen`.
+///        in ! which screen    # Verify installation.
+///        ou ^/usr/bin/screen
+///
+///        in -R screen --yes   # Remove `screen`.
+///        in -Qi screen        # Verify removal.
+///        ou ^Status: deinstall
+///    "## }
+/// }
+/// ```
 #[proc_macro]
 pub fn test_dsl(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = TokenStream::from(input);
 
-    let input = input.into_iter().collect::<Vec<_>>();
+    let input = input.into_iter().collect_vec();
     if input.len() != 1 {
         let msg = format!(
             "argument must be a single string literal, but got {} tokens",

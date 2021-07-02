@@ -176,7 +176,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "install", "--download-only"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run(cmd))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
             .await
     }
 

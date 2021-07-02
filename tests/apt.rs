@@ -4,28 +4,25 @@ mod common;
 use common::*;
 
 #[test]
-fn apt_si_ok() {
-    test_dsl! { r##"
-        # Information of `screen`
-        in -Si screen
-        ou ^Package: screen$
-    "## }
-}
-
-#[test]
 #[should_panic(expected = "Failed with pattern `^Package: wget$`")]
-fn apt_si_fail() {
+fn apt_fail() {
     test_dsl! { r##"
-        # Information of `screen`
         in -Si screen
         ou ^Package: wget$
     "## }
 }
 
 #[test]
+fn apt_q() {
+    test_dsl! { r##"
+        in -Q
+        ou apt
+    "## }
+}
+
+#[test]
 fn apt_qi() {
     test_dsl! { r##"
-        # Information of `apt`
         in -Qi apt
         ou ^Package: apt$
         ou ^Status: install ok installed$
@@ -34,25 +31,26 @@ fn apt_qi() {
 }
 
 #[test]
-fn apt_sii() {
+fn apt_qo() {
     test_dsl! { r##"
-        in -Sii screen
-        ou ^Reverse Depends:
+        in -Qo apt.8
+        ou ^apt: /usr/share/man/man8/apt.8.gz$
     "## }
 }
 
 #[test]
-fn apt_q() {
+fn apt_qp_sw() {
     test_dsl! { r##"
-        # Simple query that lists all packages
-        in -Q
-        ou apt
+        in -Sw screenfetch --yes
+        ou download only mode
+        in -Qp /var/cache/apt/archives/screenfetch_*.deb
+        ou Package: screenfetch
     "## }
 }
 
 #[test]
 #[ignore]
-fn apt_r() {
+fn apt_r_s() {
     test_dsl! { r##"
         # Update package databases
         in -Sy
@@ -66,5 +64,30 @@ fn apt_r() {
         in -R screen --yes
         in -Qi screen
         ou ^Status: deinstall
+    "## }
+}
+
+#[test]
+fn apt_si() {
+    test_dsl! { r##"
+        in -Si screen
+        ou ^Package: screen$
+    "## }
+}
+
+#[test]
+fn apt_sii() {
+    test_dsl! { r##"
+        in -Sii screen
+        ou ^Reverse Depends:
+    "## }
+}
+
+#[test]
+fn apt_ss() {
+    test_dsl! { r##"
+        in -Ss apt
+        ou apt
+        ou commandline package manager
     "## }
 }

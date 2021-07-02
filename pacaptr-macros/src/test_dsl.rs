@@ -3,7 +3,6 @@ use proc_macro2::{Literal, Span, TokenStream};
 use quote::quote;
 use syn::{Error, Result};
 
-// ! TODO: Implement pipe with Rust.
 enum TestDslItem {
     Im(Vec<String>),
     In(Vec<String>),
@@ -28,8 +27,12 @@ impl TestDslItem {
             Ok(TestDslItem::Ou(rest.into()))
         } else {
             let msg = format!(
-                "Item must start with `{}`/`{}`/`{}`/`{}`, found `{}`",
-                in_bang, in_, ou, im, ln,
+                "Item must start with one of the following: {}, found `{}`",
+                [in_bang, in_, ou, im]
+                    .iter()
+                    .map(|&s| format!("`{}`", s.trim_start()))
+                    .join(", "),
+                ln,
             );
             Err(Error::new(Span::call_site(), msg))
         }
