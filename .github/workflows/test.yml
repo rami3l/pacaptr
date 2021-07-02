@@ -65,7 +65,7 @@ jobs:
           echo "MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)" >> $GITHUB_ENV
       - name: Test build for aarch64
         run: cargo build --verbose --release --locked --target=aarch64-apple-darwin
-      - name: Test native Build
+      - name: Test native build
         run: cargo build --verbose
       # - run: brew list
       - name: Run unit tests
@@ -112,7 +112,7 @@ jobs:
           override: true
       - name: Test build for musl
         run: cargo build --verbose --release --locked --target=x86_64-unknown-linux-musl
-      - name: Test native Build
+      - name: Test native build
         run: cargo build --verbose
       - name: Run unit tests
         run: cargo test tests --verbose
