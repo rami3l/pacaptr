@@ -72,7 +72,7 @@ impl Pm for Emerge {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["emerge", "--clean", "-v"])
+        Cmd::with_sudo(&["emerge", "--unmerge"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_ASK))
@@ -82,7 +82,7 @@ impl Pm for Emerge {
     /// Rs removes a package and its dependencies which are not required by any other installed package,
     /// and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["emerge", "-vc"])
+        Cmd::with_sudo(&["emerge", "--depclean"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_ASK))

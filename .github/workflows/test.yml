@@ -167,6 +167,28 @@ jobs:
       - name: Run heavy tests
         run: cargo test dnf --verbose -- --ignored
 
+  emerge-test:
+    runs-on: ubuntu-latest
+    container:
+      image: gentoo/stage3
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      # `pacaptr -Ss` might fail without this line.
+      - run: emerge --sync || true
+      - name: Build
+        run: cargo build --verbose
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test emerge --verbose
+      - name: Run heavy tests
+        run: cargo test emerge --verbose -- --ignored
+
   zypper-test:
     runs-on: ubuntu-latest
     container:
