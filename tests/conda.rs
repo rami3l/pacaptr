@@ -33,11 +33,13 @@ fn conda_qs() {
 fn conda_r_s() {
     test_dsl! { r##"
         in --using conda -S sympy --yes
-        ou Executing transaction: done
+        ou Executing transaction:
+        ou done
         in --using conda -Q
         ou sympy
         in --using conda -R sympy --yes
-        ou Executing transaction: done
+        ou Executing transaction:
+        ou done
     "## }
 }
 

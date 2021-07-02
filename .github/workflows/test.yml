@@ -7,40 +7,6 @@ on:
       - master
 
 jobs:
-  asi-build-test:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          target: aarch64-apple-darwin
-          override: true
-
-      - name: Set macOS environment variables
-        # if: runner.os == 'macOS'
-        run: |
-          echo "SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)" >> $GITHUB_ENV
-          echo "MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)" >> $GITHUB_ENV
-
-      - name: Build
-        run: cargo build --verbose --release --locked --target=aarch64-apple-darwin
-
-  musl-build-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          target: x86_64-unknown-linux-musl
-          override: true
-
-      - name: Build
-        run: cargo build --verbose --release --locked --target=x86_64-unknown-linux-musl
-
   choco-test:
     runs-on: windows-latest
     steps:
@@ -90,10 +56,18 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
+          target: aarch64-apple-darwin
           override: true
-      - name: Build
+      - name: Set macOS environment variables
+        # if: runner.os == 'macOS'
+        run: |
+          echo "SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)" >> $GITHUB_ENV
+      - name: Test build for aarch64
+        run: cargo build --verbose --release --locked --target=aarch64-apple-darwin
+      - name: Test native Build
         run: cargo build --verbose
-      - run: brew list
+      # - run: brew list
       - name: Run unit tests
         run: cargo test tests --verbose
       - name: Run smoke tests
@@ -127,17 +101,18 @@ jobs:
 
   apt-test:
     runs-on: ubuntu-latest
-    container:
-      image: rust:latest
     steps:
       - uses: actions/checkout@v2
-      - run: apt-get update && apt-get install -y curl build-essential
+      # - run: apt-get update && apt-get install -y curl build-essential
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
+          target: x86_64-unknown-linux-musl
           override: true
-      - name: Build
+      - name: Test build for musl
+        run: cargo build --verbose --release --locked --target=x86_64-unknown-linux-musl
+      - name: Test native Build
         run: cargo build --verbose
       - name: Run unit tests
         run: cargo test tests --verbose
