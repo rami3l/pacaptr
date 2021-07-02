@@ -234,7 +234,7 @@ jobs:
       - name: Run heavy tests
         run: cargo test apk --verbose -- --ignored
 
-  pip-test:
+  pip-conda-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -248,6 +248,10 @@ jobs:
       # - name: Run unit tests
       #   run: cargo test tests --verbose
       - name: Run smoke tests
-        run: cargo test pip --verbose
+        run: |
+          cargo test pip --verbose
+          cargo test conda --verbose
       - name: Run heavy tests
-        run: cargo test pip --verbose -- --ignored
+        run: |
+          cargo test pip --verbose -- --ignored
+          cargo test conda --verbose -- --ignored

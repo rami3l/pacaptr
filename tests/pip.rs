@@ -1,5 +1,3 @@
-#![cfg(target_os = "linux")]
-
 mod common;
 use common::*;
 
@@ -42,11 +40,11 @@ fn pip_qs() {
 #[ignore]
 fn pip_r_s() {
     test_dsl! { r##"
-        in --using pip -S sympy --yes
-        ou Successfully installed sympy-
+        in --using pip -S sphinx --yes
+        ou Successfully installed
         in --using pip -Q
-        ou sympy
-        in --using pip -R sympy --yes
-        ou Successfully uninstalled sympy-
+        ou [Ss]phinx
+        in --using pip -R sphinx --yes
+        ou Successfully uninstalled
     "## }
 }
