@@ -233,3 +233,21 @@ jobs:
         run: cargo test apk --verbose
       - name: Run heavy tests
         run: cargo test apk --verbose -- --ignored
+
+  pip-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Build
+        run: cargo build --verbose
+      # - name: Run unit tests
+      #   run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test pip --verbose
+      - name: Run heavy tests
+        run: cargo test pip --verbose -- --ignored

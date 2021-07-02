@@ -15,6 +15,11 @@ pub struct Pip {
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
+    prompt: PromptStrategy::CustomPrompt,
+    ..Default::default()
+});
+
+static STRAT_UNINSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(&["-y"]),
     ..Default::default()
 });
@@ -38,6 +43,12 @@ impl Pm for Pip {
         } else {
             self.qs(kws, flags).await
         }
+    }
+
+    /// Qi displays local package information: name, version, description, etc.
+    async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.run(Cmd::new(&[self.cmd.as_ref(), "show"]).kws(kws).flags(flags))
+            .await
     }
 
     /// Qs searches locally installed package for names or descriptions.
@@ -70,7 +81,7 @@ impl Pm for Pip {
         Cmd::new(&[self.cmd.as_ref(), "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_UNINSTALL))
             .await
     }
 
@@ -86,21 +97,6 @@ impl Pm for Pip {
     /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&[self.cmd.as_ref(), "cache", "purge"]).flags(flags))
-            .await
-    }
-
-    /// Si displays remote package information: name, version, description, etc.
-    async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&[self.cmd.as_ref(), "show"]).kws(kws).flags(flags))
-            .await
-    }
-
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
-    async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&[self.cmd.as_ref(), "search"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
             .await
     }
 
