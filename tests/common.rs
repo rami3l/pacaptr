@@ -9,7 +9,6 @@ enum Input<'i> {
         args: &'i [&'i str],
         flags: &'i [&'i str],
     },
-    #[allow(dead_code)]
     Exec {
         cmd: &'i [&'i str],
         kws: &'i [&'i str],
