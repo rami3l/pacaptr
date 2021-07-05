@@ -131,6 +131,19 @@ impl Pm for Apt {
             .await
     }
 
+    /// Sg lists all packages belonging to the GROUP.
+    async fn sg(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        Cmd::new(if kws.is_empty() {
+            &["tasksel", "--list-task"]
+        } else {
+            &["tasksel", "--task-packages"]
+        })
+        .kws(kws)
+        .flags(flags)
+        .pipe(|cmd| self.run(cmd))
+        .await
+    }
+
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["apt", "show"]).kws(kws).flags(flags))

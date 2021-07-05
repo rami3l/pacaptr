@@ -68,6 +68,17 @@ fn apt_r_s() {
 }
 
 #[test]
+fn apt_sg() {
+    test_dsl! { r##"
+        in -S --noconfirm tasksel
+        in -Sg
+        ou ^u ubuntu-desktop
+        in -Sg ubuntu-desktop
+        ou ubuntu-desktop\^
+    "## }
+}
+
+#[test]
 fn apt_si() {
     test_dsl! { r##"
         in -Si screen
