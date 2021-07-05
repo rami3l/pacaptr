@@ -86,6 +86,18 @@ fn zypper_r_s() {
 }
 
 #[test]
+fn zypper_sg() {
+    test_dsl! { r##"
+        in -Sg
+        ou ^  | base
+        ou ^  | console
+        in -Sg console
+        ou ^  | patterns-base-console
+        ou ^  | tmux
+    "## }
+}
+
+#[test]
 fn zypper_si() {
     test_dsl! { r##"
         in -Si curl

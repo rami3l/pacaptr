@@ -36,6 +36,18 @@ impl Pm for Apt {
             .await
     }
 
+    /// Qc shows the changelog of a package.
+    async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.run(Cmd::new(&["apt", "changelog"]).kws(kws).flags(flags))
+            .await
+    }
+
+    /// Qe lists packages installed explicitly (not as dependencies).
+    async fn qe(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.run(Cmd::new(&["apt-mark", "showmanual"]).kws(kws).flags(flags))
+            .await
+    }
+
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["dpkg-query", "-s"]).kws(kws).flags(flags))

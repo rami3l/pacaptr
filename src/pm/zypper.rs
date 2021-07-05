@@ -165,6 +165,19 @@ impl Pm for Zypper {
         self.sc(_kws, flags).await
     }
 
+    /// Sg lists all packages belonging to the GROUP.
+    async fn sg(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        Cmd::new(if kws.is_empty() {
+            &["zypper", "patterns"]
+        } else {
+            &["zypper", "info"]
+        })
+        .kws(kws)
+        .flags(flags)
+        .pipe(|cmd| self.run(cmd))
+        .await
+    }
+
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["zypper", "info", "--requires"])

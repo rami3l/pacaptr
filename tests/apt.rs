@@ -21,6 +21,24 @@ fn apt_q() {
 }
 
 #[test]
+fn apt_qc() {
+    test_dsl! { r##"
+        in -Qc wget
+        ou @ubuntu.com
+    "## }
+}
+
+#[test]
+fn apt_qe() {
+    test_dsl! { r##"
+        in -Qe
+        ou ^adduser$
+        in -Qe adduser
+        ou ^adduser$
+    "## }
+}
+
+#[test]
 fn apt_qi() {
     test_dsl! { r##"
         in -Qi apt

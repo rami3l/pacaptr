@@ -29,6 +29,7 @@
     "gsudo",
     "impls",
     "indoc",
+    "iproute",
     "itertools",
     "libzypp",
     "litrs",
