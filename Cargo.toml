@@ -17,7 +17,7 @@ include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
 exclude = ["dist/**/*", "docs/**/*"]
 # build = "build.rs"
 name = "pacaptr"
-version = "0.12.0"
+version = "0.12.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -44,11 +44,11 @@ is-root = "0.1.2"
 itertools = "0.10.1"
 macro_rules_attribute = "0.0.2"
 once_cell = "1.8.0"
-regex = { version = "1.5.4", default-features = false, features = ["std", "perf"] }
-serde = { version = "1.0.126", features = ["derive"] }
+regex = { version="1.5.4", default-features=false, features=["std", "perf"] }
+serde = { version="1.0.126", features=["derive"] }
 tap = "1.0.1"
 thiserror = "1.0.26"
-tokio = { version = "1.8.0", features = [
+tokio = { version="1.8.0", features=[
   "io-std",
   "io-util",
   "macros",
@@ -57,7 +57,7 @@ tokio = { version = "1.8.0", features = [
   "sync",
 ] }
 tokio-stream = "0.1.6"
-tokio-util = { version = "0.6.7", features = ["codec", "compat"] }
+tokio-util = { version="0.6.7", features=["codec", "compat"] }
 tt-call = "1.0.8"
 which = "4.1.0"
 
