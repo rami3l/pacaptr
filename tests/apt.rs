@@ -32,9 +32,9 @@ fn apt_qc() {
 fn apt_qe() {
     test_dsl! { r##"
         in -Qe
-        ou ^adduser$
-        in -Qe adduser
-        ou ^adduser$
+        ou ^apt$
+        in -Qe apt
+        ou ^apt$
     "## }
 }
 
