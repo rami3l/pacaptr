@@ -1,9 +1,10 @@
 mod binary;
 mod dispatch;
 
-use crate::dispatch::{bump_choco::BumpChoco, bump_tap::BumpTap, publish::Publish, Runner};
 use anyhow::Result;
 use pico_args::Arguments;
+
+use crate::dispatch::{bump_choco::BumpChoco, bump_tap::BumpTap, publish::Publish, Runner};
 
 const BANNER: &str = r#"
                             __

@@ -1,11 +1,13 @@
 mod test_dsl;
 
-use crate::test_dsl::test_dsl_impl;
+use std::convert::TryFrom;
+
 use itertools::Itertools;
 use litrs::StringLit;
 use proc_macro2::TokenStream;
 use quote::quote;
-use std::convert::TryFrom;
+
+use crate::test_dsl::test_dsl_impl;
 
 /// A DSL (Domain-Specific Language) embedded in Rust, in order to simplify the form of smoke tests.
 ///

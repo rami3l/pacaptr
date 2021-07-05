@@ -1,9 +1,10 @@
 use std::fs;
 
-use super::{names::*, Runner};
-use crate::binary::*;
 use anyhow::Result;
 use xshell::cmd;
+
+use super::{names::*, Runner};
+use crate::binary::*;
 
 #[derive(Debug)]
 pub struct Publish {}

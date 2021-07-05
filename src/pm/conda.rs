@@ -1,3 +1,8 @@
+use async_trait::async_trait;
+use futures::prelude::*;
+use once_cell::sync::Lazy;
+use tap::prelude::*;
+
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
@@ -5,10 +10,6 @@ use crate::{
     exec::{self, Cmd},
     print::{self, PROMPT_RUN},
 };
-use async_trait::async_trait;
-use futures::prelude::*;
-use once_cell::sync::Lazy;
-use tap::prelude::*;
 
 pub struct Conda {
     pub cfg: Config,

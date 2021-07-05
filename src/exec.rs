@@ -1,19 +1,16 @@
 //! This module handles launching of subprocesses and their results.
 
-use crate::{
-    error::{Error, Result},
-    print::*,
+use std::{
+    process::Stdio,
+    sync::atomic::{AtomicBool, Ordering},
 };
+
 use bytes::Bytes;
 use futures::prelude::*;
 pub use is_root::is_root;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use std::{
-    process::Stdio,
-    sync::atomic::{AtomicBool, Ordering},
-};
 use tap::prelude::*;
 use tokio::{
     io::{self, AsyncRead, AsyncWrite},
@@ -26,6 +23,11 @@ use tokio_util::{
     either::Either,
 };
 use which::which;
+
+use crate::{
+    error::{Error, Result},
+    print::*,
+};
 
 /// Different ways in which a command shall be dealt with.
 #[derive(Copy, Clone, Debug)]
@@ -324,22 +326,29 @@ impl std::fmt::Display for Cmd {
 ///
 /// If `case_sensitive` is `false`, then `expected` should be all lower case patterns.
 pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
-    use std::io::Write;
-    loop {
-        let mut answer = String::new();
+    use std::io::{self, Write};
+
+    std::iter::repeat_with(|| {
         print_question(question, options);
-        let _ = std::io::stdout().flush();
-        std::io::stdin()
+        io::stdout().flush().expect("Error while flushing stdout");
+        let mut answer = String::new();
+        io::stdin()
             .read_line(&mut answer)
             .expect("Error while reading user input");
-        if !case_sensitive {
-            answer = answer.to_lowercase();
+        if case_sensitive {
+            answer
+        } else {
+            answer.to_lowercase()
         }
+    })
+    .find_map(|answer| {
         let answer = answer.trim();
-        if expected.iter().any(|&x| x == answer) {
-            break answer.to_owned();
-        }
-    }
+        expected
+            .iter()
+            .any(|&x| x == answer)
+            .then(|| answer.to_owned())
+    })
+    .unwrap() // It's impossible to find nothing out of an infinite loop.
 }
 
 /// Finds all lines in the given `text` that matches all the `patterns`.

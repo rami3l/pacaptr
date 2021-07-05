@@ -1,11 +1,13 @@
+use std::env;
+
+use anyhow::{anyhow, Result};
+use regex::Regex;
+use xml::escape::escape_str_attribute;
+use xshell::{cmd, read_file, write_file};
+
 use super::{get_ver_from_env, names::*, Runner};
 use crate::binary::WIN_X64;
 use crate::replace;
-use anyhow::{anyhow, Result};
-use regex::Regex;
-use std::env;
-use xml::escape::escape_str_attribute;
-use xshell::{cmd, read_file, write_file};
 
 #[derive(Debug)]
 pub struct BumpChoco {}

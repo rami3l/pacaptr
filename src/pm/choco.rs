@@ -1,9 +1,10 @@
-use super::{DryRunStrategy, Pm, PmHelper, PromptStrategy, Strategy};
-use crate::exec::Cmd;
-use crate::{dispatch::config::Config, error::Result};
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+
+use super::{DryRunStrategy, Pm, PmHelper, PromptStrategy, Strategy};
+use crate::exec::Cmd;
+use crate::{dispatch::config::Config, error::Result};
 
 pub struct Choco {
     pub cfg: Config,

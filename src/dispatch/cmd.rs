@@ -1,3 +1,11 @@
+use std::iter::FromIterator;
+
+use clap::{self, AppSettings, Clap};
+use itertools::Itertools;
+use tap::prelude::*;
+use tokio::task;
+use tt_call::tt_call;
+
 use crate::{
     dispatch::Config,
     error::{Error, Result},
@@ -5,12 +13,6 @@ use crate::{
     methods,
     pm::Pm,
 };
-use clap::{self, AppSettings, Clap};
-use itertools::Itertools;
-use std::iter::FromIterator;
-use tap::prelude::*;
-use tokio::task;
-use tt_call::tt_call;
 
 /// The command line options to be collected.
 #[derive(Debug, Clap)]
@@ -276,18 +278,19 @@ impl Pacaptr {
 
 #[cfg(test)]
 pub(super) mod tests {
-    use super::*;
     use async_trait::async_trait;
     use once_cell::sync::Lazy;
     use tokio::test;
     use tt_call::tt_call;
+
+    use super::*;
 
     pub struct MockPm {
         pub cfg: Config,
     }
 
     macro_rules! make_mock_op_body {
-        ( $self:ident, $kws:ident, $flags:ident, $method:ident ) => {{
+        ($self:ident, $kws:ident, $flags:ident, $method:ident) => {{
             let kws: Vec<_> = $kws.iter().chain($flags).collect();
             panic!("should run: {} {:?}", stringify!($method), &kws)
         }};

@@ -1,7 +1,8 @@
-use crate::dispatch::{get_ver_from_env, names::CORE};
 use anyhow::Result;
 use const_format::formatcp;
 use xshell::{cmd, write_file};
+
+use crate::dispatch::{get_ver_from_env, names::CORE};
 
 pub struct Binary<'s> {
     pub artifact: &'s str,

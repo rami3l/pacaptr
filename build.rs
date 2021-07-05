@@ -1,8 +1,9 @@
+use std::{collections::BTreeMap, ffi::OsString, fs, io::Write, iter, path::Path};
+
 use anyhow::{Context, Result};
 use itertools::Itertools;
 use prettytable::{Cell, Row, Table};
 use regex::Regex;
-use std::{collections::BTreeMap, ffi::OsString, fs, io::Write, iter, path::Path};
 
 const PM_IMPL_DIR: &str = "src/pm/";
 const COMPAT_TABLE_PATH: &str = "docs/compatibility_table.md";

@@ -1,10 +1,11 @@
+use anyhow::{anyhow, Result};
+use xshell::{cmd, read_file, write_file};
+
 use super::{get_ver_from_env, names::*, Runner};
 use crate::{
     binary::{LINUX_X64, MAC_UNIV},
     replace,
 };
-use anyhow::{anyhow, Result};
-use xshell::{cmd, read_file, write_file};
 
 #[derive(Debug)]
 pub struct BumpTap {}

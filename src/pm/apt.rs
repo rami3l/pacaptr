@@ -1,8 +1,9 @@
-use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
-use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+
+use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
+use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 
 pub struct Apt {
     pub cfg: Config,

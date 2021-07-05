@@ -1,7 +1,8 @@
 //! This module handles output format.
 
-use crate::exec::Cmd;
 use colored::Colorize;
+
+use crate::exec::Cmd;
 
 pub static PROMPT_CANCELED: &str = "Canceled";
 pub static PROMPT_PENDING: &str = "Pending";

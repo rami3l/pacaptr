@@ -1,12 +1,13 @@
+use async_trait::async_trait;
+use once_cell::sync::Lazy;
+use tap::prelude::*;
+
 use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::Result,
     exec::{self, Cmd},
 };
-use async_trait::async_trait;
-use once_cell::sync::Lazy;
-use tap::prelude::*;
 
 pub struct Zypper {
     pub cfg: Config,

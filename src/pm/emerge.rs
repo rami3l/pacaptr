@@ -1,9 +1,10 @@
-use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
-use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 use async_trait::async_trait;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+
+use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
+use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 
 pub struct Emerge {
     pub cfg: Config,

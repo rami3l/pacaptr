@@ -15,6 +15,11 @@ pub mod tlmgr;
 pub mod unknown;
 pub mod zypper;
 
+use async_trait::async_trait;
+use macro_rules_attribute::macro_rules_attribute;
+use once_cell::sync::Lazy;
+use tokio::sync::Mutex;
+use tt_call::tt_call;
 pub use {
     apk::Apk, apt::Apt, brew::Brew, choco::Choco, conda::Conda, dnf::Dnf, emerge::Emerge, pip::Pip,
     port::Port, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, zypper::Zypper,
@@ -25,16 +30,11 @@ use crate::{
     error::Result,
     exec::{Cmd, Mode, Output, StatusCode},
 };
-use async_trait::async_trait;
-use macro_rules_attribute::macro_rules_attribute;
-use once_cell::sync::Lazy;
-use tokio::sync::Mutex;
-use tt_call::tt_call;
 
 /// The list of `pacman` methods supported by `pacaptr`.
 #[macro_export]
 macro_rules! methods {
-    ( $caller:tt ) => {
+    ($caller:tt) => {
         tt_call::tt_return! {
             $caller
             methods = [{
@@ -136,7 +136,7 @@ macro_rules! methods {
 }
 
 macro_rules! make_op_body {
-    ( $self:ident, $method:ident ) => {{
+    ($self:ident, $method:ident) => {{
         Err(crate::error::Error::OperationUnimplementedError {
             op: stringify!($method).into(),
             pm: $self.name().into(),

@@ -2,9 +2,10 @@ pub mod bump_choco;
 pub mod bump_tap;
 pub mod publish;
 
+use std::env;
+
 use anyhow::Result;
 use regex::Regex;
-use std::env;
 
 pub mod names {
     /// The name of the executable.
