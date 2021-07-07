@@ -29,7 +29,7 @@ regex = "1.5.4"
 
 [dev-dependencies]
 xshell = "0.1.14"
-pacaptr-macros = { path="./pacaptr-macros" }
+pacaptr-macros = { path="crates/pacaptr-macros" }
 
 [dependencies]
 async-trait = "0.1.50"
@@ -77,7 +77,7 @@ priority = "optional"
 section = "utility"
 
 [workspace]
-members = [".", "xtask", "pacaptr-macros"]
+members = [".", "xtask", "crates/*"]
 
 [profile.dev]
 split-debuginfo = "unpacked"
