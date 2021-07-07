@@ -67,7 +67,8 @@ impl Pm for Apk {
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
-    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
+    // when including multiple search terms, only packages with descriptions
+    // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(&["apk", "info", "-d"]).flags(flags);
         if !self.cfg.dry_run {
@@ -96,7 +97,8 @@ impl Pm for Apk {
             .await
     }
 
-    /// Rn removes a package and skips the generation of configuration backup files.
+    /// Rn removes a package and skips the generation of configuration backup
+    /// files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apk", "del", "--purge"])
             .kws(kws)
@@ -105,7 +107,9 @@ impl Pm for Apk {
             .await
     }
 
-    /// Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
+    /// Rns removes a package and its dependencies which are not required by any
+    /// other installed package, and skips the generation of configuration
+    /// backup files.
     async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apk", "del", "--purge", "-r"])
             .kws(kws)
@@ -114,8 +118,8 @@ impl Pm for Apk {
             .await
     }
 
-    /// Rs removes a package and its dependencies which are not required by any other installed package,
-    /// and not explicitly installed by the user.
+    /// Rs removes a package and its dependencies which are not required by any
+    /// other installed package, and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.r(kws, flags).await
     }
@@ -129,7 +133,8 @@ impl Pm for Apk {
             .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apk", "cache", "-v", "clean"])
             .flags(flags)
@@ -151,19 +156,22 @@ impl Pm for Apk {
             .await
     }
 
-    /// Sii displays packages which require X to be installed, aka reverse dependencies.
+    /// Sii displays packages which require X to be installed, aka reverse
+    /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["apk", "info", "-r"]).kws(kws).flags(flags))
             .await
     }
 
-    /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
+    /// Sl displays a list of all packages in all installation sources that are
+    /// handled by the packages management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["apk", "search"]).kws(kws).flags(flags))
             .await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["apk", "search", "-v"]).kws(kws).flags(flags))
             .await
@@ -182,7 +190,8 @@ impl Pm for Apk {
         .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(if kws.is_empty() {
             &["apk", "upgrade", "-U", "-a"]
@@ -195,7 +204,8 @@ impl Pm for Apk {
         .await
     }
 
-    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
+    /// Sw retrieves all packages from the server, but does not install/upgrade
+    /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["apk", "fetch"])
             .kws(kws)
@@ -214,7 +224,8 @@ impl Pm for Apk {
         Ok(())
     }
 
-    /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
+    /// U upgrades or adds package(s) to the system and installs the required
+    /// dependencies from sync repositories.
     async fn u(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apk", "add", "--allow-untrusted"])
             .kws(kws)

@@ -54,7 +54,8 @@ impl Pm for Pip {
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
-    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
+    // when including multiple search terms, only packages with descriptions
+    // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(&[self.cmd.as_ref(), "list"]).flags(flags);
         if !self.cfg.dry_run {
@@ -95,7 +96,8 @@ impl Pm for Pip {
             .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&[self.cmd.as_ref(), "cache", "purge"]).flags(flags))
             .await
@@ -117,7 +119,8 @@ impl Pm for Pip {
         }
     }
 
-    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
+    /// Sw retrieves all packages from the server, but does not install/upgrade
+    /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&[self.cmd.as_ref(), "download"])
             .kws(kws)

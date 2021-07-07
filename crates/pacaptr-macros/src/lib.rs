@@ -9,13 +9,17 @@ use quote::quote;
 
 use crate::test_dsl::test_dsl_impl;
 
-/// A DSL (Domain-Specific Language) embedded in Rust, in order to simplify the form of smoke tests.
+/// A DSL (Domain-Specific Language) embedded in Rust, in order to simplify the
+/// form of smoke tests.
 ///
 /// This macro accepts the source of the Test DSL in a **string literal**.
-/// In this DSL, each line is called an `item`. We now support the following item types:
+/// In this DSL, each line is called an `item`. We now support the following
+/// item types:
 /// - `in` item: Run command on `pacaptr`.
-/// - `in !` item: Run command with the system shell (`sh` on Unix,`powershell` on Windows).
-/// - `ou` item: Check the output of the **last** `in` or `in !` item above against a **regex** pattern.
+/// - `in !` item: Run command with the system shell (`sh` on Unix,`powershell`
+///   on Windows).
+/// - `ou` item: Check the output of the **last** `in` or `in !` item above
+///   against a **regex** pattern.
 ///
 /// # Examples
 ///

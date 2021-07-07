@@ -61,7 +61,8 @@ impl Pm for Apt {
             .await
     }
 
-    /// Qp queries a package supplied through a file supplied on the command line rather than an entry in the package management database.
+    /// Qp queries a package supplied through a file supplied on the command
+    /// line rather than an entry in the package management database.
     async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["dpkg-deb", "-I"]).kws(kws).flags(flags))
             .await
@@ -85,7 +86,8 @@ impl Pm for Apt {
             .await
     }
 
-    /// Rn removes a package and skips the generation of configuration backup files.
+    /// Rn removes a package and skips the generation of configuration backup
+    /// files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apt", "purge"])
             .kws(kws)
@@ -94,7 +96,9 @@ impl Pm for Apt {
             .await
     }
 
-    /// Rns removes a package and its dependencies which are not required by any other installed package, and skips the generation of configuration backup files.
+    /// Rns removes a package and its dependencies which are not required by any
+    /// other installed package, and skips the generation of configuration
+    /// backup files.
     async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apt", "autoremove", "--purge"])
             .kws(kws)
@@ -103,8 +107,8 @@ impl Pm for Apt {
             .await
     }
 
-    /// Rs removes a package and its dependencies which are not required by any other installed package,
-    /// and not explicitly installed by the user.
+    /// Rs removes a package and its dependencies which are not required by any
+    /// other installed package, and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apt", "autoremove"])
             .kws(kws)
@@ -126,7 +130,8 @@ impl Pm for Apt {
         .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apt", "clean"])
             .kws(kws)
@@ -163,13 +168,15 @@ impl Pm for Apt {
             .await
     }
 
-    /// Sii displays packages which require X to be installed, aka reverse dependencies.
+    /// Sii displays packages which require X to be installed, aka reverse
+    /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["apt", "rdepends"]).kws(kws).flags(flags))
             .await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["apt", "search"]).kws(kws).flags(flags))
             .await
@@ -191,13 +198,15 @@ impl Pm for Apt {
         }
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.sy(kws, flags).await?;
         self.su(kws, flags).await
     }
 
-    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
+    /// Sw retrieves all packages from the server, but does not install/upgrade
+    /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apt", "install", "--download-only"])
             .kws(kws)

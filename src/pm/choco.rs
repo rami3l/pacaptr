@@ -69,7 +69,8 @@ impl Pm for Choco {
             .await
     }
 
-    /// Rss removes a package and its dependencies which are not required by any other installed package.
+    /// Rss removes a package and its dependencies which are not required by any
+    /// other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["choco", "uninstall", "--removedependencies"])
             .kws(kws)
@@ -97,7 +98,8 @@ impl Pm for Choco {
             .await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.check_dry(Cmd::new(&["choco", "search"]).kws(kws).flags(flags))
             .await
@@ -116,7 +118,8 @@ impl Pm for Choco {
         .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.su(kws, flags).await
     }

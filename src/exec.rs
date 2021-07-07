@@ -38,20 +38,24 @@ pub enum Mode {
     /// Silently collects all the `stdout`/`stderr` combined. Prints nothing.
     Mute,
 
-    /// Prints out the command which should be executed, runs it and collects its `stdout`/`stderr` combined.
+    /// Prints out the command which should be executed, runs it and collects
+    /// its `stdout`/`stderr` combined.
     ///
-    /// This is potentially dangerous as it destroys the colored `stdout`. Use it only if really necessary.
+    /// This is potentially dangerous as it destroys the colored `stdout`. Use
+    /// it only if really necessary.
     CheckAll,
 
-    /// Prints out the command which should be executed, runs it and collects its `stderr`.
+    /// Prints out the command which should be executed, runs it and collects
+    /// its `stderr`.
     ///
     /// This will work with a colored `stdout`.
     CheckErr,
 
     /// A CUSTOM prompt implemented by a `pacaptr` module itself.
     ///
-    /// Prints out the command which should be executed, runs it and collects its `stderr`.
-    /// Also, this will ask for confirmation before proceeding.
+    /// Prints out the command which should be executed, runs it and collects
+    /// its `stderr`. Also, this will ask for confirmation before
+    /// proceeding.
     Prompt,
 }
 
@@ -60,7 +64,8 @@ pub type StatusCode = i32;
 /// Output of running a [`Cmd`].
 #[derive(Debug, Clone)]
 pub struct Output {
-    /// The captured `stdout`, and if set to [`Mode::CheckAll`], mixed with captured `stderr`.
+    /// The captured `stdout`, and if set to [`Mode::CheckAll`], mixed with
+    /// captured `stderr`.
     pub contents: Vec<u8>,
 
     /// The status code returned by the [`Cmd`].
@@ -82,7 +87,8 @@ impl Default for Output {
 /// (eg. `[brew install]-[--dry-run]-[curl fish]`).
 #[derive(Debug, Clone, Default)]
 pub struct Cmd {
-    /// Flag indicating If a **normal admin** needs to run this command with `sudo`.
+    /// Flag indicating If a **normal admin** needs to run this command with
+    /// `sudo`.
     pub sudo: bool,
     pub cmd: Vec<String>,
     pub kws: Vec<String>,
@@ -115,7 +121,8 @@ impl Cmd {
 
     /// Determines if this command actually needs to run with `sudo -S`.
     ///
-    /// If a **normal admin** needs to run it with `sudo`, and we are not `root`, then this is the case.
+    /// If a **normal admin** needs to run it with `sudo`, and we are not
+    /// `root`, then this is the case.
     pub fn should_sudo(&self) -> bool {
         self.sudo && !is_root()
     }
@@ -147,8 +154,8 @@ impl Cmd {
 
 /// Helper to implement [`Cmd::exec_checkerr`] and [`Cmd::exec_checkall`].
 ///
-/// Takes contents from an input stream and copy to an output stream (optional) and a [`Vec<u8>`],
-/// then returns the [`Vec<u8>`].
+/// Takes contents from an input stream and copy to an output stream (optional)
+/// and a [`Vec<u8>`], then returns the [`Vec<u8>`].
 ///
 /// # Arguments
 ///
@@ -176,7 +183,8 @@ where
 impl Cmd {
     /// Executes a [`Cmd`] and returns its output.
     ///
-    /// The exact behavior depends on the [`Mode`] passed in (see [`exec::Mode`] for more info).
+    /// The exact behavior depends on the [`Mode`] passed in (see [`exec::Mode`]
+    /// for more info).
     pub async fn exec(self, mode: Mode) -> Result<Output> {
         match mode {
             Mode::PrintCmd => {
@@ -196,9 +204,11 @@ impl Cmd {
         }
     }
 
-    /// Inner implementation of [`Cmd::exec_checkerr`] and [`Cmd::exec_checkall`].
+    /// Inner implementation of [`Cmd::exec_checkerr`] and
+    /// [`Cmd::exec_checkall`].
     ///
-    /// `merge == false` goes to [`Cmd::exec_checkerr`], and [`Cmd::exec_checkall`] otherwise.
+    /// `merge == false` goes to [`Cmd::exec_checkerr`], and
+    /// [`Cmd::exec_checkall`] otherwise.
     async fn exec_check_output(self, mute: bool, merge: bool) -> Result<Output> {
         use tokio_stream::StreamExt;
         use Error::*;
@@ -252,24 +262,28 @@ impl Cmd {
 
     /// Executes a [`Cmd`] and returns its `stdout` and `stderr`.
     ///
-    /// If `mute` is `false`, then normal `stdout/stderr` output will be printed to `stdout` too.
+    /// If `mute` is `false`, then normal `stdout/stderr` output will be printed
+    /// to `stdout` too.
     pub async fn exec_checkall(self, mute: bool) -> Result<Output> {
         self.exec_check_output(mute, true).await
     }
 
     /// Executes a [`Cmd`] and collects its `stderr`.
     ///
-    /// If `mute` is `false`, then its `stderr` output will be printed to `stderr` too.
+    /// If `mute` is `false`, then its `stderr` output will be printed to
+    /// `stderr` too.
     pub async fn exec_checkerr(self, mute: bool) -> Result<Output> {
         self.exec_check_output(mute, false).await
     }
 
     /// Executes a [`Cmd`] and collects its `stderr`.
     ///
-    /// If `mute` is `false`, then its `stderr` output will be printed to `stderr` too.
+    /// If `mute` is `false`, then its `stderr` output will be printed to
+    /// `stderr` too.
     ///
     /// This function behaves just like [`exec_checkerr`], but in addition,
-    /// the user will be prompted if (s)he wishes to continue with the command execution.
+    /// the user will be prompted if (s)he wishes to continue with the command
+    /// execution.
     pub async fn exec_prompt(self, mute: bool) -> Result<Output> {
         static ALL_YES: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
@@ -324,7 +338,8 @@ impl std::fmt::Display for Cmd {
 /// Gives a prompt and gets the output string.
 /// This action won't end until an expected answer is found.
 ///
-/// If `case_sensitive` is `false`, then `expected` should be all lower case patterns.
+/// If `case_sensitive` is `false`, then `expected` should be all lower case
+/// patterns.
 pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
     use std::io::{self, Write};
 

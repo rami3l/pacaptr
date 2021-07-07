@@ -87,7 +87,8 @@ impl Pm for Dnf {
             .await
     }
 
-    /// Qm lists packages that are installed but are not available in any installation source (anymore).
+    /// Qm lists packages that are installed but are not available in any
+    /// installation source (anymore).
     async fn qm(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["dnf", "list", "--extras"]).flags(flags))
             .await
@@ -99,7 +100,8 @@ impl Pm for Dnf {
             .await
     }
 
-    /// Qp queries a package supplied through a file supplied on the command line rather than an entry in the package management database.
+    /// Qp queries a package supplied through a file supplied on the command
+    /// line rather than an entry in the package management database.
     async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["rpm", "-qip"]).kws(kws).flags(flags))
             .await
@@ -107,8 +109,8 @@ impl Pm for Dnf {
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
-    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
-    // TODO: Is this right?
+    // when including multiple search terms, only packages with descriptions
+    // matching ALL of those terms are returned. TODO: Is this right?
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(&["rpm", "-qa"]).flags(flags);
         if !self.cfg.dry_run {
@@ -146,7 +148,8 @@ impl Pm for Dnf {
             .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["dnf", "clean", "expire-cache"])
             .flags(flags)
@@ -177,7 +180,8 @@ impl Pm for Dnf {
             .await
     }
 
-    /// Sii displays packages which require X to be installed, aka reverse dependencies.
+    /// Sii displays packages which require X to be installed, aka reverse
+    /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["dnf", "repoquery", "--deplist"])
             .kws(kws)
@@ -199,7 +203,8 @@ impl Pm for Dnf {
         .await
     }
 
-    /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
+    /// Sl displays a list of all packages in all installation sources that are
+    /// handled by the packages management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["dnf", "list", "--available"])
             .kws(kws)
@@ -208,7 +213,8 @@ impl Pm for Dnf {
             .await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["dnf", "search"]).kws(kws).flags(flags))
             .await
@@ -223,12 +229,14 @@ impl Pm for Dnf {
             .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.su(kws, flags).await
     }
 
-    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
+    /// Sw retrieves all packages from the server, but does not install/upgrade
+    /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["dnf", "install", "--downloadonly"])
             .kws(kws)
@@ -248,7 +256,8 @@ impl Pm for Dnf {
         Ok(())
     }
 
-    /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
+    /// U upgrades or adds package(s) to the system and installs the required
+    /// dependencies from sync repositories.
     async fn u(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.s(kws, flags).await
     }

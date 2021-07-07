@@ -62,7 +62,8 @@ impl Pm for Port {
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
-    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
+    // when including multiple search terms, only packages with descriptions
+    // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["port", "-v", "installed"]).kws(kws).flags(flags))
             .await
@@ -83,7 +84,8 @@ impl Pm for Port {
             .await
     }
 
-    /// Rss removes a package and its dependencies which are not required by any other installed package.
+    /// Rss removes a package and its dependencies which are not required by any
+    /// other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["port", "uninstall", "--follow-dependencies"])
             .kws(kws)
@@ -101,7 +103,8 @@ impl Pm for Port {
             .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(if flags.is_empty() {
             &["port", "clean", "--all", "inactive"]
@@ -133,7 +136,8 @@ impl Pm for Port {
             .await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["port", "search"]).kws(kws).flags(flags))
             .await
@@ -152,7 +156,8 @@ impl Pm for Port {
         .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.sy(&[], flags).await?;
         self.su(kws, flags).await

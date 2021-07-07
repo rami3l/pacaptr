@@ -221,7 +221,8 @@ pub trait Pm: Sync {
 
     /// Gets/Sets the [`StatusCode`] to be returned.
     ///
-    /// If `to` is `Some(n)`, the current [`StatusCode`] will be reset to `n`, then return [`StatusCode`].
+    /// If `to` is `Some(n)`, the current [`StatusCode`] will be reset to `n`,
+    /// then return [`StatusCode`].
     #[doc(hidden)]
     async fn get_set_code(&self, to: Option<StatusCode>) -> StatusCode {
         static CODE: Lazy<Mutex<StatusCode>> = Lazy::new(|| Mutex::new(0));
@@ -234,10 +235,12 @@ pub trait Pm: Sync {
 }
 
 /// Extra implementation helper functions for [`Pm`],
-/// focusing on the ability to run commands ([`Cmd`]s) in a configured and [`Pm`]-specific context.
+/// focusing on the ability to run commands ([`Cmd`]s) in a configured and
+/// [`Pm`]-specific context.
 #[async_trait]
 pub trait PmHelper: Pm {
-    /// Executes a command in the context of the [`Pm`] implementation. Returns the [`Output`] of this command.
+    /// Executes a command in the context of the [`Pm`] implementation. Returns
+    /// the [`Output`] of this command.
     async fn check_output(&self, mut cmd: Cmd, mode: PmMode, strat: &Strategy) -> Result<Output> {
         let cfg = self.cfg();
 
@@ -273,6 +276,7 @@ pub trait PmHelper: Pm {
             DryRunStrategy::PrintCmd if cfg.dry_run => cmd.clone().exec(Mode::PrintCmd).await?,
             DryRunStrategy::WithFlags(v) if cfg.dry_run => {
                 cmd.flags.extend(v.to_owned());
+                // 
                 // * A dry run with extra flags does not need `sudo`.
                 cmd = cmd.sudo(false);
                 run(&cfg, &cmd, mode, strat).await?
@@ -303,7 +307,8 @@ pub trait PmHelper: Pm {
         self.check_output(cmd, mode, strat).await.map(|_| ())
     }
 
-    /// Executes a command in the context of the [`Pm`] implementation with default settings.
+    /// Executes a command in the context of the [`Pm`] implementation with
+    /// default settings.
     async fn run(&self, cmd: Cmd) -> Result<()> {
         self.run_with(cmd, Default::default(), &Default::default())
             .await
@@ -313,18 +318,20 @@ pub trait PmHelper: Pm {
 impl<P: Pm> PmHelper for P {}
 
 /// Different ways in which a command shall be dealt with.
-/// This is a [`Pm`] specified version intended to be used along with [`Strategy`].
+/// This is a [`Pm`] specified version intended to be used along with
+/// [`Strategy`].
 #[derive(Copy, Clone, Debug)]
 pub enum PmMode {
     /// Silently collects all the `stdout`/`stderr` combined. Print nothing.
     Mute,
 
-    /// Prints out the command which should be executed, run it and collect its `stdout`/`stderr` combined.
-    /// Potentially dangerous as it destroys the colored `stdout`. Use it only if really necessary.
+    /// Prints out the command which should be executed, run it and collect its
+    /// `stdout`/`stderr` combined. Potentially dangerous as it destroys the
+    /// colored `stdout`. Use it only if really necessary.
     CheckAll,
 
-    /// Prints out the command which should be executed, run it and collect its `stderr`.
-    /// This will work with a colored `stdout`.
+    /// Prints out the command which should be executed, run it and collect its
+    /// `stderr`. This will work with a colored `stdout`.
     CheckErr,
 }
 
@@ -344,8 +351,8 @@ impl From<PmMode> for Mode {
     }
 }
 
-/// A set of intrinsic properties of a command in the context of a specific package manager,
-/// indicating how it is run.
+/// A set of intrinsic properties of a command in the context of a specific
+/// package manager, indicating how it is run.
 #[derive(Clone, Debug, Default)]
 pub struct Strategy<S = String> {
     pub dry_run: DryRunStrategy<S>,
@@ -409,7 +416,8 @@ impl<S> Default for PromptStrategy<S> {
 #[derive(Debug, Clone)]
 pub enum NoCacheStrategy<S = String> {
     /// Does not clean cache.
-    /// This variant MUST be used when implementing cache cleaning methods like `-Sc`.
+    /// This variant MUST be used when implementing cache cleaning methods like
+    /// `-Sc`.
     None,
     /// Uses `-Sc` to clean the cache.
     Sc,

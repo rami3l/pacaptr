@@ -78,12 +78,14 @@ impl Pm for Tlmgr {
             .await
     }
 
-    /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
+    /// Sl displays a list of all packages in all installation sources that are
+    /// handled by the packages management.
     async fn sl(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["tlmgr", "info"]).flags(flags)).await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["tlmgr", "search", "--global"])
             .kws(kws)
@@ -105,12 +107,14 @@ impl Pm for Tlmgr {
         .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.su(kws, flags).await
     }
 
-    /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
+    /// U upgrades or adds package(s) to the system and installs the required
+    /// dependencies from sync repositories.
     async fn u(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["tlmgr", "install", "--file"])
             .kws(kws)

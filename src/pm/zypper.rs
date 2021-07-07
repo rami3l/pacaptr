@@ -80,7 +80,8 @@ impl Pm for Zypper {
             .await
     }
 
-    /// Qm lists packages that are installed but are not available in any installation source (anymore).
+    /// Qm lists packages that are installed but are not available in any
+    /// installation source (anymore).
     async fn qm(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(&["zypper", "search", "-si"]).kws(kws).flags(flags);
         let out_bytes = self
@@ -99,7 +100,8 @@ impl Pm for Zypper {
             .await
     }
 
-    /// Qp queries a package supplied through a file supplied on the command line rather than an entry in the package management database.
+    /// Qp queries a package supplied through a file supplied on the command
+    /// line rather than an entry in the package management database.
     async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["rpm", "-qip"]).kws(kws).flags(flags))
             .await
@@ -107,7 +109,8 @@ impl Pm for Zypper {
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
-    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
+    // when including multiple search terms, only packages with descriptions
+    // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["zypper", "search", "--installed-only"])
             .kws(kws)
@@ -131,7 +134,8 @@ impl Pm for Zypper {
             .await
     }
 
-    /// Rss removes a package and its dependencies which are not required by any other installed package.
+    /// Rss removes a package and its dependencies which are not required by any
+    /// other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["zypper", "remove", "--clean-deps"])
             .kws(kws)
@@ -149,7 +153,8 @@ impl Pm for Zypper {
             .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         let strat = Strategy {
             prompt: PromptStrategy::CustomPrompt,
@@ -188,7 +193,8 @@ impl Pm for Zypper {
             .await
     }
 
-    /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
+    /// Sl displays a list of all packages in all installation sources that are
+    /// handled by the packages management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = &["zypper", "packages", "-R"];
         if kws.is_empty() {
@@ -204,7 +210,8 @@ impl Pm for Zypper {
         exec::grep_print(&out, kws)
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.check_dry(Cmd::new(&["zypper", "search"]).kws(kws).flags(flags))
             .await
@@ -218,7 +225,8 @@ impl Pm for Zypper {
             .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["zypper", "dist-upgrade"])
             .flags(flags)
@@ -226,7 +234,8 @@ impl Pm for Zypper {
             .await
     }
 
-    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
+    /// Sw retrieves all packages from the server, but does not install/upgrade
+    /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["zypper", "install", "--download-only"])
             .kws(kws)
@@ -245,7 +254,8 @@ impl Pm for Zypper {
         Ok(())
     }
 
-    /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
+    /// U upgrades or adds package(s) to the system and installs the required
+    /// dependencies from sync repositories.
     async fn u(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.s(kws, flags).await
     }

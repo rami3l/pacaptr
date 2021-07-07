@@ -74,15 +74,17 @@ impl Pm for Brew {
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        // TODO: it seems that the output of `brew list python` in fish has a mechanism against duplication:
-        // /usr/local/Cellar/python/3.6.0/Frameworks/Python.framework/ (1234 files)
+        // TODO: it seems that the output of `brew list python` in fish has a mechanism
+        // against duplication: /usr/local/Cellar/python/3.6.0/Frameworks/
+        // Python.framework/ (1234 files)
         self.run(Cmd::new(&["brew", "list"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
-    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
+    // when including multiple search terms, only packages with descriptions
+    // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         // ! `brew list` lists all formulae and casks only when using tty.
         self.search_regex(&["brew", "list", "--formula"], kws, flags)
@@ -110,7 +112,8 @@ impl Pm for Brew {
             .await
     }
 
-    /// Rss removes a package and its dependencies which are not required by any other installed package.
+    /// Rss removes a package and its dependencies which are not required by any
+    /// other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let strat = Strategy {
             dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
@@ -141,8 +144,9 @@ impl Pm for Brew {
         Cmd::new(if self.cfg.needed {
             &["brew", "install"]
         } else {
-            // If the package is not installed, `brew reinstall` behaves just like `brew install`,
-            // so `brew reinstall` matches perfectly the behavior of `pacman -S`.
+            // If the package is not installed, `brew reinstall` behaves just like `brew
+            // install`, so `brew reinstall` matches perfectly the behavior of
+            // `pacman -S`.
             &["brew", "reinstall"]
         })
         .kws(kws)
@@ -151,7 +155,8 @@ impl Pm for Brew {
         .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let strat = Strategy {
             dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
@@ -185,13 +190,15 @@ impl Pm for Brew {
             .await
     }
 
-    /// Sii displays packages which require X to be installed, aka reverse dependencies.
+    /// Sii displays packages which require X to be installed, aka reverse
+    /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["brew", "uses"]).kws(kws).flags(flags))
             .await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["brew", "search"]).kws(kws).flags(flags))
             .await
@@ -206,13 +213,15 @@ impl Pm for Brew {
             .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.sy(&[], flags).await?;
         self.su(kws, flags).await
     }
 
-    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
+    /// Sw retrieves all packages from the server, but does not install/upgrade
+    /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["brew", "fetch"])
             .kws(kws)

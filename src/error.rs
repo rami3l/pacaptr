@@ -24,7 +24,8 @@ pub enum Error {
     #[error("Failed to spawn subprocess: {0}")]
     CmdSpawnError(io::Error),
 
-    /// Error when trying to get the `stdout`/`stderr`/... handler out of a running an [`exec::Cmd`].
+    /// Error when trying to get the `stdout`/`stderr`/... handler out of a
+    /// running an [`exec::Cmd`].
     #[error("Subprocess didn't have a handle to {handle}")]
     CmdNoHandleError { handle: String },
 

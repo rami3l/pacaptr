@@ -86,7 +86,8 @@ pub enum Operations {
         #[clap(short, long = "info", parse(from_occurrences))]
         i: u32,
 
-        /// Check that all files owned by the given package(s) are present on the system.
+        /// Check that all files owned by the given package(s) are present on
+        /// the system.
         #[clap(short, long = "check")]
         k: bool,
 
@@ -94,7 +95,8 @@ pub enum Operations {
         #[clap(short, long = "list")]
         l: bool,
 
-        /// Restrict or filter output to packages that were not found in the sync database(s).
+        /// Restrict or filter output to packages that were not found in the
+        /// sync database(s).
         #[clap(short, long = "foreign")]
         m: bool,
 
@@ -102,15 +104,18 @@ pub enum Operations {
         #[clap(short, long = "owns")]
         o: bool,
 
-        /// Signifies that the package supplied on the command line is a file and not an entry in the database.
+        /// Signifies that the package supplied on the command line is a file
+        /// and not an entry in the database.
         #[clap(short, long = "file")]
         p: bool,
 
-        /// Search each locally-installed package for names or descriptions that match regexp.
+        /// Search each locally-installed package for names or descriptions that
+        /// match regexp.
         #[clap(short, long = "search")]
         s: bool,
 
-        /// Restrict or filter output to packages that are out-of-date on the local system.
+        /// Restrict or filter output to packages that are out-of-date on the
+        /// local system.
         #[clap(short, long = "upgrades")]
         u: bool,
     },
@@ -126,7 +131,8 @@ pub enum Operations {
         #[clap(short, long = "print")]
         p: bool,
 
-        /// Remove package(s) with all their dependencies that are no longer required.
+        /// Remove package(s) with all their dependencies that are no longer
+        /// required.
         #[clap(short, long = "recursive", parse(from_occurrences))]
         s: u32,
     },
@@ -134,7 +140,8 @@ pub enum Operations {
     /// Synchronize packages.
     #[clap(short_flag = 'S', long_flag = "sync")]
     Sync {
-        /// Remove packages that are no longer installed from the cache as well as currently unused sync databases to free up disk space.
+        /// Remove packages that are no longer installed from the cache as well
+        /// as currently unused sync databases to free up disk space.
         #[clap(short, long = "clean", parse(from_occurrences))]
         c: u32,
 
@@ -154,24 +161,29 @@ pub enum Operations {
         #[clap(short, long = "print")]
         p: bool,
 
-        /// Search each package in the sync databases for names or descriptions that match regexp.
+        /// Search each package in the sync databases for names or descriptions
+        /// that match regexp.
         #[clap(short, long = "search")]
         s: bool,
 
-        /// Upgrade all packages that are out-of-date Each currently-installed package will be examined and upgraded if a newer package exists.
+        /// Upgrade all packages that are out-of-date Each currently-installed
+        /// package will be examined and upgraded if a newer package exists.
         #[clap(short, long = "sysupgrade")]
         u: bool,
 
-        /// Retrieve all packages from the server, but do not install/upgrade anything.
+        /// Retrieve all packages from the server, but do not install/upgrade
+        /// anything.
         #[clap(short, long = "downloadonly")]
         w: bool,
 
-        /// Download a fresh copy of the master package database from the server.
+        /// Download a fresh copy of the master package database from the
+        /// server.
         #[clap(short, long = "refresh")]
         y: bool,
     },
 
-    /// Upgrade or add package(s) to the system and install the required dependencies from sync repositories.
+    /// Upgrade or add package(s) to the system and install the required
+    /// dependencies from sync repositories.
     #[clap(short_flag = 'U', long_flag = "update")]
     Update {
         /// Only print the targets instead of performing the actual operation.
@@ -193,12 +205,14 @@ impl Pacaptr {
         }
     }
 
-    /// Executes the job according to the flags received and the package manager detected.
+    /// Executes the job according to the flags received and the package manager
+    /// detected.
     pub async fn dispatch_from(&self, mut cfg: Config) -> Result<StatusCode> {
         // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
-        // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in ASCII order,
-        // ! eg. `Suy` instead of `Syu`.
-        // ! Then, in order to stay coherent with Rust coding style the method name should be `suy`.
+        // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in
+        // ASCII order, ! eg. `Suy` instead of `Syu`.
+        // ! Then, in order to stay coherent with Rust coding style the method name
+        // should be `suy`.
         macro_rules! collect_options {(
             $( $op:ident {
                 $( mappings: [$( $key:ident -> $val:ident ), *], )?

@@ -12,7 +12,8 @@ const METHODS: &[&str] = &[
     "s", "sc", "scc", "sccc", "sg", "si", "sii", "sl", "ss", "su", "suy", "sw", "sy", "u",
 ];
 
-/// Checks the implementation status of `pacman` commands in a specific file (eg. `homebrew.rs`).
+/// Checks the implementation status of `pacman` commands in a specific file
+/// (eg. `homebrew.rs`).
 fn check_methods(file: &Path) -> Result<BTreeMap<String, bool>> {
     let bytes = fs::read(file)?;
     let contents = String::from_utf8(bytes)?;

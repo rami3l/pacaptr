@@ -29,7 +29,8 @@ pub struct Config {
 impl Config {
     /// The default config file path is `$HOME/.config/pacaptr/pacaptr.toml`.
     ///
-    /// This method will almost always success, and will only fail if `$HOME` is not found.
+    /// This method will almost always success, and will only fail if `$HOME` is
+    /// not found.
     pub fn default_path() -> Result<PathBuf> {
         let crate_name = clap::crate_name!();
         dirs_next::home_dir()
@@ -43,7 +44,8 @@ impl Config {
             })
     }
 
-    /// Gets the custom config file path specified by the `PACAPTR_CONFIG` environment variable.
+    /// Gets the custom config file path specified by the `PACAPTR_CONFIG`
+    /// environment variable.
     pub fn custom_path() -> Result<PathBuf> {
         env::var(CONFIG_ENV_VAR)
             .map_err(|e| Error::ConfigError {
@@ -55,8 +57,10 @@ impl Config {
     /// Loads up the config file from the user-specified path.
     ///
     /// I decided not to trash user's `$HOME` without their permission, so:
-    /// - If the user hasn't yet specified any path to look at, we will look for the config file in the default path.
-    /// - If the config file is not present anyway, a default one will be loaded with [`Default::default`], and no files will be written.
+    /// - If the user hasn't yet specified any path to look at, we will look for
+    ///   the config file in the default path.
+    /// - If the config file is not present anyway, a default one will be loaded
+    ///   with [`Default::default`], and no files will be written.
     pub fn load() -> Result<Self> {
         let path = Config::custom_path().or_else(|_| Config::default_path())?;
         path.exists()

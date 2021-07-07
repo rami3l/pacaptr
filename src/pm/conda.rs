@@ -42,7 +42,8 @@ impl Pm for Conda {
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
-    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
+    // when including multiple search terms, only packages with descriptions
+    // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(&["conda", "list"]).flags(flags);
         if !self.cfg.dry_run {
@@ -74,7 +75,8 @@ impl Pm for Conda {
             .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["conda", "clean", "--all"])
             .flags(flags)
@@ -91,7 +93,8 @@ impl Pm for Conda {
             .await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         stream::iter(kws)
             .map(|&s| Ok(format!("*{}*", s)))
@@ -108,7 +111,8 @@ impl Pm for Conda {
             .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.su(kws, flags).await
     }

@@ -70,7 +70,8 @@ impl Pm for Scoop {
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
-    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
+    // when including multiple search terms, only packages with descriptions
+    // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.search_regex(&["powershell", "scoop", "list"], kws, flags)
             .await
@@ -94,7 +95,8 @@ impl Pm for Scoop {
             .await
     }
 
-    /// Rn removes a package and skips the generation of configuration backup files.
+    /// Rn removes a package and skips the generation of configuration backup
+    /// files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["powershell", "scoop", "uninstall", "--purge"])
             .kws(kws)
@@ -112,7 +114,8 @@ impl Pm for Scoop {
             .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["powershell", "scoop", "cache", "rm"])
             .kws(if kws.is_empty() { &["*"] } else { kws })
@@ -135,7 +138,8 @@ impl Pm for Scoop {
             .await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["powershell", "scoop", "search"])
             .kws(kws)
@@ -163,7 +167,8 @@ impl Pm for Scoop {
             .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.sy(&[], flags).await?;
         self.su(kws, flags).await

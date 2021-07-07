@@ -59,7 +59,8 @@ impl Pm for Emerge {
 
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
-    // when including multiple search terms, only packages with descriptions matching ALL of those terms are returned.
+    // when including multiple search terms, only packages with descriptions
+    // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["qlist", "-I"]).kws(kws).flags(flags))
             .await
@@ -80,8 +81,8 @@ impl Pm for Emerge {
             .await
     }
 
-    /// Rs removes a package and its dependencies which are not required by any other installed package,
-    /// and not explicitly installed by the user.
+    /// Rs removes a package and its dependencies which are not required by any
+    /// other installed package, and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["emerge", "--depclean"])
             .kws(kws)
@@ -99,7 +100,8 @@ impl Pm for Emerge {
             .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["eclean-dist"])
             .kws(kws)
@@ -120,7 +122,8 @@ impl Pm for Emerge {
             .await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["qsearch"]).kws(kws).flags(flags)).await
     }
@@ -134,7 +137,8 @@ impl Pm for Emerge {
             .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.sy(&[], flags).await?;
         self.su(kws, flags).await
