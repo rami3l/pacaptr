@@ -73,8 +73,7 @@ impl From<Config> for Box<dyn Pm> {
             // Zypper for SUSE
             "zypper" => Zypper { cfg }.boxed(),
 
-            // 
-            // * External Package Managers *
+            // -- External Package Managers --
 
             // Conda
             "conda" => Conda { cfg }.boxed(),

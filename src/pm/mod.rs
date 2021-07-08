@@ -276,8 +276,7 @@ pub trait PmHelper: Pm {
             DryRunStrategy::PrintCmd if cfg.dry_run => cmd.clone().exec(Mode::PrintCmd).await?,
             DryRunStrategy::WithFlags(v) if cfg.dry_run => {
                 cmd.flags.extend(v.to_owned());
-                // 
-                // * A dry run with extra flags does not need `sudo`.
+                // -- A dry run with extra flags does not need `sudo`. --
                 cmd = cmd.sudo(false);
                 run(&cfg, &cmd, mode, strat).await?
             }
