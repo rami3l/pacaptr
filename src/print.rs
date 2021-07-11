@@ -1,4 +1,4 @@
-//! This module handles output format.
+//! Output messages and prompts.
 
 use colored::Colorize;
 

@@ -1,5 +1,7 @@
-//! Here is where the things really happen.
-//! If you want to add package manager support, please declare submodules here.
+//! Mapping from [`pacman`] commands to various operations of specific package
+//! managers.
+//!
+//! [`pacman`]: https://wiki.archlinux.org/index.php/Pacman
 
 pub mod apk;
 pub mod apt;
@@ -20,11 +22,11 @@ use macro_rules_attribute::macro_rules_attribute;
 use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
 use tt_call::tt_call;
-pub use {
+
+pub use self::{
     apk::Apk, apt::Apt, brew::Brew, choco::Choco, conda::Conda, dnf::Dnf, emerge::Emerge, pip::Pip,
     port::Port, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, zypper::Zypper,
 };
-
 use crate::{
     dispatch::Config,
     error::Result,

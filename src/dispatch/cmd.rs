@@ -1,3 +1,5 @@
+//! Definitions for command line argument mapping and dispatching.
+
 use std::iter::FromIterator;
 
 use clap::{self, AppSettings, Clap};
@@ -193,9 +195,10 @@ pub enum Operations {
 }
 
 impl Pacaptr {
-    /// Generates current config by merging current CLI flags with the dotfile.
-    /// The precedence of the CLI flags is highter than the dotfile.
-    fn merge_cfg(&self, dotfile: Config) -> Config {
+    /// Generates current [`Config`] by merging current command line arguments
+    /// and options obtained with [`clap`] with the dotfile [`Config`], which
+    /// has a lower precedence.
+    pub fn merge_cfg(&self, dotfile: Config) -> Config {
         Config {
             dry_run: self.dry_run || dotfile.dry_run,
             needed: self.needed || dotfile.dry_run,
@@ -210,9 +213,9 @@ impl Pacaptr {
     pub async fn dispatch_from(&self, mut cfg: Config) -> Result<StatusCode> {
         // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
         // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in
-        // ASCII order, ! eg. `Suy` instead of `Syu`.
+        // ! ASCII order, ! eg. `Suy` instead of `Syu`.
         // ! Then, in order to stay coherent with Rust coding style the method name
-        // should be `suy`.
+        // ! should be `suy`.
         macro_rules! collect_options {(
             $( $op:ident {
                 $( mappings: [$( $key:ident -> $val:ident ), *], )?
@@ -259,6 +262,13 @@ impl Pacaptr {
         let kws = self.keywords.iter().map(|s| s.as_ref()).collect_vec();
         let flags = self.extra_flags.iter().map(|s| s.as_ref()).collect_vec();
 
+        // Call the method indicated by `options` on `pm`. That is:
+        // ```rust
+        // match options.to_lowercase().as_ref() {
+        //     "q" => pm.q(&kws, &flags).await,
+        //     ..
+        // }
+        // ```
         macro_rules! dispatch_match {(
             methods = [{ $(
                 $( #[$meta:meta] )*
@@ -273,7 +283,7 @@ impl Pacaptr {
             }
         };}
 
-        // Send `methods!()` to `dispatch_match`, that is,
+        // Send `methods!()` to `dispatch_match`. That is,
         // `dispatch_match!( methods = [{ q qc qe .. }] )`.
         (tt_call! {
             macro = [{ methods }]
@@ -283,6 +293,8 @@ impl Pacaptr {
         Ok(pm.code().await)
     }
 
+    /// Runs [`dispatch_from`](Pacaptr::dispatch_from) with automatically
+    /// detected [`Config`].
     pub async fn dispatch(&self) -> Result<StatusCode> {
         let dotfile = task::block_in_place(Config::load);
         let cfg = self.merge_cfg(dotfile?);

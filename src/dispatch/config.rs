@@ -1,3 +1,5 @@
+//! APIs for reading [`pacaptr`](crate) configurations from the filesystem.
+
 use std::{env, path::PathBuf};
 
 use serde::{Deserialize, Serialize};

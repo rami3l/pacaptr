@@ -1,35 +1,35 @@
-//! This module defines the basic error type used in this crate.
+//! Basic error definitions specific to this crate.
 
 use thiserror::Error;
 use tokio::{io, task::JoinError};
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
-/// Error type for the `pacaptr` library.
+/// Error type for the [`pacaptr`](crate) library.
 #[derive(Debug, Error)]
 pub enum Error {
     /// Error while parsing CLI arguments.
     #[error("Failed to parse arguments: {msg}")]
     ArgParseError { msg: String },
 
-    /// Error when handling a [`dispatch::Config`].
+    /// Error when handling a [`Config`](crate::dispatch::Config).
     #[error("Failed to handle config: {msg}")]
     ConfigError { msg: String },
 
-    /// An [`exec::Cmd`] fails to finish.
+    /// An [`Cmd`](crate::exec::Cmd) fails to finish.
     #[error("Failed to get exit code of subprocess: {0}")]
     CmdJoinError(JoinError),
 
-    /// An [`exec::Cmd`] fails to spawn.
+    /// An [`Cmd`](crate::exec::Cmd) fails to spawn.
     #[error("Failed to spawn subprocess: {0}")]
     CmdSpawnError(io::Error),
 
     /// Error when trying to get the `stdout`/`stderr`/... handler out of a
-    /// running an [`exec::Cmd`].
+    /// running an [`Cmd`](crate::exec::Cmd).
     #[error("Subprocess didn't have a handle to {handle}")]
     CmdNoHandleError { handle: String },
 
-    /// An [`exec::Cmd`] fails to finish.
+    /// An [`Cmd`](crate::exec::Cmd) fails to finish.
     #[error("Subprocess failed while running: {0}")]
     CmdWaitError(io::Error),
 
@@ -41,7 +41,7 @@ pub enum Error {
     #[error(transparent)]
     IoError(#[from] io::Error),
 
-    /// A [`pm::Pm`] operation is not implemented.
+    /// A [`Pm`](crate::pm::Pm) operation is not implemented.
     #[error("Operation `{op}` is unimplemented for `{pm}`")]
     OperationUnimplementedError { op: String, pm: String },
 

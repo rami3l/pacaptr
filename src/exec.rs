@@ -1,4 +1,4 @@
-//! This module handles launching of subprocesses and their results.
+//! APIs for spawning subprocesses and handling their results.
 
 use std::{
     process::Stdio,
@@ -152,10 +152,10 @@ impl Cmd {
     }
 }
 
-/// Helper to implement [`Cmd::exec_checkerr`] and [`Cmd::exec_checkall`].
-///
 /// Takes contents from an input stream and copy to an output stream (optional)
 /// and a [`Vec<u8>`], then returns the [`Vec<u8>`].
+///
+/// Helper to implement [`Cmd::exec_checkerr`] and [`Cmd::exec_checkall`].
 ///
 /// # Arguments
 ///
@@ -183,8 +183,8 @@ where
 impl Cmd {
     /// Executes a [`Cmd`] and returns its output.
     ///
-    /// The exact behavior depends on the [`Mode`] passed in (see [`exec::Mode`]
-    /// for more info).
+    /// The exact behavior depends on the [`Mode`] passed in (see the definition
+    /// of [`Mode`] for more info).
     pub async fn exec(self, mode: Mode) -> Result<Output> {
         match mode {
             Mode::PrintCmd => {
@@ -281,9 +281,9 @@ impl Cmd {
     /// If `mute` is `false`, then its `stderr` output will be printed to
     /// `stderr` too.
     ///
-    /// This function behaves just like [`exec_checkerr`], but in addition,
-    /// the user will be prompted if (s)he wishes to continue with the command
-    /// execution.
+    /// This function behaves just like [`exec_checkerr`](Cmd::exec_checkerr),
+    /// but in addition, the user will be prompted if (s)he wishes to
+    /// continue with the command execution.
     pub async fn exec_prompt(self, mute: bool) -> Result<Output> {
         static ALL_YES: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
