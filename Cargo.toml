@@ -22,7 +22,7 @@ version = "0.12.1"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-anyhow = "1.0.41"
+anyhow = "1.0.42"
 itertools = "0.10.1"
 prettytable-rs = "0.8.0"
 regex = "1.5.4"
