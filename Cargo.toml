@@ -21,21 +21,16 @@ version = "0.12.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[build-dependencies]
-anyhow = "1.0.42"
-itertools = "0.10.1"
-prettytable-rs = "0.8.0"
-regex = "1.5.4"
+# [build-dependencies]
 
 [dev-dependencies]
 xshell = "0.1.14"
-pacaptr-macros = { path="crates/pacaptr-macros" }
 
 [dependencies]
 async-trait = "0.1.50"
 bytes = "1.0.1"
 # clap = "3.0.0-beta.2"
-clap = { git="https://github.com/clap-rs/clap" }
+clap = { git = "https://github.com/clap-rs/clap" }
 colored = "2.0.0"
 confy = "0.4.0"
 dirs-next = "2.0.0"
@@ -44,11 +39,15 @@ is-root = "0.1.2"
 itertools = "0.10.1"
 macro_rules_attribute = "0.0.2"
 once_cell = "1.8.0"
-regex = { version="1.5.4", default-features=false, features=["std", "perf"] }
-serde = { version="1.0.126", features=["derive"] }
+pacaptr-macros = { path = "crates/pacaptr-macros" }
+regex = { version = "1.5.4", default-features = false, features = [
+  "std",
+  "perf",
+] }
+serde = { version = "1.0.126", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "1.0.26"
-tokio = { version="1.8.1", features=[
+tokio = { version = "1.8.1", features = [
   "io-std",
   "io-util",
   "macros",
@@ -57,7 +56,7 @@ tokio = { version="1.8.1", features=[
   "sync",
 ] }
 tokio-stream = "0.1.7"
-tokio-util = { version="0.6.7", features=["codec", "compat"] }
+tokio-util = { version = "0.6.7", features = ["codec", "compat"] }
 tt-call = "1.0.8"
 which = "4.1.0"
 
@@ -66,8 +65,16 @@ copyright = "2020, Rami3L"
 maintainer = "Rami3L <rami3l@outlook.com>"
 # license-file = ["LICENSE", "4"]
 assets = [
-  ["target/release/pacaptr", "usr/bin/", "755"],
-  ["README.md", "usr/share/doc/pacaptr/README", "644"],
+  [
+    "target/release/pacaptr",
+    "usr/bin/",
+    "755",
+  ],
+  [
+    "README.md",
+    "usr/share/doc/pacaptr/README",
+    "644",
+  ],
 ]
 depends = "$auto"
 extended-description = """\

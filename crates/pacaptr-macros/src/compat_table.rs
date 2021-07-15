@@ -1,12 +1,13 @@
-use std::{collections::BTreeMap, ffi::OsString, fs, io::Write, iter, path::Path};
+use std::{collections::BTreeMap, ffi::OsString, fmt::Debug, fs, iter, path::Path, str::FromStr};
 
-use anyhow::{Context, Result};
+use anyhow::Context;
 use itertools::Itertools;
 use prettytable::{Cell, Row, Table};
+use proc_macro2::{Span, TokenStream};
 use regex::Regex;
+use syn::{Error, Result};
 
 const PM_IMPL_DIR: &str = "src/pm/";
-const COMPAT_TABLE_PATH: &str = "docs/compatibility_table.md";
 const METHODS: &[&str] = &[
     "q", "qc", "qe", "qi", "qk", "ql", "qm", "qo", "qp", "qs", "qu", "r", "rn", "rns", "rs", "rss",
     "s", "sc", "scc", "sccc", "sg", "si", "sii", "sl", "ss", "su", "suy", "sw", "sy", "u",
@@ -14,7 +15,7 @@ const METHODS: &[&str] = &[
 
 /// Checks the implementation status of `pacman` commands in a specific file
 /// (eg. `homebrew.rs`).
-fn check_methods(file: &Path) -> Result<BTreeMap<String, bool>> {
+fn check_methods(file: &Path) -> anyhow::Result<BTreeMap<String, bool>> {
     let bytes = fs::read(file)?;
     let contents = String::from_utf8(bytes)?;
 
@@ -29,10 +30,7 @@ fn check_methods(file: &Path) -> Result<BTreeMap<String, bool>> {
         .try_collect()
 }
 
-fn main() -> Result<()> {
-    // Tell Cargo that if the given file changes, to rerun this build script.
-    println!("cargo:rerun-if-changed={}", PM_IMPL_DIR);
-
+fn make_table() -> anyhow::Result<String> {
     let paths: Vec<fs::DirEntry> = fs::read_dir(PM_IMPL_DIR)
         .context("Failed while reading PM_IMPL_DIR")?
         .map(|entry| entry.context("Error while reading path"))
@@ -74,13 +72,18 @@ fn main() -> Result<()> {
     let mut table: Table = iter::once(head).chain(tail).try_collect()?;
     table.set_format(*prettytable::format::consts::FORMAT_CLEAN);
 
-    let mut file =
-        fs::File::create(COMPAT_TABLE_PATH).context("Failed while creating compatibility table")?;
-    file.write_all("```txt\n".as_bytes())?;
-    table
-        .print(&mut file)
-        .context("Failed while writing compatibility table")?;
-    file.write_all("```\n".as_bytes())?;
+    let res = format!("```txt\n{}```\n", table);
+    Ok(res)
+}
 
-    Ok(())
+pub(crate) fn compat_table_impl() -> Result<TokenStream> {
+    fn throw(e: &dyn Debug) -> Error {
+        let msg = format!("{:?}", e);
+        Error::new(Span::call_site(), msg)
+    }
+
+    let table = make_table().map_err(|e| throw(&e as _))?;
+    let comments = format!(r##"r#"{}"#"##, table);
+    let res = TokenStream::from_str(&comments)?;
+    Ok(res)
 }

@@ -573,7 +573,6 @@ checksum = "6acbef58a60fe69ab50510a55bc8cdd4d6cf2283d27ad338f54cb52747a9cf2d"
 name = "pacaptr"
 version = "0.12.1"
 dependencies = [
- "anyhow",
  "async-trait",
  "bytes",
  "clap",
@@ -586,7 +585,6 @@ dependencies = [
  "macro_rules_attribute",
  "once_cell",
  "pacaptr-macros",
- "prettytable-rs",
  "regex",
  "serde",
  "tap",
@@ -603,10 +601,13 @@ dependencies = [
 name = "pacaptr-macros"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "itertools",
  "litrs",
+ "prettytable-rs",
  "proc-macro2",
  "quote",
+ "regex",
  "syn",
 ]
 

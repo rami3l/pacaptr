@@ -1,13 +1,14 @@
+mod compat_table;
 mod test_dsl;
 
-use std::convert::TryFrom;
+use std::{convert::TryFrom, iter::FromIterator};
 
 use itertools::Itertools;
 use litrs::StringLit;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::test_dsl::test_dsl_impl;
+use crate::{compat_table::compat_table_impl, test_dsl::test_dsl_impl};
 
 /// A DSL (Domain-Specific Language) embedded in Rust, in order to simplify the
 /// form of smoke tests.
@@ -64,4 +65,13 @@ pub fn test_dsl(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     };
 
     proc_macro::TokenStream::from(res)
+}
+
+#[proc_macro]
+pub fn compat_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let comments = match compat_table_impl() {
+        Err(e) => return e.to_compile_error().into(),
+        Ok(r) => proc_macro::TokenStream::from(r),
+    };
+    proc_macro::TokenStream::from_iter(vec![comments, input])
 }
