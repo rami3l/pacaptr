@@ -70,7 +70,7 @@ pub struct Output {
 
     /// The status code returned by the [`Cmd`].
     ///
-    /// Here we use [`Some(n)`] for exit code, [`None`] for signals.
+    /// Here we use [`Some`] for exit code, [`None`] for signals.
     pub code: Option<StatusCode>,
 }
 

@@ -2,10 +2,11 @@ use std::{collections::BTreeMap, ffi::OsString, fmt::Debug, fs, iter, path::Path
 
 use anyhow::Context;
 use itertools::Itertools;
-use prettytable::{Cell, Row, Table};
+use once_cell::sync::Lazy;
 use proc_macro2::{Span, TokenStream};
 use regex::Regex;
 use syn::{Error, Result};
+use tabled::{style::Style as TableStyle, Table, Tabled};
 
 const PM_IMPL_DIR: &str = "src/pm/";
 const METHODS: &[&str] = &[
@@ -30,6 +31,27 @@ fn check_methods(file: &Path) -> anyhow::Result<BTreeMap<String, bool>> {
         .try_collect()
 }
 
+struct CompatRow {
+    fields: Vec<String>,
+}
+
+impl Tabled for CompatRow {
+    fn fields(&self) -> Vec<String> {
+        self.fields.clone()
+    }
+
+    fn headers() -> Vec<String> {
+        static HEADERS: Lazy<Vec<String>> = Lazy::new(|| {
+            // `["Module", "q", "qc", "qe", ..]`
+            iter::once(&"Module")
+                .chain(METHODS.iter())
+                .map(|&s| s.to_owned())
+                .collect()
+        });
+        HEADERS.clone()
+    }
+}
+
 fn make_table() -> anyhow::Result<String> {
     let paths: Vec<fs::DirEntry> = fs::read_dir(PM_IMPL_DIR)
         .context("Failed while reading PM_IMPL_DIR")?
@@ -44,36 +66,35 @@ fn make_table() -> anyhow::Result<String> {
         .try_collect()?;
 
     let make_row = |name: &str, data: &[&str]| {
-        let row = iter::once(&name)
+        let fields = iter::once(&name)
             .chain(data)
-            .map(|&s| Cell::new(s))
-            .collect();
-        Row::new(row)
+            .map(|&s| s.to_owned())
+            .collect_vec();
+        CompatRow { fields }
     };
 
-    // First row: `row!["", "q", "qc", "qe", ..]`
-    let head = Ok(make_row("", METHODS));
-    let tail = impls.iter().map(|(file, items)| {
-        let data = METHODS
-            .iter()
-            .map(|&method| {
-                items
-                    .get(method)
-                    .expect("Implementation details not registered")
-                    .then(|| "*")
-                    .unwrap_or("")
-            })
-            .collect_vec();
+    let data: Vec<_> = impls
+        .iter()
+        .map(|(file, items)| {
+            let data = METHODS
+                .iter()
+                .map(|&method| {
+                    items
+                        .get(method)
+                        .expect("Implementation details not registered")
+                        .then(|| "*")
+                        .unwrap_or("")
+                })
+                .collect_vec();
 
-        file.to_str()
-            .context("Failed to convert `file: OsString` to `&str`")
-            .map(|file| make_row(file, &data))
-    });
-    let mut table: Table = iter::once(head).chain(tail).try_collect()?;
-    table.set_format(*prettytable::format::consts::FORMAT_CLEAN);
+            file.to_str()
+                .context("Failed to convert `file: OsString` to `&str`")
+                .map(|file| make_row(file, &data))
+        })
+        .try_collect()?;
 
-    let res = format!("```txt\n{}```\n", table);
-    Ok(res)
+    let table = Table::new(&data).with(TableStyle::noborder());
+    Ok(format!("```\n{}```\n", table))
 }
 
 pub(crate) fn compat_table_impl() -> Result<TokenStream> {

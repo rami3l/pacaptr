@@ -1,4 +1,4 @@
-#![warn(broken_intra_doc_links)]
+#![warn(rustdoc::broken_intra_doc_links)]
 #![forbid(unsafe_code)]
 
 //! `pacaptr` is a `pacman`-like syntax wrapper for many package managers.
