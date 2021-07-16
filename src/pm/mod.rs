@@ -280,9 +280,9 @@ pub trait PmHelper: Pm {
                 cmd.flags.extend(v.to_owned());
                 // -- A dry run with extra flags does not need `sudo`. --
                 cmd = cmd.sudo(false);
-                run(&cfg, &cmd, mode, strat).await?
+                run(cfg, &cmd, mode, strat).await?
             }
-            _ => run(&cfg, &cmd, mode, strat).await?,
+            _ => run(cfg, &cmd, mode, strat).await?,
         };
 
         // Perform the cleanup.

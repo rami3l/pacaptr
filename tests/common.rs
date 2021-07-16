@@ -69,12 +69,8 @@ impl<'t> Test<'t> {
         let try_match = |out: &str, patterns: &[&str]| {
             patterns.iter().for_each(|p| {
                 let re = RegexBuilder::new(p).multi_line(true).build().unwrap();
-                assert!(
-                    re.is_match(out),
-                    "Failed with pattern `{}`, got `{}`",
-                    p,
-                    out
-                )
+                let is_match = re.is_match(out);
+                assert!(is_match, "Failed with pattern `{}`, got `{}`", p, out)
             })
         };
 
