@@ -287,7 +287,7 @@ pub trait PmHelper: Pm {
 
         // Perform the cleanup.
         if cfg.no_cache {
-            let flags = cmd.flags.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
+            let flags = cmd.flags.iter().map(|s| s as &str).collect::<Vec<_>>();
             match &strat.no_cache {
                 NoCacheStrategy::Sc => self.sc(&[], &flags).await?,
                 NoCacheStrategy::Scc => self.scc(&[], &flags).await?,

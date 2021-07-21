@@ -300,8 +300,8 @@ impl Cmd {
                 )
                 .to_lowercase()
             });
-            match answer.as_ref() {
-                // The default answer is `Yes`
+            match &answer as _ {
+                // The default answer is `Yes`.
                 "y" | "yes" | "" => true,
                 // You can also say `All` to answer `Yes` to all the other questions that follow.
                 "a" | "all" => {
