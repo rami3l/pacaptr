@@ -10,7 +10,7 @@ proc-macro = true
 
 [dependencies]
 litrs = "0.2.3"
-proc-macro2 = "1.0.27"
+proc-macro2 = "1.0.28"
 quote = "1.0.9"
 syn = "1.0.74"
 itertools = "0.10.1"
