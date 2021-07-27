@@ -11,6 +11,7 @@ const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";
 
 /// Configurations that may vary when running the package manager.
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Config {
     #[serde(default)]
     pub dry_run: bool,
@@ -71,6 +72,6 @@ impl Config {
             .map_err(|_e| Error::ConfigError {
                 msg: format!("Failed to read config at `{:?}`", &path),
             })
-            .map(|cfg| cfg.unwrap_or_default())
+            .map(Option::unwrap_or_default)
     }
 }

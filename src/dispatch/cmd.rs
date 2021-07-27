@@ -24,6 +24,7 @@ use crate::{
     global_setting = AppSettings::ColoredHelp,
     setting = AppSettings::SubcommandRequiredElseHelp,
 )]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Pacaptr {
     #[clap(subcommand)]
     ops: Operations,
@@ -198,6 +199,7 @@ impl Pacaptr {
     /// Generates current [`Config`] by merging current command line arguments
     /// and options obtained with [`clap`] with the dotfile [`Config`], which
     /// has a lower precedence.
+    #[must_use]
     pub fn merge_cfg(&self, dotfile: Config) -> Config {
         Config {
             dry_run: self.dry_run || dotfile.dry_run,
@@ -210,6 +212,7 @@ impl Pacaptr {
 
     /// Executes the job according to the flags received and the package manager
     /// detected.
+    #[allow(trivial_numeric_casts)]
     pub async fn dispatch_from(&self, mut cfg: Config) -> Result<StatusCode> {
         // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
         // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in
@@ -353,11 +356,12 @@ pub(super) mod tests {
 
     static MOCK_CFG: Lazy<Config> = Lazy::new(|| Config {
         default_pm: Some("mockpm".into()),
-        ..Default::default()
+        ..Config::default()
     });
 
     #[test]
     #[should_panic(expected = "should run: suy")]
+    #[allow(clippy::semicolon_if_nothing_returned)]
     async fn simple_syu() {
         let opt = dbg!(Pacaptr::parse_from(&["pacaptr", "-Syu"]));
         let subcmd = &opt.ops;
@@ -370,6 +374,7 @@ pub(super) mod tests {
 
     #[test]
     #[should_panic(expected = "should run: suy")]
+    #[allow(clippy::semicolon_if_nothing_returned)]
     async fn long_syu() {
         let opt = dbg!(Pacaptr::parse_from(&[
             "pacaptr",
@@ -387,6 +392,7 @@ pub(super) mod tests {
 
     #[test]
     #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
+    #[allow(clippy::semicolon_if_nothing_returned)]
     async fn simple_sw() {
         let opt = dbg!(Pacaptr::parse_from(&["pacaptr", "-Sw", "curl", "wget"]));
         let subcmd = &opt.ops;
@@ -399,6 +405,7 @@ pub(super) mod tests {
 
     #[test]
     #[should_panic(expected = r#"should run: s ["docker"]"#)]
+    #[allow(clippy::semicolon_if_nothing_returned)]
     async fn other_flags() {
         let opt = dbg!(Pacaptr::parse_from(&[
             "pacaptr", "-S", "--dryrun", "--yes", "docker"
@@ -415,6 +422,7 @@ pub(super) mod tests {
 
     #[test]
     #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
+    #[allow(clippy::semicolon_if_nothing_returned)]
     async fn extra_flags() {
         let opt = dbg!(Pacaptr::parse_from(&[
             "pacaptr",
@@ -436,6 +444,7 @@ pub(super) mod tests {
 
     #[test]
     #[should_panic(expected = r#"should run: si ["docker", "--proxy=localhost:1234"]"#)]
+    #[allow(clippy::semicolon_if_nothing_returned)]
     async fn using() {
         let opt = dbg!(Pacaptr::parse_from(&[
             "pacaptr",

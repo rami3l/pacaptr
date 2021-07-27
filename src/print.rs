@@ -1,5 +1,7 @@
 //! Output messages and prompts.
 
+#![allow(clippy::module_name_repetitions)]
+
 use colored::Colorize;
 
 use crate::exec::Cmd;
@@ -43,7 +45,7 @@ pub fn print_cmd(cmd: &Cmd, prompt: &str) {
         prompt.green().bold(),
         cmd,
         indent = PROMPT_INDENT
-    )
+    );
 }
 
 /// Prints out a message after the given prompt.

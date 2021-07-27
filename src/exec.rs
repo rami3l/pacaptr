@@ -211,7 +211,16 @@ impl Cmd {
     /// [`Cmd::exec_checkall`] otherwise.
     async fn exec_check_output(self, mute: bool, merge: bool) -> Result<Output> {
         use tokio_stream::StreamExt;
-        use Error::*;
+        use Error::{CmdJoinError, CmdNoHandleError, CmdSpawnError, CmdWaitError};
+
+        fn make_reader(
+            src: Option<impl AsyncRead>,
+            name: &str,
+        ) -> Result<impl Stream<Item = io::Result<Bytes>>> {
+            src.map(into_bytes).ok_or_else(|| CmdNoHandleError {
+                handle: name.into(),
+            })
+        }
 
         let mut child = self
             .build()
@@ -223,15 +232,6 @@ impl Cmd {
             })
             .spawn()
             .map_err(CmdSpawnError)?;
-
-        fn make_reader(
-            src: Option<impl AsyncRead>,
-            name: &str,
-        ) -> Result<impl Stream<Item = io::Result<Bytes>>> {
-            src.map(into_bytes).ok_or_else(|| CmdNoHandleError {
-                handle: name.into(),
-            })
-        }
 
         let stderr_reader = make_reader(child.stderr.take(), "stderr")?;
         let mut reader = if merge {
