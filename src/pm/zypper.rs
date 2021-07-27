@@ -9,6 +9,7 @@ use crate::{
     exec::{self, Cmd},
 };
 
+#[derive(Debug)]
 pub struct Zypper {
     pub cfg: Config,
 }

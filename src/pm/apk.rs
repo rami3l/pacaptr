@@ -10,6 +10,7 @@ use crate::{
     print::{self, PROMPT_RUN},
 };
 
+#[derive(Debug)]
 pub struct Apk {
     pub cfg: Config,
 }

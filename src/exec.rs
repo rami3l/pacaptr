@@ -115,6 +115,7 @@ impl Cmd {
         self.tap_mut(|s| s.flags = flags.iter().map(AsRef::as_ref).map_into().collect())
     }
 
+    #[must_use]
     pub fn sudo(self, sudo: bool) -> Self {
         self.tap_mut(|s| s.sudo = sudo)
     }
@@ -123,11 +124,13 @@ impl Cmd {
     ///
     /// If a **normal admin** needs to run it with `sudo`, and we are not
     /// `root`, then this is the case.
+    #[must_use]
     pub fn should_sudo(&self) -> bool {
         self.sudo && !is_root()
     }
 
     /// Converts a [`Cmd`] object into an [`Exec`].
+    #[must_use]
     pub fn build(self) -> Exec {
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
         // ! but not `zypper install curl -y`.
@@ -335,6 +338,7 @@ impl std::fmt::Display for Cmd {
 ///
 /// If `case_sensitive` is `false`, then `expected` should be all lower case
 /// patterns.
+#[must_use]
 pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
     use std::io::{self, Write};
 
@@ -388,6 +392,7 @@ pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
 /// Checks if an executable exists by name (consult `$PATH`) or by path.
 ///
 /// To check by one parameter only, pass `""` to the other one.
+#[must_use]
 pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && which(path).is_ok()) || (!name.is_empty() && which(name).is_ok())
 }

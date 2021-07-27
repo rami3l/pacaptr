@@ -5,6 +5,7 @@ use tap::prelude::*;
 use super::{DryRunStrategy, Pm, PmHelper, PmMode, Strategy};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 
+#[derive(Debug)]
 pub struct Tlmgr {
     pub cfg: Config,
 }

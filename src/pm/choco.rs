@@ -6,6 +6,7 @@ use super::{DryRunStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::exec::Cmd;
 use crate::{dispatch::config::Config, error::Result};
 
+#[derive(Debug)]
 pub struct Choco {
     pub cfg: Config,
 }

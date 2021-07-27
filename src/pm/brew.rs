@@ -10,6 +10,7 @@ use crate::{
     print::{self, PROMPT_INFO, PROMPT_RUN},
 };
 
+#[derive(Debug)]
 pub struct Brew {
     pub cfg: Config,
 }

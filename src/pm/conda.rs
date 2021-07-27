@@ -11,6 +11,7 @@ use crate::{
     print::{self, PROMPT_RUN},
 };
 
+#[derive(Debug)]
 pub struct Conda {
     pub cfg: Config,
 }

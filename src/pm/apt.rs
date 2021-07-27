@@ -5,6 +5,7 @@ use tap::prelude::*;
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 
+#[derive(Debug)]
 pub struct Apt {
     pub cfg: Config,
 }

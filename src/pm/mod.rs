@@ -371,6 +371,7 @@ pub enum DryRunStrategy<S = String> {
 }
 
 impl DryRunStrategy<String> {
+    #[must_use]
     pub fn with_flags(flags: &[&str]) -> Self {
         Self::WithFlags(flags.iter().map(|&s| s.to_owned()).collect())
     }
@@ -398,10 +399,12 @@ pub enum PromptStrategy<S = String> {
 }
 
 impl PromptStrategy<String> {
+    #[must_use]
     pub fn native_no_confirm(no_confirm: &[&str]) -> Self {
         Self::NativeNoConfirm(no_confirm.iter().map(|&s| s.to_owned()).collect())
     }
 
+    #[must_use]
     pub fn native_confirm(confirm: &[&str]) -> Self {
         Self::NativeConfirm(confirm.iter().map(|&s| s.to_owned()).collect())
     }
@@ -431,6 +434,7 @@ pub enum NoCacheStrategy<S = String> {
 }
 
 impl NoCacheStrategy<String> {
+    #[must_use]
     pub fn with_flags(flags: &[&str]) -> Self {
         Self::WithFlags(flags.iter().map(|&s| s.to_owned()).collect())
     }
