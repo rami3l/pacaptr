@@ -17,7 +17,7 @@ pub struct Conda {
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(&["-y"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 #[async_trait]
@@ -50,7 +50,7 @@ impl Pm for Conda {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .check_output(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?
             .contents;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
@@ -62,7 +62,7 @@ impl Pm for Conda {
         Cmd::new(&["conda", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -71,7 +71,7 @@ impl Pm for Conda {
         Cmd::new(&["conda", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -80,7 +80,7 @@ impl Pm for Conda {
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["conda", "clean", "--all"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -107,7 +107,7 @@ impl Pm for Conda {
         Cmd::new(&["conda", "update", "--all"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 

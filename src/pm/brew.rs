@@ -16,13 +16,13 @@ pub struct Brew {
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     no_cache: NoCacheStrategy::Scc,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 impl Brew {
@@ -32,7 +32,7 @@ impl Brew {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .check_output(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?
             .contents;
 
@@ -108,7 +108,7 @@ impl Pm for Brew {
         Cmd::new(&["brew", "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -117,12 +117,12 @@ impl Pm for Brew {
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let strat = Strategy {
             dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-            ..Default::default()
+            ..Strategy::default()
         };
         let err_msg = Cmd::new(&["brew", "rmtree"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.check_output(cmd, Default::default(), &strat))
+            .pipe(|cmd| self.check_output(cmd, PmMode::default(), &strat))
             .await?
             .contents
             .pipe(String::from_utf8)?;
@@ -151,7 +151,7 @@ impl Pm for Brew {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
         .await
     }
 
@@ -161,12 +161,12 @@ impl Pm for Brew {
         let strat = Strategy {
             dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
             prompt: PromptStrategy::CustomPrompt,
-            ..Default::default()
+            ..Strategy::default()
         };
         Cmd::new(&["brew", "cleanup"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &strat))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &strat))
             .await
     }
 
@@ -175,12 +175,12 @@ impl Pm for Brew {
         let strat = Strategy {
             dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
             prompt: PromptStrategy::CustomPrompt,
-            ..Default::default()
+            ..Strategy::default()
         };
         Cmd::new(&["brew", "cleanup", "-s"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &strat))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &strat))
             .await
     }
 
@@ -209,7 +209,7 @@ impl Pm for Brew {
         Cmd::new(&["brew", "upgrade"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -226,7 +226,7 @@ impl Pm for Brew {
         Cmd::new(&["brew", "fetch"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 

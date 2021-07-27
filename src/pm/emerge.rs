@@ -3,7 +3,7 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
-use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
+use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 
 pub struct Emerge {
@@ -12,18 +12,18 @@ pub struct Emerge {
 
 static STRAT_ASK: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_confirm(&["--ask"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_INTERACTIVE: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_confirm(&["--interactive"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_confirm(&["--ask"]),
     no_cache: NoCacheStrategy::Scc,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 #[async_trait]
@@ -77,7 +77,7 @@ impl Pm for Emerge {
         Cmd::with_sudo(&["emerge", "--unmerge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_ASK))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_ASK))
             .await
     }
 
@@ -87,7 +87,7 @@ impl Pm for Emerge {
         Cmd::with_sudo(&["emerge", "--depclean"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_ASK))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_ASK))
             .await
     }
 
@@ -96,7 +96,7 @@ impl Pm for Emerge {
         Cmd::with_sudo(&["emerge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -106,7 +106,7 @@ impl Pm for Emerge {
         Cmd::with_sudo(&["eclean-dist"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INTERACTIVE))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INTERACTIVE))
             .await
     }
 
@@ -133,7 +133,7 @@ impl Pm for Emerge {
         Cmd::with_sudo(&["emerge", "-uDN"])
             .kws(if kws.is_empty() { &["@world"] } else { kws })
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 

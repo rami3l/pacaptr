@@ -10,7 +10,7 @@ impl Unknown {
     pub fn new(name: &str) -> Self {
         Unknown {
             name: format!("unknown package manager: {}", name),
-            cfg: Default::default(),
+            cfg: Config::default(),
         }
     }
 }

@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
-use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
+use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 
 pub struct Port {
@@ -11,13 +11,13 @@ pub struct Port {
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     no_cache: NoCacheStrategy::Scc,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 #[async_trait]
@@ -80,7 +80,7 @@ impl Pm for Port {
         Cmd::with_sudo(&["port", "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -90,7 +90,7 @@ impl Pm for Port {
         Cmd::with_sudo(&["port", "uninstall", "--follow-dependencies"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -99,7 +99,7 @@ impl Pm for Port {
         Cmd::with_sudo(&["port", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -113,7 +113,7 @@ impl Pm for Port {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
         .await
     }
 
@@ -126,7 +126,7 @@ impl Pm for Port {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
         .await
     }
 
@@ -152,7 +152,7 @@ impl Pm for Port {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
         .await
     }
 

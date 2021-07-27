@@ -311,7 +311,7 @@ pub trait PmHelper: Pm {
     /// Executes a command in the context of the [`Pm`] implementation with
     /// default settings.
     async fn run(&self, cmd: Cmd) -> Result<()> {
-        self.run_with(cmd, Default::default(), &Default::default())
+        self.run_with(cmd, PmMode::default(), &Strategy::default())
             .await
     }
 }

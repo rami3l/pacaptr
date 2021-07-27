@@ -97,9 +97,9 @@ pub struct Cmd {
 
 impl Cmd {
     pub fn new(cmd: &[impl AsRef<str>]) -> Self {
-        Self {
+        Cmd {
             cmd: cmd.iter().map(AsRef::as_ref).map_into().collect(),
-            ..Default::default()
+            ..Cmd::default()
         }
     }
 
@@ -189,7 +189,7 @@ impl Cmd {
         match mode {
             Mode::PrintCmd => {
                 print_cmd(&self, PROMPT_CANCELED);
-                Ok(Default::default())
+                Ok(Output::default())
             }
             Mode::Mute => self.exec_checkall(true).await,
             Mode::CheckAll => {
@@ -315,7 +315,7 @@ impl Cmd {
             }
         };
         if !proceed {
-            return Ok(Default::default());
+            return Ok(Output::default());
         }
         print_cmd(&self, PROMPT_RUN);
         self.exec_checkerr(mute).await

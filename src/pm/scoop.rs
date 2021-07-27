@@ -16,13 +16,13 @@ pub struct Scoop {
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     no_cache: NoCacheStrategy::Scc,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 impl Scoop {
@@ -32,7 +32,7 @@ impl Scoop {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .check_output(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?
             .contents;
 
@@ -91,7 +91,7 @@ impl Pm for Scoop {
         Cmd::new(&["powershell", "scoop", "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -101,7 +101,7 @@ impl Pm for Scoop {
         Cmd::new(&["powershell", "scoop", "uninstall", "--purge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -110,7 +110,7 @@ impl Pm for Scoop {
         Cmd::new(&["powershell", "scoop", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -120,7 +120,7 @@ impl Pm for Scoop {
         Cmd::new(&["powershell", "scoop", "cache", "rm"])
             .kws(if kws.is_empty() { &["*"] } else { kws })
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -163,7 +163,7 @@ impl Pm for Scoop {
         Cmd::new(&["powershell", "scoop", "update"])
             .kws(if kws.is_empty() { &["*"] } else { kws })
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 

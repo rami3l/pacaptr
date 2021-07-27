@@ -17,12 +17,12 @@ pub struct Pip {
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_UNINSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(&["-y"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 #[async_trait]
@@ -62,7 +62,7 @@ impl Pm for Pip {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .check_output(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?
             .contents;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
@@ -83,7 +83,7 @@ impl Pm for Pip {
         Cmd::new(&[&self.cmd, "uninstall"] as _)
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_UNINSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_UNINSTALL))
             .await
     }
 
@@ -92,7 +92,7 @@ impl Pm for Pip {
         Cmd::new(&[&self.cmd, "install"] as _)
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 

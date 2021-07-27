@@ -15,13 +15,13 @@ pub struct Zypper {
 
 static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(&["-y"]),
     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -32,7 +32,7 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 
 impl Zypper {
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
-        self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY)
+        self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY)
             .await
     }
 }
@@ -85,7 +85,7 @@ impl Pm for Zypper {
     async fn qm(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(&["zypper", "search", "-si"]).kws(kws).flags(flags);
         let out_bytes = self
-            .check_output(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?
             .contents;
         let out = String::from_utf8(out_bytes)?;
@@ -130,7 +130,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(&["zypper", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -140,7 +140,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(&["zypper", "remove", "--clean-deps"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -149,7 +149,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(&["zypper", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -158,11 +158,11 @@ impl Pm for Zypper {
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         let strat = Strategy {
             prompt: PromptStrategy::CustomPrompt,
-            ..Default::default()
+            ..Strategy::default()
         };
         Cmd::with_sudo(&["zypper", "clean"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &strat))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &strat))
             .await
     }
 
@@ -221,7 +221,7 @@ impl Pm for Zypper {
     async fn su(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["zypper", "--no-refresh", "dist-upgrade"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -230,7 +230,7 @@ impl Pm for Zypper {
     async fn suy(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["zypper", "dist-upgrade"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -240,7 +240,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(&["zypper", "install", "--download-only"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 

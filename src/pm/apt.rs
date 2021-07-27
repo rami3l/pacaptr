@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
-use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
+use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 
 pub struct Apt {
@@ -11,13 +11,13 @@ pub struct Apt {
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(&["--yes"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(&["--yes"]),
     no_cache: NoCacheStrategy::Scc,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 #[async_trait]
@@ -82,7 +82,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -92,7 +92,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "purge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -103,7 +103,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "autoremove", "--purge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -113,7 +113,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "autoremove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -126,7 +126,7 @@ impl Pm for Apt {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
         .await
     }
 
@@ -136,7 +136,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "clean"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -145,7 +145,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "autoclean"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -187,11 +187,11 @@ impl Pm for Apt {
         if kws.is_empty() {
             Cmd::with_sudo(&["apt", "upgrade"])
                 .flags(flags)
-                .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+                .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
                 .await?;
             Cmd::with_sudo(&["apt", "dist-upgrade"])
                 .flags(flags)
-                .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+                .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
                 .await
         } else {
             self.s(kws, flags).await
@@ -211,7 +211,7 @@ impl Pm for Apt {
         Cmd::with_sudo(&["apt", "install", "--download-only"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 
