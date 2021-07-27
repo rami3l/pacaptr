@@ -8,7 +8,7 @@ use std::{
 use bytes::Bytes;
 use futures::prelude::*;
 pub use is_root::is_root;
-use itertools::Itertools;
+use itertools::{chain, Itertools};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use tap::prelude::*;
@@ -225,10 +225,10 @@ impl Cmd {
             .map_err(CmdSpawnError)?;
 
         fn make_reader(
-            st: Option<impl AsyncRead>,
+            src: Option<impl AsyncRead>,
             name: &str,
         ) -> Result<impl Stream<Item = io::Result<Bytes>>> {
-            st.map(into_bytes).ok_or_else(|| CmdNoHandleError {
+            src.map(into_bytes).ok_or_else(|| CmdNoHandleError {
                 handle: name.into(),
             })
         }
@@ -300,8 +300,8 @@ impl Cmd {
                 )
                 .to_lowercase()
             });
-            match answer.as_ref() {
-                // The default answer is `Yes`
+            match &answer as _ {
+                // The default answer is `Yes`.
                 "y" | "yes" | "" => true,
                 // You can also say `All` to answer `Yes` to all the other questions that follow.
                 "a" | "all" => {
@@ -324,13 +324,8 @@ impl Cmd {
 
 impl std::fmt::Display for Cmd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let sudo: &str = self.should_sudo().then(|| "sudo -S ").unwrap_or_default();
-        let cmd = self
-            .cmd
-            .iter()
-            .chain(&self.flags)
-            .chain(&self.kws)
-            .join(" ");
+        let sudo: &str = self.should_sudo().then(|| "sudo -S ").unwrap_or("");
+        let cmd = chain!(&self.cmd, &self.flags, &self.kws).join(" ");
         write!(f, "{}{}", sudo, cmd)
     }
 }

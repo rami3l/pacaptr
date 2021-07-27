@@ -280,14 +280,14 @@ pub trait PmHelper: Pm {
                 cmd.flags.extend(v.to_owned());
                 // -- A dry run with extra flags does not need `sudo`. --
                 cmd = cmd.sudo(false);
-                run(&cfg, &cmd, mode, strat).await?
+                run(cfg, &cmd, mode, strat).await?
             }
-            _ => run(&cfg, &cmd, mode, strat).await?,
+            _ => run(cfg, &cmd, mode, strat).await?,
         };
 
         // Perform the cleanup.
         if cfg.no_cache {
-            let flags = cmd.flags.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
+            let flags = cmd.flags.iter().map(|s| s as &str).collect::<Vec<_>>();
             match &strat.no_cache {
                 NoCacheStrategy::Sc => self.sc(&[], &flags).await?,
                 NoCacheStrategy::Scc => self.scc(&[], &flags).await?,

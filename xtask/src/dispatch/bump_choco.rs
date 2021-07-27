@@ -23,7 +23,7 @@ impl Runner for BumpChoco {
         // Remove leading `v` and suffix `-take.X` from the tag.
         let ver = {
             let tag = tag.strip_prefix('v').unwrap_or(&tag);
-            Regex::new(r"-?take\.\d+")?.replace(tag, "")
+            &Regex::new(r"-?take\.\d+")?.replace(tag, "") as &str
         };
 
         let release_uri = format!(
@@ -46,7 +46,7 @@ impl Runner for BumpChoco {
         println!(":: Generating Nuspec from template...");
         let nuspec_temp = read_file("dist/choco/pacaptr.template.nuspec")?;
         let nuspec = {
-            let version = escape_str_attribute(&ver);
+            let version = escape_str_attribute(ver);
             replace!(nuspec_temp, version)
         };
         let nuspec_path = "dist/choco/pacaptr.nuspec";
@@ -80,7 +80,6 @@ impl Runner for BumpChoco {
         cmd!("choco pack {nuspec_path} --verbose").run()?;
 
         println!(":: Pushing to choco repository...");
-        let ver = ver.as_ref();
         cmd!("choco push pacaptr.{ver}.nupkg --source https://push.chocolatey.org --verbose")
             .run()?;
 

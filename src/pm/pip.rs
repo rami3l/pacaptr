@@ -39,7 +39,7 @@ impl Pm for Pip {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.run(Cmd::new(&[self.cmd.as_ref(), "list"]).flags(flags))
+            self.run(Cmd::new(&[&self.cmd, "list"] as _).flags(flags))
                 .await
         } else {
             self.qs(kws, flags).await
@@ -48,7 +48,7 @@ impl Pm for Pip {
 
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&[self.cmd.as_ref(), "show"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&[&self.cmd, "show"] as _).kws(kws).flags(flags))
             .await
     }
 
@@ -57,7 +57,7 @@ impl Pm for Pip {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = Cmd::new(&[self.cmd.as_ref(), "list"]).flags(flags);
+        let cmd = Cmd::new(&[&self.cmd, "list"] as _).flags(flags);
         if !self.cfg.dry_run {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
@@ -71,7 +71,7 @@ impl Pm for Pip {
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&[self.cmd.as_ref(), "list", "--outdated"])
+        Cmd::new(&[&self.cmd, "list", "--outdated"] as _)
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -80,7 +80,7 @@ impl Pm for Pip {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&[self.cmd.as_ref(), "uninstall"])
+        Cmd::new(&[&self.cmd, "uninstall"] as _)
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_UNINSTALL))
@@ -89,7 +89,7 @@ impl Pm for Pip {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&[self.cmd.as_ref(), "install"])
+        Cmd::new(&[&self.cmd, "install"] as _)
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
@@ -99,14 +99,14 @@ impl Pm for Pip {
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&[self.cmd.as_ref(), "cache", "purge"]).flags(flags))
+        self.run(Cmd::new(&[&self.cmd, "cache", "purge"] as _).flags(flags))
             .await
     }
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if !kws.is_empty() {
-            Cmd::new(&[self.cmd.as_ref(), "install", "--upgrade"])
+            Cmd::new(&[&self.cmd, "install", "--upgrade"] as _)
                 .kws(kws)
                 .flags(flags)
                 .pipe(|cmd| self.run(cmd))
@@ -122,7 +122,7 @@ impl Pm for Pip {
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&[self.cmd.as_ref(), "download"])
+        Cmd::new(&[&self.cmd, "download"] as _)
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
