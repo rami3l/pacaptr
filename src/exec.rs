@@ -5,7 +5,7 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use bytes::Bytes;
+use bytes::{Bytes, BytesMut};
 use futures::prelude::*;
 pub use is_root::is_root;
 use itertools::{chain, Itertools};
@@ -17,6 +17,7 @@ use tokio::{
     process::Command as Exec,
     task::JoinHandle,
 };
+#[allow(clippy::wildcard_imports)]
 use tokio_util::{
     codec::{BytesCodec, FramedRead},
     compat::*,
@@ -26,7 +27,7 @@ use which::which;
 
 use crate::{
     error::{Error, Result},
-    print::*,
+    print::{print_cmd, print_question, PROMPT_CANCELED, PROMPT_PENDING, PROMPT_RUN},
 };
 
 /// Different ways in which a command shall be dealt with.
@@ -172,6 +173,7 @@ where
     let mut buf = Vec::<u8>::new();
     let buf_sink = (&mut buf).into_sink();
 
+    #[allow(clippy::option_if_let_else)]
     let sink = if let Some(out) = out {
         let out_sink = out.compat_write().into_sink();
         buf_sink.fanout(out_sink).left_sink()
@@ -401,5 +403,5 @@ pub fn is_exe(name: &str, path: &str) -> bool {
 ///
 /// _Shamelessly copied from [StackOverflow](https://stackoverflow.com/a/59327560)._
 pub fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = io::Result<Bytes>> {
-    FramedRead::new(reader, BytesCodec::new()).map_ok(|bytes| bytes.freeze())
+    FramedRead::new(reader, BytesCodec::new()).map_ok(BytesMut::freeze)
 }

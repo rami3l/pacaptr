@@ -5,7 +5,7 @@ use tap::prelude::*;
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
-    error::Result,
+    error::{Error, Result},
     exec::{self, Cmd},
     print::{self, PROMPT_RUN},
 };
@@ -106,18 +106,17 @@ impl Pm for Pip {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        if !kws.is_empty() {
-            Cmd::new(&[&self.cmd, "install", "--upgrade"] as _)
-                .kws(kws)
-                .flags(flags)
-                .pipe(|cmd| self.run(cmd))
-                .await
-        } else {
-            Err(crate::error::Error::OperationUnimplementedError {
+        if kws.is_empty() {
+            return Err(Error::OperationUnimplementedError {
                 op: "su".into(),
                 pm: self.name().into(),
-            })
+            });
         }
+        Cmd::new(&[&self.cmd, "install", "--upgrade"] as _)
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
+            .await
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade

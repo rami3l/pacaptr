@@ -3,6 +3,8 @@
 //!
 //! [`pacman`]: https://wiki.archlinux.org/index.php/Pacman
 
+#![allow(clippy::module_name_repetitions)]
+
 pub mod apk;
 pub mod apt;
 pub mod brew;
@@ -244,14 +246,12 @@ pub trait PmHelper: Pm {
     /// Executes a command in the context of the [`Pm`] implementation. Returns
     /// the [`Output`] of this command.
     async fn check_output(&self, mut cmd: Cmd, mode: PmMode, strat: &Strategy) -> Result<Output> {
-        let cfg = self.cfg();
-
         async fn run(cfg: &Config, cmd: &Cmd, mode: PmMode, strat: &Strategy) -> Result<Output> {
             let mut curr_cmd = cmd.clone();
             let no_confirm = cfg.no_confirm;
             if cfg.no_cache {
                 if let NoCacheStrategy::WithFlags(v) = &strat.no_cache {
-                    curr_cmd.flags.extend(v.to_owned());
+                    curr_cmd.flags.extend(v.clone());
                 }
             }
             match &strat.prompt {
@@ -260,24 +260,26 @@ pub trait PmHelper: Pm {
                 PromptStrategy::CustomPrompt => curr_cmd.exec(Mode::Prompt).await,
                 PromptStrategy::NativeNoConfirm(v) => {
                     if no_confirm {
-                        curr_cmd.flags.extend(v.to_owned());
+                        curr_cmd.flags.extend(v.clone());
                     }
                     curr_cmd.exec(mode.into()).await
                 }
                 PromptStrategy::NativeConfirm(v) => {
                     if !no_confirm {
-                        curr_cmd.flags.extend(v.to_owned());
+                        curr_cmd.flags.extend(v.clone());
                     }
                     curr_cmd.exec(mode.into()).await
                 }
             }
         }
 
+        let cfg = self.cfg();
+
         // `--dry-run` should apply to both the main command and the cleanup.
         let res = match &strat.dry_run {
             DryRunStrategy::PrintCmd if cfg.dry_run => cmd.clone().exec(Mode::PrintCmd).await?,
             DryRunStrategy::WithFlags(v) if cfg.dry_run => {
-                cmd.flags.extend(v.to_owned());
+                cmd.flags.extend(v.clone());
                 // -- A dry run with extra flags does not need `sudo`. --
                 cmd = cmd.sudo(false);
                 run(cfg, &cmd, mode, strat).await?

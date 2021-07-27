@@ -9,6 +9,7 @@ enum Input<'i> {
         args: &'i [&'i str],
         flags: &'i [&'i str],
     },
+    #[allow(dead_code)]
     Exec {
         cmd: &'i [&'i str],
         kws: &'i [&'i str],
@@ -45,6 +46,7 @@ impl<'t> Test<'t> {
         self
     }
 
+    #[allow(dead_code)]
     pub fn exec(mut self, cmd: &'t [&str], kws: &'t [&str]) -> Self {
         // Guard against consecutive inputs without calling `self.output()`.
         if self.pending_input.is_some() {
