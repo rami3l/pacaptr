@@ -7,6 +7,7 @@ use std::{
 
 use bytes::{Bytes, BytesMut};
 use futures::prelude::*;
+use indoc::indoc;
 pub use is_root::is_root;
 use itertools::{chain, Itertools};
 use once_cell::sync::Lazy;
@@ -60,6 +61,7 @@ pub enum Mode {
     Prompt,
 }
 
+/// The status code type returned by a [`Cmd`],
 pub type StatusCode = i32;
 
 /// Output of running a [`Cmd`].
@@ -185,11 +187,26 @@ where
     Ok(buf)
 }
 
+macro_rules! docs_errors_exec {
+    () => {
+        indoc! {"
+            # Errors
+            This function might return one of the following errors:
+
+            - [`Error::CmdJoinError`]
+            - [`Error::CmdNoHandleError`]
+            - [`Error::CmdSpawnError`]
+            - [`Error::CmdWaitError`]
+        "}
+    };
+}
+
 impl Cmd {
     /// Executes a [`Cmd`] and returns its output.
     ///
     /// The exact behavior depends on the [`Mode`] passed in (see the definition
     /// of [`Mode`] for more info).
+    #[doc = docs_errors_exec!()]
     pub async fn exec(self, mode: Mode) -> Result<Output> {
         match mode {
             Mode::PrintCmd => {
@@ -209,11 +226,9 @@ impl Cmd {
         }
     }
 
-    /// Inner implementation of [`Cmd::exec_checkerr`] and
-    /// [`Cmd::exec_checkall`].
-    ///
-    /// `merge == false` goes to [`Cmd::exec_checkerr`], and
-    /// [`Cmd::exec_checkall`] otherwise.
+    /// Inner implementation of [`Cmd::exec_checkerr`] (if `merge` is `false`)
+    /// and [`Cmd::exec_checkall`] (otherwise).
+    #[doc = docs_errors_exec!()]
     async fn exec_check_output(self, mute: bool, merge: bool) -> Result<Output> {
         use tokio_stream::StreamExt;
         use Error::{CmdJoinError, CmdNoHandleError, CmdSpawnError, CmdWaitError};
@@ -269,6 +284,7 @@ impl Cmd {
     ///
     /// If `mute` is `false`, then normal `stdout/stderr` output will be printed
     /// to `stdout` too.
+    #[doc = docs_errors_exec!()]
     pub async fn exec_checkall(self, mute: bool) -> Result<Output> {
         self.exec_check_output(mute, true).await
     }
@@ -277,6 +293,7 @@ impl Cmd {
     ///
     /// If `mute` is `false`, then its `stderr` output will be printed to
     /// `stderr` too.
+    #[doc = docs_errors_exec!()]
     pub async fn exec_checkerr(self, mute: bool) -> Result<Output> {
         self.exec_check_output(mute, false).await
     }
@@ -289,6 +306,7 @@ impl Cmd {
     /// This function behaves just like [`exec_checkerr`](Cmd::exec_checkerr),
     /// but in addition, the user will be prompted if (s)he wishes to
     /// continue with the command execution.
+    #[doc = docs_errors_exec!()]
     pub async fn exec_prompt(self, mute: bool) -> Result<Output> {
         static ALL_YES: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
@@ -341,6 +359,7 @@ impl std::fmt::Display for Cmd {
 /// If `case_sensitive` is `false`, then `expected` should be all lower case
 /// patterns.
 #[must_use]
+#[allow(clippy::missing_panics_doc)]
 pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
     use std::io::{self, Write};
 
@@ -367,10 +386,21 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
     .unwrap() // It's impossible to find nothing out of an infinite loop.
 }
 
+macro_rules! docs_errors_grep {
+    () => {
+        indoc! {"
+            # Errors
+            This function returns an [`Error::OtherError`] when any of the
+            regex patterns is ill-formed.
+        "}
+    };
+}
+
 /// Finds all lines in the given `text` that matches all the `patterns`.
 ///
 /// We suppose that all patterns are legal regular expressions.
 /// An error message will be returned if this is not the case.
+#[doc = docs_errors_grep!()]
 pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
     patterns
         .iter()
@@ -387,6 +417,7 @@ pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
 }
 
 /// Prints the result of [`grep`] line by line.
+#[doc = docs_errors_grep!()]
 pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
     grep(text, patterns).map(|lns| lns.iter().for_each(|ln| println!("{}", ln)))
 }
@@ -401,7 +432,7 @@ pub fn is_exe(name: &str, path: &str) -> bool {
 
 /// Turns an [`AsyncRead`] into a [`Stream`].
 ///
-/// _Shamelessly copied from [StackOverflow](https://stackoverflow.com/a/59327560)._
+/// _Shamelessly copied from [`StackOverflow`](https://stackoverflow.com/a/59327560)._
 pub fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = io::Result<Bytes>> {
     FramedRead::new(reader, BytesCodec::new()).map_ok(BytesMut::freeze)
 }

@@ -3,6 +3,8 @@
 use thiserror::Error;
 use tokio::{io, task::JoinError};
 
+/// A specialized [`Result`](std::result::Result) type used by
+/// [`pacaptr`](crate).
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 /// Error type for the [`pacaptr`](crate) library.
@@ -10,10 +12,12 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 pub enum Error {
     /// Error while parsing CLI arguments.
     #[error("Failed to parse arguments: {msg}")]
+    #[allow(missing_docs)]
     ArgParseError { msg: String },
 
     /// Error when handling a [`Config`](crate::dispatch::Config).
     #[error("Failed to handle config: {msg}")]
+    #[allow(missing_docs)]
     ConfigError { msg: String },
 
     /// An [`Cmd`](crate::exec::Cmd) fails to finish.
@@ -27,6 +31,7 @@ pub enum Error {
     /// Error when trying to get the `stdout`/`stderr`/... handler out of a
     /// running an [`Cmd`](crate::exec::Cmd).
     #[error("Subprocess didn't have a handle to {handle}")]
+    #[allow(missing_docs)]
     CmdNoHandleError { handle: String },
 
     /// An [`Cmd`](crate::exec::Cmd) fails to finish.
@@ -43,6 +48,7 @@ pub enum Error {
 
     /// A [`Pm`](crate::pm::Pm) operation is not implemented.
     #[error("Operation `{op}` is unimplemented for `{pm}`")]
+    #[allow(missing_docs)]
     OperationUnimplementedError { op: String, pm: String },
 
     /// Miscellaneous other error.

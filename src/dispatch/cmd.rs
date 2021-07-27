@@ -212,6 +212,9 @@ impl Pacaptr {
 
     /// Executes the job according to the flags received and the package manager
     /// detected.
+    ///
+    /// # Errors
+    /// See [`Error`](crate::error::Error) for a  list of possible errors.
     #[allow(trivial_numeric_casts)]
     pub async fn dispatch_from(&self, mut cfg: Config) -> Result<StatusCode> {
         // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
@@ -298,6 +301,10 @@ impl Pacaptr {
 
     /// Runs [`dispatch_from`](Pacaptr::dispatch_from) with automatically
     /// detected [`Config`].
+    ///
+    /// # Errors
+    /// See [`Error`](crate::error::Error) for a  list of possible errors.
+    #[allow(trivial_numeric_casts)]
     pub async fn dispatch(&self) -> Result<StatusCode> {
         let dotfile = task::block_in_place(Config::load);
         let cfg = self.merge_cfg(dotfile?);

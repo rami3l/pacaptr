@@ -35,7 +35,7 @@ use crate::{
     exec::{Cmd, Mode, Output, StatusCode},
 };
 
-/// The list of `pacman` methods supported by `pacaptr`.
+/// The list of [`pacman`](https://wiki.archlinux.org/index.php/Pacman) methods supported by [`pacaptr`](crate).
 #[macro_export]
 macro_rules! methods {
     ($caller:tt) => {
