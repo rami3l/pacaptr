@@ -33,8 +33,7 @@ impl Config {
     /// The default config file path is `$HOME/.config/pacaptr/pacaptr.toml`.
     ///
     /// # Errors
-    /// This function returns an [`Error::ConfigError`] when `$HOME` is not
-    /// found.
+    /// Returns an [`Error::ConfigError`] when `$HOME` is not found.
     #[allow(trivial_numeric_casts)]
     pub fn default_path() -> Result<PathBuf> {
         let crate_name = clap::crate_name!();
@@ -53,8 +52,8 @@ impl Config {
     /// environment variable.
     ///
     /// # Errors
-    /// This function returns an [`Error::ConfigError`] when [`CONFIG_ENV_VAR`]
-    /// is not found.
+    /// Returns an [`Error::ConfigError`] when the config path is not found in
+    /// the environmental variable.
     pub fn custom_path() -> Result<PathBuf> {
         env::var(CONFIG_ENV_VAR)
             .map_err(|e| Error::ConfigError {
@@ -72,8 +71,7 @@ impl Config {
     ///   with [`Default::default`], and no files will be written.
     ///
     /// # Errors
-    /// This function returns an [`Error::ConfigError`] when the config file
-    /// loading fails.
+    /// Returns an [`Error::ConfigError`] when the config file loading fails.
     pub fn load() -> Result<Self> {
         let path = Config::custom_path().or_else(|_| Config::default_path())?;
         path.exists()

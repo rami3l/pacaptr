@@ -9,6 +9,7 @@ pub struct Unknown {
 
 impl Unknown {
     #[must_use]
+    /// Creates a new [`Unknown`] package manager with the given name.
     pub fn new(name: &str) -> Self {
         Unknown {
             name: format!("unknown package manager: {}", name),

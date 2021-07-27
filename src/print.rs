@@ -1,6 +1,6 @@
 //! Output messages and prompts.
 
-#![allow(clippy::module_name_repetitions)]
+#![allow(missing_docs, clippy::module_name_repetitions)]
 
 use colored::Colorize;
 
@@ -12,6 +12,7 @@ pub static PROMPT_RUN: &str = "Running";
 pub static PROMPT_INFO: &str = "Info";
 pub static PROMPT_ERROR: &str = "Error";
 
+/// The right indentation to be applied on prompt prefixes.
 pub static PROMPT_INDENT: usize = 9;
 
 macro_rules! prompt_format {

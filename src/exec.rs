@@ -390,7 +390,7 @@ macro_rules! docs_errors_grep {
     () => {
         indoc! {"
             # Errors
-            This function returns an [`Error::OtherError`] when any of the
+            Returns an [`Error::OtherError`] when any of the
             regex patterns is ill-formed.
         "}
     };

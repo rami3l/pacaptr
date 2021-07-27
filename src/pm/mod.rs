@@ -37,6 +37,7 @@ use crate::{
 
 /// The list of [`pacman`](https://wiki.archlinux.org/index.php/Pacman) methods supported by [`pacaptr`](crate).
 #[macro_export]
+#[doc(hidden)]
 macro_rules! methods {
     ($caller:tt) => {
         tt_call::tt_return! {
