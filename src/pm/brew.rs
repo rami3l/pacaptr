@@ -1,18 +1,20 @@
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+use tokio::sync::Mutex;
 
 use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::{Error, Result},
-    exec::{self, Cmd},
+    exec::{self, Cmd, StatusCode},
     print::{self, PROMPT_INFO, PROMPT_RUN},
 };
 
 #[derive(Debug)]
 pub struct Brew {
-    pub cfg: Config,
+    cfg: Config,
+    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -42,6 +44,16 @@ impl Brew {
     }
 }
 
+impl Brew {
+    #[must_use]
+    pub fn new(cfg: Config) -> Self {
+        Brew {
+            cfg,
+            code: Mutex::default(),
+        }
+    }
+}
+
 #[async_trait]
 impl Pm for Brew {
     /// Gets the name of the package manager.
@@ -51,6 +63,14 @@ impl Pm for Brew {
 
     fn cfg(&self) -> &Config {
         &self.cfg
+    }
+
+    async fn code(&self) -> StatusCode {
+        *self.code.lock().await
+    }
+
+    async fn set_code(&self, to: StatusCode) {
+        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.

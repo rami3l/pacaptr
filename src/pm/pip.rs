@@ -1,19 +1,21 @@
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+use tokio::sync::Mutex;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::{Error, Result},
-    exec::{self, Cmd},
+    exec::{self, Cmd, StatusCode},
     print::{self, PROMPT_RUN},
 };
 
 #[derive(Debug)]
 pub struct Pip {
     pub cmd: String,
-    pub cfg: Config,
+    cfg: Config,
+    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -26,6 +28,17 @@ static STRAT_UNINSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     ..Strategy::default()
 });
 
+impl Pip {
+    #[must_use]
+    pub fn new(cmd: &str, cfg: Config) -> Self {
+        Pip {
+            cmd: cmd.into(),
+            cfg,
+            code: Mutex::default(),
+        }
+    }
+}
+
 #[async_trait]
 impl Pm for Pip {
     /// Gets the name of the package manager.
@@ -35,6 +48,14 @@ impl Pm for Pip {
 
     fn cfg(&self) -> &Config {
         &self.cfg
+    }
+
+    async fn code(&self) -> StatusCode {
+        *self.code.lock().await
+    }
+
+    async fn set_code(&self, to: StatusCode) {
+        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.

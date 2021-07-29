@@ -1,10 +1,12 @@
+use async_trait::async_trait;
+
 use super::Pm;
-use crate::dispatch::config::Config;
+use crate::{dispatch::config::Config, exec::StatusCode};
 
 #[derive(Debug)]
 pub struct Unknown {
     pub name: String,
-    pub cfg: Config,
+    cfg: Config,
 }
 
 impl Unknown {
@@ -18,6 +20,7 @@ impl Unknown {
     }
 }
 
+#[async_trait]
 impl Pm for Unknown {
     /// Gets the name of the package manager.
     fn name(&self) -> &str {
@@ -27,4 +30,10 @@ impl Pm for Unknown {
     fn cfg(&self) -> &Config {
         &self.cfg
     }
+
+    async fn code(&self) -> StatusCode {
+        0
+    }
+
+    async fn set_code(&self, _to: StatusCode) {}
 }

@@ -1,13 +1,19 @@
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+use tokio::sync::Mutex;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
-use crate::{dispatch::config::Config, error::Result, exec::Cmd};
+use crate::{
+    dispatch::config::Config,
+    error::Result,
+    exec::{Cmd, StatusCode},
+};
 
 #[derive(Debug)]
 pub struct Apt {
-    pub cfg: Config,
+    cfg: Config,
+    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -21,6 +27,16 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     ..Strategy::default()
 });
 
+impl Apt {
+    #[must_use]
+    pub fn new(cfg: Config) -> Self {
+        Apt {
+            cfg,
+            code: Mutex::default(),
+        }
+    }
+}
+
 #[async_trait]
 impl Pm for Apt {
     /// Gets the name of the package manager.
@@ -30,6 +46,14 @@ impl Pm for Apt {
 
     fn cfg(&self) -> &Config {
         &self.cfg
+    }
+
+    async fn code(&self) -> StatusCode {
+        *self.code.lock().await
+    }
+
+    async fn set_code(&self, to: StatusCode) {
+        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.

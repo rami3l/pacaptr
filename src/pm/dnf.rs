@@ -2,18 +2,20 @@ use async_trait::async_trait;
 use futures::prelude::*;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+use tokio::sync::Mutex;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::Result,
-    exec::{self, Cmd},
+    exec::{self, Cmd, StatusCode},
     print::{self, PROMPT_RUN},
 };
 
 #[derive(Debug)]
 pub struct Dnf {
-    pub cfg: Config,
+    cfg: Config,
+    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -32,6 +34,16 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     ..Strategy::default()
 });
 
+impl Dnf {
+    #[must_use]
+    pub fn new(cfg: Config) -> Self {
+        Dnf {
+            cfg,
+            code: Mutex::default(),
+        }
+    }
+}
+
 #[async_trait]
 impl Pm for Dnf {
     /// Gets the name of the package manager.
@@ -41,6 +53,14 @@ impl Pm for Dnf {
 
     fn cfg(&self) -> &Config {
         &self.cfg
+    }
+
+    async fn code(&self) -> StatusCode {
+        *self.code.lock().await
+    }
+
+    async fn set_code(&self, to: StatusCode) {
+        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.

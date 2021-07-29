@@ -349,6 +349,12 @@ pub(super) mod tests {
                 &self.cfg
             }
 
+            async fn code(&self) -> StatusCode {
+                0
+            }
+
+            async fn set_code(&self, _to: StatusCode) {}
+
             // * Automatically generated methods below... *
             $( async fn $method(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
                     make_mock_op_body!(self, kws, flags, $method)

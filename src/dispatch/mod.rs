@@ -60,52 +60,44 @@ impl From<Config> for Box<dyn Pm> {
         #[allow(clippy::match_single_binding)]
         match pm {
             // Chocolatey
-            "choco" => Choco { cfg }.boxed(),
+            "choco" => Choco::new(cfg).boxed(),
 
             // Scoop
-            "scoop" => Scoop { cfg }.boxed(),
+            "scoop" => Scoop::new(cfg).boxed(),
 
             // Homebrew/Linuxbrew
-            "brew" => Brew { cfg }.boxed(),
+            "brew" => Brew::new(cfg).boxed(),
 
             // Macports
-            "port" if cfg!(target_os = "macos") => Port { cfg }.boxed(),
+            "port" if cfg!(target_os = "macos") => Port::new(cfg).boxed(),
 
             // Portage for Gentoo
-            "emerge" => Emerge { cfg }.boxed(),
+            "emerge" => Emerge::new(cfg).boxed(),
 
             // Apk for Alpine
-            "apk" => Apk { cfg }.boxed(),
+            "apk" => Apk::new(cfg).boxed(),
 
             // Apt for Debian/Ubuntu/Termux (new versions)
-            "apt" => Apt { cfg }.boxed(),
+            "apt" => Apt::new(cfg).boxed(),
 
             // Dnf for RedHat
-            "dnf" => Dnf { cfg }.boxed(),
+            "dnf" => Dnf::new(cfg).boxed(),
 
             // Zypper for SUSE
-            "zypper" => Zypper { cfg }.boxed(),
+            "zypper" => Zypper::new(cfg).boxed(),
 
             // -- External Package Managers --
 
             // Conda
-            "conda" => Conda { cfg }.boxed(),
+            "conda" => Conda::new(cfg).boxed(),
 
             // Pip
-            "pip" => Pip {
-                cmd: "pip".into(),
-                cfg,
-            }
-            .boxed(),
+            "pip" => Pip::new("pip", cfg).boxed(),
 
-            "pip3" => Pip {
-                cmd: "pip3".into(),
-                cfg,
-            }
-            .boxed(),
+            "pip3" => Pip::new("pip3", cfg).boxed(),
 
             // Tlmgr
-            "tlmgr" => Tlmgr { cfg }.boxed(),
+            "tlmgr" => Tlmgr::new(cfg).boxed(),
 
             // Test-only mock package manager
             #[cfg(test)]
