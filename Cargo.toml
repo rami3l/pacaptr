@@ -27,7 +27,7 @@ version = "0.12.1"
 xshell = "0.1.14"
 
 [dependencies]
-async-trait = "0.1.50"
+async-trait = "0.1.51"
 bytes = "1.0.1"
 # clap = "3.0.0-beta.2"
 clap = { git = "https://github.com/clap-rs/clap" }
