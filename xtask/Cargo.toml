@@ -11,5 +11,5 @@ anyhow = "1.0.42"
 const_format = "0.2.15"
 pico-args = "0.4.2"
 regex = { version = "1.5.4", default-features = false, features = ["std", "unicode-perl"] }
-xml-rs = "0.8.3"
+xml-rs = "0.8.4"
 xshell = "0.1.14"
