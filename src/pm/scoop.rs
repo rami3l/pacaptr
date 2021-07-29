@@ -1,18 +1,20 @@
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+use tokio::sync::Mutex;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::Result,
-    exec::{self, Cmd},
+    exec::{self, Cmd, StatusCode},
     print::{self, PROMPT_RUN},
 };
 
 #[derive(Debug)]
 pub struct Scoop {
-    pub cfg: Config,
+    cfg: Config,
+    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -27,6 +29,14 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 });
 
 impl Scoop {
+    #[must_use]
+    pub fn new(cfg: Config) -> Self {
+        Scoop {
+            cfg,
+            code: Mutex::default(),
+        }
+    }
+
     async fn search_regex(&self, cmd: &[&str], kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(cmd).flags(flags);
         if !self.cfg.dry_run {
@@ -52,6 +62,14 @@ impl Pm for Scoop {
 
     fn cfg(&self) -> &Config {
         &self.cfg
+    }
+
+    async fn code(&self) -> StatusCode {
+        *self.code.lock().await
+    }
+
+    async fn set_code(&self, to: StatusCode) {
+        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.

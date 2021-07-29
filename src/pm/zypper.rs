@@ -1,17 +1,19 @@
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+use tokio::sync::Mutex;
 
 use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::Result,
-    exec::{self, Cmd},
+    exec::{self, Cmd, StatusCode},
 };
 
 #[derive(Debug)]
 pub struct Zypper {
-    pub cfg: Config,
+    cfg: Config,
+    code: Mutex<StatusCode>,
 }
 
 static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -32,6 +34,14 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 });
 
 impl Zypper {
+    #[must_use]
+    pub fn new(cfg: Config) -> Self {
+        Zypper {
+            cfg,
+            code: Mutex::default(),
+        }
+    }
+
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
         self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY)
             .await
@@ -47,6 +57,14 @@ impl Pm for Zypper {
 
     fn cfg(&self) -> &Config {
         &self.cfg
+    }
+
+    async fn code(&self) -> StatusCode {
+        *self.code.lock().await
+    }
+
+    async fn set_code(&self, to: StatusCode) {
+        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.

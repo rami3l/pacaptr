@@ -2,24 +2,36 @@ use async_trait::async_trait;
 use futures::prelude::*;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+use tokio::sync::Mutex;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
     error::Result,
-    exec::{self, Cmd},
+    exec::{self, Cmd, StatusCode},
     print::{self, PROMPT_RUN},
 };
 
 #[derive(Debug)]
 pub struct Conda {
-    pub cfg: Config,
+    cfg: Config,
+    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(&["-y"]),
     ..Strategy::default()
 });
+
+impl Conda {
+    #[must_use]
+    pub fn new(cfg: Config) -> Self {
+        Conda {
+            cfg,
+            code: Mutex::default(),
+        }
+    }
+}
 
 #[async_trait]
 impl Pm for Conda {
@@ -30,6 +42,14 @@ impl Pm for Conda {
 
     fn cfg(&self) -> &Config {
         &self.cfg
+    }
+
+    async fn code(&self) -> StatusCode {
+        *self.code.lock().await
+    }
+
+    async fn set_code(&self, to: StatusCode) {
+        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.

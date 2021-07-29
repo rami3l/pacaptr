@@ -1,19 +1,35 @@
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+use tokio::sync::Mutex;
 
 use super::{DryRunStrategy, Pm, PmHelper, PmMode, Strategy};
-use crate::{dispatch::config::Config, error::Result, exec::Cmd};
+use crate::{
+    dispatch::config::Config,
+    error::Result,
+    exec::{Cmd, StatusCode},
+};
 
 #[derive(Debug)]
 pub struct Tlmgr {
-    pub cfg: Config,
+    cfg: Config,
+    code: Mutex<StatusCode>,
 }
 
 static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
     ..Strategy::default()
 });
+
+impl Tlmgr {
+    #[must_use]
+    pub fn new(cfg: Config) -> Self {
+        Tlmgr {
+            cfg,
+            code: Mutex::default(),
+        }
+    }
+}
 
 #[async_trait]
 impl Pm for Tlmgr {
@@ -24,6 +40,14 @@ impl Pm for Tlmgr {
 
     fn cfg(&self) -> &Config {
         &self.cfg
+    }
+
+    async fn code(&self) -> StatusCode {
+        *self.code.lock().await
+    }
+
+    async fn set_code(&self, to: StatusCode) {
+        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.

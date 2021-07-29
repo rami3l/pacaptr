@@ -1,14 +1,16 @@
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
+use tokio::sync::Mutex;
 
 use super::{DryRunStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
-use crate::exec::Cmd;
+use crate::exec::{Cmd, StatusCode};
 use crate::{dispatch::config::Config, error::Result};
 
 #[derive(Debug)]
 pub struct Choco {
-    pub cfg: Config,
+    cfg: Config,
+    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -23,6 +25,14 @@ static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
 });
 
 impl Choco {
+    #[must_use]
+    pub fn new(cfg: Config) -> Self {
+        Choco {
+            cfg,
+            code: Mutex::default(),
+        }
+    }
+
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
         self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY)
             .await
@@ -39,6 +49,14 @@ impl Pm for Choco {
 
     fn cfg(&self) -> &Config {
         &self.cfg
+    }
+
+    async fn code(&self) -> StatusCode {
+        *self.code.lock().await
+    }
+
+    async fn set_code(&self, to: StatusCode) {
+        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.

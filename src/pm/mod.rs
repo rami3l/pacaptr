@@ -21,8 +21,6 @@ pub mod zypper;
 
 use async_trait::async_trait;
 use macro_rules_attribute::macro_rules_attribute;
-use once_cell::sync::Lazy;
-use tokio::sync::Mutex;
 use tt_call::tt_call;
 
 pub use self::{
@@ -215,28 +213,11 @@ pub trait Pm: Sync {
     }
 
     /// Gets the [`StatusCode`] to be returned.
-    async fn code(&self) -> StatusCode {
-        self.get_set_code(None).await
-    }
+    #[must_use]
+    async fn code(&self) -> StatusCode;
 
     /// Sets the [`StatusCode`] to be returned.
-    async fn set_code(&self, to: StatusCode) {
-        self.get_set_code(Some(to)).await;
-    }
-
-    /// Gets/Sets the [`StatusCode`] to be returned.
-    ///
-    /// If `to` is `Some(n)`, the current [`StatusCode`] will be reset to `n`,
-    /// then return [`StatusCode`].
-    #[doc(hidden)]
-    async fn get_set_code(&self, to: Option<StatusCode>) -> StatusCode {
-        static CODE: Lazy<Mutex<StatusCode>> = Lazy::new(|| Mutex::new(0));
-        let mut code = CODE.lock().await;
-        if let Some(n) = to {
-            *code = n;
-        }
-        *code
-    }
+    async fn set_code(&self, to: StatusCode);
 }
 
 /// Extra implementation helper functions for [`Pm`],
