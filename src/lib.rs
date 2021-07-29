@@ -19,8 +19,8 @@
 //! in `-Sp`.
 
 pub mod dispatch;
+mod docs;
 pub mod error;
 pub mod exec;
-
 pub mod pm;
 pub mod print;

@@ -27,6 +27,7 @@ use tokio_util::{
 use which::which;
 
 use crate::{
+    docs_errors_exec, docs_errors_grep,
     error::{Error, Result},
     print::{print_cmd, print_question, PROMPT_CANCELED, PROMPT_PENDING, PROMPT_RUN},
 };
@@ -185,20 +186,6 @@ where
 
     src.forward(sink).await?;
     Ok(buf)
-}
-
-macro_rules! docs_errors_exec {
-    () => {
-        indoc! {"
-            # Errors
-            This function might return one of the following errors:
-
-            - [`Error::CmdJoinError`]
-            - [`Error::CmdNoHandleError`]
-            - [`Error::CmdSpawnError`]
-            - [`Error::CmdWaitError`]
-        "}
-    };
 }
 
 impl Cmd {
@@ -384,16 +371,6 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
             .then(|| answer.to_owned())
     })
     .unwrap() // It's impossible to find nothing out of an infinite loop.
-}
-
-macro_rules! docs_errors_grep {
-    () => {
-        indoc! {"
-            # Errors
-            Returns an [`Error::OtherError`] when any of the
-            regex patterns is ill-formed.
-        "}
-    };
 }
 
 /// Finds all lines in the given `text` that matches all the `patterns`.
