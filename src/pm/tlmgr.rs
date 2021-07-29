@@ -2,16 +2,17 @@ use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
-use super::{DryRunStrategy, Pm, PmHelper, Strategy};
+use super::{DryRunStrategy, Pm, PmHelper, PmMode, Strategy};
 use crate::{dispatch::config::Config, error::Result, exec::Cmd};
 
+#[derive(Debug)]
 pub struct Tlmgr {
     pub cfg: Config,
 }
 
 static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
     dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 #[async_trait]
@@ -59,7 +60,7 @@ impl Pm for Tlmgr {
         Cmd::new(&["tlmgr", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))
             .await
     }
 
@@ -68,7 +69,7 @@ impl Pm for Tlmgr {
         Cmd::new(&["tlmgr", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))
             .await
     }
 
@@ -103,7 +104,7 @@ impl Pm for Tlmgr {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY))
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))
         .await
     }
 
@@ -119,7 +120,7 @@ impl Pm for Tlmgr {
         Cmd::new(&["tlmgr", "install", "--file"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))
             .await
     }
 }

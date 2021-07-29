@@ -16,9 +16,13 @@ mod cmd;
 pub mod config;
 
 pub use self::{cmd::Pacaptr, config::Config};
-use crate::{exec::is_exe, pm::*};
+use crate::{
+    exec::is_exe,
+    pm::{Apk, Apt, Brew, Choco, Conda, Dnf, Emerge, Pip, Pm, Port, Scoop, Tlmgr, Unknown, Zypper},
+};
 
 /// Detects the name of the package manager to be used in auto dispatch.
+#[must_use]
 pub fn detect_pm_str<'s>() -> &'s str {
     let pairs: &[(&str, &str)] = match () {
         _ if cfg!(target_os = "windows") => &[("scoop", ""), ("choco", "")],

@@ -1,5 +1,7 @@
 //! Output messages and prompts.
 
+#![allow(missing_docs, clippy::module_name_repetitions)]
+
 use colored::Colorize;
 
 use crate::exec::Cmd;
@@ -10,6 +12,7 @@ pub static PROMPT_RUN: &str = "Running";
 pub static PROMPT_INFO: &str = "Info";
 pub static PROMPT_ERROR: &str = "Error";
 
+/// The right indentation to be applied on prompt prefixes.
 pub static PROMPT_INDENT: usize = 9;
 
 macro_rules! prompt_format {
@@ -43,7 +46,7 @@ pub fn print_cmd(cmd: &Cmd, prompt: &str) {
         prompt.green().bold(),
         cmd,
         indent = PROMPT_INDENT
-    )
+    );
 }
 
 /// Prints out a message after the given prompt.

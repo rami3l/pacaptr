@@ -11,6 +11,7 @@ const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";
 
 /// Configurations that may vary when running the package manager.
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Config {
     #[serde(default)]
     pub dry_run: bool,
@@ -31,8 +32,9 @@ pub struct Config {
 impl Config {
     /// The default config file path is `$HOME/.config/pacaptr/pacaptr.toml`.
     ///
-    /// This method will almost always success, and will only fail if `$HOME` is
-    /// not found.
+    /// # Errors
+    /// Returns an [`Error::ConfigError`] when `$HOME` is not found.
+    #[allow(trivial_numeric_casts)]
     pub fn default_path() -> Result<PathBuf> {
         let crate_name = clap::crate_name!();
         dirs_next::home_dir()
@@ -48,6 +50,10 @@ impl Config {
 
     /// Gets the custom config file path specified by the `PACAPTR_CONFIG`
     /// environment variable.
+    ///
+    /// # Errors
+    /// Returns an [`Error::ConfigError`] when the config path is not found in
+    /// the environmental variable.
     pub fn custom_path() -> Result<PathBuf> {
         env::var(CONFIG_ENV_VAR)
             .map_err(|e| Error::ConfigError {
@@ -63,6 +69,9 @@ impl Config {
     ///   the config file in the default path.
     /// - If the config file is not present anyway, a default one will be loaded
     ///   with [`Default::default`], and no files will be written.
+    ///
+    /// # Errors
+    /// Returns an [`Error::ConfigError`] when the config file loading fails.
     pub fn load() -> Result<Self> {
         let path = Config::custom_path().or_else(|_| Config::default_path())?;
         path.exists()
@@ -71,6 +80,6 @@ impl Config {
             .map_err(|_e| Error::ConfigError {
                 msg: format!("Failed to read config at `{:?}`", &path),
             })
-            .map(|cfg| cfg.unwrap_or_default())
+            .map(Option::unwrap_or_default)
     }
 }

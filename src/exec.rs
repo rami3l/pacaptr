@@ -5,8 +5,9 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use bytes::Bytes;
+use bytes::{Bytes, BytesMut};
 use futures::prelude::*;
+use indoc::indoc;
 pub use is_root::is_root;
 use itertools::{chain, Itertools};
 use once_cell::sync::Lazy;
@@ -17,6 +18,7 @@ use tokio::{
     process::Command as Exec,
     task::JoinHandle,
 };
+#[allow(clippy::wildcard_imports)]
 use tokio_util::{
     codec::{BytesCodec, FramedRead},
     compat::*,
@@ -26,7 +28,7 @@ use which::which;
 
 use crate::{
     error::{Error, Result},
-    print::*,
+    print::{print_cmd, print_question, PROMPT_CANCELED, PROMPT_PENDING, PROMPT_RUN},
 };
 
 /// Different ways in which a command shall be dealt with.
@@ -59,6 +61,7 @@ pub enum Mode {
     Prompt,
 }
 
+/// The status code type returned by a [`Cmd`],
 pub type StatusCode = i32;
 
 /// Output of running a [`Cmd`].
@@ -70,7 +73,7 @@ pub struct Output {
 
     /// The status code returned by the [`Cmd`].
     ///
-    /// Here we use [`Some(n)`] for exit code, [`None`] for signals.
+    /// Here we use [`Some`] for exit code, [`None`] for signals.
     pub code: Option<StatusCode>,
 }
 
@@ -97,9 +100,9 @@ pub struct Cmd {
 
 impl Cmd {
     pub fn new(cmd: &[impl AsRef<str>]) -> Self {
-        Self {
+        Cmd {
             cmd: cmd.iter().map(AsRef::as_ref).map_into().collect(),
-            ..Default::default()
+            ..Cmd::default()
         }
     }
 
@@ -115,6 +118,7 @@ impl Cmd {
         self.tap_mut(|s| s.flags = flags.iter().map(AsRef::as_ref).map_into().collect())
     }
 
+    #[must_use]
     pub fn sudo(self, sudo: bool) -> Self {
         self.tap_mut(|s| s.sudo = sudo)
     }
@@ -123,11 +127,13 @@ impl Cmd {
     ///
     /// If a **normal admin** needs to run it with `sudo`, and we are not
     /// `root`, then this is the case.
+    #[must_use]
     pub fn should_sudo(&self) -> bool {
         self.sudo && !is_root()
     }
 
     /// Converts a [`Cmd`] object into an [`Exec`].
+    #[must_use]
     pub fn build(self) -> Exec {
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
         // ! but not `zypper install curl -y`.
@@ -169,6 +175,7 @@ where
     let mut buf = Vec::<u8>::new();
     let buf_sink = (&mut buf).into_sink();
 
+    #[allow(clippy::option_if_let_else)]
     let sink = if let Some(out) = out {
         let out_sink = out.compat_write().into_sink();
         buf_sink.fanout(out_sink).left_sink()
@@ -180,16 +187,31 @@ where
     Ok(buf)
 }
 
+macro_rules! docs_errors_exec {
+    () => {
+        indoc! {"
+            # Errors
+            This function might return one of the following errors:
+
+            - [`Error::CmdJoinError`]
+            - [`Error::CmdNoHandleError`]
+            - [`Error::CmdSpawnError`]
+            - [`Error::CmdWaitError`]
+        "}
+    };
+}
+
 impl Cmd {
     /// Executes a [`Cmd`] and returns its output.
     ///
     /// The exact behavior depends on the [`Mode`] passed in (see the definition
     /// of [`Mode`] for more info).
+    #[doc = docs_errors_exec!()]
     pub async fn exec(self, mode: Mode) -> Result<Output> {
         match mode {
             Mode::PrintCmd => {
                 print_cmd(&self, PROMPT_CANCELED);
-                Ok(Default::default())
+                Ok(Output::default())
             }
             Mode::Mute => self.exec_checkall(true).await,
             Mode::CheckAll => {
@@ -204,14 +226,21 @@ impl Cmd {
         }
     }
 
-    /// Inner implementation of [`Cmd::exec_checkerr`] and
-    /// [`Cmd::exec_checkall`].
-    ///
-    /// `merge == false` goes to [`Cmd::exec_checkerr`], and
-    /// [`Cmd::exec_checkall`] otherwise.
+    /// Inner implementation of [`Cmd::exec_checkerr`] (if `merge` is `false`)
+    /// and [`Cmd::exec_checkall`] (otherwise).
+    #[doc = docs_errors_exec!()]
     async fn exec_check_output(self, mute: bool, merge: bool) -> Result<Output> {
         use tokio_stream::StreamExt;
-        use Error::*;
+        use Error::{CmdJoinError, CmdNoHandleError, CmdSpawnError, CmdWaitError};
+
+        fn make_reader(
+            src: Option<impl AsyncRead>,
+            name: &str,
+        ) -> Result<impl Stream<Item = io::Result<Bytes>>> {
+            src.map(into_bytes).ok_or_else(|| CmdNoHandleError {
+                handle: name.into(),
+            })
+        }
 
         let mut child = self
             .build()
@@ -223,15 +252,6 @@ impl Cmd {
             })
             .spawn()
             .map_err(CmdSpawnError)?;
-
-        fn make_reader(
-            src: Option<impl AsyncRead>,
-            name: &str,
-        ) -> Result<impl Stream<Item = io::Result<Bytes>>> {
-            src.map(into_bytes).ok_or_else(|| CmdNoHandleError {
-                handle: name.into(),
-            })
-        }
 
         let stderr_reader = make_reader(child.stderr.take(), "stderr")?;
         let mut reader = if merge {
@@ -264,6 +284,7 @@ impl Cmd {
     ///
     /// If `mute` is `false`, then normal `stdout/stderr` output will be printed
     /// to `stdout` too.
+    #[doc = docs_errors_exec!()]
     pub async fn exec_checkall(self, mute: bool) -> Result<Output> {
         self.exec_check_output(mute, true).await
     }
@@ -272,6 +293,7 @@ impl Cmd {
     ///
     /// If `mute` is `false`, then its `stderr` output will be printed to
     /// `stderr` too.
+    #[doc = docs_errors_exec!()]
     pub async fn exec_checkerr(self, mute: bool) -> Result<Output> {
         self.exec_check_output(mute, false).await
     }
@@ -284,6 +306,7 @@ impl Cmd {
     /// This function behaves just like [`exec_checkerr`](Cmd::exec_checkerr),
     /// but in addition, the user will be prompted if (s)he wishes to
     /// continue with the command execution.
+    #[doc = docs_errors_exec!()]
     pub async fn exec_prompt(self, mute: bool) -> Result<Output> {
         static ALL_YES: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
@@ -315,7 +338,7 @@ impl Cmd {
             }
         };
         if !proceed {
-            return Ok(Default::default());
+            return Ok(Output::default());
         }
         print_cmd(&self, PROMPT_RUN);
         self.exec_checkerr(mute).await
@@ -335,6 +358,8 @@ impl std::fmt::Display for Cmd {
 ///
 /// If `case_sensitive` is `false`, then `expected` should be all lower case
 /// patterns.
+#[must_use]
+#[allow(clippy::missing_panics_doc)]
 pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
     use std::io::{self, Write};
 
@@ -361,10 +386,21 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
     .unwrap() // It's impossible to find nothing out of an infinite loop.
 }
 
+macro_rules! docs_errors_grep {
+    () => {
+        indoc! {"
+            # Errors
+            Returns an [`Error::OtherError`] when any of the
+            regex patterns is ill-formed.
+        "}
+    };
+}
+
 /// Finds all lines in the given `text` that matches all the `patterns`.
 ///
 /// We suppose that all patterns are legal regular expressions.
 /// An error message will be returned if this is not the case.
+#[doc = docs_errors_grep!()]
 pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
     patterns
         .iter()
@@ -381,6 +417,7 @@ pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
 }
 
 /// Prints the result of [`grep`] line by line.
+#[doc = docs_errors_grep!()]
 pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
     grep(text, patterns).map(|lns| lns.iter().for_each(|ln| println!("{}", ln)))
 }
@@ -388,13 +425,14 @@ pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
 /// Checks if an executable exists by name (consult `$PATH`) or by path.
 ///
 /// To check by one parameter only, pass `""` to the other one.
+#[must_use]
 pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && which(path).is_ok()) || (!name.is_empty() && which(name).is_ok())
 }
 
 /// Turns an [`AsyncRead`] into a [`Stream`].
 ///
-/// _Shamelessly copied from [StackOverflow](https://stackoverflow.com/a/59327560)._
+/// _Shamelessly copied from [`StackOverflow`](https://stackoverflow.com/a/59327560)._
 pub fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = io::Result<Bytes>> {
-    FramedRead::new(reader, BytesCodec::new()).map_ok(|bytes| bytes.freeze())
+    FramedRead::new(reader, BytesCodec::new()).map_ok(BytesMut::freeze)
 }

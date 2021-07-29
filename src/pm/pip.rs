@@ -5,11 +5,12 @@ use tap::prelude::*;
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::config::Config,
-    error::Result,
+    error::{Error, Result},
     exec::{self, Cmd},
     print::{self, PROMPT_RUN},
 };
 
+#[derive(Debug)]
 pub struct Pip {
     pub cmd: String,
     pub cfg: Config,
@@ -17,12 +18,12 @@ pub struct Pip {
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_UNINSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(&["-y"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 #[async_trait]
@@ -62,7 +63,7 @@ impl Pm for Pip {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .check_output(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?
             .contents;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
@@ -83,7 +84,7 @@ impl Pm for Pip {
         Cmd::new(&[&self.cmd, "uninstall"] as _)
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_UNINSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_UNINSTALL))
             .await
     }
 
@@ -92,7 +93,7 @@ impl Pm for Pip {
         Cmd::new(&[&self.cmd, "install"] as _)
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -105,18 +106,17 @@ impl Pm for Pip {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        if !kws.is_empty() {
-            Cmd::new(&[&self.cmd, "install", "--upgrade"] as _)
-                .kws(kws)
-                .flags(flags)
-                .pipe(|cmd| self.run(cmd))
-                .await
-        } else {
-            Err(crate::error::Error::OperationUnimplementedError {
+        if kws.is_empty() {
+            return Err(Error::OperationUnimplementedError {
                 op: "su".into(),
                 pm: self.name().into(),
-            })
+            });
         }
+        Cmd::new(&[&self.cmd, "install", "--upgrade"] as _)
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
+            .await
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade

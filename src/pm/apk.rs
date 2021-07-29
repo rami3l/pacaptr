@@ -10,19 +10,20 @@ use crate::{
     print::{self, PROMPT_RUN},
 };
 
+#[derive(Debug)]
 pub struct Apk {
     pub cfg: Config,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     no_cache: NoCacheStrategy::with_flags(&["--no-cache"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 #[async_trait]
@@ -75,7 +76,7 @@ impl Pm for Apk {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
         let out_bytes = self
-            .check_output(cmd, PmMode::Mute, &Default::default())
+            .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?
             .contents;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)
@@ -93,7 +94,7 @@ impl Pm for Apk {
         Cmd::with_sudo(&["apk", "del"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -103,7 +104,7 @@ impl Pm for Apk {
         Cmd::with_sudo(&["apk", "del", "--purge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -114,7 +115,7 @@ impl Pm for Apk {
         Cmd::with_sudo(&["apk", "del", "--purge", "-r"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -129,7 +130,7 @@ impl Pm for Apk {
         Cmd::with_sudo(&["apk", "add"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 
@@ -138,7 +139,7 @@ impl Pm for Apk {
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["apk", "cache", "-v", "clean"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -146,7 +147,7 @@ impl Pm for Apk {
     async fn scc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["rm", "-vrf", "/var/cache/apk/*"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -186,7 +187,7 @@ impl Pm for Apk {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
         .await
     }
 
@@ -200,7 +201,7 @@ impl Pm for Apk {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
         .await
     }
 
@@ -210,7 +211,7 @@ impl Pm for Apk {
         Cmd::new(&["apk", "fetch"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -230,7 +231,7 @@ impl Pm for Apk {
         Cmd::with_sudo(&["apk", "add", "--allow-untrusted"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await
     }
 }

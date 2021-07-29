@@ -2,10 +2,11 @@ use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
-use super::{DryRunStrategy, Pm, PmHelper, PromptStrategy, Strategy};
+use super::{DryRunStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::exec::Cmd;
 use crate::{dispatch::config::Config, error::Result};
 
+#[derive(Debug)]
 pub struct Choco {
     pub cfg: Config,
 }
@@ -13,17 +14,17 @@ pub struct Choco {
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(&["--yes"]),
     dry_run: DryRunStrategy::with_flags(&["--what-if"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
     dry_run: DryRunStrategy::with_flags(&["--what-if"]),
-    ..Default::default()
+    ..Strategy::default()
 });
 
 impl Choco {
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
-        self.run_with(cmd, Default::default(), &STRAT_CHECK_DRY)
+        self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY)
             .await
     }
 }
@@ -65,7 +66,7 @@ impl Pm for Choco {
         Cmd::new(&["choco", "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -75,7 +76,7 @@ impl Pm for Choco {
         Cmd::new(&["choco", "uninstall", "--removedependencies"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
     }
 
@@ -88,7 +89,7 @@ impl Pm for Choco {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
         .await
     }
 
@@ -114,7 +115,7 @@ impl Pm for Choco {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, Default::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
         .await
     }
 

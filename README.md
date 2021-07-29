@@ -313,4 +313,4 @@ After some discussions in [pacapt/#126], I decided to rewrite the project in Rus
 [rmtree]: https://github.com/beeftornado/homebrew-rmtree
 [gsudo]: https://github.com/gerardog/gsudo
 [rs-dev]: https://github.com/rami3l/pacaptr/tree/rs-dev
-[compatibility table]: ./docs/compatibility_table.md
+[compatibility table]: https://docs.rs/pacaptr
