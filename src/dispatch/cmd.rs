@@ -4,6 +4,8 @@ use std::iter::FromIterator;
 
 use clap::{self, AppSettings, Clap};
 use itertools::Itertools;
+#[allow(clippy::wildcard_imports)]
+use pacaptr_docs::*;
 use tap::prelude::*;
 use tokio::task;
 use tt_call::tt_call;
@@ -74,10 +76,10 @@ pub struct Pacaptr {
 #[derive(Debug, Clap)]
 #[clap(about = clap::crate_description!())]
 pub enum Operations {
-    /// Query the package database.
+    #[doc = docs_pm_q!()]
     #[clap(short_flag = 'Q', long_flag = "query")]
     Query {
-        /// View the ChangeLog of a package if it exists.
+        #[doc = docs_pm_qc!()]
         #[clap(short, long = "changelog")]
         c: bool,
 

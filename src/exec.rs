@@ -7,10 +7,10 @@ use std::{
 
 use bytes::{Bytes, BytesMut};
 use futures::prelude::*;
-use indoc::indoc;
 pub use is_root::is_root;
 use itertools::{chain, Itertools};
 use once_cell::sync::Lazy;
+use pacaptr_docs::{docs_errors_exec, docs_errors_grep};
 use regex::Regex;
 use tap::prelude::*;
 use tokio::{
@@ -27,27 +27,9 @@ use tokio_util::{
 use which::which;
 
 use crate::{
-    docs_factory,
     error::{Error, Result},
     print::{print_cmd, print_question, PROMPT_CANCELED, PROMPT_PENDING, PROMPT_RUN},
 };
-
-docs_factory! {
-    docs_errors_exec => indoc! {"
-        # Errors
-        This function might return one of the following errors:
-        - [`Error::CmdJoinError`]
-        - [`Error::CmdNoHandleError`]
-        - [`Error::CmdSpawnError`]
-        - [`Error::CmdWaitError`]
-    "},
-
-    docs_errors_grep => indoc! {"
-        # Errors
-        Returns an [`Error::OtherError`] when any of the
-        regex patterns is ill-formed.
-    "},
-}
 
 /// Different ways in which a command shall be dealt with.
 #[derive(Copy, Clone, Debug)]

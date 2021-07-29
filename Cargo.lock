@@ -475,6 +475,7 @@ dependencies = [
  "itertools",
  "macro_rules_attribute",
  "once_cell",
+ "pacaptr-docs",
  "pacaptr-macros",
  "regex",
  "serde",
@@ -487,6 +488,10 @@ dependencies = [
  "which",
  "xshell",
 ]
+
+[[package]]
+name = "pacaptr-docs"
+version = "0.1.0"
 
 [[package]]
 name = "pacaptr-macros"
