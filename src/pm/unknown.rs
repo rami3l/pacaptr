@@ -5,7 +5,7 @@ use crate::{dispatch::config::Config, exec::StatusCode};
 
 #[derive(Debug)]
 pub struct Unknown {
-    pub name: String,
+    name: String,
     cfg: Config,
 }
 

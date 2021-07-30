@@ -13,6 +13,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct Pip {
+    /// The command used to invoke [`Pip`], eg. `pip`, `pip3`.
     pub cmd: String,
     cfg: Config,
     code: Mutex<StatusCode>,
@@ -30,6 +31,7 @@ static STRAT_UNINSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 
 impl Pip {
     #[must_use]
+    #[allow(missing_docs)]
     pub fn new(cmd: &str, cfg: Config) -> Self {
         Pip {
             cmd: cmd.into(),

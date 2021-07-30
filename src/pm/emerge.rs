@@ -35,6 +35,7 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 
 impl Emerge {
     #[must_use]
+    #[allow(missing_docs)]
     pub fn new(cfg: Config) -> Self {
         Emerge {
             cfg,

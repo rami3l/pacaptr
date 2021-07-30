@@ -26,6 +26,7 @@ static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
 
 impl Choco {
     #[must_use]
+    #[allow(missing_docs)]
     pub fn new(cfg: Config) -> Self {
         Choco {
             cfg,

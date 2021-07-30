@@ -340,8 +340,13 @@ impl From<PmMode> for Mode {
 /// package manager, indicating how it is run.
 #[derive(Clone, Debug, Default)]
 pub struct Strategy<S = String> {
+    /// How a dry run is dealt with.
     pub dry_run: DryRunStrategy<S>,
+
+    /// How the prompt is dealt with when running the package manager.
     pub prompt: PromptStrategy<S>,
+
+    /// How the cache is cleaned when `no_cache` is set to `true`.
     pub no_cache: NoCacheStrategy<S>,
 }
 

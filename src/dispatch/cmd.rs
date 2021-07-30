@@ -44,7 +44,7 @@ pub struct Pacaptr {
     #[clap(global = true, long = "dry-run", visible_alias = "dryrun")]
     dry_run: bool,
 
-    /// Prevent reinstalling packages already installed.
+    /// Prevent reinstalling previously installed packages.
     #[clap(global = true, long = "needed")]
     needed: bool,
 

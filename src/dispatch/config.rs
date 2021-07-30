@@ -13,18 +13,23 @@ const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Config {
+    /// Perform a dry run.
     #[serde(default)]
     pub dry_run: bool,
 
+    /// Prevent reinstalling previously installed packages.
     #[serde(default)]
     pub needed: bool,
 
+    /// Answer yes to every question.
     #[serde(default)]
     pub no_confirm: bool,
 
+    /// Remove cache after installation.
     #[serde(default)]
     pub no_cache: bool,
 
+    /// The default package manager to be invoked.
     #[serde(default)]
     pub default_pm: Option<String>,
 }

@@ -46,6 +46,7 @@ impl Brew {
 
 impl Brew {
     #[must_use]
+    #[allow(missing_docs)]
     pub fn new(cfg: Config) -> Self {
         Brew {
             cfg,
