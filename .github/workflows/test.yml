@@ -6,6 +6,9 @@ on:
     branches:
       - master
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   choco-test:
     runs-on: windows-latest
