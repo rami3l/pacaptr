@@ -1,4 +1,7 @@
+#![doc = docs_self!()]
+
 use async_trait::async_trait;
+use indoc::indoc;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
@@ -11,6 +14,15 @@ use crate::{
     exec::{Cmd, StatusCode},
 };
 
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            The [Portage Package Manager](https://wiki.gentoo.org/wiki/Portage).
+        "}
+    };
+}
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Emerge {
     cfg: Config,

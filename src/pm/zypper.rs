@@ -1,4 +1,7 @@
+#![doc = docs_self!()]
+
 use async_trait::async_trait;
+use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 use tokio::sync::Mutex;
@@ -10,6 +13,15 @@ use crate::{
     exec::{self, Cmd, StatusCode},
 };
 
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            The [Zypper Package Manager](https://en.opensuse.org/Portal:Zypper).
+        "}
+    };
+}
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Zypper {
     cfg: Config,

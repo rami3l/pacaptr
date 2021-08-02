@@ -1,5 +1,8 @@
+#![doc = docs_self!()]
+
 use async_trait::async_trait;
 use futures::prelude::*;
+use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 use tokio::sync::Mutex;
@@ -12,6 +15,15 @@ use crate::{
     print::{self, PROMPT_RUN},
 };
 
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            The [Conda Package Manager](https://conda.io/).
+        "}
+    };
+}
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Conda {
     cfg: Config,

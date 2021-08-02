@@ -116,7 +116,7 @@ choco install pacaptr
 
 ### `cargo`
 
-As for now, uploading `pacaptr` to crates.io has been blocked by [cargo/#4468](https://github.com/rust-lang/cargo/issues/4468), so we have to stick with GitHub when building from source.
+As for now, we have to stick with GitHub when building from source.
 
 To install:
 

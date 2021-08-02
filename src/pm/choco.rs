@@ -1,4 +1,7 @@
+#![doc = docs_self!()]
+
 use async_trait::async_trait;
+use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 use tokio::sync::Mutex;
@@ -7,6 +10,15 @@ use super::{DryRunStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::exec::{Cmd, StatusCode};
 use crate::{dispatch::config::Config, error::Result};
 
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            The [Chocolatey Package Manager](https://chocolatey.org/).
+        "}
+    };
+}
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Choco {
     cfg: Config,

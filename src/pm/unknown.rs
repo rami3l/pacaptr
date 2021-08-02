@@ -1,8 +1,20 @@
+#![doc = docs_self!()]
+
 use async_trait::async_trait;
+use indoc::indoc;
 
 use super::Pm;
 use crate::{dispatch::config::Config, exec::StatusCode};
 
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            An empty mapping for unidentified package managers.
+        "}
+    };
+}
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Unknown {
     name: String,
