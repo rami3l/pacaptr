@@ -21,7 +21,7 @@ jobs:
           override: true
 
       - name: Create
-        run: cargo doc --document-private-items --no-deps
+        run: cargo doc --document-private-items
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4
