@@ -74,6 +74,15 @@ impl Pm for Conda {
         }
     }
 
+    /// Qo queries the package which provides FILE.
+    async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        Cmd::new(&["conda", "package", "--which"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
+            .await
+    }
+
     /// Qs searches locally installed package for names or descriptions.
     // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
     // when including multiple search terms, only packages with descriptions
