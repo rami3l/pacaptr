@@ -395,8 +395,7 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
         let answer = answer.trim();
         expected
             .iter()
-            .any(|&x| x == answer)
-            .then(|| answer.to_owned())
+            .find_map(|&pat| (pat == answer).then(|| answer.to_owned()))
     })
     .unwrap() // It's impossible to find nothing out of an infinite loop.
 }
@@ -417,18 +416,17 @@ macro_rules! docs_errors_grep {
 /// An error message will be returned if this is not the case.
 #[doc = docs_errors_grep!()]
 pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
-    patterns
+    let patterns: Vec<Regex> = patterns
         .iter()
         .map(|&pat| {
             Regex::new(pat)
                 .map_err(|_e| Error::OtherError(format!("Pattern `{}` is ill-formed", pat)))
         })
-        .try_collect()
-        .map(|rs: Vec<Regex>| {
-            text.lines()
-                .filter(|line| rs.iter().all(|regex| regex.is_match(line)))
-                .collect_vec()
-        })
+        .try_collect()?;
+    Ok(text
+        .lines()
+        .filter(|line| patterns.iter().all(|pat| pat.is_match(line)))
+        .collect())
 }
 
 /// Prints the result of [`grep`] line by line.

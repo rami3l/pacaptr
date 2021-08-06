@@ -306,7 +306,7 @@ impl Pacaptr {
     /// See [`Error`](crate::error::Error) for a  list of possible errors.
     #[allow(trivial_numeric_casts)]
     pub async fn dispatch(&self) -> Result<StatusCode> {
-        let dotfile = task::block_in_place(Config::load);
+        let dotfile = task::block_in_place(Config::try_load);
         let cfg = self.merge_cfg(dotfile?);
         self.dispatch_from(cfg).await
     }

@@ -42,15 +42,13 @@ impl Config {
     #[allow(trivial_numeric_casts)]
     pub fn default_path() -> Result<PathBuf> {
         let crate_name = clap::crate_name!();
-        dirs_next::home_dir()
-            .ok_or_else(|| Error::ConfigError {
-                msg: "$HOME path not found".into(),
-            })
-            .map(|p| {
-                p.join(".config")
-                    .join(crate_name)
-                    .join(&format!("{}.toml", crate_name))
-            })
+        let home = dirs_next::home_dir().ok_or_else(|| Error::ConfigError {
+            msg: "$HOME path not found".into(),
+        })?;
+        Ok(home
+            .join(".config")
+            .join(crate_name)
+            .join(&format!("{}.toml", crate_name)))
     }
 
     /// Gets the custom config file path specified by the `PACAPTR_CONFIG`
@@ -77,7 +75,7 @@ impl Config {
     ///
     /// # Errors
     /// Returns an [`Error::ConfigError`] when the config file loading fails.
-    pub fn load() -> Result<Self> {
+    pub fn try_load() -> Result<Self> {
         let path = Config::custom_path().or_else(|_| Config::default_path())?;
         path.exists()
             .then(|| confy::load_path(&path))
