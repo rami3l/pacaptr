@@ -9,7 +9,7 @@ edition = "2018"
 proc-macro = true
 
 [dependencies]
-anyhow = "1.0.42"
+anyhow = "1.0.43"
 itertools = "0.10.1"
 litrs = "0.2.3"
 once_cell = "1.8.0"
