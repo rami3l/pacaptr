@@ -116,9 +116,13 @@ choco install pacaptr
 
 ### `cargo`
 
-As for now, we have to stick with GitHub when building from source.
+To install the release version from crates.io:
 
-To install:
+```bash
+cargo install pacaptr
+```
+
+To install the lastest dev version from GitHub:
 
 ```bash
 cargo install pacaptr --git https://github.com/rami3l/pacaptr.git
