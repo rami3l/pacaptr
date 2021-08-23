@@ -2,6 +2,12 @@
 name = "pacaptr-macros"
 version = "0.13.1"
 edition = "2018"
+license = "GPL-3.0"
+
+authors = ["Rami3L <rami3l@outlook.com>"]
+homepage = "https://github.com/rami3l/pacaptr/tree/master/crates/pacaptr-macros"
+repository = "https://github.com/rami3l/pacaptr/tree/master/crates/pacaptr-macros"
+description = "Implementation of several macros used in pacaptr."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -1,23 +1,24 @@
 # cargo-features = ["strip"]
 
 [package]
+name = "pacaptr"
+version = "0.13.1"
+edition = "2018"
+license = "GPL-3.0"
+
 authors = ["Rami3L <rami3l@outlook.com>"]
 homepage = "https://github.com/rami3l/pacaptr"
 repository = "https://github.com/rami3l/pacaptr"
+description = "Pacman-like syntax wrapper for many package managers."
+readme = "README.md"
 
 keywords = ["package-management"]
 categories = ["command-line-utilities"]
-description = "Pacman-like syntax wrapper for many package managers."
 
-license = "GPL-3.0"
-readme = "README.md"
-
-edition = "2018"
 include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
 exclude = ["dist/**/*", "docs/**/*"]
 # build = "build.rs"
-name = "pacaptr"
-version = "0.13.1"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
