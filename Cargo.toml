@@ -17,7 +17,7 @@ include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
 exclude = ["dist/**/*", "docs/**/*"]
 # build = "build.rs"
 name = "pacaptr"
-version = "0.13.0"
+version = "0.13.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -2,7 +2,7 @@
 authors = ["rami3l <rami3l@outlook.com>"]
 edition = "2018"
 name = "xtask"
-version = "0.1.0"
+version = "0.13.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
