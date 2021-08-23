@@ -32,6 +32,10 @@ pub fn detect_pm_str<'s>() -> &'s str {
             ("brew", "/usr/local/bin/brew"),
             ("port", "/opt/local/bin/port"),
         ],
+        
+        _ if cfg!(target_os = "ios") => &[
+            ("apt", "/usr/bin/apt"),
+        ],
 
         _ if cfg!(target_os = "linux") => &[
             ("apk", "/sbin/apk"),
