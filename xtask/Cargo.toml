@@ -2,7 +2,7 @@
 authors = ["rami3l <rami3l@outlook.com>"]
 edition = "2018"
 name = "xtask"
-version = "0.13.1"
+version = "0.13.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,6 +10,9 @@ version = "0.13.1"
 anyhow = "1.0.43"
 const_format = "0.2.18"
 pico-args = "0.4.2"
-regex = { version = "1.5.4", default-features = false, features = ["std", "unicode-perl"] }
+regex = { version = "1.5.4", default-features = false, features = [
+    "std",
+    "unicode-perl",
+] }
 xml-rs = "0.8.4"
 xshell = "0.1.14"
