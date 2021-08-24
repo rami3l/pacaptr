@@ -106,6 +106,33 @@ jobs:
       - name: Run heavy tests
         run: cargo test port --verbose -- --ignored
 
+  procursus-test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Install apt
+        run: |
+          curl -LO https://apt.procurs.us/bootstrap_darwin-amd64.tar.zst
+          zstd -d ./bootstrap_darwin-amd64.tar.zst
+          sudo tar --directory=/ -x -z -p -f ./bootstrap_darwin-amd64.tar opt/procursus
+          echo "/opt/procursus/bin" >> $GITHUB_PATH
+      - name: Verify apt installation
+        run: apt --help
+      - uses: Swatinem/rust-cache@v1
+      - name: Build
+        run: cargo build --verbose
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test apt --verbose
+      - name: Run heavy tests
+        run: cargo test apt --verbose -- --ignored
+
   apt-test:
     runs-on: ubuntu-latest
     steps:
