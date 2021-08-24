@@ -7,7 +7,7 @@ use common::*;
 #[should_panic(expected = "Failed with pattern `^Package: wget$`")]
 fn apt_fail() {
     test_dsl! { r##"
-        in -Si screen
+        in -Si fish
         ou ^Package: wget$
     "## }
 }
@@ -20,6 +20,7 @@ fn apt_q() {
     "## }
 }
 
+#[cfg(target_os = "linux")]
 #[test]
 fn apt_qc() {
     test_dsl! { r##"
@@ -56,6 +57,7 @@ fn apt_qo() {
     "## }
 }
 
+#[cfg(target_os = "linux")]
 #[test]
 fn apt_qp_sw() {
     test_dsl! { r##"
@@ -74,13 +76,13 @@ fn apt_r_s() {
         in -Sy
 
         # Now installation
-        in -S screen --yes
-        in ! which screen
-        ou ^/usr/bin/screen
+        in -S fish --yes
+        in ! which fish
+        ou bin/fish
 
         # Now remove the package
-        in -R screen --yes
-        in -Qi screen
+        in -R fish --yes
+        in -Qi fish
         ou ^Status: deinstall
     "## }
 }
@@ -100,15 +102,15 @@ fn apt_sg() {
 #[test]
 fn apt_si() {
     test_dsl! { r##"
-        in -Si screen
-        ou ^Package: screen$
+        in -Si fish
+        ou ^Package: fish$
     "## }
 }
 
 #[test]
 fn apt_sii() {
     test_dsl! { r##"
-        in -Sii screen
+        in -Sii fish
         ou ^Reverse Depends:
     "## }
 }
