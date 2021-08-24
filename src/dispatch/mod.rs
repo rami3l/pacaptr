@@ -28,14 +28,12 @@ pub fn detect_pm_str<'s>() -> &'s str {
         _ if cfg!(target_os = "windows") => &[("scoop", ""), ("choco", "")],
 
         _ if cfg!(target_os = "macos") => &[
-            ("apt", "/opt/procursus/bin/apt"),
             ("brew", "/usr/local/bin/brew"),
             ("port", "/opt/local/bin/port"),
+            ("apt", "/opt/procursus/bin/apt"),
         ],
-        
-        _ if cfg!(target_os = "ios") => &[
-            ("apt", "/usr/bin/apt"),
-        ],
+
+        _ if cfg!(target_os = "ios") => &[("apt", "/usr/bin/apt")],
 
         _ if cfg!(target_os = "linux") => &[
             ("apk", "/sbin/apk"),

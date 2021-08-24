@@ -78,12 +78,11 @@ fn apt_r_s() {
         # Now installation
         in -S fish --yes
         in ! which fish
-        ou bin/fish
+        ou /bin/fish
 
         # Now remove the package
         in -R fish --yes
-        in -Qi fish
-        ou ^Status: deinstall
+        ou ^Removing fish
     "## }
 }
 

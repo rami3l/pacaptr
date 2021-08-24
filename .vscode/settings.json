@@ -36,6 +36,7 @@
     "libzypp",
     "litrs",
     "macos",
+    "mkdir",
     "mockpm",
     "nocache",
     "noconfirm",

@@ -123,6 +123,10 @@ jobs:
           echo "/opt/procursus/bin" >> $GITHUB_PATH
       - name: Verify apt installation
         run: sudo apt update
+      - name: Make pacaptr use apt by default
+        run: |
+          mkdir -p $HOME/.config/pacaptr
+          echo 'default_pm = "apt"' >> $HOME/.config/pacaptr/pacaptr.toml
       - uses: Swatinem/rust-cache@v1
       - name: Build
         run: cargo build --verbose
