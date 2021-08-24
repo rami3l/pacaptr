@@ -74,21 +74,31 @@ Run `pacman -Syu` on the OS of your choice!
 
 ### Windows
 
-`scoop`, [`choco`](#choco)
+- `scoop`
+- [`choco`](#choco)
 
 ### macOS
 
-[`brew`](#brew), `port`
+- [`brew`](#brew)
+- `port`
+- `apt` (through [Procursus])
 
 ### Linux
 
-`apt`, `apk`, `dnf`, `emerge`, `zypper`
+- `apt`
+- `apk`
+- `dnf`
+- `emerge`
+- `zypper`
 
 ### External
 
 > These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
 
-`conda`, `brew`, [`pip`/`pip3`](#pip), `tlmgr`
+- `conda`
+- `brew`
+- [`pip`/`pip3`](#pip)
+- `tlmgr`
 
 ### Notes
 
@@ -318,3 +328,4 @@ After some discussions in [pacapt/#126], I decided to rewrite the project in Rus
 [gsudo]: https://github.com/gerardog/gsudo
 [rs-dev]: https://github.com/rami3l/pacaptr/tree/rs-dev
 [compatibility table]: https://rami3l.github.io/pacaptr/pacaptr/#compatibility-table
+[procursus]: https://github.com/ProcursusTeam/Procursus
