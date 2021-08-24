@@ -52,7 +52,7 @@ fn apt_qi() {
 fn apt_qo() {
     test_dsl! { r##"
         in -Qo apt.8
-        ou ^apt: /usr/share/man/man8/apt.8.gz$
+        ou /share/man/man8/apt
     "## }
 }
 
@@ -85,6 +85,7 @@ fn apt_r_s() {
     "## }
 }
 
+#[cfg(target_os = "linux")]
 #[test]
 fn apt_sg() {
     test_dsl! { r##"
