@@ -10,6 +10,7 @@ use crate::error::{Error, Result};
 const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";
 
 /// Configurations that may vary when running the package manager.
+#[must_use]
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Config {
@@ -39,7 +40,6 @@ impl Config {
     ///
     /// # Errors
     /// Returns an [`Error::ConfigError`] when `$HOME` is not found.
-    #[allow(trivial_numeric_casts)]
     pub fn default_path() -> Result<PathBuf> {
         let crate_name = clap::crate_name!();
         let home = dirs_next::home_dir().ok_or_else(|| Error::ConfigError {

@@ -199,7 +199,6 @@ impl Pacaptr {
     /// Generates current [`Config`] by merging current command line arguments
     /// and options obtained with [`clap`] with the dotfile [`Config`], which
     /// has a lower precedence.
-    #[must_use]
     pub fn merge_cfg(&self, dotfile: Config) -> Config {
         Config {
             dry_run: self.dry_run || dotfile.dry_run,

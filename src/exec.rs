@@ -87,6 +87,7 @@ impl Default for Output {
 }
 
 /// A command to be executed, provided in `command-flags-keywords` form.
+#[must_use]
 #[derive(Debug, Clone, Default)]
 pub struct Cmd {
     /// Flag indicating If a **normal admin** needs to run this command with
@@ -105,7 +106,6 @@ pub struct Cmd {
 
 impl Cmd {
     /// Makes a new [`Cmd`] instance with the given [`cmd`](Cmd::cmd) part.
-    #[must_use]
     pub fn new(cmd: &[impl AsRef<str>]) -> Self {
         Cmd {
             cmd: cmd.iter().map(AsRef::as_ref).map_into().collect(),
@@ -115,25 +115,21 @@ impl Cmd {
 
     /// Makes a new [`Cmd`] instance with the given [`cmd`](Cmd::cmd) part,
     /// setting [`sudo`](field@Cmd::sudo) to `true`.
-    #[must_use]
     pub fn with_sudo(cmd: &[impl AsRef<str>]) -> Self {
         Self::new(cmd).sudo(true)
     }
 
     /// Overrides the value of [`flags`](field@Cmd::flags).
-    #[must_use]
     pub fn flags(self, flags: &[impl AsRef<str>]) -> Self {
         self.tap_mut(|s| s.flags = flags.iter().map(AsRef::as_ref).map_into().collect())
     }
 
     /// Overrides the value of [`kws`](field@Cmd::kws).
-    #[must_use]
     pub fn kws(self, kws: &[impl AsRef<str>]) -> Self {
         self.tap_mut(|s| s.kws = kws.iter().map(AsRef::as_ref).map_into().collect())
     }
 
     /// Overrides the value of [`sudo`](field@Cmd::sudo).
-    #[must_use]
     pub fn sudo(self, sudo: bool) -> Self {
         self.tap_mut(|s| s.sudo = sudo)
     }
