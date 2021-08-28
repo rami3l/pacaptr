@@ -332,9 +332,8 @@ impl Cmd {
                     &["", "y", "yes", "a", "all", "n", "no"],
                     false,
                 )
-                .to_lowercase()
             });
-            match &answer as _ {
+            match answer {
                 // The default answer is `Yes`.
                 "y" | "yes" | "" => true,
                 // You can also say `All` to answer `Yes` to all the other questions that follow.
@@ -364,14 +363,19 @@ impl std::fmt::Display for Cmd {
     }
 }
 
-/// Gives a prompt and gets the output string.
-/// This action won't end until an expected answer is found.
+/// Gives a prompt and returns one of the patterns matching the `stdin`.
+/// This action won't end until an expected pattern is found.
 ///
 /// If `case_sensitive` is `false`, then `expected` should be all lower case
 /// patterns.
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
-pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: bool) -> String {
+pub fn prompt<'a>(
+    question: &str,
+    options: &str,
+    expected: &[&'a str],
+    case_sensitive: bool,
+) -> &'a str {
     use std::io::{self, Write};
 
     std::iter::repeat_with(|| {
@@ -389,9 +393,7 @@ pub fn prompt(question: &str, options: &str, expected: &[&str], case_sensitive: 
     })
     .find_map(|answer| {
         let answer = answer.trim();
-        expected
-            .iter()
-            .find_map(|&pat| (pat == answer).then(|| answer.to_owned()))
+        expected.iter().find(|&&pat| pat == answer)
     })
     .unwrap() // It's impossible to find nothing out of an infinite loop.
 }
