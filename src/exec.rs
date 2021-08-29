@@ -10,7 +10,6 @@ use futures::prelude::*;
 use indoc::indoc;
 pub use is_root::is_root;
 use itertools::{chain, Itertools};
-use once_cell::sync::Lazy;
 use regex::Regex;
 use tap::prelude::*;
 use tokio::{
@@ -319,11 +318,11 @@ impl Cmd {
     /// continue with the command execution.
     #[doc = docs_errors_exec!()]
     pub async fn exec_prompt(self, mute: bool) -> Result<Output> {
-        static ALL_YES: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
+        /// If the user has skipped all the prompts with `yes`.
+        static ALL: AtomicBool = AtomicBool::new(false);
 
-        let proceed = if ALL_YES.load(Ordering::SeqCst) {
-            true
-        } else {
+        // The answer obtained from the prompt. Here we use a closure for lazy eval.
+        let answer = || {
             print_cmd(&self, PROMPT_PENDING);
             let answer = tokio::task::block_in_place(move || {
                 prompt(
@@ -338,7 +337,7 @@ impl Cmd {
                 "y" | "yes" | "" => true,
                 // You can also say `All` to answer `Yes` to all the other questions that follow.
                 "a" | "all" => {
-                    ALL_YES.store(true, Ordering::SeqCst);
+                    ALL.store(true, Ordering::SeqCst);
                     true
                 }
                 // Or you can say `No`.
@@ -347,6 +346,7 @@ impl Cmd {
                 _ => unreachable!(),
             }
         };
+        let proceed = ALL.load(Ordering::SeqCst) || answer();
         if !proceed {
             return Ok(Output::default());
         }
