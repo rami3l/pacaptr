@@ -4,13 +4,12 @@ use async_trait::async_trait;
 use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
-use tokio::sync::Mutex;
 
 use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
-    dispatch::config::Config,
+    dispatch::Config,
     error::Result,
-    exec::{self, Cmd, StatusCode},
+    exec::{self, Cmd},
 };
 
 macro_rules! docs_self {
@@ -25,7 +24,6 @@ macro_rules! docs_self {
 #[derive(Debug)]
 pub struct Zypper {
     cfg: Config,
-    code: Mutex<StatusCode>,
 }
 
 static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -49,10 +47,7 @@ impl Zypper {
     #[must_use]
     #[allow(missing_docs)]
     pub fn new(cfg: Config) -> Self {
-        Zypper {
-            cfg,
-            code: Mutex::default(),
-        }
+        Zypper { cfg }
     }
 
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
@@ -70,14 +65,6 @@ impl Pm for Zypper {
 
     fn cfg(&self) -> &Config {
         &self.cfg
-    }
-
-    async fn code(&self) -> StatusCode {
-        *self.code.lock().await
-    }
-
-    async fn set_code(&self, to: StatusCode) {
-        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.
@@ -118,8 +105,7 @@ impl Pm for Zypper {
         let cmd = Cmd::new(&["zypper", "search", "-si"]).kws(kws).flags(flags);
         let out_bytes = self
             .check_output(cmd, PmMode::Mute, &Strategy::default())
-            .await?
-            .contents;
+            .await?;
         let out = String::from_utf8(out_bytes)?;
 
         exec::grep_print(&out, &["System Packages"])?;
@@ -237,7 +223,6 @@ impl Pm for Zypper {
         let out = self
             .check_output(cmd, PmMode::Mute, &STRAT_CHECK_DRY)
             .await?
-            .contents
             .pipe(String::from_utf8)?;
         exec::grep_print(&out, kws)
     }

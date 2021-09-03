@@ -4,13 +4,12 @@ use async_trait::async_trait;
 use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
-use tokio::sync::Mutex;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
-    dispatch::config::Config,
+    dispatch::Config,
     error::Result,
-    exec::{self, Cmd, StatusCode},
+    exec::{self, Cmd},
     print::{self, PROMPT_RUN},
 };
 
@@ -26,7 +25,6 @@ macro_rules! docs_self {
 #[derive(Debug)]
 pub struct Scoop {
     cfg: Config,
-    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -44,10 +42,7 @@ impl Scoop {
     #[must_use]
     #[allow(missing_docs)]
     pub fn new(cfg: Config) -> Self {
-        Scoop {
-            cfg,
-            code: Mutex::default(),
-        }
+        Scoop { cfg }
     }
 
     async fn search_regex(&self, cmd: &[&str], kws: &[&str], flags: &[&str]) -> Result<()> {
@@ -57,9 +52,7 @@ impl Scoop {
         }
         let out_bytes = self
             .check_output(cmd, PmMode::Mute, &Strategy::default())
-            .await?
-            .contents;
-
+            .await?;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
         Ok(())
     }
@@ -75,14 +68,6 @@ impl Pm for Scoop {
 
     fn cfg(&self) -> &Config {
         &self.cfg
-    }
-
-    async fn code(&self) -> StatusCode {
-        *self.code.lock().await
-    }
-
-    async fn set_code(&self, to: StatusCode) {
-        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.
