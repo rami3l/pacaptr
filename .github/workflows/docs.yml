@@ -20,6 +20,8 @@ jobs:
           toolchain: nightly
           override: true
 
+      - uses: Swatinem/rust-cache@v1
+
       - name: Create
         run: cargo doc --document-private-items
 
