@@ -3,6 +3,8 @@
 use thiserror::Error;
 use tokio::{io, task::JoinError};
 
+use crate::exec::{Output, StatusCode};
+
 /// A specialized [`Result`](std::result::Result) type used by
 /// [`pacaptr`](crate).
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -34,9 +36,18 @@ pub enum Error {
     #[allow(missing_docs)]
     CmdNoHandleError { handle: String },
 
-    /// An [`Cmd`](crate::exec::Cmd) fails to finish.
+    /// An [`Cmd`](crate::exec::Cmd) fails while waiting for it to finish.
     #[error("Subprocess failed while running: {0}")]
     CmdWaitError(io::Error),
+
+    /// An [`Cmd`](crate::exec::Cmd) exits with an error.
+    #[error("Subprocess exited with code {code}")]
+    #[allow(missing_docs)]
+    CmdStatusCodeError { code: StatusCode, output: Output },
+
+    /// An [`Cmd`](crate::exec::Cmd) gets interrupted by a signal.
+    #[error("Subprocess interrupted by signal")]
+    CmdInterruptedError,
 
     /// Error while converting a [`Vec<u8>`] to a [`String`].
     #[error(transparent)]

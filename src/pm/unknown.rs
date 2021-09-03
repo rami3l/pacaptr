@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use indoc::indoc;
 
 use super::Pm;
-use crate::{dispatch::config::Config, exec::StatusCode};
+use crate::dispatch::Config;
 
 macro_rules! docs_self {
     () => {
@@ -42,10 +42,4 @@ impl Pm for Unknown {
     fn cfg(&self) -> &Config {
         &self.cfg
     }
-
-    async fn code(&self) -> StatusCode {
-        0
-    }
-
-    async fn set_code(&self, _to: StatusCode) {}
 }

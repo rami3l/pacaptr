@@ -11,7 +11,6 @@ use tt_call::tt_call;
 use crate::{
     dispatch::Config,
     error::{Error, Result},
-    exec::StatusCode,
     methods,
     pm::Pm,
 };
@@ -215,7 +214,7 @@ impl Pacaptr {
     /// # Errors
     /// See [`Error`](crate::error::Error) for a  list of possible errors.
     #[allow(trivial_numeric_casts)]
-    pub async fn dispatch_from(&self, mut cfg: Config) -> Result<StatusCode> {
+    pub async fn dispatch_from(&self, mut cfg: Config) -> Result<()> {
         // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
         // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in
         // ! ASCII order, ! eg. `Suy` instead of `Syu`.
@@ -290,12 +289,10 @@ impl Pacaptr {
 
         // Send `methods!()` to `dispatch_match`. That is,
         // `dispatch_match!( methods = [{ q qc qe .. }] )`.
-        (tt_call! {
+        tt_call! {
             macro = [{ methods }]
             ~~> dispatch_match
-        })?;
-
-        Ok(pm.code().await)
+        }
     }
 
     /// Runs [`dispatch_from`](Pacaptr::dispatch_from) with automatically
@@ -304,7 +301,7 @@ impl Pacaptr {
     /// # Errors
     /// See [`Error`](crate::error::Error) for a  list of possible errors.
     #[allow(trivial_numeric_casts)]
-    pub async fn dispatch(&self) -> Result<StatusCode> {
+    pub async fn dispatch(&self) -> Result<()> {
         let dotfile = task::block_in_place(Config::try_load);
         let cfg = self.merge_cfg(dotfile?);
         self.dispatch_from(cfg).await
@@ -347,12 +344,6 @@ pub(super) mod tests {
             fn cfg(&self) -> &Config {
                 &self.cfg
             }
-
-            async fn code(&self) -> StatusCode {
-                0
-            }
-
-            async fn set_code(&self, _to: StatusCode) {}
 
             // * Automatically generated methods below... *
             $( async fn $method(&self, kws: &[&str], flags: &[&str]) -> Result<()> {

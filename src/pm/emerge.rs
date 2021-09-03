@@ -5,14 +5,9 @@ use indoc::indoc;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
-use tokio::sync::Mutex;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
-use crate::{
-    dispatch::config::Config,
-    error::Result,
-    exec::{Cmd, StatusCode},
-};
+use crate::{dispatch::Config, error::Result, exec::Cmd};
 
 macro_rules! docs_self {
     () => {
@@ -26,7 +21,6 @@ macro_rules! docs_self {
 #[derive(Debug)]
 pub struct Emerge {
     cfg: Config,
-    code: Mutex<StatusCode>,
 }
 
 static STRAT_ASK: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -49,10 +43,7 @@ impl Emerge {
     #[must_use]
     #[allow(missing_docs)]
     pub fn new(cfg: Config) -> Self {
-        Emerge {
-            cfg,
-            code: Mutex::default(),
-        }
+        Emerge { cfg }
     }
 }
 
@@ -65,14 +56,6 @@ impl Pm for Emerge {
 
     fn cfg(&self) -> &Config {
         &self.cfg
-    }
-
-    async fn code(&self) -> StatusCode {
-        *self.code.lock().await
-    }
-
-    async fn set_code(&self, to: StatusCode) {
-        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.

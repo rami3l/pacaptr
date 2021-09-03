@@ -30,7 +30,7 @@ pub use self::{
 use crate::{
     dispatch::Config,
     error::Result,
-    exec::{Cmd, Mode, Output, StatusCode},
+    exec::{Cmd, Mode, Output},
 };
 
 /// The list of [`pacman`](https://wiki.archlinux.org/index.php/Pacman) methods supported by [`pacaptr`](crate).
@@ -211,13 +211,6 @@ pub trait Pm: Sync {
     {
         Box::new(self)
     }
-
-    /// Gets the [`StatusCode`] to be returned.
-    #[must_use]
-    async fn code(&self) -> StatusCode;
-
-    /// Sets the [`StatusCode`] to be returned.
-    async fn set_code(&self, to: StatusCode);
 }
 
 /// Extra implementation helper functions for [`Pm`],
@@ -280,9 +273,6 @@ pub trait PmHelper: Pm {
             };
         }
 
-        // Reset the current status code.
-        // If the code is `None`, then the subprocess ends with a signal.
-        self.set_code(res.code.unwrap_or(1)).await;
         Ok(res)
     }
 

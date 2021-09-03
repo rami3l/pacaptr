@@ -5,13 +5,12 @@ use futures::prelude::*;
 use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
-use tokio::sync::Mutex;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
-    dispatch::config::Config,
+    dispatch::Config,
     error::Result,
-    exec::{self, Cmd, StatusCode},
+    exec::{self, Cmd},
     print::{self, PROMPT_RUN},
 };
 
@@ -27,7 +26,6 @@ macro_rules! docs_self {
 #[derive(Debug)]
 pub struct Conda {
     cfg: Config,
-    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -39,10 +37,7 @@ impl Conda {
     #[must_use]
     #[allow(missing_docs)]
     pub fn new(cfg: Config) -> Self {
-        Conda {
-            cfg,
-            code: Mutex::default(),
-        }
+        Conda { cfg }
     }
 }
 
@@ -55,14 +50,6 @@ impl Pm for Conda {
 
     fn cfg(&self) -> &Config {
         &self.cfg
-    }
-
-    async fn code(&self) -> StatusCode {
-        *self.code.lock().await
-    }
-
-    async fn set_code(&self, to: StatusCode) {
-        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.
@@ -94,8 +81,7 @@ impl Pm for Conda {
         }
         let out_bytes = self
             .check_output(cmd, PmMode::Mute, &Strategy::default())
-            .await?
-            .contents;
+            .await?;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
         Ok(())
     }

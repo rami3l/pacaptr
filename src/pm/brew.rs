@@ -4,14 +4,13 @@ use async_trait::async_trait;
 use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
-use tokio::sync::Mutex;
 
 use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
-    dispatch::config::Config,
-    error::{Error, Result},
-    exec::{self, Cmd, StatusCode},
-    print::{self, PROMPT_INFO, PROMPT_RUN},
+    dispatch::Config,
+    error::Result,
+    exec::{self, Cmd},
+    print::{self, PROMPT_RUN},
 };
 
 macro_rules! docs_self {
@@ -26,7 +25,6 @@ macro_rules! docs_self {
 #[derive(Debug)]
 pub struct Brew {
     cfg: Config,
-    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -48,9 +46,7 @@ impl Brew {
         }
         let out_bytes = self
             .check_output(cmd, PmMode::Mute, &Strategy::default())
-            .await?
-            .contents;
-
+            .await?;
         exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
         Ok(())
     }
@@ -60,10 +56,7 @@ impl Brew {
     #[must_use]
     #[allow(missing_docs)]
     pub fn new(cfg: Config) -> Self {
-        Brew {
-            cfg,
-            code: Mutex::default(),
-        }
+        Brew { cfg }
     }
 }
 
@@ -76,14 +69,6 @@ impl Pm for Brew {
 
     fn cfg(&self) -> &Config {
         &self.cfg
-    }
-
-    async fn code(&self) -> StatusCode {
-        *self.code.lock().await
-    }
-
-    async fn set_code(&self, to: StatusCode) {
-        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.
@@ -144,33 +129,6 @@ impl Pm for Brew {
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
-    }
-
-    /// Rss removes a package and its dependencies which are not required by any
-    /// other installed package.
-    async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let strat = Strategy {
-            dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-            ..Strategy::default()
-        };
-        let err_msg = Cmd::new(&["brew", "rmtree"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.check_output(cmd, PmMode::default(), &strat))
-            .await?
-            .contents
-            .pipe(String::from_utf8)?;
-
-        let pattern = "Unknown command: rmtree";
-        if !exec::grep(&err_msg, &[pattern])?.is_empty() {
-            print::print_msg(
-                "`rmtree` is not installed. You may install it with the following command:",
-                PROMPT_INFO,
-            );
-            print::print_msg("`brew tap beeftornado/rmtree`", PROMPT_INFO);
-            return Err(Error::OtherError("`rmtree` required".into()));
-        }
-        Ok(())
     }
 
     /// S installs one or more packages by name.

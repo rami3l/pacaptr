@@ -30,7 +30,7 @@ use crate::{
     print::{print_cmd, print_question, PROMPT_CANCELED, PROMPT_PENDING, PROMPT_RUN},
 };
 
-/// Different ways in which a command shall be dealt with.
+/// Different ways in which a [`Cmd`] shall be dealt with.
 #[derive(Copy, Clone, Debug)]
 pub enum Mode {
     /// Solely prints out the command that should be executed and stops.
@@ -63,27 +63,25 @@ pub enum Mode {
 /// The status code type returned by a [`Cmd`],
 pub type StatusCode = i32;
 
-/// Output of running a [`Cmd`].
-#[derive(Debug, Clone)]
-pub struct Output {
-    /// The captured `stdout`, and if set to [`Mode::CheckAll`], mixed with
-    /// captured `stderr`.
-    pub contents: Vec<u8>,
-
-    /// The status code returned by the [`Cmd`].
-    ///
-    /// Here we use [`Some`] for exit code, [`None`] for signals.
-    pub code: Option<StatusCode>,
-}
-
-impl Default for Output {
-    fn default() -> Self {
-        Output {
-            code: Some(0),
-            contents: vec![],
-        }
+/// Returns a [`Result`] for a [`Cmd`] according to if its exit status code
+/// indicates an error.
+///
+/// # Errors
+/// This function might return one of the following errors:
+///
+/// - [`Error::CmdStatusCodeError`], when `status` is `Some(n)` where `n != 0`.
+/// - [`Error::CmdInterruptedError`], when `status` is `None`.
+pub fn exit_result(code: Option<StatusCode>, output: Output) -> Result<Output> {
+    match code {
+        Some(0) => Ok(output),
+        Some(code) => Err(Error::CmdStatusCodeError { code, output }),
+        None => Err(Error::CmdInterruptedError),
     }
 }
+
+/// The type for captured `stdout`, and if set to [`Mode::CheckAll`], mixed with
+/// captured `stderr`.
+pub type Output = Vec<u8>;
 
 /// A command to be executed, provided in `command-flags-keywords` form.
 #[must_use]
@@ -207,6 +205,8 @@ macro_rules! docs_errors_exec {
             - [`Error::CmdNoHandleError`]
             - [`Error::CmdSpawnError`]
             - [`Error::CmdWaitError`]
+            - [`Error::CmdStatusCodeError`]
+            - [`Error::CmdInterruptedError`]
         "}
     };
 }
@@ -282,12 +282,9 @@ impl Cmd {
             Ok(status.code())
         });
 
-        let contents = exec_tee(&mut reader, (!mute).then(|| &mut out)).await?;
-
-        Ok(Output {
-            contents,
-            code: code.await.map_err(CmdJoinError)??,
-        })
+        let output = exec_tee(&mut reader, (!mute).then(|| &mut out)).await?;
+        let code = code.await.map_err(CmdJoinError)??;
+        exit_result(code, output)
     }
 
     /// Executes a [`Cmd`] and returns its `stdout` and `stderr`.

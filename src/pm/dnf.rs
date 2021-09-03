@@ -5,13 +5,12 @@ use futures::prelude::*;
 use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
-use tokio::sync::Mutex;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
-    dispatch::config::Config,
+    dispatch::Config,
     error::Result,
-    exec::{self, Cmd, StatusCode},
+    exec::{self, Cmd},
     print::{self, PROMPT_RUN},
 };
 
@@ -27,7 +26,6 @@ macro_rules! docs_self {
 #[derive(Debug)]
 pub struct Dnf {
     cfg: Config,
-    code: Mutex<StatusCode>,
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
@@ -50,10 +48,7 @@ impl Dnf {
     #[must_use]
     #[allow(missing_docs)]
     pub fn new(cfg: Config) -> Self {
-        Dnf {
-            cfg,
-            code: Mutex::default(),
-        }
+        Dnf { cfg }
     }
 }
 
@@ -66,14 +61,6 @@ impl Pm for Dnf {
 
     fn cfg(&self) -> &Config {
         &self.cfg
-    }
-
-    async fn code(&self) -> StatusCode {
-        *self.code.lock().await
-    }
-
-    async fn set_code(&self, to: StatusCode) {
-        *self.code.lock().await = to;
     }
 
     /// Q generates a list of installed packages.
@@ -153,7 +140,6 @@ impl Pm for Dnf {
         let out = self
             .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?
-            .contents
             .pipe(String::from_utf8)?;
         exec::grep_print(&out, kws)
     }
@@ -209,6 +195,7 @@ impl Pm for Dnf {
     }
 
     /// Si displays remote package information: name, version, description, etc.
+
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["dnf", "info"]).kws(kws).flags(flags))
             .await
