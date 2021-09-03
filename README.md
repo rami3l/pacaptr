@@ -61,9 +61,9 @@ Run `pacman -Syu` on the OS of your choice!
     - [`--yes`, `--noconfirm`, `--no-confirm`](#--yes---noconfirm---no-confirm)
     - [`--nocache`, `--no-cache`](#--nocache---no-cache)
   - [Platform-Specific Tips](#platform-specific-tips)
-    - [`brew`](#brew-1)
-    - [`choco`](#choco-1)
-    - [`pip`](#pip)
+    - [For `brew`](#for-brew)
+    - [For `choco`](#for-choco)
+    - [For `pip`](#for-pip)
   - [Postscript](#postscript)
 
 ---
@@ -278,7 +278,7 @@ This option is useful when you want to reduce `Docker` image size, for example.
 
 ## Platform-Specific Tips
 
-### `brew`
+### For `brew`
 
 - Please note that `cask` is for `macOS` only.
 
@@ -298,17 +298,11 @@ This option is useful when you want to reduce `Docker` image size, for example.
   pacaptr -S docker -- --cask
   ```
 
-- To use `-Rss`, you need to install [rmtree] first:
-
-  ```bash
-  brew tap beeftornado/rmtree
-  ```
-
-### `choco`
+### For `choco`
 
 - Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
-### `pip`
+### For `pip`
 
 - Use `pacaptr --using pip3` if you want to run the `pip3` command.
 

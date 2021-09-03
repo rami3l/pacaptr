@@ -146,33 +146,6 @@ impl Pm for Brew {
             .await
     }
 
-    /// Rss removes a package and its dependencies which are not required by any
-    /// other installed package.
-    async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let strat = Strategy {
-            dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
-            ..Strategy::default()
-        };
-        let err_msg = Cmd::new(&["brew", "rmtree"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.check_output(cmd, PmMode::default(), &strat))
-            .await?
-            .contents
-            .pipe(String::from_utf8)?;
-
-        let pattern = "Unknown command: rmtree";
-        if !exec::grep(&err_msg, &[pattern])?.is_empty() {
-            print::print_msg(
-                "`rmtree` is not installed. You may install it with the following command:",
-                PROMPT_INFO,
-            );
-            print::print_msg("`brew tap beeftornado/rmtree`", PROMPT_INFO);
-            return Err(Error::OtherError("`rmtree` required".into()));
-        }
-        Ok(())
-    }
-
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(if self.cfg.needed {
