@@ -113,22 +113,28 @@ impl Cmd {
     /// Makes a new [`Cmd`] instance with the given [`cmd`](Cmd::cmd) part,
     /// setting [`sudo`](field@Cmd::sudo) to `true`.
     pub fn with_sudo(cmd: &[impl AsRef<str>]) -> Self {
-        Self::new(cmd).sudo(true)
+        Cmd::new(cmd).sudo(true)
     }
 
     /// Overrides the value of [`flags`](field@Cmd::flags).
     pub fn flags(self, flags: &[impl AsRef<str>]) -> Self {
-        self.tap_mut(|s| s.flags = flags.iter().map(AsRef::as_ref).map_into().collect())
+        Cmd {
+            flags: flags.iter().map(AsRef::as_ref).map_into().collect(),
+            ..self
+        }
     }
 
     /// Overrides the value of [`kws`](field@Cmd::kws).
     pub fn kws(self, kws: &[impl AsRef<str>]) -> Self {
-        self.tap_mut(|s| s.kws = kws.iter().map(AsRef::as_ref).map_into().collect())
+        Cmd {
+            kws: kws.iter().map(AsRef::as_ref).map_into().collect(),
+            ..self
+        }
     }
 
     /// Overrides the value of [`sudo`](field@Cmd::sudo).
     pub fn sudo(self, sudo: bool) -> Self {
-        self.tap_mut(|s| s.sudo = sudo)
+        Cmd { sudo, ..self }
     }
 
     /// Determines if this command actually needs to run with `sudo -S`.

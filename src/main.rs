@@ -4,18 +4,16 @@ use pacaptr::{
     error::Error,
     print::{print_err, PROMPT_ERROR},
 };
-use tap::prelude::*;
 
 #[tokio::main]
 async fn main() {
-    let res = Pacaptr::parse()
-        .dispatch()
-        .await
-        .tap_err(|e| print_err(e, PROMPT_ERROR));
-    let code = match res {
-        Ok(_) => 0,
-        Err(Error::CmdStatusCodeError { code, .. }) => code,
-        Err(_) => 1,
-    };
-    std::process::exit(code)
+    let res = Pacaptr::parse().dispatch().await;
+    // TODO: Replace this with `Termination`. Currently blocked by https://github.com/rust-lang/rust/issues/43301.
+    if let Err(e) = &res {
+        print_err(e, PROMPT_ERROR);
+        std::process::exit(match e {
+            Error::CmdStatusCodeError { code, .. } => *code,
+            _ => 1,
+        })
+    }
 }
