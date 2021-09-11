@@ -19,7 +19,7 @@ macro_rules! docs_self {
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub struct Emerge {
+pub(crate) struct Emerge {
     cfg: Config,
 }
 
@@ -42,7 +42,7 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 impl Emerge {
     #[must_use]
     #[allow(missing_docs)]
-    pub fn new(cfg: Config) -> Self {
+    pub(crate) fn new(cfg: Config) -> Self {
         Emerge { cfg }
     }
 }

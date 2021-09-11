@@ -20,7 +20,7 @@
 
 pub mod dispatch;
 pub mod error;
-pub mod exec;
+mod exec;
 
-pub mod pm;
+mod pm;
 pub mod print;

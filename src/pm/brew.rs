@@ -23,7 +23,7 @@ macro_rules! docs_self {
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub struct Brew {
+pub(crate) struct Brew {
     cfg: Config,
 }
 
@@ -55,7 +55,7 @@ impl Brew {
 impl Brew {
     #[must_use]
     #[allow(missing_docs)]
-    pub fn new(cfg: Config) -> Self {
+    pub(crate) fn new(cfg: Config) -> Self {
         Brew { cfg }
     }
 }

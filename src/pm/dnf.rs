@@ -24,7 +24,7 @@ macro_rules! docs_self {
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub struct Dnf {
+pub(crate) struct Dnf {
     cfg: Config,
 }
 
@@ -47,7 +47,7 @@ static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 impl Dnf {
     #[must_use]
     #[allow(missing_docs)]
-    pub fn new(cfg: Config) -> Self {
+    pub(crate) fn new(cfg: Config) -> Self {
         Dnf { cfg }
     }
 }

@@ -13,7 +13,7 @@ const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";
 #[must_use]
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 #[allow(clippy::struct_excessive_bools)]
-pub struct Config {
+pub(crate) struct Config {
     /// Perform a dry run.
     #[serde(default)]
     pub dry_run: bool,
@@ -40,7 +40,7 @@ impl Config {
     ///
     /// # Errors
     /// Returns an [`Error::ConfigError`] when `$HOME` is not found.
-    pub fn default_path() -> Result<PathBuf> {
+    fn default_path() -> Result<PathBuf> {
         let crate_name = clap::crate_name!();
         let home = dirs_next::home_dir().ok_or_else(|| Error::ConfigError {
             msg: "$HOME path not found".into(),
@@ -57,7 +57,7 @@ impl Config {
     /// # Errors
     /// Returns an [`Error::ConfigError`] when the config path is not found in
     /// the environmental variable.
-    pub fn custom_path() -> Result<PathBuf> {
+    fn custom_path() -> Result<PathBuf> {
         env::var(CONFIG_ENV_VAR)
             .map_err(|e| Error::ConfigError {
                 msg: format!("Config path environment variable not found: {}", e),
@@ -75,7 +75,7 @@ impl Config {
     ///
     /// # Errors
     /// Returns an [`Error::ConfigError`] when the config file loading fails.
-    pub fn try_load() -> Result<Self> {
+    pub(crate) fn try_load() -> Result<Self> {
         let path = Config::custom_path().or_else(|_| Config::default_path())?;
         path.exists()
             .then(|| confy::load_path(&path))

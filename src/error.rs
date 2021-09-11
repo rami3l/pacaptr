@@ -7,10 +7,11 @@ use crate::exec::{Output, StatusCode};
 
 /// A specialized [`Result`](std::result::Result) type used by
 /// [`pacaptr`](crate).
-pub type Result<T, E = Error> = std::result::Result<T, E>;
+pub(crate) type Result<T, E = Error> = std::result::Result<T, E>;
 
 /// Error type for the [`pacaptr`](crate) library.
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum Error {
     /// Error while parsing CLI arguments.
     #[error("Failed to parse arguments: {msg}")]

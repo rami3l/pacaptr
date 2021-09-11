@@ -8,7 +8,7 @@ use std::{
 use bytes::{Bytes, BytesMut};
 use futures::prelude::*;
 use indoc::indoc;
-pub use is_root::is_root;
+use is_root::is_root;
 use itertools::{chain, Itertools};
 use regex::Regex;
 use tap::prelude::*;
@@ -32,7 +32,7 @@ use crate::{
 
 /// Different ways in which a [`Cmd`] shall be dealt with.
 #[derive(Copy, Clone, Debug)]
-pub enum Mode {
+pub(crate) enum Mode {
     /// Solely prints out the command that should be executed and stops.
     PrintCmd,
 
@@ -61,7 +61,7 @@ pub enum Mode {
 }
 
 /// The status code type returned by a [`Cmd`],
-pub type StatusCode = i32;
+pub(crate) type StatusCode = i32;
 
 /// Returns a [`Result`] for a [`Cmd`] according to if its exit status code
 /// indicates an error.
@@ -71,7 +71,7 @@ pub type StatusCode = i32;
 ///
 /// - [`Error::CmdStatusCodeError`], when `status` is `Some(n)` where `n != 0`.
 /// - [`Error::CmdInterruptedError`], when `status` is `None`.
-pub fn exit_result(code: Option<StatusCode>, output: Output) -> Result<Output> {
+fn exit_result(code: Option<StatusCode>, output: Output) -> Result<Output> {
     match code {
         Some(0) => Ok(output),
         Some(code) => Err(Error::CmdStatusCodeError { code, output }),
@@ -81,12 +81,12 @@ pub fn exit_result(code: Option<StatusCode>, output: Output) -> Result<Output> {
 
 /// The type for captured `stdout`, and if set to [`Mode::CheckAll`], mixed with
 /// captured `stderr`.
-pub type Output = Vec<u8>;
+pub(crate) type Output = Vec<u8>;
 
 /// A command to be executed, provided in `command-flags-keywords` form.
 #[must_use]
 #[derive(Debug, Clone, Default)]
-pub struct Cmd {
+pub(crate) struct Cmd {
     /// Flag indicating If a **normal admin** needs to run this command with
     /// `sudo`.
     pub sudo: bool,
@@ -103,7 +103,7 @@ pub struct Cmd {
 
 impl Cmd {
     /// Makes a new [`Cmd`] instance with the given [`cmd`](Cmd::cmd) part.
-    pub fn new(cmd: &[impl AsRef<str>]) -> Self {
+    pub(crate) fn new(cmd: &[impl AsRef<str>]) -> Self {
         Cmd {
             cmd: cmd.iter().map(AsRef::as_ref).map_into().collect(),
             ..Cmd::default()
@@ -112,12 +112,12 @@ impl Cmd {
 
     /// Makes a new [`Cmd`] instance with the given [`cmd`](Cmd::cmd) part,
     /// setting [`sudo`](field@Cmd::sudo) to `true`.
-    pub fn with_sudo(cmd: &[impl AsRef<str>]) -> Self {
+    pub(crate) fn with_sudo(cmd: &[impl AsRef<str>]) -> Self {
         Cmd::new(cmd).sudo(true)
     }
 
     /// Overrides the value of [`flags`](field@Cmd::flags).
-    pub fn flags(self, flags: &[impl AsRef<str>]) -> Self {
+    pub(crate) fn flags(self, flags: &[impl AsRef<str>]) -> Self {
         Cmd {
             flags: flags.iter().map(AsRef::as_ref).map_into().collect(),
             ..self
@@ -125,7 +125,7 @@ impl Cmd {
     }
 
     /// Overrides the value of [`kws`](field@Cmd::kws).
-    pub fn kws(self, kws: &[impl AsRef<str>]) -> Self {
+    pub(crate) fn kws(self, kws: &[impl AsRef<str>]) -> Self {
         Cmd {
             kws: kws.iter().map(AsRef::as_ref).map_into().collect(),
             ..self
@@ -133,7 +133,7 @@ impl Cmd {
     }
 
     /// Overrides the value of [`sudo`](field@Cmd::sudo).
-    pub fn sudo(self, sudo: bool) -> Self {
+    pub(crate) fn sudo(self, sudo: bool) -> Self {
         Cmd { sudo, ..self }
     }
 
@@ -142,13 +142,13 @@ impl Cmd {
     /// If a **normal admin** needs to run it with `sudo`, and we are not
     /// `root`, then this is the case.
     #[must_use]
-    pub fn should_sudo(&self) -> bool {
+    fn should_sudo(&self) -> bool {
         self.sudo && !is_root()
     }
 
     /// Converts a [`Cmd`] object into an [`Exec`].
     #[must_use]
-    pub fn build(self) -> Exec {
+    fn build(self) -> Exec {
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
         // ! but not `zypper install curl -y`.
         // ! So we place the flags first, and then keywords.
@@ -223,7 +223,7 @@ impl Cmd {
     /// The exact behavior depends on the [`Mode`] passed in (see the definition
     /// of [`Mode`] for more info).
     #[doc = docs_errors_exec!()]
-    pub async fn exec(self, mode: Mode) -> Result<Output> {
+    pub(crate) async fn exec(self, mode: Mode) -> Result<Output> {
         match mode {
             Mode::PrintCmd => {
                 print_cmd(&self, PROMPT_CANCELED);
@@ -298,7 +298,7 @@ impl Cmd {
     /// If `mute` is `false`, then normal `stdout/stderr` output will be printed
     /// to `stdout` too.
     #[doc = docs_errors_exec!()]
-    pub async fn exec_checkall(self, mute: bool) -> Result<Output> {
+    async fn exec_checkall(self, mute: bool) -> Result<Output> {
         self.exec_check_output(mute, true).await
     }
 
@@ -307,7 +307,7 @@ impl Cmd {
     /// If `mute` is `false`, then its `stderr` output will be printed to
     /// `stderr` too.
     #[doc = docs_errors_exec!()]
-    pub async fn exec_checkerr(self, mute: bool) -> Result<Output> {
+    async fn exec_checkerr(self, mute: bool) -> Result<Output> {
         self.exec_check_output(mute, false).await
     }
 
@@ -320,7 +320,7 @@ impl Cmd {
     /// but in addition, the user will be prompted if (s)he wishes to
     /// continue with the command execution.
     #[doc = docs_errors_exec!()]
-    pub async fn exec_prompt(self, mute: bool) -> Result<Output> {
+    async fn exec_prompt(self, mute: bool) -> Result<Output> {
         /// If the user has skipped all the prompts with `yes`.
         static ALL: AtomicBool = AtomicBool::new(false);
 
@@ -373,7 +373,7 @@ impl std::fmt::Display for Cmd {
 /// patterns.
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
-pub fn prompt<'a>(
+fn prompt<'a>(
     question: &str,
     options: &str,
     expected: &[&'a str],
@@ -416,7 +416,7 @@ macro_rules! docs_errors_grep {
 /// We suppose that all patterns are legal regular expressions.
 /// An error message will be returned if this is not the case.
 #[doc = docs_errors_grep!()]
-pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
+fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
     let patterns: Vec<Regex> = patterns
         .iter()
         .map(|&pat| {
@@ -432,7 +432,7 @@ pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
 
 /// Prints the result of [`grep`] line by line.
 #[doc = docs_errors_grep!()]
-pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
+pub(crate) fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
     grep(text, patterns).map(|lns| lns.iter().for_each(|ln| println!("{}", ln)))
 }
 
@@ -440,13 +440,13 @@ pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
 ///
 /// To check by one parameter only, pass `""` to the other one.
 #[must_use]
-pub fn is_exe(name: &str, path: &str) -> bool {
+pub(crate) fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && which(path).is_ok()) || (!name.is_empty() && which(name).is_ok())
 }
 
 /// Turns an [`AsyncRead`] into a [`Stream`].
 ///
 /// _Shamelessly copied from [`StackOverflow`](https://stackoverflow.com/a/59327560)._
-pub fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = io::Result<Bytes>> {
+fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = io::Result<Bytes>> {
     FramedRead::new(reader, BytesCodec::new()).map_ok(BytesMut::freeze)
 }

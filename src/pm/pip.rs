@@ -23,7 +23,7 @@ macro_rules! docs_self {
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub struct Pip {
+pub(crate) struct Pip {
     cfg: Config,
 }
 
@@ -40,7 +40,7 @@ static STRAT_UNINSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 impl Pip {
     /// Returns the command used to invoke [`Pip`], eg. `pip`, `pip3`.
     #[must_use]
-    pub fn cmd(&self) -> &str {
+    fn cmd(&self) -> &str {
         self.cfg
             .default_pm
             .as_deref()
@@ -51,7 +51,7 @@ impl Pip {
 impl Pip {
     #[must_use]
     #[allow(missing_docs)]
-    pub fn new(cfg: Config) -> Self {
+    pub(crate) fn new(cfg: Config) -> Self {
         Pip { cfg }
     }
 }
