@@ -55,13 +55,13 @@ pub fn detect_pm_str<'s>() -> &'s str {
 impl From<Config> for Box<dyn Pm> {
     /// Generates the `Pm` instance according it's name, feeding it with the
     /// current `Config`.
-    fn from(cfg: Config) -> Self {
+    fn from(mut cfg: Config) -> Self {
         // If the `Pm` to be used is not stated in any config,
-        // we should fall back to automatic detection.
-        let pm = cfg.default_pm.as_deref().unwrap_or_else(detect_pm_str);
+        // we should fall back to automatic detection and overwrite `cfg`.
+        let pm = cfg.default_pm.get_or_insert_with(|| detect_pm_str().into());
 
         #[allow(clippy::match_single_binding)]
-        match pm {
+        match pm as _ {
             // Chocolatey
             "choco" => Choco::new(cfg).boxed(),
 
@@ -95,9 +95,7 @@ impl From<Config> for Box<dyn Pm> {
             "conda" => Conda::new(cfg).boxed(),
 
             // Pip
-            "pip" => Pip::new("pip", cfg).boxed(),
-
-            "pip3" => Pip::new("pip3", cfg).boxed(),
+            "pip" | "pip3" => Pip::new(cfg).boxed(),
 
             // Tlmgr
             "tlmgr" => Tlmgr::new(cfg).boxed(),

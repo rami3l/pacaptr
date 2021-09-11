@@ -24,8 +24,6 @@ macro_rules! docs_self {
 #[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Pip {
-    /// The command used to invoke [`Pip`], eg. `pip`, `pip3`.
-    pub cmd: String,
     cfg: Config,
 }
 
@@ -40,13 +38,21 @@ static STRAT_UNINSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 });
 
 impl Pip {
+    /// Returns the command used to invoke [`Pip`], eg. `pip`, `pip3`.
+    #[must_use]
+    pub fn cmd(&self) -> &str {
+        self.cfg
+            .default_pm
+            .as_deref()
+            .expect("default package manager should have been assigned before initialization")
+    }
+}
+
+impl Pip {
     #[must_use]
     #[allow(missing_docs)]
-    pub fn new(cmd: &str, cfg: Config) -> Self {
-        Pip {
-            cmd: cmd.into(),
-            cfg,
-        }
+    pub fn new(cfg: Config) -> Self {
+        Pip { cfg }
     }
 }
 
@@ -64,7 +70,7 @@ impl Pm for Pip {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.run(Cmd::new(&[&self.cmd, "list"] as _).flags(flags))
+            self.run(Cmd::new(&[self.cmd(), "list"] as _).flags(flags))
                 .await
         } else {
             self.qs(kws, flags).await
@@ -73,7 +79,7 @@ impl Pm for Pip {
 
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&[&self.cmd, "show"] as _).kws(kws).flags(flags))
+        self.run(Cmd::new(&[self.cmd(), "show"] as _).kws(kws).flags(flags))
             .await
     }
 
@@ -82,7 +88,7 @@ impl Pm for Pip {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = Cmd::new(&[&self.cmd, "list"] as _).flags(flags);
+        let cmd = Cmd::new(&[self.cmd(), "list"] as _).flags(flags);
         if !self.cfg.dry_run {
             print::print_cmd(&cmd, PROMPT_RUN);
         }
@@ -95,7 +101,7 @@ impl Pm for Pip {
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&[&self.cmd, "list", "--outdated"] as _)
+        Cmd::new(&[self.cmd(), "list", "--outdated"] as _)
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -104,7 +110,7 @@ impl Pm for Pip {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&[&self.cmd, "uninstall"] as _)
+        Cmd::new(&[self.cmd(), "uninstall"] as _)
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_UNINSTALL))
@@ -113,7 +119,7 @@ impl Pm for Pip {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&[&self.cmd, "install"] as _)
+        Cmd::new(&[self.cmd(), "install"] as _)
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -123,7 +129,7 @@ impl Pm for Pip {
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&[&self.cmd, "cache", "purge"] as _).flags(flags))
+        self.run(Cmd::new(&[self.cmd(), "cache", "purge"] as _).flags(flags))
             .await
     }
 
@@ -135,7 +141,7 @@ impl Pm for Pip {
                 pm: self.name().into(),
             });
         }
-        Cmd::new(&[&self.cmd, "install", "--upgrade"] as _)
+        Cmd::new(&[self.cmd(), "install", "--upgrade"] as _)
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -145,7 +151,7 @@ impl Pm for Pip {
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&[&self.cmd, "download"] as _)
+        Cmd::new(&[self.cmd(), "download"] as _)
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
