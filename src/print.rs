@@ -6,14 +6,14 @@ use colored::Colorize;
 
 use crate::exec::Cmd;
 
-pub static PROMPT_CANCELED: &str = "Canceled";
-pub static PROMPT_PENDING: &str = "Pending";
-pub static PROMPT_RUN: &str = "Running";
-pub static PROMPT_INFO: &str = "Info";
+pub(crate) static PROMPT_CANCELED: &str = "Canceled";
+pub(crate) static PROMPT_PENDING: &str = "Pending";
+pub(crate) static PROMPT_RUN: &str = "Running";
+pub(crate) static PROMPT_INFO: &str = "Info";
 pub static PROMPT_ERROR: &str = "Error";
 
 /// The right indentation to be applied on prompt prefixes.
-pub static PROMPT_INDENT: usize = 9;
+static PROMPT_INDENT: usize = 9;
 
 macro_rules! prompt_format {
     () => {
@@ -40,7 +40,7 @@ macro_rules! question_format {
 }
 
 /// Prints out the command after the given prompt.
-pub fn print_cmd(cmd: &Cmd, prompt: &str) {
+pub(crate) fn print_cmd(cmd: &Cmd, prompt: &str) {
     println!(
         cmd_format!(),
         prompt.green().bold(),
@@ -50,7 +50,7 @@ pub fn print_cmd(cmd: &Cmd, prompt: &str) {
 }
 
 /// Prints out a message after the given prompt.
-pub fn print_msg(msg: &str, prompt: &str) {
+pub(crate) fn print_msg(msg: &str, prompt: &str) {
     println!(
         msg_format!(),
         prompt.green().bold(),
@@ -70,7 +70,7 @@ pub fn print_err(err: impl std::fmt::Display, prompt: &str) {
 }
 
 /// Prints out a question after the given prompt.
-pub fn print_question(question: &str, options: &str) {
+pub(crate) fn print_question(question: &str, options: &str) {
     print!(
         question_format!(),
         question.yellow(),

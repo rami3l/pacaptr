@@ -72,7 +72,7 @@ pub struct Pacaptr {
 // For details on operations, flags and flagcounters, see: https://www.archlinux.org/pacman/pacman.8.html
 #[derive(Debug, Clap)]
 #[clap(about = clap::crate_description!())]
-pub enum Operations {
+enum Operations {
     /// Query the package database.
     #[clap(short_flag = 'Q', long_flag = "query")]
     Query {
@@ -198,7 +198,7 @@ impl Pacaptr {
     /// Generates current [`Config`] by merging current command line arguments
     /// and options obtained with [`clap`] with the dotfile [`Config`], which
     /// has a lower precedence.
-    pub fn merge_cfg(&self, dotfile: Config) -> Config {
+    fn merge_cfg(&self, dotfile: Config) -> Config {
         Config {
             dry_run: self.dry_run || dotfile.dry_run,
             needed: self.needed || dotfile.dry_run,
@@ -214,7 +214,7 @@ impl Pacaptr {
     /// # Errors
     /// See [`Error`](crate::error::Error) for a  list of possible errors.
     #[allow(trivial_numeric_casts)]
-    pub async fn dispatch_from(&self, mut cfg: Config) -> Result<()> {
+    async fn dispatch_from(&self, mut cfg: Config) -> Result<()> {
         // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
         // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in
         // ! ASCII order, ! eg. `Suy` instead of `Syu`.
@@ -317,7 +317,7 @@ pub(super) mod tests {
 
     use super::*;
 
-    pub struct MockPm {
+    pub(crate) struct MockPm {
         pub cfg: Config,
     }
 

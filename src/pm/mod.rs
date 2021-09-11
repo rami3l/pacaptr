@@ -5,25 +5,33 @@
 
 #![allow(clippy::module_name_repetitions)]
 
-pub mod apk;
-pub mod apt;
-pub mod brew;
-pub mod choco;
-pub mod conda;
-pub mod dnf;
-pub mod emerge;
-pub mod pip;
-pub mod port;
-pub mod scoop;
-pub mod tlmgr;
-pub mod unknown;
-pub mod zypper;
+macro_rules! mods {
+    ( $( $vis:vis $mod:ident; )+ ) => {
+        $( $vis mod $mod; )+
+    }
+}
+
+mods! {
+    apk;
+    apt;
+    brew;
+    choco;
+    conda;
+    dnf;
+    emerge;
+    pip;
+    port;
+    scoop;
+    tlmgr;
+    unknown;
+    zypper;
+}
 
 use async_trait::async_trait;
 use macro_rules_attribute::macro_rules_attribute;
 use tt_call::tt_call;
 
-pub use self::{
+pub(crate) use self::{
     apk::Apk, apt::Apt, brew::Brew, choco::Choco, conda::Conda, dnf::Dnf, emerge::Emerge, pip::Pip,
     port::Port, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, zypper::Zypper,
 };
@@ -175,7 +183,7 @@ macro_rules! _decor_pm {(
 ///
 /// ```rust
 /// _decor_pm! {
-///     def = [{ pub trait Pm { .. } }]
+///     def = [{  trait Pm { .. } }]
 ///     methods = [{ q qc qe .. }] )
 /// }
 /// ```
@@ -197,7 +205,7 @@ macro_rules! decor_pm {
 /// - <https://wiki.archlinux.org/index.php/Pacman/Rosetta>
 #[macro_rules_attribute(decor_pm!)]
 #[async_trait]
-pub trait Pm: Sync {
+pub(crate) trait Pm: Sync {
     /// Gets the name of the package manager.
     fn name(&self) -> &str;
 
@@ -217,7 +225,7 @@ pub trait Pm: Sync {
 /// focusing on the ability to run commands ([`Cmd`]s) in a configured and
 /// [`Pm`]-specific context.
 #[async_trait]
-pub trait PmHelper: Pm {
+trait PmHelper: Pm {
     /// Executes a command in the context of the [`Pm`] implementation. Returns
     /// the [`Output`] of this command.
     async fn check_output(&self, mut cmd: Cmd, mode: PmMode, strat: &Strategy) -> Result<Output> {
@@ -296,7 +304,7 @@ impl<P: Pm> PmHelper for P {}
 /// This is a [`Pm`] specified version intended to be used along with
 /// [`Strategy`].
 #[derive(Copy, Clone, Debug)]
-pub enum PmMode {
+enum PmMode {
     /// Silently collects all the `stdout`/`stderr` combined. Print nothing.
     Mute,
 
@@ -329,20 +337,20 @@ impl From<PmMode> for Mode {
 /// A set of intrinsic properties of a command in the context of a specific
 /// package manager, indicating how it is run.
 #[derive(Clone, Debug, Default)]
-pub struct Strategy<S = String> {
+struct Strategy<S = String> {
     /// How a dry run is dealt with.
-    pub dry_run: DryRunStrategy<S>,
+    dry_run: DryRunStrategy<S>,
 
     /// How the prompt is dealt with when running the package manager.
-    pub prompt: PromptStrategy<S>,
+    prompt: PromptStrategy<S>,
 
     /// How the cache is cleaned when `no_cache` is set to `true`.
-    pub no_cache: NoCacheStrategy<S>,
+    no_cache: NoCacheStrategy<S>,
 }
 
 /// How a dry run is dealt with.
 #[derive(Debug, Clone)]
-pub enum DryRunStrategy<S = String> {
+enum DryRunStrategy<S = String> {
     /// Prints the command to be run, and stop.
     PrintCmd,
     /// Invokes the corresponding package manager with the flags given.
@@ -352,7 +360,7 @@ pub enum DryRunStrategy<S = String> {
 impl DryRunStrategy<String> {
     /// Invokes the corresponding package manager with the flags given.
     #[must_use]
-    pub fn with_flags(flags: &[&str]) -> Self {
+    fn with_flags(flags: &[&str]) -> Self {
         Self::WithFlags(flags.iter().map(|&s| s.to_owned()).collect())
     }
 }
@@ -365,7 +373,7 @@ impl<S> Default for DryRunStrategy<S> {
 
 /// How the prompt is dealt with when running the package manager.
 #[derive(Debug, Clone)]
-pub enum PromptStrategy<S = String> {
+enum PromptStrategy<S = String> {
     /// There is no prompt.
     None,
     /// There is no prompt, but a custom prompt is added.
@@ -382,14 +390,14 @@ impl PromptStrategy<String> {
     /// There is a native prompt provided by the package manager
     /// that can be disabled with a flag.
     #[must_use]
-    pub fn native_no_confirm(no_confirm: &[&str]) -> Self {
+    fn native_no_confirm(no_confirm: &[&str]) -> Self {
         Self::NativeNoConfirm(no_confirm.iter().map(|&s| s.to_owned()).collect())
     }
 
     #[must_use]
     /// There is a native prompt provided by the package manager
     /// that can be enabled with a flag.
-    pub fn native_confirm(confirm: &[&str]) -> Self {
+    fn native_confirm(confirm: &[&str]) -> Self {
         Self::NativeConfirm(confirm.iter().map(|&s| s.to_owned()).collect())
     }
 }
@@ -402,7 +410,7 @@ impl<S> Default for PromptStrategy<S> {
 
 /// How the cache is cleaned when `no_cache` is set to `true`.
 #[derive(Debug, Clone)]
-pub enum NoCacheStrategy<S = String> {
+enum NoCacheStrategy<S = String> {
     /// Does not clean cache.
     /// This variant MUST be used when implementing cache cleaning methods like
     /// `-Sc`.
@@ -420,7 +428,7 @@ pub enum NoCacheStrategy<S = String> {
 impl NoCacheStrategy<String> {
     /// Invokes the corresponding package manager with the flags given.
     #[must_use]
-    pub fn with_flags(flags: &[&str]) -> Self {
+    fn with_flags(flags: &[&str]) -> Self {
         Self::WithFlags(flags.iter().map(|&s| s.to_owned()).collect())
     }
 }

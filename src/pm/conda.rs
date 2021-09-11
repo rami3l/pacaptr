@@ -24,7 +24,7 @@ macro_rules! docs_self {
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub struct Conda {
+pub(crate) struct Conda {
     cfg: Config,
 }
 
@@ -36,7 +36,7 @@ static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
 impl Conda {
     #[must_use]
     #[allow(missing_docs)]
-    pub fn new(cfg: Config) -> Self {
+    pub(crate) fn new(cfg: Config) -> Self {
         Conda { cfg }
     }
 }
