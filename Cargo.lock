@@ -122,18 +122,18 @@ dependencies = [
 
 [[package]]
 name = "const_format"
-version = "0.2.19"
+version = "0.2.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59c7d3aa11be45d56befebb10f4a8785fcb62aabddf5f33638efef922e505ec9"
+checksum = "ae592b8ddbf42b388f8211f0fd4d0985768ed7316348277c250dca4513695492"
 dependencies = [
  "const_format_proc_macros",
 ]
 
 [[package]]
 name = "const_format_proc_macros"
-version = "0.2.14"
+version = "0.2.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29c36c619c422113552db4eb28cddba8faa757e33f758cc3415bd2885977b591"
+checksum = "98b53b21a34874c03f4ee8fe5a5dbd977fbe09cfa43b7e2362d94f33e42d56af"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -427,9 +427,12 @@ checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
 
 [[package]]
 name = "os_str_bytes"
-version = "4.1.1"
+version = "4.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "324abb24c96ea09b7da6aaf68fad1be6242da1042e6f433ee929c26d8fba475b"
+checksum = "addaa943333a514159c80c97ff4a93306530d965d27e139188283cd13e06a799"
+dependencies = [
+ "memchr",
+]
 
 [[package]]
 name = "pacaptr"
@@ -477,9 +480,9 @@ dependencies = [
 
 [[package]]
 name = "papergrid"
-version = "0.1.21"
+version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "117aab6154bbd707e4cca766c7df1d3d247f3bf3052a76709583713c356d6baf"
+checksum = "6fe93a33fc67c8a9d21f3fefa54c4a991e08d2eba5f2fd6f327ca520862eddfb"
 dependencies = [
  "unicode-width",
 ]
@@ -644,9 +647,9 @@ dependencies = [
 
 [[package]]
 name = "tabled_derive"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "295be2fd92b0c382818e4c5271594cd5232651ef3826c4e9963f204113eccec0"
+checksum = "b366a04a152b687a209b2459f29da3650b74bc859390308949305211e28af4b9"
 dependencies = [
  "proc-macro2",
  "quote",
