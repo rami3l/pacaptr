@@ -105,7 +105,7 @@ impl Cmd {
     /// Makes a new [`Cmd`] instance with the given [`cmd`](Cmd::cmd) part.
     pub(crate) fn new(cmd: &[impl AsRef<str>]) -> Self {
         Cmd {
-            cmd: cmd.iter().map(AsRef::as_ref).map_into().collect(),
+            cmd: cmd.iter().map(|s| s.as_ref().into()).collect(),
             ..Cmd::default()
         }
     }
@@ -119,7 +119,7 @@ impl Cmd {
     /// Overrides the value of [`flags`](field@Cmd::flags).
     pub(crate) fn flags(self, flags: &[impl AsRef<str>]) -> Self {
         Cmd {
-            flags: flags.iter().map(AsRef::as_ref).map_into().collect(),
+            flags: flags.iter().map(|s| s.as_ref().into()).collect(),
             ..self
         }
     }
@@ -127,7 +127,7 @@ impl Cmd {
     /// Overrides the value of [`kws`](field@Cmd::kws).
     pub(crate) fn kws(self, kws: &[impl AsRef<str>]) -> Self {
         Cmd {
-            kws: kws.iter().map(AsRef::as_ref).map_into().collect(),
+            kws: kws.iter().map(|s| s.as_ref().into()).collect(),
             ..self
         }
     }

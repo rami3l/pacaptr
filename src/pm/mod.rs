@@ -337,35 +337,35 @@ impl From<PmMode> for Mode {
 /// A set of intrinsic properties of a command in the context of a specific
 /// package manager, indicating how it is run.
 #[derive(Clone, Debug, Default)]
-struct Strategy<S = String> {
+struct Strategy {
     /// How a dry run is dealt with.
-    dry_run: DryRunStrategy<S>,
+    dry_run: DryRunStrategy,
 
     /// How the prompt is dealt with when running the package manager.
-    prompt: PromptStrategy<S>,
+    prompt: PromptStrategy,
 
     /// How the cache is cleaned when `no_cache` is set to `true`.
-    no_cache: NoCacheStrategy<S>,
+    no_cache: NoCacheStrategy,
 }
 
 /// How a dry run is dealt with.
 #[derive(Debug, Clone)]
-enum DryRunStrategy<S = String> {
+enum DryRunStrategy {
     /// Prints the command to be run, and stop.
     PrintCmd,
     /// Invokes the corresponding package manager with the flags given.
-    WithFlags(Vec<S>),
+    WithFlags(Vec<String>),
 }
 
-impl DryRunStrategy<String> {
+impl DryRunStrategy {
     /// Invokes the corresponding package manager with the flags given.
     #[must_use]
-    fn with_flags(flags: &[&str]) -> Self {
-        Self::WithFlags(flags.iter().map(|&s| s.to_owned()).collect())
+    fn with_flags(flags: &[impl AsRef<str>]) -> Self {
+        Self::WithFlags(flags.iter().map(|s| s.as_ref().into()).collect())
     }
 }
 
-impl<S> Default for DryRunStrategy<S> {
+impl Default for DryRunStrategy {
     fn default() -> Self {
         DryRunStrategy::PrintCmd
     }
@@ -373,36 +373,36 @@ impl<S> Default for DryRunStrategy<S> {
 
 /// How the prompt is dealt with when running the package manager.
 #[derive(Debug, Clone)]
-enum PromptStrategy<S = String> {
+enum PromptStrategy {
     /// There is no prompt.
     None,
     /// There is no prompt, but a custom prompt is added.
     CustomPrompt,
     /// There is a native prompt provided by the package manager
     /// that can be disabled with a flag.
-    NativeNoConfirm(Vec<S>),
+    NativeNoConfirm(Vec<String>),
     /// There is a native prompt provided by the package manager
     /// that can be enabled with a flag.
-    NativeConfirm(Vec<S>),
+    NativeConfirm(Vec<String>),
 }
 
-impl PromptStrategy<String> {
+impl PromptStrategy {
     /// There is a native prompt provided by the package manager
     /// that can be disabled with a flag.
     #[must_use]
-    fn native_no_confirm(no_confirm: &[&str]) -> Self {
-        Self::NativeNoConfirm(no_confirm.iter().map(|&s| s.to_owned()).collect())
+    fn native_no_confirm(no_confirm: &[impl AsRef<str>]) -> Self {
+        Self::NativeNoConfirm(no_confirm.iter().map(|s| s.as_ref().into()).collect())
     }
 
     #[must_use]
     /// There is a native prompt provided by the package manager
     /// that can be enabled with a flag.
-    fn native_confirm(confirm: &[&str]) -> Self {
-        Self::NativeConfirm(confirm.iter().map(|&s| s.to_owned()).collect())
+    fn native_confirm(confirm: &[impl AsRef<str>]) -> Self {
+        Self::NativeConfirm(confirm.iter().map(|s| s.as_ref().into()).collect())
     }
 }
 
-impl<S> Default for PromptStrategy<S> {
+impl Default for PromptStrategy {
     fn default() -> Self {
         PromptStrategy::None
     }
@@ -410,7 +410,7 @@ impl<S> Default for PromptStrategy<S> {
 
 /// How the cache is cleaned when `no_cache` is set to `true`.
 #[derive(Debug, Clone)]
-enum NoCacheStrategy<S = String> {
+enum NoCacheStrategy {
     /// Does not clean cache.
     /// This variant MUST be used when implementing cache cleaning methods like
     /// `-Sc`.
@@ -422,18 +422,18 @@ enum NoCacheStrategy<S = String> {
     /// Uses `-Sccc`.
     Sccc,
     /// Invokes the corresponding package manager with the flags given.
-    WithFlags(Vec<S>),
+    WithFlags(Vec<String>),
 }
 
-impl NoCacheStrategy<String> {
+impl NoCacheStrategy {
     /// Invokes the corresponding package manager with the flags given.
     #[must_use]
-    fn with_flags(flags: &[&str]) -> Self {
-        Self::WithFlags(flags.iter().map(|&s| s.to_owned()).collect())
+    fn with_flags(flags: &[impl AsRef<str>]) -> Self {
+        Self::WithFlags(flags.iter().map(|s| s.as_ref().into()).collect())
     }
 }
 
-impl<S> Default for NoCacheStrategy<S> {
+impl Default for NoCacheStrategy {
     fn default() -> Self {
         NoCacheStrategy::None
     }

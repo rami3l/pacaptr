@@ -45,7 +45,8 @@ impl Tabled for CompatRow {
             // `["Module", "q", "qc", "qe", ..]`
             iter::once(&"Module")
                 .chain(METHODS.iter())
-                .map(|&s| s.to_owned())
+                .copied()
+                .map_into()
                 .collect()
         });
         HEADERS.clone()
@@ -68,7 +69,8 @@ fn make_table() -> anyhow::Result<String> {
     let make_row = |name: &str, data: &[&str]| {
         let fields = iter::once(&name)
             .chain(data)
-            .map(|&s| s.to_owned())
+            .copied()
+            .map_into()
             .collect_vec();
         CompatRow { fields }
     };
@@ -103,8 +105,7 @@ pub(crate) fn compat_table_impl() -> Result<TokenStream> {
         Error::new(Span::call_site(), msg)
     }
 
-    let table = make_table().map_err(|e| throw(&e as _))?;
-    let comments = format!(r##"r#"{}"#"##, table);
-    let res = TokenStream::from_str(&comments)?;
-    Ok(res)
+    let table = make_table().map_err(|e| throw(&e))?;
+    let docstring = format!(r##"r#"{}"#"##, table);
+    Ok(TokenStream::from_str(&docstring)?)
 }

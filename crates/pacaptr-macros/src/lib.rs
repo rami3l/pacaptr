@@ -3,9 +3,10 @@ mod test_dsl;
 
 use std::{convert::TryFrom, iter::FromIterator};
 
+use anyhow::Result;
 use itertools::Itertools;
 use litrs::StringLit;
-use proc_macro2::TokenStream;
+use proc_macro::TokenStream;
 use quote::quote;
 
 use crate::{compat_table::compat_table_impl, test_dsl::test_dsl_impl};
@@ -41,9 +42,7 @@ use crate::{compat_table::compat_table_impl, test_dsl::test_dsl_impl};
 /// }
 /// ```
 #[proc_macro]
-pub fn test_dsl(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = TokenStream::from(input);
-
+pub fn test_dsl(input: TokenStream) -> TokenStream {
     let input = input.into_iter().collect_vec();
     if input.len() != 1 {
         let msg = format!(
@@ -59,19 +58,18 @@ pub fn test_dsl(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         Ok(lit) => lit,
     };
 
-    let res = match test_dsl_impl(string_lit.value()) {
-        Err(e) => return e.to_compile_error().into(),
-        Ok(r) => r,
-    };
-
-    proc_macro::TokenStream::from(res)
+    res_token_stream(test_dsl_impl(string_lit.value()))
 }
 
+/// Generates the compatibility table as a docstring on the top of given input.
 #[proc_macro]
-pub fn compat_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let comments = match compat_table_impl() {
-        Err(e) => return e.to_compile_error().into(),
-        Ok(r) => proc_macro::TokenStream::from(r),
-    };
-    proc_macro::TokenStream::from_iter(vec![comments, input])
+pub fn compat_table(input: TokenStream) -> TokenStream {
+    let res =
+        compat_table_impl().map(|docstring| TokenStream::from_iter([docstring.into(), input]));
+    res_token_stream(res)
+}
+
+fn res_token_stream(res: Result<impl Into<TokenStream>, syn::Error>) -> TokenStream {
+    res.map(Into::into)
+        .unwrap_or_else(|e| e.to_compile_error().into())
 }
