@@ -72,7 +72,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "clap"
 version = "3.0.0-beta.4"
-source = "git+https://github.com/clap-rs/clap#af7802a2ed1a76ae6341513b3a002244cb2c2fe8"
+source = "git+https://github.com/clap-rs/clap#5580e8c4657dea6ac085ce76102c3aefe5f33d81"
 dependencies = [
  "atty",
  "bitflags",
@@ -83,13 +83,12 @@ dependencies = [
  "strsim",
  "termcolor",
  "textwrap",
- "vec_map",
 ]
 
 [[package]]
 name = "clap_derive"
 version = "3.0.0-beta.4"
-source = "git+https://github.com/clap-rs/clap#af7802a2ed1a76ae6341513b3a002244cb2c2fe8"
+source = "git+https://github.com/clap-rs/clap#5580e8c4657dea6ac085ce76102c3aefe5f33d81"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -804,12 +803,6 @@ dependencies = [
  "libc",
  "log",
 ]
-
-[[package]]
-name = "vec_map"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
 
 [[package]]
 name = "version_check"
