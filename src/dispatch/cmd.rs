@@ -20,6 +20,7 @@ use crate::{
 #[clap(
     version = clap::crate_version!(),
     author = clap::crate_authors!(),
+    about = clap::crate_description!(),
     global_setting = AppSettings::ColoredHelp,
     setting = AppSettings::SubcommandRequiredElseHelp,
 )]
