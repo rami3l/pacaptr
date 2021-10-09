@@ -47,8 +47,7 @@ impl Brew {
         let out_bytes = self
             .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?;
-        exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
-        Ok(())
+        exec::grep_print(&String::from_utf8(out_bytes)?, kws)
     }
 }
 
