@@ -131,6 +131,16 @@ impl Pm for Brew {
             .await
     }
 
+    /// Rs removes a package and its dependencies which are not required by any
+    /// other installed package, and not explicitly installed by the user.
+    async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.r(kws, flags).await?;
+        Cmd::new(&["brew", "autoremove"])
+            .flags(flags)
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .await
+    }
+
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(if self.cfg.needed {
