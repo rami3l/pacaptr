@@ -72,7 +72,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "clap"
 version = "3.0.0-beta.4"
-source = "git+https://github.com/clap-rs/clap#dd16fcccc3ced319f719e390a9d3669a6c981729"
+source = "git+https://github.com/clap-rs/clap#562e64c7238b94769a6191476323a6245476de62"
 dependencies = [
  "atty",
  "bitflags",
@@ -83,12 +83,13 @@ dependencies = [
  "strsim",
  "termcolor",
  "textwrap",
+ "unicase",
 ]
 
 [[package]]
 name = "clap_derive"
 version = "3.0.0-beta.4"
-source = "git+https://github.com/clap-rs/clap#dd16fcccc3ced319f719e390a9d3669a6c981729"
+source = "git+https://github.com/clap-rs/clap#562e64c7238b94769a6191476323a6245476de62"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -769,6 +770,15 @@ name = "tt-call"
 version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e66dcbec4290c69dd03c57e76c2469ea5c7ce109c6dd4351c13055cf71ea055"
+
+[[package]]
+name = "unicase"
+version = "2.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50f37be617794602aabbeee0be4f259dc1778fabe05e2d67ee8f79326d5cb4f6"
+dependencies = [
+ "version_check",
+]
 
 [[package]]
 name = "unicode-segmentation"

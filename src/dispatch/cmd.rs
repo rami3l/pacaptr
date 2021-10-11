@@ -2,7 +2,7 @@
 
 use std::iter::FromIterator;
 
-use clap::{self, AppSettings, Clap};
+use clap::{self, AppSettings, Parser};
 use itertools::Itertools;
 use tap::prelude::*;
 use tokio::task;
@@ -16,12 +16,11 @@ use crate::{
 };
 
 /// The command line options to be collected.
-#[derive(Debug, Clap)]
+#[derive(Debug, Parser)]
 #[clap(
     version = clap::crate_version!(),
     author = clap::crate_authors!(),
     about = clap::crate_description!(),
-    global_setting = AppSettings::ColoredHelp,
     setting = AppSettings::SubcommandRequiredElseHelp,
 )]
 #[allow(clippy::struct_excessive_bools)]
@@ -71,7 +70,7 @@ pub struct Pacaptr {
 }
 
 // For details on operations, flags and flagcounters, see: https://www.archlinux.org/pacman/pacman.8.html
-#[derive(Debug, Clap)]
+#[derive(Debug, Parser)]
 #[clap(about = clap::crate_description!())]
 enum Operations {
     /// Query the package database.
