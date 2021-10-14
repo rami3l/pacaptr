@@ -91,7 +91,8 @@ jobs:
           cat macos_build.txt
       - name: Cache MacPorts
         id: cache-macports
-        uses: actions/cache@v2
+        # uses: actions/cache@v2
+        uses: john-shaffer/cache@sudo-tar
         with:
           path: /opt/local/
           key: ${{ runner.os }}-macports-${{ hashFiles('macos_build.txt') }}
