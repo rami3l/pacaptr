@@ -96,6 +96,9 @@ jobs:
         with:
           path: /opt/local/
           key: ${{ runner.os }}-macports-${{ hashFiles('macos_build.txt') }}
+      - name: Restore MacPorts PATH
+        if: steps.cache-macports.outputs.cache-hit == 'true'
+        run: echo "/opt/local/bin" >> "$GITHUB_PATH"
       - name: Install MacPorts
         if: steps.cache-macports.outputs.cache-hit != 'true'
         run: |
