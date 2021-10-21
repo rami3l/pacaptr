@@ -1,7 +1,5 @@
 //! Definitions for command line argument mapping and dispatching.
 
-use std::iter::FromIterator;
-
 use clap::{self, AppSettings, Parser};
 use itertools::Itertools;
 use tap::prelude::*;
@@ -263,8 +261,8 @@ impl Pacaptr {
 
         let pm = cfg.conv::<Box<dyn Pm>>();
 
-        let kws = self.keywords.iter().map(|s| s as &str).collect_vec();
-        let flags = self.extra_flags.iter().map(|s| s as &str).collect_vec();
+        let kws = self.keywords.iter().map(|s| s as _).collect_vec();
+        let flags = self.extra_flags.iter().map(|s| s as _).collect_vec();
 
         // Call the method indicated by `options` on `pm`. That is:
         // ```rust

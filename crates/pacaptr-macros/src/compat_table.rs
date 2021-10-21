@@ -9,7 +9,10 @@ use syn::{Error, Result};
 use tabled::{style::Style as TableStyle, Table, Tabled};
 
 const PM_IMPL_DIR: &str = "src/pm/";
-const METHODS: &[&str] = &[
+
+// We have to specify the length there (the elision is blocked by https://github.com/rust-lang/rfcs/pull/2545).
+// TODO: Fix this when the issue is resolved.
+const METHODS: [&str; 30] = [
     "q", "qc", "qe", "qi", "qk", "ql", "qm", "qo", "qp", "qs", "qu", "r", "rn", "rns", "rs", "rss",
     "s", "sc", "scc", "sccc", "sg", "si", "sii", "sl", "ss", "su", "suy", "sw", "sy", "u",
 ];
@@ -43,9 +46,8 @@ impl Tabled for CompatRow {
     fn headers() -> Vec<String> {
         static HEADERS: Lazy<Vec<String>> = Lazy::new(|| {
             // `["Module", "q", "qc", "qe", ..]`
-            iter::once(&"Module")
-                .chain(METHODS.iter())
-                .copied()
+            iter::once("Module")
+                .chain(METHODS.into_iter())
                 .map_into()
                 .collect()
         });
@@ -66,32 +68,24 @@ fn make_table() -> anyhow::Result<String> {
         .map(|entry| check_methods(&entry.path()).map(|impl_| (entry.file_name(), impl_)))
         .try_collect()?;
 
-    let make_row = |name: &str, data: &[&str]| {
-        let fields = iter::once(&name)
-            .chain(data)
-            .copied()
-            .map_into()
-            .collect_vec();
+    let make_row = |name, data| {
+        let fields = iter::once(name).chain(data).map_into().collect_vec();
         CompatRow { fields }
     };
 
     let data: Vec<_> = impls
         .iter()
         .map(|(file, items)| {
-            let data = METHODS
-                .iter()
-                .map(|&method| {
-                    items
-                        .get(method)
-                        .expect("Implementation details not registered")
-                        .then(|| "*")
-                        .unwrap_or("")
-                })
-                .collect_vec();
-
+            let data = METHODS.map(|method| {
+                items
+                    .get(method)
+                    .expect("Implementation details not registered")
+                    .then(|| "*")
+                    .unwrap_or("")
+            });
             file.to_str()
                 .context("Failed to convert `file: OsString` to `&str`")
-                .map(|file| make_row(file, &data))
+                .map(|file| make_row(file, data))
         })
         .try_collect()?;
 

@@ -1,8 +1,6 @@
 mod compat_table;
 mod test_dsl;
 
-use std::{convert::TryFrom, iter::FromIterator};
-
 use anyhow::Result;
 use itertools::Itertools;
 use litrs::StringLit;

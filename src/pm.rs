@@ -28,6 +28,7 @@ mods! {
 }
 
 use async_trait::async_trait;
+use itertools::Itertools;
 use macro_rules_attribute::macro_rules_attribute;
 use tt_call::tt_call;
 
@@ -272,7 +273,7 @@ trait PmHelper: Pm {
 
         // Perform the cleanup.
         if cfg.no_cache {
-            let flags = cmd.flags.iter().map(|s| s as &str).collect::<Vec<_>>();
+            let flags = cmd.flags.iter().map(|s| s as _).collect_vec();
             match &strat.no_cache {
                 NoCacheStrategy::Sc => self.sc(&[], &flags).await?,
                 NoCacheStrategy::Scc => self.scc(&[], &flags).await?,

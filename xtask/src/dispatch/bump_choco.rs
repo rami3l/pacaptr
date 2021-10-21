@@ -21,9 +21,9 @@ impl Runner for BumpChoco {
         let tag = get_ver_from_env()?;
 
         // Remove leading `v` and suffix `-take.X` from the tag.
-        let ver = {
+        let ver: &str = {
             let tag = tag.strip_prefix('v').unwrap_or(&tag);
-            &Regex::new(r"-?take\.\d+")?.replace(tag, "") as &str
+            &Regex::new(r"-?take\.\d+")?.replace(tag, "")
         };
 
         let release_uri = format!(
