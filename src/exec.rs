@@ -181,11 +181,10 @@ impl Cmd {
 ///
 /// * `src` - The input stream to read from.
 /// * `out` - The optional output stream to write to.
-async fn exec_tee<S, O>(src: &mut S, out: Option<O>) -> Result<Vec<u8>>
-where
-    S: Stream<Item = io::Result<Bytes>> + Unpin,
-    O: AsyncWrite + Unpin,
-{
+async fn exec_tee(
+    src: impl Stream<Item = io::Result<Bytes>>,
+    out: Option<impl AsyncWrite>,
+) -> Result<Vec<u8>> {
     let mut buf = Vec::<u8>::new();
     let buf_sink = (&mut buf).into_sink();
 

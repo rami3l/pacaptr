@@ -48,7 +48,7 @@ regex = { version = "1.5.4", default-features = false, features = [
 serde = { version = "1.0.130", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "1.0.30"
-tokio = { version = "1.12.0", features = [
+tokio = { version = "1.13.0", features = [
   "io-std",
   "io-util",
   "macros",
@@ -56,8 +56,8 @@ tokio = { version = "1.12.0", features = [
   "rt-multi-thread",
   "sync",
 ] }
-tokio-stream = "0.1.7"
-tokio-util = { version = "0.6.8", features = ["codec", "compat"] }
+tokio-stream = "0.1.8"
+tokio-util = { version = "0.6.9", features = ["codec", "compat"] }
 tt-call = "1.0.8"
 which = "4.2.2"
 
