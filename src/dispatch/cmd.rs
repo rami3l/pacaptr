@@ -210,14 +210,16 @@ impl Pacaptr {
     /// detected.
     ///
     /// # Errors
-    /// See [`Error`](crate::error::Error) for a  list of possible errors.
+    /// See [`Error`](crate::error::Error) for a list of possible errors.
     #[allow(trivial_numeric_casts)]
     async fn dispatch_from(&self, mut cfg: Config) -> Result<()> {
-        // Collect options as a `String`, eg. `-S -y -u => "Suy"`.
-        // ! HACK: In `Pm` we ensure the Pacman methods are all named with flags in
-        // ! ASCII order, ! eg. `Suy` instead of `Syu`.
-        // ! Then, in order to stay coherent with Rust coding style the method name
-        // ! should be `suy`.
+        /// Collect options as a `String`, eg. `-S -y -u => "Suy"`.
+        ///
+        /// # Hack
+        /// In `Pm` we ensure the Pacman methods are all named with flags in
+        /// ASCII order, eg. `Suy` instead of `Syu`. Then, in order to
+        /// stay coherent with Rust coding style the method name should be
+        /// `suy`.
         macro_rules! collect_options {(
             $( $op:ident {
                 $( mappings: [$( $key:ident -> $val:ident ), *], )?
@@ -264,13 +266,14 @@ impl Pacaptr {
         let kws = self.keywords.iter().map(|s| s as _).collect_vec();
         let flags = self.extra_flags.iter().map(|s| s as _).collect_vec();
 
-        // Call the method indicated by `options` on `pm`. That is:
-        // ```rust
-        // match &options.to_lowercase() as _ {
-        //     "q" => pm.q(&kws, &flags).await,
-        //     ..
-        // }
-        // ```
+        /// Call the method indicated by `options` on `pm`. That is:
+        ///
+        /// ```rust
+        /// match &options.to_lowercase() as _ {
+        ///     "q" => pm.q(&kws, &flags).await,
+        ///     ..
+        /// }
+        /// ```
         macro_rules! dispatch_match {(
             methods = [{ $(
                 $( #[$meta:meta] )*
@@ -297,7 +300,7 @@ impl Pacaptr {
     /// detected [`Config`].
     ///
     /// # Errors
-    /// See [`Error`](crate::error::Error) for a  list of possible errors.
+    /// See [`Error`](crate::error::Error) for a list of possible errors.
     #[allow(trivial_numeric_casts)]
     pub async fn dispatch(&self) -> Result<()> {
         let dotfile = task::block_in_place(Config::try_load);
