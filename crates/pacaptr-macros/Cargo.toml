@@ -15,7 +15,7 @@ description = "Implementation of several macros used in pacaptr."
 proc-macro = true
 
 [dependencies]
-anyhow = "1.0.47"
+anyhow = "1.0.48"
 itertools = "0.10.1"
 litrs = "0.2.3"
 once_cell = "1.8.0"
