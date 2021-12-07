@@ -72,7 +72,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "clap"
 version = "3.0.0-beta.5"
-source = "git+https://github.com/clap-rs/clap#39374acb90ec62241a5af32596bbbb38f3c80c94"
+source = "git+https://github.com/clap-rs/clap#1fcaf0735723d0dc2a6df2cf315014789eadaa12"
 dependencies = [
  "atty",
  "bitflags",
@@ -89,7 +89,7 @@ dependencies = [
 [[package]]
 name = "clap_derive"
 version = "3.0.0-beta.5"
-source = "git+https://github.com/clap-rs/clap#39374acb90ec62241a5af32596bbbb38f3c80c94"
+source = "git+https://github.com/clap-rs/clap#1fcaf0735723d0dc2a6df2cf315014789eadaa12"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -426,9 +426,9 @@ checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
 
 [[package]]
 name = "os_str_bytes"
-version = "4.2.0"
+version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "addaa943333a514159c80c97ff4a93306530d965d27e139188283cd13e06a799"
+checksum = "8e22443d1643a904602595ba1cd8f7d896afe56d26712531c5ff73a15b2fbf64"
 dependencies = [
  "memchr",
 ]
