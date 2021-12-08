@@ -30,7 +30,10 @@ xshell = "0.1.17"
 [dependencies]
 async-trait = "0.1.51"
 bytes = "1.1.0"
-clap = { git = "https://github.com/clap-rs/clap", version = "3.0.0-beta.5" }
+clap = { git = "https://github.com/clap-rs/clap", version = "3.0.0-rc.0", features = [
+  "cargo",
+  "derive",
+] }
 colored = "2.0.0"
 confy = "0.4.0"
 dirs-next = "2.0.0"
