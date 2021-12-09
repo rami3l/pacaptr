@@ -28,7 +28,7 @@ exclude = ["dist/**/*", "docs/**/*"]
 xshell = "0.1.17"
 
 [dependencies]
-async-trait = "0.1.51"
+async-trait = "0.1.52"
 bytes = "1.1.0"
 clap = { git = "https://github.com/clap-rs/clap", version = "3.0.0-rc.0", features = [
   "cargo",
