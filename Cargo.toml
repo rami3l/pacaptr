@@ -37,7 +37,7 @@ clap = { git = "https://github.com/clap-rs/clap", version = "3.0.0-rc.4", featur
 colored = "2.0.0"
 confy = "0.4.0"
 dirs-next = "2.0.0"
-futures = { version = "0.3.18", default-features = false, features = ["std"] }
+futures = { version = "0.3.19", default-features = false, features = ["std"] }
 indoc = "1.0.3"
 is-root = "0.1.2"
 itertools = "0.10.3"
