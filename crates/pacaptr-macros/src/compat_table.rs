@@ -39,6 +39,8 @@ struct CompatRow {
 }
 
 impl Tabled for CompatRow {
+    const LENGTH: usize = 60;
+
     fn fields(&self) -> Vec<String> {
         self.fields.clone()
     }
@@ -89,7 +91,7 @@ fn make_table() -> anyhow::Result<String> {
         })
         .try_collect()?;
 
-    let table = Table::new(&data).with(TableStyle::noborder());
+    let table = Table::new(&data).with(TableStyle::NO_BORDER);
     Ok(format!("```\n{}```\n", table))
 }
 
