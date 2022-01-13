@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          # Hack: https://github.com/ahmadnassri/action-dependabot-auto-merge/issues/58#issuecomment-981520187
+          token: ${{ secrets.GH_ACTIONS_TOKEN }}
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
           target: patch
