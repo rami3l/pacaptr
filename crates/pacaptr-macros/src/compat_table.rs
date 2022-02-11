@@ -91,17 +91,17 @@ fn make_table() -> anyhow::Result<String> {
         })
         .try_collect()?;
 
-    let table = Table::new(&data).with(TableStyle::NO_BORDER);
-    Ok(format!("```\n{}```\n", table))
+    let table = Table::new(&data).with(TableStyle::blank());
+    Ok(format!("```\n{table}```\n"))
 }
 
 pub(crate) fn compat_table_impl() -> Result<TokenStream> {
     fn throw(e: &dyn Debug) -> Error {
-        let msg = format!("{:?}", e);
+        let msg = format!("{e:?}");
         Error::new(Span::call_site(), msg)
     }
 
     let table = make_table().map_err(|e| throw(&e))?;
-    let docstring = format!(r##"r#"{}"#"##, table);
+    let docstring = format!(r##"r#"{table}"#"##);
     Ok(TokenStream::from_str(&docstring)?)
 }

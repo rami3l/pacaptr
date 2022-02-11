@@ -53,34 +53,31 @@ fn main() -> Result<()> {
     match subcommand.as_str() {
         "publish" => {
             if args.contains(["-h", "--help"]) {
-                eprintln!("{}", PUBLISH_HELP);
+                eprintln!("{PUBLISH_HELP}");
                 return Ok(());
             }
-
             Publish {}.run()
         }
 
         "bump-tap" => {
             if args.contains(["-h", "--help"]) {
-                eprintln!("{}", BUMP_TAP_HELP);
+                eprintln!("{BUMP_TAP_HELP}");
                 return Ok(());
             }
-
             BumpTap {}.run()
         }
 
         "bump-choco" => {
             if args.contains(["-h", "--help"]) {
-                eprintln!("{}", BUMP_CHOCO_HELP);
+                eprintln!("{BUMP_CHOCO_HELP}");
                 return Ok(());
             }
-
             BumpChoco {}.run()
         }
 
         _ => {
-            println!("{}", BANNER);
-            eprintln!("{}", XTASK_HELP);
+            println!("{BANNER}");
+            eprintln!("{XTASK_HELP}");
             Ok(())
         }
     }

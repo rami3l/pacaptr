@@ -420,7 +420,7 @@ fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
         .iter()
         .map(|&pat| {
             Regex::new(pat)
-                .map_err(|_e| Error::OtherError(format!("Pattern `{}` is ill-formed", pat)))
+                .map_err(|_e| Error::OtherError(format!("Pattern `{pat}` is ill-formed")))
         })
         .try_collect()?;
     Ok(text
@@ -432,7 +432,7 @@ fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
 /// Prints the result of [`grep`] line by line.
 #[doc = docs_errors_grep!()]
 pub(crate) fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
-    grep(text, patterns).map(|lns| lns.iter().for_each(|ln| println!("{}", ln)))
+    grep(text, patterns).map(|lns| lns.iter().for_each(|ln| println!("{ln}")))
 }
 
 /// Checks if an executable exists by name (consult `$PATH`) or by path.

@@ -64,7 +64,7 @@ pub fn print_err(err: impl std::fmt::Display, prompt: &str) {
     eprintln!(
         msg_format!(),
         prompt.bright_red().bold(),
-        format!("{:#}", err),
+        format_args!("{err:#}"),
         indent = PROMPT_INDENT
     );
 }

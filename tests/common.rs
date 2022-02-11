@@ -93,7 +93,7 @@ impl<'t> Test<'t> {
                 }
             };
             let got = cmd!("{sh}").args(sh_args).arg(dbg!(&cmd)).read().unwrap();
-            println!("{}", &got);
+            println!("{got}");
             try_match(&got, patterns);
         })
     }
