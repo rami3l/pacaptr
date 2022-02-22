@@ -1,4 +1,4 @@
-use itertools::Itertools;
+use itertools::{chain, Itertools};
 pub use pacaptr_macros::test_dsl;
 use regex::RegexBuilder;
 use xshell::cmd;
@@ -87,9 +87,9 @@ impl<'t> Test<'t> {
             //     raise MatchError(some_msg)
             let (sh, sh_args) = cmd_prefix();
             let cmd = match *input {
-                Input::Exec { cmd, kws } => cmd.iter().chain(kws).join(" "),
+                Input::Exec { cmd, kws } => chain!(cmd, kws).join(" "),
                 Input::Pacaptr { args, flags } => {
-                    format!("cargo run -- {}", args.iter().chain(flags).join(" "))
+                    format!("cargo run -- {}", chain!(args, flags).join(" "))
                 }
             };
             let got = cmd!("{sh}").args(sh_args).arg(dbg!(&cmd)).read().unwrap();

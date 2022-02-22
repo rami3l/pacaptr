@@ -1,7 +1,7 @@
-use std::{collections::BTreeMap, ffi::OsString, fmt::Debug, fs, iter, path::Path, str::FromStr};
+use std::{collections::BTreeMap, ffi::OsString, fmt::Debug, fs, path::Path, str::FromStr};
 
 use anyhow::Context;
-use itertools::Itertools;
+use itertools::{chain, Itertools};
 use once_cell::sync::Lazy;
 use proc_macro2::{Span, TokenStream};
 use regex::Regex;
@@ -48,10 +48,7 @@ impl Tabled for CompatRow {
     fn headers() -> Vec<String> {
         static HEADERS: Lazy<Vec<String>> = Lazy::new(|| {
             // `["Module", "q", "qc", "qe", ..]`
-            iter::once("Module")
-                .chain(METHODS.into_iter())
-                .map_into()
-                .collect()
+            chain!(["Module"], METHODS).map_into().collect()
         });
         HEADERS.clone()
     }
@@ -71,7 +68,7 @@ fn make_table() -> anyhow::Result<String> {
         .try_collect()?;
 
     let make_row = |name, data| {
-        let fields = iter::once(name).chain(data).map_into().collect_vec();
+        let fields = chain!([name], data).map_into().collect_vec();
         CompatRow { fields }
     };
 

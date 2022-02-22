@@ -76,13 +76,12 @@ impl Config {
     /// # Errors
     /// Returns an [`Error::ConfigError`] when the config file loading fails.
     pub(crate) fn try_load() -> Result<Self> {
-        let path = Config::custom_path().or_else(|_| Config::default_path())?;
-        path.exists()
-            .then(|| confy::load_path(&path))
-            .transpose()
-            .map_err(|_e| Error::ConfigError {
-                msg: format!("Failed to read config at `{:?}`", &path),
-            })
-            .map(Option::unwrap_or_default)
+        let path = Self::custom_path().or_else(|_e| Self::default_path())?;
+        if !path.exists() {
+            return Ok(Self::default());
+        }
+        confy::load_path(&path).map_err(|_e| Error::ConfigError {
+            msg: format!("Failed to read config at `{:?}`", &path),
+        })
     }
 }

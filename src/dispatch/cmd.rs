@@ -325,7 +325,7 @@ pub(super) mod tests {
 
     macro_rules! make_mock_op_body {
         ($self:ident, $kws:ident, $flags:ident, $method:ident) => {{
-            let kws: Vec<_> = $kws.iter().chain($flags).collect();
+            let kws: Vec<_> = itertools::chain!($kws, $flags).collect();
             panic!("should run: {} {:?}", stringify!($method), &kws)
         }};
     }

@@ -184,7 +184,7 @@ macro_rules! _decor_pm {(
 ///
 /// ```rust
 /// _decor_pm! {
-///     def = [{  trait Pm { .. } }]
+///     def = [{ trait Pm { .. } }]
 ///     methods = [{ q qc qe .. }] )
 /// }
 /// ```
