@@ -1,6 +1,6 @@
 //! Definitions for command line argument mapping and dispatching.
 
-use clap::{self, AppSettings, Parser};
+use clap::{self, Parser};
 use itertools::Itertools;
 use tap::prelude::*;
 use tokio::task;
@@ -19,7 +19,8 @@ use crate::{
     version = clap::crate_version!(),
     author = clap::crate_authors!(),
     about = clap::crate_description!(),
-    setting = AppSettings::SubcommandRequiredElseHelp,
+    subcommand_required = true,
+    arg_required_else_help = true,
 )]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Pacaptr {
