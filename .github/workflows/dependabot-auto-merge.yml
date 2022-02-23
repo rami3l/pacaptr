@@ -1,7 +1,8 @@
 name: dependabot-auto-merge
 
 on:
-  pull_request:
+  # https://github.com/dependabot/dependabot-core/issues/3253#issuecomment-852541544
+  pull_request_target:
 
 jobs:
   auto-merge:
@@ -11,6 +12,8 @@ jobs:
         with:
           # Hack: https://github.com/ahmadnassri/action-dependabot-auto-merge/issues/58#issuecomment-981520187
           token: ${{ secrets.GH_ACTIONS_TOKEN }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
           target: patch
