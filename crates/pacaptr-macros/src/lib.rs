@@ -21,6 +21,8 @@ use crate::{compat_table::compat_table_impl, test_dsl::test_dsl_impl};
 /// - `ou` item: Check the output of the **last** `in` or `in !` item above
 ///   against a **regex** pattern.
 ///
+/// A comment in this DSL starts with a `#`.
+///
 /// # Examples
 ///
 /// ```no_run
@@ -28,13 +30,19 @@ use crate::{compat_table::compat_table_impl, test_dsl::test_dsl_impl};
 /// #[ignore]
 /// fn apt_r_s() {
 ///    test_dsl! { r##"
-///        in -Sy               # Refresh with `pacaptr -Sy`.
-///        in -S screen --yes   # Install `screen`.
-///        in ! which screen    # Verify installation.
+///        # Refresh with `pacaptr -Sy`.
+///        in -Sy
+///
+///        # Install `screen`.
+///        in -S screen --yes
+///
+///        # Verify installation.
+///        in ! which screen    
 ///        ou ^/usr/bin/screen
 ///
-///        in -R screen --yes   # Remove `screen`.
-///        in -Qi screen        # Verify removal.
+///        # Remove `screen` and verify removal.
+///        in -R screen --yes  
+///        in -Qi screen
 ///        ou ^Status: deinstall
 ///    "## }
 /// }
