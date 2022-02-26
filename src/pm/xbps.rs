@@ -1,12 +1,18 @@
 #![doc = docs_self!()]
 
 use async_trait::async_trait;
+use futures::prelude::*;
 use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::Pipe;
+use tokio::io::AsyncWriteExt;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
-use crate::{dispatch::Config, error::Result, exec::Cmd};
+use crate::{
+    dispatch::Config,
+    error::{Error, Result},
+    exec::Cmd,
+};
 
 macro_rules! docs_self {
     () => {
@@ -48,14 +54,83 @@ impl Pm for Xbps {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["xbps-query", "-l"]).kws(kws).flags(flags))
-            .await
+        if kws.is_empty() {
+            return self
+                .run(Cmd::new(&["xbps-query", "-l"]).kws(kws).flags(flags))
+                .await;
+        }
+
+        let lines: Vec<_> = stream::iter(kws)
+            .map(Ok)
+            .and_then(|&pkg| async {
+                let cmd = Cmd::new(&["xbps-query", "--property", "pkgver", pkg]).flags(flags);
+                self.check_output(cmd, PmMode::Mute, &Strategy::default())
+                    .await
+                    .map_err(|err| (pkg.to_string(), err))
+            })
+            .collect()
+            .await;
+
+        let mut stdout = tokio::io::stdout();
+        for line in lines {
+            match line {
+                Ok(line) => stdout.write_all(&line).await?,
+                Err((pkg, Error::CmdStatusCodeError { .. })) => {
+                    let msg = format!("error: package '{}' was not found\n", pkg);
+                    stdout.write_all(msg.as_bytes()).await?;
+                }
+                Err((_, other)) => return Err(other),
+            };
+        }
+
+        Ok(())
     }
 
     /// Qe lists packages installed explicitly (not as dependencies).
     async fn qe(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["xbps-query", "-m"]).kws(kws).flags(flags))
-            .await
+        if kws.is_empty() {
+            return self
+                .run(Cmd::new(&["xbps-query", "-m"]).kws(kws).flags(flags))
+                .await;
+        }
+
+        let lines: Vec<_> = stream::iter(kws)
+            .filter(|&&pkg| async {
+                let check_cmd =
+                    Cmd::new(&["xbps-query", "--property", "automatic-install", pkg]).flags(flags);
+                let result = self
+                    .check_output(check_cmd, PmMode::Mute, &Strategy::default())
+                    .await;
+
+                // if a package is manually installed then the automatic-install field is empty
+                match result {
+                    Ok(auto_status) => auto_status.is_empty(),
+                    _ => true,
+                }
+            })
+            .map(Ok)
+            .and_then(|&pkg| async {
+                let cmd = Cmd::new(&["xbps-query", "--property", "pkgver", pkg]).flags(flags);
+                self.check_output(cmd, PmMode::Mute, &Strategy::default())
+                    .await
+                    .map_err(|err| (pkg.to_string(), err))
+            })
+            .collect()
+            .await;
+
+        let mut stdout = tokio::io::stdout();
+        for line in lines {
+            match line {
+                Ok(line) => stdout.write_all(&line).await?,
+                Err((pkg, Error::CmdStatusCodeError { .. })) => {
+                    let msg = format!("error: package '{}' was not found\n", pkg);
+                    stdout.write_all(msg.as_bytes()).await?;
+                }
+                Err((_, other)) => return Err(other),
+            }
+        }
+
+        Ok(())
     }
 
     /// Qi displays local package information: name, version, description, etc.
