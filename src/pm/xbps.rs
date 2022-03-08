@@ -217,10 +217,7 @@ impl Pm for Xbps {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["xbps-install", "-S"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+        self.run(Cmd::new(&["xbps-install", "-S"]).kws(kws).flags(flags))
             .await
     }
 
