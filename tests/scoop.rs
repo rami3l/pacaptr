@@ -16,7 +16,7 @@ fn scoop_fail() {
 fn scoop_qi() {
     test_dsl! { r##"
         in --using scoop -Qi wget
-        ou Description: A command-line utility for retrieving files using HTTP, HTTPS, FTP, and FTPS protocols.
+        ou A command-line utility for retrieving files using HTTP, HTTPS, FTP, and FTPS protocols.
     "## }
 }
 
