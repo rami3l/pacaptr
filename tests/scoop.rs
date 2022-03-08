@@ -40,7 +40,7 @@ fn scoop_r_s() {
 fn scoop_si() {
     test_dsl! { r##"
         in --using scoop -Si wget
-        ou Description: A command-line utility for retrieving files using HTTP, HTTPS, FTP, and FTPS protocols.
+        ou A command-line utility for retrieving files using HTTP, HTTPS, FTP, and FTPS protocols.
     "## }
 }
 
