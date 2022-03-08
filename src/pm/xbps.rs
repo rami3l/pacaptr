@@ -11,7 +11,8 @@ use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
     dispatch::Config,
     error::{Error, Result},
-    exec::Cmd,
+    exec::{Cmd, StatusCode},
+    print::print_err,
 };
 
 macro_rules! docs_self {
@@ -21,6 +22,8 @@ macro_rules! docs_self {
         "}
     };
 }
+
+const PKG_NOT_FOUND_CODE: StatusCode = 2;
 
 #[doc = docs_self!()]
 #[derive(Debug)]
@@ -75,9 +78,15 @@ impl Pm for Xbps {
         for line in lines {
             match line {
                 Ok(line) => stdout.write_all(&line).await?,
-                Err((pkg, Error::CmdStatusCodeError { .. })) => {
-                    let msg = format!("error: package '{}' was not found\n", pkg);
-                    stdout.write_all(msg.as_bytes()).await?;
+                Err((
+                    pkg,
+                    err @ Error::CmdStatusCodeError {
+                        code: PKG_NOT_FOUND_CODE,
+                        ..
+                    },
+                )) => {
+                    let msg = format!("package '{}' was not found", pkg);
+                    print_err(err, &msg);
                 }
                 Err((_, other)) => return Err(other),
             };
@@ -122,9 +131,15 @@ impl Pm for Xbps {
         for line in lines {
             match line {
                 Ok(line) => stdout.write_all(&line).await?,
-                Err((pkg, Error::CmdStatusCodeError { .. })) => {
-                    let msg = format!("error: package '{}' was not found\n", pkg);
-                    stdout.write_all(msg.as_bytes()).await?;
+                Err((
+                    pkg,
+                    err @ Error::CmdStatusCodeError {
+                        code: PKG_NOT_FOUND_CODE,
+                        ..
+                    },
+                )) => {
+                    let msg = format!("package '{}' was not found", pkg);
+                    print_err(err, &msg);
                 }
                 Err((_, other)) => return Err(other),
             }
