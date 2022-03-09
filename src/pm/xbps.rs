@@ -75,9 +75,12 @@ impl Pm for Xbps {
             .await;
 
         let mut stdout = tokio::io::stdout();
+        let mut pkg_not_found_detected = false;
         for line in lines {
             match line {
-                Ok(line) => stdout.write_all(&line).await?,
+                Ok(line) => {
+                    stdout.write_all(&line).await?;
+                }
                 Err((
                     pkg,
                     err @ Error::CmdStatusCodeError {
@@ -85,11 +88,19 @@ impl Pm for Xbps {
                         ..
                     },
                 )) => {
+                    pkg_not_found_detected = true;
                     let msg = format!("package '{}' was not found", pkg);
                     print_err(err, &msg);
                 }
                 Err((_, other)) => return Err(other),
             };
+        }
+
+        if pkg_not_found_detected {
+            return Err(Error::CmdStatusCodeError {
+                code: PKG_NOT_FOUND_CODE,
+                output: vec![],
+            });
         }
 
         Ok(())
@@ -128,9 +139,12 @@ impl Pm for Xbps {
             .await;
 
         let mut stdout = tokio::io::stdout();
+        let mut pkg_not_found_detected = false;
         for line in lines {
             match line {
-                Ok(line) => stdout.write_all(&line).await?,
+                Ok(line) => {
+                    stdout.write_all(&line).await?;
+                }
                 Err((
                     pkg,
                     err @ Error::CmdStatusCodeError {
@@ -138,11 +152,19 @@ impl Pm for Xbps {
                         ..
                     },
                 )) => {
+                    pkg_not_found_detected = true;
                     let msg = format!("package '{}' was not found", pkg);
                     print_err(err, &msg);
                 }
                 Err((_, other)) => return Err(other),
             }
+        }
+
+        if pkg_not_found_detected {
+            return Err(Error::CmdStatusCodeError {
+                code: PKG_NOT_FOUND_CODE,
+                output: vec![],
+            });
         }
 
         Ok(())
