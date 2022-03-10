@@ -1,11 +1,12 @@
 #![doc = docs_self!()]
 
+use std::io::Write;
+
 use async_trait::async_trait;
 use futures::prelude::*;
 use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::Pipe;
-use tokio::io::AsyncWriteExt;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
@@ -74,12 +75,12 @@ impl Pm for Xbps {
             .collect()
             .await;
 
-        let mut stdout = tokio::io::stdout();
+        let mut stdout = std::io::stdout();
         let mut pkg_not_found_detected = false;
         for line in lines {
             match line {
                 Ok(line) => {
-                    stdout.write_all(&line).await?;
+                    stdout.write_all(&line)?;
                 }
                 Err((
                     pkg,
@@ -138,12 +139,12 @@ impl Pm for Xbps {
             .collect()
             .await;
 
-        let mut stdout = tokio::io::stdout();
+        let mut stdout = std::io::stdout();
         let mut pkg_not_found_detected = false;
         for line in lines {
             match line {
                 Ok(line) => {
-                    stdout.write_all(&line).await?;
+                    stdout.write_all(&line)?;
                 }
                 Err((
                     pkg,
