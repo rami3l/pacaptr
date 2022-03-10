@@ -19,7 +19,10 @@ pub use self::cmd::Pacaptr;
 pub(crate) use self::config::Config;
 use crate::{
     exec::is_exe,
-    pm::{Apk, Apt, Brew, Choco, Conda, Dnf, Emerge, Pip, Pm, Port, Scoop, Tlmgr, Unknown, Zypper},
+    pm::{
+        Apk, Apt, Brew, Choco, Conda, Dnf, Emerge, Pip, Pm, Port, Scoop, Tlmgr, Unknown, Xbps,
+        Zypper,
+    },
 };
 
 /// Detects the name of the package manager to be used in auto dispatch.
@@ -41,6 +44,7 @@ fn detect_pm_str<'s>() -> &'s str {
             ("apt", "/usr/bin/apt"),
             ("emerge", "/usr/bin/emerge"),
             ("dnf", "/usr/bin/dnf"),
+            ("xbps-install", "/usr/bin/xbps-install"),
             ("zypper", "/usr/bin/zypper"),
         ],
 
@@ -89,6 +93,9 @@ impl From<Config> for Box<dyn Pm> {
 
             // Zypper for SUSE
             "zypper" => Zypper::new(cfg).boxed(),
+
+            // XBPS for Void Linux
+            "xbps" | "xbps-install" => Xbps::new(cfg).boxed(),
 
             // -- External Package Managers --
 

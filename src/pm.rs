@@ -24,6 +24,7 @@ mods! {
     scoop;
     tlmgr;
     unknown;
+    xbps;
     zypper;
 }
 
@@ -34,7 +35,7 @@ use tt_call::tt_call;
 
 pub(crate) use self::{
     apk::Apk, apt::Apt, brew::Brew, choco::Choco, conda::Conda, dnf::Dnf, emerge::Emerge, pip::Pip,
-    port::Port, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, zypper::Zypper,
+    port::Port, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, xbps::Xbps, zypper::Zypper,
 };
 use crate::{
     dispatch::Config,
