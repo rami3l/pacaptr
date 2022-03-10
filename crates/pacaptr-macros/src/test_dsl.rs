@@ -30,7 +30,7 @@ impl TestDslItem {
                 "Item must start with one of the following: {}, found `{}`",
                 [in_bang, in_, ou, im]
                     .iter()
-                    .map(|&s| format!("`{}`", s.trim_end()))
+                    .map(|s| format!("`{}`", s.trim_end()))
                     .join(", "),
                 ln,
             );

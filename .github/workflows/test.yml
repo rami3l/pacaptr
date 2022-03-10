@@ -39,7 +39,13 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v1
-      - uses: MinoruSekine/setup-scoop@v1
+      - name: Install scoop
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+          iwr -useb 'https://raw.githubusercontent.com/scoopinstaller/install/master/install.ps1' -outfile 'install.ps1'
+          .\install.ps1 -RunAsAdmin
+          (Resolve-Path ~\scoop\shims).Path >> $Env:GITHUB_PATH
       - name: Verity scoop installation
         run: |
           powershell scoop help
