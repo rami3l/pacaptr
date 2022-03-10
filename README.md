@@ -89,6 +89,7 @@ Run `pacman -Syu` on the OS of your choice!
 - `apk`
 - `dnf`
 - `emerge`
+- `xbps`
 - `zypper`
 
 ### External

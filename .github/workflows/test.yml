@@ -189,6 +189,31 @@ jobs:
       - name: Run heavy tests
         run: cargo test emerge --verbose -- --ignored
 
+  xbps-test:
+    runs-on: ubuntu-latest
+    container:
+      image: voidlinux/voidlinux:latest
+    steps:
+      - name: Install required packages
+        run: |
+          xbps-install -y -Su
+          xbps-install -y base-devel curl
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - name: Build
+        run: cargo build --verbose
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test xbps --verbose
+      - name: Run heavy tests
+        run: cargo test xbps --verbose -- --ignored
+
   zypper-test:
     runs-on: ubuntu-latest
     container:
