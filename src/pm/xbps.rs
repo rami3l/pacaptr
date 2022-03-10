@@ -13,7 +13,7 @@ use crate::{
     dispatch::Config,
     error::{Error, Result},
     exec::{Cmd, StatusCode},
-    print::print_err,
+    print::{print_err, PROMPT_ERROR},
 };
 
 macro_rules! docs_self {
@@ -64,44 +64,36 @@ impl Pm for Xbps {
                 .await;
         }
 
-        let lines: Vec<_> = stream::iter(kws)
+        let lines: Vec<Result<Vec<u8>, String>> = stream::iter(kws)
             .map(Ok)
             .and_then(|&pkg| async {
                 let cmd = Cmd::new(&["xbps-query", "--property", "pkgver", pkg]).flags(flags);
-                self.check_output(cmd, PmMode::Mute, &Strategy::default())
+                match self
+                    .check_output(cmd, PmMode::Mute, &Strategy::default())
                     .await
-                    .map_err(|err| (pkg.to_string(), err))
-            })
-            .collect()
-            .await;
-
-        let mut stdout = std::io::stdout();
-        let mut pkg_not_found_detected = false;
-        for line in lines {
-            match line {
-                Ok(line) => {
-                    stdout.write_all(&line)?;
-                }
-                Err((
-                    pkg,
-                    err @ Error::CmdStatusCodeError {
+                {
+                    Ok(line) => Ok(Ok(line)),
+                    Err(Error::CmdStatusCodeError {
                         code: PKG_NOT_FOUND_CODE,
                         ..
-                    },
-                )) => {
-                    pkg_not_found_detected = true;
-                    let msg = format!("package '{}' was not found", pkg);
-                    print_err(err, &msg);
+                    }) => Ok(Err(pkg.to_owned())),
+                    Err(e) => Err(e),
                 }
-                Err((_, other)) => return Err(other),
-            };
-        }
+            })
+            .try_collect()
+            .await?;
 
-        if pkg_not_found_detected {
-            return Err(Error::CmdStatusCodeError {
-                code: PKG_NOT_FOUND_CODE,
-                output: vec![],
-            });
+        let mut stdout = std::io::stdout();
+        for line in lines {
+            match line {
+                Ok(line) => stdout.write_all(&line)?,
+                Err(missing_pkg) => {
+                    print_err(
+                        format!("package `{missing_pkg}` was not found",),
+                        PROMPT_ERROR,
+                    );
+                }
+            }
         }
 
         Ok(())
@@ -115,57 +107,46 @@ impl Pm for Xbps {
                 .await;
         }
 
-        let lines: Vec<_> = stream::iter(kws)
-            .filter(|&&pkg| async {
+        let lines: Vec<Result<Vec<u8>, String>> = stream::iter(kws)
+            .filter(|pkg| async {
                 let check_cmd =
                     Cmd::new(&["xbps-query", "--property", "automatic-install", pkg]).flags(flags);
-                let result = self
-                    .check_output(check_cmd, PmMode::Mute, &Strategy::default())
-                    .await;
-
-                // if a package is manually installed then the automatic-install field is empty
-                match result {
-                    Ok(auto_status) => auto_status.is_empty(),
-                    _ => true,
-                }
+                self.check_output(check_cmd, PmMode::Mute, &Strategy::default())
+                    .await
+                    .ok()
+                    // If a package is manually installed,
+                    // then the automatic-install field is empty.
+                    .map_or(true, |auto_stat| auto_stat.is_empty())
             })
             .map(Ok)
             .and_then(|&pkg| async {
                 let cmd = Cmd::new(&["xbps-query", "--property", "pkgver", pkg]).flags(flags);
-                self.check_output(cmd, PmMode::Mute, &Strategy::default())
+                match self
+                    .check_output(cmd, PmMode::Mute, &Strategy::default())
                     .await
-                    .map_err(|err| (pkg.to_string(), err))
-            })
-            .collect()
-            .await;
-
-        let mut stdout = std::io::stdout();
-        let mut pkg_not_found_detected = false;
-        for line in lines {
-            match line {
-                Ok(line) => {
-                    stdout.write_all(&line)?;
-                }
-                Err((
-                    pkg,
-                    err @ Error::CmdStatusCodeError {
+                {
+                    Ok(line) => Ok(Ok(line)),
+                    Err(Error::CmdStatusCodeError {
                         code: PKG_NOT_FOUND_CODE,
                         ..
-                    },
-                )) => {
-                    pkg_not_found_detected = true;
-                    let msg = format!("package '{}' was not found", pkg);
-                    print_err(err, &msg);
+                    }) => Ok(Err(pkg.to_owned())),
+                    Err(e) => Err(e),
                 }
-                Err((_, other)) => return Err(other),
-            }
-        }
+            })
+            .try_collect()
+            .await?;
 
-        if pkg_not_found_detected {
-            return Err(Error::CmdStatusCodeError {
-                code: PKG_NOT_FOUND_CODE,
-                output: vec![],
-            });
+        let mut stdout = std::io::stdout();
+        for line in lines {
+            match line {
+                Ok(line) => stdout.write_all(&line)?,
+                Err(missing_pkg) => {
+                    print_err(
+                        format!("package `{missing_pkg}` was not found",),
+                        PROMPT_ERROR,
+                    );
+                }
+            }
         }
 
         Ok(())
@@ -198,8 +179,8 @@ impl Pm for Xbps {
             .await
     }
 
-    /// Rs removes a package and its dependencies which are not required by any other installed package,
-    /// and not explicitly installed by the user.
+    /// Rs removes a package and its dependencies which are not required by any
+    /// other installed package, and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["xbps-remove", "-R"])
             .kws(kws)
@@ -217,7 +198,8 @@ impl Pm for Xbps {
             .await
     }
 
-    /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
+    /// Sc removes all the cached packages that are not currently installed, and
+    /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["xbps-remove", "-O"])
             .kws(kws)
@@ -232,19 +214,22 @@ impl Pm for Xbps {
             .await
     }
 
-    /// Sii displays packages which require X to be installed, aka reverse dependencies.
+    /// Sii displays packages which require X to be installed, aka reverse
+    /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["xbps-query", "-RX"]).kws(kws).flags(flags))
             .await
     }
 
-    /// Ss searches for package(s) by searching the expression in name, description, short description.
+    /// Ss searches for package(s) by searching the expression in name,
+    /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["xbps-query", "-Rs"]).kws(kws).flags(flags))
             .await
     }
 
-    /// Suy refreshes the local package database, then updates outdated packages.
+    /// Suy refreshes the local package database, then updates outdated
+    /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["xbps-install", "-Su"])
             .kws(kws)
@@ -259,7 +244,8 @@ impl Pm for Xbps {
             .await
     }
 
-    /// Sw retrieves all packages from the server, but does not install/upgrade anything.
+    /// Sw retrieves all packages from the server, but does not install/upgrade
+    /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(&["xbps-install", "-D"])
             .kws(kws)

@@ -418,7 +418,7 @@ macro_rules! docs_errors_grep {
 fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
     let patterns: Vec<Regex> = patterns
         .iter()
-        .map(|&pat| {
+        .map(|pat| {
             Regex::new(pat)
                 .map_err(|_e| Error::OtherError(format!("Pattern `{pat}` is ill-formed")))
         })
