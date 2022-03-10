@@ -84,23 +84,21 @@ impl Pm for Xbps {
             .await?;
 
         let mut stdout = std::io::stdout();
-        let mut res = Ok(());
-        for line in lines {
-            match line {
-                Ok(line) => stdout.write_all(&line)?,
+        lines.into_iter().try_fold(Ok(()), |acc, line| {
+            std::io::Result::Ok(match line {
+                Ok(line) => {
+                    stdout.write_all(&line)?;
+                    acc
+                }
                 Err(missing) => {
                     print_err(format!("package `{missing}` was not found",), PROMPT_ERROR);
-                    if res.is_ok() {
-                        res = Err(Error::CmdStatusCodeError {
-                            code: PKG_NOT_FOUND_CODE,
-                            output: vec![],
-                        });
-                    }
+                    Err(Error::CmdStatusCodeError {
+                        code: PKG_NOT_FOUND_CODE,
+                        output: vec![],
+                    })
                 }
-            }
-        }
-
-        res
+            })
+        })?
     }
 
     /// Qe lists packages installed explicitly (not as dependencies).
@@ -140,23 +138,21 @@ impl Pm for Xbps {
             .await?;
 
         let mut stdout = std::io::stdout();
-        let mut res = Ok(());
-        for line in lines {
-            match line {
-                Ok(line) => stdout.write_all(&line)?,
+        lines.into_iter().try_fold(Ok(()), |acc, line| {
+            std::io::Result::Ok(match line {
+                Ok(line) => {
+                    stdout.write_all(&line)?;
+                    acc
+                }
                 Err(missing) => {
                     print_err(format!("package `{missing}` was not found",), PROMPT_ERROR);
-                    if res.is_ok() {
-                        res = Err(Error::CmdStatusCodeError {
-                            code: PKG_NOT_FOUND_CODE,
-                            output: vec![],
-                        });
-                    }
+                    Err(Error::CmdStatusCodeError {
+                        code: PKG_NOT_FOUND_CODE,
+                        output: vec![],
+                    })
                 }
-            }
-        }
-
-        res
+            })
+        })?
     }
 
     /// Qi displays local package information: name, version, description, etc.
