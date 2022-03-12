@@ -79,23 +79,23 @@ impl From<Config> for Box<dyn Pm> {
             // Macports
             "port" if cfg!(target_os = "macos") => Port::new(cfg).boxed(),
 
-            // Portage for Gentoo
-            "emerge" => Emerge::new(cfg).boxed(),
+            // Apt for Debian/Ubuntu/Termux (newer versions)
+            "apt" => Apt::new(cfg).boxed(),
 
             // Apk for Alpine
             "apk" => Apk::new(cfg).boxed(),
 
-            // Apt for Debian/Ubuntu/Termux (new versions)
-            "apt" => Apt::new(cfg).boxed(),
-
             // Dnf for RedHat
             "dnf" => Dnf::new(cfg).boxed(),
 
+            // Portage for Gentoo
+            "emerge" => Emerge::new(cfg).boxed(),
+
+            // Xbps for Void Linux
+            "xbps" | "xbps-install" => Xbps::new(cfg).boxed(),
+
             // Zypper for SUSE
             "zypper" => Zypper::new(cfg).boxed(),
-
-            // XBPS for Void Linux
-            "xbps" | "xbps-install" => Xbps::new(cfg).boxed(),
 
             // -- External Package Managers --
 

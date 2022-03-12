@@ -2,19 +2,25 @@
 
 # pacaptr
 
-![pacaptr][socialify badge]
+[![pacaptr][socialify badge]](https://rami3l.github.io/pacaptr/pacaptr/)
 
 <!--
 [pacaptr-logo]: https://user-images.githubusercontent.com/33851577/110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png
 -->
 
-[socialify badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&forks=1&issues=1&logo=https%3A%2F%2Fuser-images.githubusercontent.com%2F33851577%2F110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png&owner=1&pattern=Charlie%20Brown&pulls=1&stargazers=1&theme=Light
+[socialify badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&logo=https%3A%2F%2Fuser-images.githubusercontent.com%2F33851577%2F110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png&owner=1&pattern=Charlie%20Brown&theme=Light
+
+<!--
+![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=flat-square&logo=rust&logoColor=white)
+-->
+
+[![Crates.io](https://img.shields.io/crates/v/pacaptr?style=flat-square)](https://crates.io/crates/pacaptr)
+[![docs.rs](https://img.shields.io/docsrs/pacaptr?style=flat-square)](https://docs.rs/pacaptr)
+[![License](https://img.shields.io/github/license/rami3l/pacaptr?style=flat-square)](LICENSE)
 
 `pac·apt·r`, or the _PACman AdaPTeR_, is a wrapper for many package managers with pacman-style command syntax, started as a Rust port of [icy/pacapt].
 
-It's highly recommended to set `pacman` as the alias of `pacaptr` on your non-ArchLinux OS.
-
-Run `pacman -Syu` on the OS of your choice!
+Just set `pacman` as the alias of `pacaptr` on your non-ArchLinux OS, and you can run `pacman -Syu` wherever you like!
 
 ```smalltalk
 > pacaptr -S neofetch
@@ -41,73 +47,49 @@ Run `pacman -Syu` on the OS of your choice!
 
 - [pacaptr](#pacaptr)
   - [Contents](#contents)
+  - [Why `pacaptr`?](#why-pacaptr)
   - [Supported Package Managers](#supported-package-managers)
-    - [Windows](#windows)
-    - [macOS](#macos)
-    - [Linux](#linux)
-    - [External](#external)
-    - [Notes](#notes)
   - [Installation](#installation)
     - [`brew`](#brew)
     - [`choco`](#choco)
     - [`cargo`](#cargo)
     - [Packaging for `Debian`](#packaging-for-debian)
   - [Configuration](#configuration)
-  - [General Tips](#general-tips)
-    - [`--using`, `--pm`](#--using---pm)
-    - [Automatic `sudo` invocation](#automatic-sudo-invocation)
-    - [Extra flags support](#extra-flags-support)
-    - [`--dryrun`, `--dry-run`](#--dryrun---dry-run)
-    - [`--yes`, `--noconfirm`, `--no-confirm`](#--yes---noconfirm---no-confirm)
-    - [`--nocache`, `--no-cache`](#--nocache---no-cache)
-  - [Platform-Specific Tips](#platform-specific-tips)
-    - [For `brew`](#for-brew)
-    - [For `choco`](#for-choco)
-    - [For `pip`](#for-pip)
-  - [Postscript](#postscript)
+  - [Tips](#tips)
+    - [Universal](#universal)
+      - [`--using`, `--pm`](#--using---pm)
+      - [Automatic `sudo` invocation](#automatic-sudo-invocation)
+      - [Extra flags support](#extra-flags-support)
+      - [`--dryrun`, `--dry-run`](#--dryrun---dry-run)
+      - [`--yes`, `--noconfirm`, `--no-confirm`](#--yes---noconfirm---no-confirm)
+      - [`--nocache`, `--no-cache`](#--nocache---no-cache)
+    - [Platform-Specific Tips](#platform-specific-tips)
+      - [For `brew`](#for-brew)
+      - [For `choco`](#for-choco)
+      - [For `pip`](#for-pip)
+    - [Feel Like Contributing?](#feel-like-contributing)
 
 ---
+
+## Why `pacaptr`?
+
+Coming from `Arch Linux` to `macOS`, I really like the idea of having an automated version of [Pacman Rosetta] for making common package managing tasks less of a travail thanks to the concise `pacman` syntax.
+
+That's why I decided to take inspiration from the existing `sh`-based project [icy/pacapt] to make a new CLI tool in Rust for better portability (especially for Windows) and easier maintenance.
 
 ## Supported Package Managers
 
 `pacaptr` currently supports the following package managers (in order of precedence):
 
-### Windows
-
-- `scoop`
-- [`choco`](#choco)
-
-### macOS
-
-- [`brew`](#brew)
-- `port`
-- `apt` (through [Procursus])
-
-### Linux
-
-- `apt`
-- `apk`
-- `dnf`
-- `emerge`
-- `xbps`
-- `zypper`
-
-### External
-
-> These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
-
-- `conda`
-- `brew`
-- [`pip`/`pip3`](#pip)
-- `tlmgr`
-
-### Notes
+- Windows: `scoop`, [`choco`](#choco)
+- macOS: [`brew`](#brew), `port`, `apt` (through [Procursus])
+- Linux: `apt`, `apk`, `dnf`, `emerge`, `xbps`, `zypper`
+- External: `brew`, `conda`, [`pip`/`pip3`](#pip), `tlmgr`
+  - These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
 
 As for now, the precedence is still (unfortunately) hardcoded. For example, if both `scoop` and `choco` are installed, `scoop` will be the default. You can however edit the default package manager in your [config](#configuration).
 
 Please refer to the [compatibility table] for more details on which operations are supported.
-
-Feel free to open a feature/pull request to add support for other package managers :)
 
 ## Installation
 
@@ -133,7 +115,7 @@ To install the release version from crates.io:
 cargo install pacaptr
 ```
 
-To install the lastest dev version from GitHub:
+To install `master` version from GitHub:
 
 ```bash
 cargo install pacaptr --git https://github.com/rami3l/pacaptr.git
@@ -158,7 +140,7 @@ With default settings, the binary should be installed as:
 $HOME/.cargo/bin/pacaptr
 ```
 
-For `Alpine Linux` users, `cargo build` won't just work, please try this instead:
+For `Alpine Linux` users, `cargo build` might not just work, in this case, please try the following instead:
 
 ```bash
 RUSTFLAGS="-C target-feature=-crt-static" cargo build
@@ -198,9 +180,11 @@ default_pm = "choco"
 
 </details>
 
-## General Tips
+## Tips
 
-### `--using`, `--pm`
+### Universal
+
+#### `--using`, `--pm`
 
 Use this flag to explicitly specify the underlying package manager to be invoked.
 
@@ -213,13 +197,13 @@ pacaptr --using choco -Su --dryrun
 
 This can be useful when you are running Linux and you want to use `linuxbrew`, for example. In that case, you can `--using brew`.
 
-### Automatic `sudo` invocation
+#### Automatic `sudo` invocation
 
 If you are not `root` and you wish to do something requiring `sudo`, `pacaptr` will do it for you by invoking `sudo -S`.
 
 This feature is currently available for `apk`, `apt`, `dnf`, `emerge`, `port` and `zypper`.
 
-### Extra flags support
+#### Extra flags support
 
 The flags after a `--` will be passed directly to the underlying package manager:
 
@@ -236,7 +220,7 @@ pacaptr -S curl docker --dryrun -- --proxy=localhost:1234
 Here `foo` is the name of your package manager.
 (The actual output is platform-specific, which largely depends on if `foo` can actually read the flags given.)
 
-### `--dryrun`, `--dry-run`
+#### `--dryrun`, `--dry-run`
 
 Use this flag to just print out the command to be executed
 (sometimes with a --dry-run flag to activate the package manager's dryrun option).
@@ -265,21 +249,21 @@ pacaptr -Sc
 # .. (cleaning up)
 ```
 
-### `--yes`, `--noconfirm`, `--no-confirm`
+#### `--yes`, `--noconfirm`, `--no-confirm`
 
 Use this flag to trigger the corresponding flag of your package manager (if possible) in order to answer "yes" to every incoming question.
 
 This option is useful when you don't want to be asked during installation, for example, but it can also be dangerous if you don't know what you're doing!
 
-### `--nocache`, `--no-cache`
+#### `--nocache`, `--no-cache`
 
 Use this flag to remove cache after package installation.
 
 This option is useful when you want to reduce `Docker` image size, for example.
 
-## Platform-Specific Tips
+### Platform-Specific Tips
 
-### For `brew`
+#### For `brew`
 
 - Please note that `cask` is for `macOS` only.
 
@@ -299,21 +283,17 @@ This option is useful when you want to reduce `Docker` image size, for example.
   pacaptr -S docker -- --cask
   ```
 
-### For `choco`
+#### For `choco`
 
 - Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
 
-### For `pip`
+#### For `pip`
 
 - Use `pacaptr --using pip3` if you want to run the `pip3` command.
 
-## Postscript
+### Feel Like Contributing?
 
-Coming from `Arch Linux` to `macOS`, I really like the idea of having an automated version of [Pacman Rosetta] for making common package managing tasks less of a travail thanks to the concise `pacman` syntax.
-
-Initially, I found [icy/pacapt] which does just that, and I made this project to improve `pacapt`'s `homebrew` (especially `cask`) support. (See [pacapt/#117].)
-
-After some discussions in [pacapt/#126], I decided to rewrite the project in Rust to improve readability, testing, etc.
+Sounds nice! Please let me take you to the [contributing guidelines](CONTRIBUTING.md) :)
 
 [pacman rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt
