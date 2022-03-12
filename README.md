@@ -67,6 +67,7 @@ Just set `pacman` as the alias of `pacaptr` on your non-ArchLinux OS, and you ca
       - [For `brew`](#for-brew)
       - [For `choco`](#for-choco)
       - [For `pip`](#for-pip)
+    - [Feel Like Contributing?](#feel-like-contributing)
 
 ---
 
@@ -289,6 +290,10 @@ This option is useful when you want to reduce `Docker` image size, for example.
 #### For `pip`
 
 - Use `pacaptr --using pip3` if you want to run the `pip3` command.
+
+### Feel Like Contributing?
+
+Sounds nice! Please let me take you to the [contributing guidelines](CONTRIBUTING.md) :)
 
 [pacman rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt
