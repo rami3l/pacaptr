@@ -91,7 +91,7 @@ impl Pm for Xbps {
                     acc
                 }
                 Err(missing) => {
-                    print_err(format!("package `{missing}` was not found",), PROMPT_ERROR);
+                    print_err(format!("package `{missing}` was not found"), PROMPT_ERROR);
                     Err(Error::CmdStatusCodeError {
                         code: PKG_NOT_FOUND_CODE,
                         output: vec![],
@@ -145,7 +145,7 @@ impl Pm for Xbps {
                     acc
                 }
                 Err(missing) => {
-                    print_err(format!("package `{missing}` was not found",), PROMPT_ERROR);
+                    print_err(format!("package `{missing}` was not found"), PROMPT_ERROR);
                     Err(Error::CmdStatusCodeError {
                         code: PKG_NOT_FOUND_CODE,
                         output: vec![],
