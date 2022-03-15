@@ -1,7 +1,7 @@
 use std::fs;
 
 use anyhow::Result;
-use xshell::cmd;
+use xshell::{cmd, Shell};
 
 use super::{names::*, Runner};
 use crate::binary::*;
@@ -12,11 +12,12 @@ pub struct Publish {}
 impl Runner for Publish {
     fn run(self) -> Result<()> {
         // let Self { artifact, asset } = self;
+        let s = Shell::new()?;
 
-        cmd!("gh config set prompt disabled").run()?;
+        cmd!(s, "gh config set prompt disabled").run()?;
 
         // println!(":: Logging into GitHub CLI...");
-        // cmd!("gh auth login").run()?;
+        // cmd!(s, "gh auth login").run()?;
 
         let publish = |b: &BinaryBuilder| {
             b.build()?;
@@ -58,14 +59,14 @@ impl Runner for Publish {
                 let in_dir1 = &mac_arm.bin_dir();
                 let artifact1 = mac_arm.bin().artifact;
                 fs::create_dir_all(out_dir)?;
-                cmd!("lipo -create -output {out_dir}{out_artifact} {in_dir0}{artifact0} {in_dir1}{artifact1}")
+                cmd!(s, "lipo -create -output {out_dir}{out_artifact} {in_dir0}{artifact0} {in_dir1}{artifact1}")
                     .run()?;
-                cmd!("chmod +x {out_dir}{out_artifact}").run()?;
+                cmd!(s, "chmod +x {out_dir}{out_artifact}").run()?;
 
                 mac_univ.zip()?;
                 mac_univ.upload()?;
             }
-            _ => panic!("Unsupported publishing platform"),
+            _ => panic!("unsupported publishing platform"),
         };
 
         Ok(())

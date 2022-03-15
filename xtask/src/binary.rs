@@ -1,6 +1,6 @@
 use anyhow::Result;
 use const_format::formatcp;
-use xshell::{cmd, write_file};
+use xshell::{cmd, Shell};
 
 use crate::dispatch::{get_ver_from_env, names::CORE};
 
@@ -39,13 +39,15 @@ impl<'s> BinaryBuilder<'s> {
 
     pub fn build(&self) -> Result<()> {
         println!(":: Building the binary in `release` mode...");
+        let s = Shell::new()?;
         match self {
             BinaryBuilder::Native(_) => {
-                cmd!("cargo build --verbose --bin {CORE} --release --locked").run()?;
+                cmd!(s, "cargo build --verbose --bin {CORE} --release --locked").run()?;
             }
             BinaryBuilder::Cross { rust_target, .. } => {
-                cmd!("rustup target add {rust_target}").run()?;
+                cmd!(s, "rustup target add {rust_target}").run()?;
                 cmd!(
+                    s,
                     "cargo build --verbose --bin {CORE} --release --locked --target={rust_target}"
                 )
                 .run()?;
@@ -64,23 +66,29 @@ impl<'s> BinaryBuilder<'s> {
 
     pub fn zip(&self) -> Result<()> {
         println!(":: Zipping the binary...");
+        let s = Shell::new()?;
         let bin = self.bin();
         let asset = &bin.asset();
         let artifact = &bin.artifact;
         let bin_dir = self.bin_dir();
-        cmd!("tar czvf {asset}.tar.gz -C {bin_dir} {artifact}").run()?;
+        cmd!(s, "tar czvf {asset}.tar.gz -C {bin_dir} {artifact}").run()?;
 
         println!(":: Generating sha256...");
-        let shasum = cmd!("openssl dgst -r -sha256 {asset}.tar.gz").read()?;
-        write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
+        let shasum = cmd!(s, "openssl dgst -r -sha256 {asset}.tar.gz").read()?;
+        s.write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
         Ok(())
     }
 
     pub fn upload(&self) -> Result<()> {
         println!(":: Uploading binary and sha256...");
+        let s = Shell::new()?;
         let tag = get_ver_from_env()?;
         let asset = self.bin().asset();
-        cmd!("gh release upload {tag} {asset}.tar.gz {asset}.tar.gz.sha256").run()?;
+        cmd!(
+            s,
+            "gh release upload {tag} {asset}.tar.gz {asset}.tar.gz.sha256"
+        )
+        .run()?;
         Ok(())
     }
 }
