@@ -1,7 +1,7 @@
 use itertools::{chain, Itertools};
 pub use pacaptr_macros::test_dsl;
 use regex::RegexBuilder;
-use xshell::cmd;
+use xshell::{cmd, Shell};
 
 #[derive(Debug)]
 enum Input<'i> {
@@ -81,6 +81,7 @@ impl<'t> Test<'t> {
             panic!("Test sequence not yet configured")
         }
 
+        let s = Shell::new().unwrap();
         self.sequence.iter().for_each(|(input, patterns)| {
             // got = cmd.run()
             // if not matches_all(got, patterns):
@@ -92,7 +93,11 @@ impl<'t> Test<'t> {
                     format!("cargo run -- {}", chain!(args, flags).join(" "))
                 }
             };
-            let got = cmd!("{sh}").args(sh_args).arg(dbg!(&cmd)).read().unwrap();
+            let got = cmd!(s, "{sh}")
+                .args(sh_args)
+                .arg(dbg!(&cmd))
+                .read()
+                .unwrap();
             println!("{got}");
             try_match(&got, patterns);
         })
