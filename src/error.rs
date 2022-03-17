@@ -1,5 +1,6 @@
 //! Basic error definitions specific to this crate.
 
+use miette::Diagnostic;
 use thiserror::Error;
 use tokio::{io, task::JoinError};
 
@@ -10,7 +11,7 @@ use crate::exec::{Output, StatusCode};
 pub(crate) type Result<T, E = Error> = std::result::Result<T, E>;
 
 /// Error type for the [`pacaptr`](crate) library.
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Diagnostic)]
 #[non_exhaustive]
 pub enum Error {
     /// Error while parsing CLI arguments.
