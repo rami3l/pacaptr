@@ -434,7 +434,7 @@ dependencies = [
 
 [[package]]
 name = "pacaptr"
-version = "0.14.1"
+version = "0.15.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -463,7 +463,7 @@ dependencies = [
 
 [[package]]
 name = "pacaptr-macros"
-version = "0.14.1"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "itertools",
@@ -877,7 +877,7 @@ checksum = "37d92065701c3611323f96eac5475b995421fc7eb2bcba1336cdd80b9b2fb68f"
 
 [[package]]
 name = "xtask"
-version = "0.14.1"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "const_format",
