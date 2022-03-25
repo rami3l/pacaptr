@@ -329,7 +329,7 @@ impl Cmd {
             let answer = tokio::task::block_in_place(move || {
                 prompt(
                     "Proceed",
-                    "[YES/All/No/^C]",
+                    "[YES/All/No/^C]",
                     &["", "y", "yes", "a", "all", "n", "no"],
                     false,
                 )
