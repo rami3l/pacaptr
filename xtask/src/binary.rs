@@ -32,8 +32,7 @@ pub enum BinaryBuilder<'s> {
 impl<'s> BinaryBuilder<'s> {
     pub fn bin(&self) -> &Binary {
         match self {
-            BinaryBuilder::Native(bin) => bin,
-            BinaryBuilder::Cross { bin, .. } => bin,
+            BinaryBuilder::Native(bin) | BinaryBuilder::Cross { bin, .. } => bin,
         }
     }
 
@@ -58,7 +57,7 @@ impl<'s> BinaryBuilder<'s> {
 
     pub fn bin_dir(&self) -> String {
         if let BinaryBuilder::Cross { rust_target, .. } = self {
-            format!("./target/{}/release/", rust_target)
+            format!("./target/{rust_target}/release/")
         } else {
             "./target/release/".to_owned()
         }
@@ -94,7 +93,7 @@ impl<'s> BinaryBuilder<'s> {
 }
 
 pub const WIN_X64: Binary = Binary {
-    artifact: formatcp!("{}.exe", CORE),
+    artifact: formatcp!("{CORE}.exe"),
     platform: "windows-amd64",
 };
 

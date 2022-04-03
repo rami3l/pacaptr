@@ -5,13 +5,16 @@
 
 #![allow(clippy::module_name_repetitions)]
 
-macro_rules! mods {
+macro_rules! pm_mods {
     ( $( $vis:vis $mod:ident; )+ ) => {
-        $( $vis mod $mod; )+
+        $(
+            $vis mod $mod;
+            paste! { pub(crate) use self::$mod::[<$mod:camel>]; }
+        )+
     }
 }
 
-mods! {
+pm_mods! {
     apk;
     apt;
     brew;
@@ -31,12 +34,9 @@ mods! {
 use async_trait::async_trait;
 use itertools::Itertools;
 use macro_rules_attribute::macro_rules_attribute;
+use paste::paste;
 use tt_call::tt_call;
 
-pub(crate) use self::{
-    apk::Apk, apt::Apt, brew::Brew, choco::Choco, conda::Conda, dnf::Dnf, emerge::Emerge, pip::Pip,
-    port::Port, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, xbps::Xbps, zypper::Zypper,
-};
 use crate::{
     dispatch::Config,
     error::Result,

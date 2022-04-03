@@ -284,7 +284,7 @@ impl Pacaptr {
             match &options.to_lowercase() as _ {
                 $(stringify!($method) => pm.$method(&kws, &flags).await,)*
                 _ => Err(Error::ArgParseError {
-                    msg: format!("Invalid flag combination `-{}`", &options),
+                    msg: format!("Invalid flag combination `-{options}`"),
                 }),
             }
         };}

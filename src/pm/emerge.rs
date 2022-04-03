@@ -138,7 +138,7 @@ impl Pm for Emerge {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let kws = kws.iter().map(|kw| format!("^{}$", kw)).collect_vec();
+        let kws = kws.iter().map(|kw| format!("^{kw}$")).collect_vec();
         self.run(Cmd::new(&["emerge", "-s"]).kws(&kws).flags(flags))
             .await
     }

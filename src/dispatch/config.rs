@@ -48,7 +48,7 @@ impl Config {
         Ok(home
             .join(".config")
             .join(crate_name)
-            .join(&format!("{}.toml", crate_name)))
+            .join(&format!("{crate_name}.toml")))
     }
 
     /// Gets the custom config file path specified by the `PACAPTR_CONFIG`
@@ -60,7 +60,7 @@ impl Config {
     fn custom_path() -> Result<PathBuf> {
         env::var(CONFIG_ENV_VAR)
             .map_err(|e| Error::ConfigError {
-                msg: format!("Config path environment variable not found: {}", e),
+                msg: format!("Config path environment variable not found: {e}"),
             })
             .map(PathBuf::from)
     }
