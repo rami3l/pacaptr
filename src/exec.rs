@@ -361,7 +361,7 @@ impl std::fmt::Display for Cmd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let sudo: &str = self.should_sudo().then(|| "sudo -S ").unwrap_or("");
         let cmd = chain!(&self.cmd, &self.flags, &self.kws).join(" ");
-        write!(f, "{}{}", sudo, cmd)
+        write!(f, "{sudo}{cmd}")
     }
 }
 

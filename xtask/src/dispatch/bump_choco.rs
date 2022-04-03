@@ -62,7 +62,7 @@ impl Runner for BumpChoco {
         let algos = &["sha1", "sha256"];
         let checksums = algos
             .iter()
-            .map(|algo| checksum(&bin_path, algo).map(|sum| format!("{}: {}\n", algo, sum)))
+            .map(|algo| checksum(&bin_path, algo).map(|sum| format!("{algo}: {sum}\n")))
             .collect::<Result<String>>()?;
         let verification = {
             let repository = HOMEPAGE;

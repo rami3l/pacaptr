@@ -9,7 +9,7 @@ macro_rules! pm_mods {
     ( $( $vis:vis $mod:ident; )+ ) => {
         $(
             $vis mod $mod;
-            paste! { pub(crate) use self:: $mod :: [<$mod:camel>]; }
+            paste! { pub(crate) use self::$mod::[<$mod:camel>]; }
         )+
     }
 }

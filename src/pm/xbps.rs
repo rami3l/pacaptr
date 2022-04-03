@@ -19,7 +19,7 @@ use crate::{
 macro_rules! docs_self {
     () => {
         indoc! {"
-            The [X Binary Package System](https://github.com/void-linux/xbps)
+            The [X Binary Package System](https://github.com/void-linux/xbps).
         "}
     };
 }

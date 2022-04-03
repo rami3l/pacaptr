@@ -28,9 +28,9 @@ exclude = ["dist/**/*", "docs/**/*"]
 xshell = "0.2.1"
 
 [dependencies]
-async-trait = "0.1.52"
+async-trait = "0.1.53"
 bytes = "1.1.0"
-clap = { version = "3.1.6", features = ["cargo", "derive"] }
+clap = { version = "3.1.8", features = ["cargo", "derive"] }
 colored = "2.0.0"
 confy = "0.4.0"
 dirs-next = "2.0.0"
@@ -41,7 +41,7 @@ itertools = "0.10.3"
 macro_rules_attribute = "0.0.2"
 once_cell = "1.10.0"
 pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.15.0" }
-paste = "1.0.6"
+paste = "1.0.7"
 regex = { version = "1.5.5", default-features = false, features = [
   "std",
   "perf",
@@ -58,9 +58,9 @@ tokio = { version = "1.17.0", features = [
   "sync",
 ] }
 tokio-stream = "0.1.8"
-tokio-util = { version = "0.7.0", features = ["codec", "compat"] }
+tokio-util = { version = "0.7.1", features = ["codec", "compat"] }
 tt-call = "1.0.8"
-which = "4.2.4"
+which = "4.2.5"
 
 [package.metadata.deb]
 copyright = "2020, Rami3L"

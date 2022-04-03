@@ -126,7 +126,7 @@ impl Pm for Conda {
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         stream::iter(kws)
-            .map(|s| Ok(format!("*{}*", s)))
+            .map(|s| Ok(format!("*{s}*")))
             .try_for_each(|kw| self.run(Cmd::new(&["conda", "search"]).kws(&[kw]).flags(flags)))
             .await
     }
