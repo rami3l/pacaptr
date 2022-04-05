@@ -54,7 +54,10 @@ impl Pm for Apt {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apt", "list", "--installed"]).kws(kws).flags(flags))
+        Cmd::new(&["apt", "list", "--installed"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
@@ -222,7 +225,7 @@ impl Pm for Apt {
     /// Suy refreshes the local package database, then updates outdated
     /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.sy(kws, flags).await?;
+        self.sy(&[], flags).await?;
         self.su(kws, flags).await
     }
 
