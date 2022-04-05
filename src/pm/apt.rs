@@ -54,7 +54,7 @@ impl Pm for Apt {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apt", "list"]).kws(kws).flags(flags))
+        self.run(Cmd::new(&["apt", "list", "--installed"]).kws(kws).flags(flags))
             .await
     }
 
