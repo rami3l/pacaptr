@@ -287,7 +287,7 @@ This option is useful when you want to reduce `Docker` image size, for example.
 
 ### Feel Like Contributing?
 
-Sounds nice! Please let me take you to the [contributing guidelines](CONTRIBUTING.md) :)
+Sounds nice! Please let me take you to the [contributing guidelines](docs/CONTRIBUTING.md) :)
 
 [pacman rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt
