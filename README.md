@@ -125,19 +125,13 @@ To clone and install (for the interested Rustaceans):
 
 ```bash
 git clone https://github.com/rami3l/pacaptr.git && cd pacaptr
-cargo install --path .
+cargo install --path . # Output path is usually `$HOME/.cargo/bin/pacaptr`.
 ```
 
 To uninstall:
 
 ```bash
 cargo uninstall pacaptr
-```
-
-With default settings, the binary should be installed as:
-
-```bash
-$HOME/.cargo/bin/pacaptr
 ```
 
 For `Alpine Linux` users, `cargo build` might not just work, in this case, please try the following instead:
