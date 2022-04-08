@@ -241,7 +241,7 @@ impl Pm for Apt {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::with_sudo(&["apt", "update"]).kws(kws).flags(flags))
+        self.run(Cmd::with_sudo(&["apt", "update"]).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;
