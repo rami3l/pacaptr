@@ -67,6 +67,7 @@ Just set `pacman` as the alias of `pacaptr` on your non-ArchLinux OS, and you ca
       - [For `brew`](#for-brew)
       - [For `choco`](#for-choco)
       - [For `pip`](#for-pip)
+      - [For `scoop`](#for-scoop)
     - [Feel Like Contributing?](#feel-like-contributing)
 
 ---
@@ -284,6 +285,14 @@ This option is useful when you want to reduce `Docker` image size, for example.
 #### For `pip`
 
 - Use `pacaptr --using pip3` if you want to run the `pip3` command.
+
+#### For `scoop`
+
+- `pacaptr` launches a `powershell` subprocess to run `scoop`, so please make sure that you have set the right execution policy in `powershell` ([**not `pwsh`**](https://powershellexplained.com/2017-12-29-Powershell-what-is-pwsh/)):
+
+  ```pwsh
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+  ```
 
 ### Feel Like Contributing?
 
