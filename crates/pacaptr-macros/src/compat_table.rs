@@ -12,9 +12,9 @@ const PM_IMPL_DIR: &str = "src/pm/";
 
 // We have to specify the length there (the elision is blocked by https://github.com/rust-lang/rfcs/pull/2545).
 // TODO: Fix this when the issue is resolved.
-const METHODS: [&str; 30] = [
-    "q", "qc", "qe", "qi", "qk", "ql", "qm", "qo", "qp", "qs", "qu", "r", "rn", "rns", "rs", "rss",
-    "s", "sc", "scc", "sccc", "sg", "si", "sii", "sl", "ss", "su", "suy", "sw", "sy", "u",
+const METHODS: [&str; 31] = [
+    "q", "qc", "qe", "qi", "qii", "qk", "ql", "qm", "qo", "qp", "qs", "qu", "r", "rn", "rns", "rs",
+    "rss", "s", "sc", "scc", "sccc", "sg", "si", "sii", "sl", "ss", "su", "suy", "sw", "sy", "u",
 ];
 
 /// Checks the implementation status of `pacman` commands in a specific file

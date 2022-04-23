@@ -71,6 +71,12 @@ impl Pm for Apk {
         self.si(kws, flags).await
     }
 
+    /// Qii displays local packages which require X to be installed, aka local
+    /// reverse dependencies.
+    async fn qii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.sii(kws, flags).await
+    }
+
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["apk", "info", "-L"]).kws(kws).flags(flags))

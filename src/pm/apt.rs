@@ -79,6 +79,12 @@ impl Pm for Apt {
             .await
     }
 
+    /// Qii displays local packages which require X to be installed, aka local
+    /// reverse dependencies.
+    async fn qii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.sii(kws, flags).await
+    }
+
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["dpkg-query", "-S"]).kws(kws).flags(flags))

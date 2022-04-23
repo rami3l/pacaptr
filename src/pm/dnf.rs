@@ -102,6 +102,12 @@ impl Pm for Dnf {
         .await
     }
 
+    /// Qii displays local packages which require X to be installed, aka local
+    /// reverse dependencies.
+    async fn qii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.qi(kws, flags).await
+    }
+
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["rpm", "-ql"]).kws(kws).flags(flags))

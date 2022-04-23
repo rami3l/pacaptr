@@ -161,6 +161,13 @@ impl Pm for Xbps {
             .await
     }
 
+    /// Qii displays local packages which require X to be installed, aka local
+    /// reverse dependencies.
+    async fn qii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.run(Cmd::new(&["xbps-query", "-X"]).kws(kws).flags(flags))
+            .await
+    }
+
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(&["xbps-query", "-f"]).kws(kws).flags(flags))
