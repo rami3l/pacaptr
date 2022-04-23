@@ -90,6 +90,16 @@ impl Pm for Brew {
         self.si(kws, flags).await
     }
 
+    /// Qii displays local packages which require X to be installed, aka reverse
+    /// dependencies.
+    async fn qii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        Cmd::new(&["brew", "uses", "--installed"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
+            .await
+    }
+
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         // TODO: it seems that the output of `brew list python` in fish has a mechanism
