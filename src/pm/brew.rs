@@ -90,8 +90,8 @@ impl Pm for Brew {
         self.si(kws, flags).await
     }
 
-    /// Qii displays local packages which require X to be installed, aka reverse
-    /// dependencies.
+    /// Qii displays local packages which require X to be installed, aka local
+    /// reverse dependencies.
     async fn qii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(&["brew", "uses", "--installed"])
             .kws(kws)

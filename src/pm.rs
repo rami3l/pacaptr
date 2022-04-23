@@ -63,7 +63,7 @@ macro_rules! methods {
                 /// Qi displays local package information: name, version, description, etc.
                 async fn qi;
 
-                /// Qii displays local packages which require X to be installed, aka reverse dependencies.
+                /// Qii displays local packages which require X to be installed, aka local reverse dependencies.
                 async fn qii;
 
                 /// Qk verifies one or more packages.
