@@ -8,7 +8,7 @@ version = "0.15.2"
 
 [dependencies]
 anyhow = "1.0.57"
-const_format = "0.2.22"
+const_format = "0.2.23"
 pico-args = "0.4.2"
 regex = { version = "1.5.5", default-features = false, features = [
     "std",
