@@ -10,6 +10,15 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  skip-check:
+    continue-on-error: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: fkirc/skip-duplicate-actions@v4.0.0
+        with:
+          concurrent_skipping: same_content
+          do_not_skip: '["pull_request"]'
+
   choco-test:
     runs-on: windows-latest
     steps:
