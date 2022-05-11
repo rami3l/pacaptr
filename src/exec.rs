@@ -367,35 +367,30 @@ impl std::fmt::Display for Cmd {
 
 /// Gives a prompt and returns one of the patterns matching the `stdin`.
 /// This action won't end until an expected pattern is found.
-///
-/// If `case_sensitive` is `false`, then `expected` should be all lower case
-/// patterns.
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
 fn prompt<'a>(
     question: &str,
     options: &str,
     expected: &[&'a str],
-    case_sensitive: bool,
+    ascii_case_sensitive: bool,
 ) -> &'a str {
     use std::io::{self, Write};
 
     std::iter::repeat_with(|| {
         print_question(question, options);
         io::stdout().flush().expect("Error while flushing stdout");
-        let mut answer = String::new();
-        io::stdin()
-            .read_line(&mut answer)
-            .expect("Error while reading user input");
-        if case_sensitive {
-            answer
-        } else {
-            answer.to_lowercase()
-        }
+        String::new().tap_mut(|buf| {
+            io::stdin()
+                .read_line(buf)
+                .expect("Error while reading user input");
+        })
     })
     .find_map(|answer| {
         let answer = answer.trim();
-        expected.iter().find(|&&pat| pat == answer)
+        expected.iter().find(|&&pat| {
+            pat == answer || (!ascii_case_sensitive && pat.eq_ignore_ascii_case(answer))
+        })
     })
     .unwrap() // It's impossible to find nothing out of an infinite loop.
 }
