@@ -65,7 +65,7 @@ fn dnf_qp_sw() {
     test_dsl! { r##"
         in -Sw wget --yes
         ou The downloaded packages were saved in cache
-        in -Qp /var/cache/dnf/updates-*/packages/wget-*.rpm
+        in -Qp /var/cache/dnf/*/packages/wget-*.rpm
         ou wget
         ou A utility for retrieving files using the HTTP or FTP protocols
     "## }
