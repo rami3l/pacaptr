@@ -35,7 +35,7 @@ colored = "2.0.0"
 confy = "0.4.0"
 dirs-next = "2.0.0"
 futures = { version = "0.3.21", default-features = false, features = ["std"] }
-indoc = "1.0.5"
+indoc = "1.0.6"
 is-root = "0.1.2"
 itertools = "0.10.3"
 macro_rules_attribute = "0.1.0"
