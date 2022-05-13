@@ -27,7 +27,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -48,7 +48,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -80,7 +80,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -110,7 +110,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get OS build
         run: |
           sw_vers > macos_build.txt
@@ -152,7 +152,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # - run: apt-get update && apt-get install -y curl build-essential
       - uses: actions-rs/toolchain@v1
         with:
@@ -179,7 +179,7 @@ jobs:
     container:
       image: fedora:latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: dnf install -y make automake gcc gcc-c++ kernel-devel
       - uses: actions-rs/toolchain@v1
         with:
@@ -203,7 +203,7 @@ jobs:
     container:
       image: gentoo/stage3
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -232,7 +232,7 @@ jobs:
         run: |
           xbps-install -y -Su
           xbps-install -y base-devel curl
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -259,7 +259,7 @@ jobs:
         shell: sh
     steps:
       - run: zypper install -y tar gzip curl gcc
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Rust environment manually
         run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
       # - run: echo "::add-path::$HOME/.cargo/bin"
@@ -282,7 +282,7 @@ jobs:
     env:
       RUSTFLAGS: "-C target-feature=-crt-static"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -304,7 +304,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
