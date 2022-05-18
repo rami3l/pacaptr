@@ -1,5 +1,3 @@
-# cargo-features = ["strip"]
-
 [package]
 name = "pacaptr"
 version = "0.16.0"
@@ -58,7 +56,7 @@ tokio = { version = "1.18.2", features = [
   "sync",
 ] }
 tokio-stream = "0.1.8"
-tokio-util = { version = "0.7.1", features = ["codec", "compat"] }
+tokio-util = { version = "0.7.2", features = ["codec", "compat"] }
 tt-call = "1.0.8"
 which = "4.2.5"
 
@@ -97,4 +95,4 @@ debug = 0
 lto = true
 opt-level = "z"
 panic = "abort"
-# strip = "symbols"
+strip = "symbols"
