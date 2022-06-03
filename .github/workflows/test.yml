@@ -230,7 +230,7 @@ jobs:
     steps:
       - name: Install required packages
         run: |
-          xbps-install -y -Su
+          xbps-install -y -Su || (xbps-install -y -u xbps && xbps-install -y -Su)
           xbps-install -y base-devel curl
       - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
