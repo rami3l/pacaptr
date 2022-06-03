@@ -362,9 +362,9 @@ dependencies = [
 
 [[package]]
 name = "macro_rules_attribute"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2db753a9eacb63f7aa2c64bfdd2cd3f35cc8b0946799f0b60f7110f4f3104e3b"
+checksum = "422a6e082b3d33461030d68a243af2482eefded078eaaf8ac401777d21cae32b"
 dependencies = [
  "macro_rules_attribute-proc_macro",
  "paste",
@@ -372,9 +372,9 @@ dependencies = [
 
 [[package]]
 name = "macro_rules_attribute-proc_macro"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61568f4b6f1d9c6b31185090275fb372dab0f5cea6a772e906ec56d1dc6d74aa"
+checksum = "bb4091d2e7f515b3a7ae8dda39417cd2b81d5c8814f68361c3e15b24e2d40b4a"
 
 [[package]]
 name = "memchr"
