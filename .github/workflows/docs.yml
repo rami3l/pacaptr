@@ -26,7 +26,7 @@ jobs:
         run: cargo doc --document-private-items
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.4
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: target/doc # The folder the action should deploy.
