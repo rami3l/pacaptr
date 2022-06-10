@@ -55,7 +55,7 @@ tokio = { version = "1.18.2", features = [
   "rt-multi-thread",
   "sync",
 ] }
-tokio-stream = "0.1.8"
+tokio-stream = "0.1.9"
 tokio-util = { version = "0.7.3", features = ["codec", "compat"] }
 tt-call = "1.0.8"
 which = "4.2.5"
