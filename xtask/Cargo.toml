@@ -9,7 +9,7 @@ version = "0.16.0"
 [dependencies]
 anyhow = "1.0.57"
 const_format = "0.2.24"
-pico-args = "0.4.2"
+pico-args = "0.5.0"
 regex = { version = "1.5.6", default-features = false, features = [
     "std",
     "unicode-perl",
