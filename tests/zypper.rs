@@ -39,8 +39,8 @@ fn zypper_qi() {
 #[test]
 fn zypper_ql() {
     test_dsl! { r##"
-        in -Ql rpm
-        ou /usr/bin/rpm
+        in -Ql bash
+        ou /usr/bin/bash
     "## }
 }
 
