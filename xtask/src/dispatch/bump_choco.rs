@@ -5,7 +5,7 @@ use regex::Regex;
 use xml::escape::escape_str_attribute;
 use xshell::{cmd, Shell};
 
-use super::{get_ver_from_env, names::*, Runner};
+use super::{get_ref_from_env, names::*, Runner};
 use crate::binary::WIN_X64;
 use crate::replace;
 
@@ -19,12 +19,12 @@ impl Runner for BumpChoco {
         }
 
         let s = Shell::new()?;
-        let tag = get_ver_from_env()?;
+        let tag = get_ref_from_env()?;
 
         // Remove leading `v` and suffix `-take.X` from the tag.
         let ver: &str = {
-            let tag = tag.strip_prefix('v').unwrap_or(&tag);
-            &Regex::new(r"-?take\.\d+")?.replace(tag, "")
+            let ver = tag.strip_prefix('v').unwrap_or(&tag);
+            &Regex::new(r"-?take\.\d+")?.replace(ver, "")
         };
 
         let release_uri = format!(

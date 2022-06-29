@@ -25,16 +25,16 @@ pub trait Runner {
 }
 
 /// Strip the `refs/*/` prefix from `GITHUB_REF` to get a version string.
-pub fn get_ver(gh_ref: impl AsRef<str>) -> Result<String> {
+pub fn get_ref(gh_ref: impl AsRef<str>) -> Result<String> {
     Ok(Regex::new(r"refs/\w+/")?
         .replace(gh_ref.as_ref(), "")
         .to_string())
 }
 
-/// Strip the `refs/*/` prefix from `GITHUB_REF` to get a version string.
-/// Where the value of `GITHUB_REF` is read from environment variables.
-pub fn get_ver_from_env() -> Result<String> {
-    get_ver(env::var("GITHUB_REF")?)
+/// Strip the `refs/*/` prefix from `GITHUB_REF` to get a version string,
+/// where the value of `GITHUB_REF` is read from environment variables.
+pub fn get_ref_from_env() -> Result<String> {
+    get_ref(env::var("GITHUB_REF")?)
 }
 
 #[macro_export]
