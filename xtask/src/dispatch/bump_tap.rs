@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use xshell::{cmd, Shell};
 
-use super::{get_ver_from_env, names::*, Runner};
+use super::{get_ref_from_env, names::*, Runner};
 use crate::{
     binary::{LINUX_X64, MAC_UNIV},
     replace,
@@ -17,12 +17,11 @@ impl Runner for BumpTap {
         }
 
         let s = Shell::new()?;
-        let version = get_ver_from_env()?;
-        let url_prefix = format!(
-            "{homepage}/releases/download/{tag}",
-            homepage = HOMEPAGE,
-            tag = version
-        );
+        let tag = get_ref_from_env()?;
+        // Remove leading `v` from the tag.
+        let version = tag.strip_prefix('v').unwrap_or(&tag);
+
+        let url_prefix = format!("{HOMEPAGE}/releases/download/{tag}");
         let url_mac = format!(
             "{prefix}/{bin}",
             prefix = url_prefix,
@@ -61,7 +60,7 @@ impl Runner for BumpTap {
         cmd!(s, "cat {formula}").run()?;
 
         println!(":: Uploading new Formula");
-        cmd!(s, "gh release upload {version} {formula}").run()?;
+        cmd!(s, "gh release upload {tag} {formula}").run()?;
 
         Ok(())
     }

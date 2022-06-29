@@ -2,7 +2,7 @@ use anyhow::Result;
 use const_format::formatcp;
 use xshell::{cmd, Shell};
 
-use crate::dispatch::{get_ver_from_env, names::CORE};
+use crate::dispatch::{get_ref_from_env, names::CORE};
 
 pub struct Binary<'s> {
     pub artifact: &'s str,
@@ -81,7 +81,7 @@ impl<'s> BinaryBuilder<'s> {
     pub fn upload(&self) -> Result<()> {
         println!(":: Uploading binary and sha256...");
         let s = Shell::new()?;
-        let tag = get_ver_from_env()?;
+        let tag = get_ref_from_env()?;
         let asset = self.bin().asset();
         cmd!(
             s,
