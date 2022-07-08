@@ -48,6 +48,6 @@ fn scoop_si() {
 fn scoop_ss() {
     test_dsl! { r##"
         in --using scoop -Ss wget
-        ou wget \(.+\)
+        ou wget\s+[\w\d]+\.[\w\d]+
     "## }
 }
