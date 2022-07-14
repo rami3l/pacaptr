@@ -71,6 +71,5 @@
     "xcrun",
     "xshell",
     "xtask"
-  ],
-  "rust-analyzer.procMacro.enable": false
+  ]
 }
