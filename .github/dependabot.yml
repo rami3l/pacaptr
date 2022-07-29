@@ -14,13 +14,4 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-
-  - package-ecosystem: "cargo"
-    directory: "/crates/pacaptr-macros"
-    schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "cargo"
-    directory: "/xtask"
-    schedule:
-      interval: "weekly"
+      day: "friday"
