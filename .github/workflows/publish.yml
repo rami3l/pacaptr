@@ -106,7 +106,7 @@ jobs:
           ls homebrew-tap
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           path: homebrew-tap
           token: ${{ secrets.GH_ACTIONS_TOKEN }}
