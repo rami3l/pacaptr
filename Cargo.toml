@@ -26,7 +26,7 @@ exclude = ["dist/**/*", "docs/**/*"]
 xshell = "0.2.2"
 
 [dependencies]
-async-trait = "0.1.56"
+async-trait = "0.1.57"
 bytes = "1.2.1"
 clap = { version = "3.2.16", features = ["cargo", "derive"] }
 colored = "2.0.0"
