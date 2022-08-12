@@ -28,7 +28,7 @@ xshell = "0.2.2"
 [dependencies]
 async-trait = "0.1.57"
 bytes = "1.2.1"
-clap = { version = "3.2.16", features = ["cargo", "derive"] }
+clap = { version = "3.2.17", features = ["cargo", "derive"] }
 colored = "2.0.0"
 confy = "0.4.0"
 dirs-next = "2.0.0"
