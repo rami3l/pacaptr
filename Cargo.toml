@@ -32,7 +32,7 @@ clap = { version = "3.2.17", features = ["cargo", "derive"] }
 colored = "2.0.0"
 confy = "0.4.0"
 dirs-next = "2.0.0"
-futures = { version = "0.3.21", default-features = false, features = ["std"] }
+futures = { version = "0.3.23", default-features = false, features = ["std"] }
 indoc = "1.0.7"
 is-root = "0.1.2"
 itertools = "0.10.3"
