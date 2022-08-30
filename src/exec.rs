@@ -188,7 +188,6 @@ async fn exec_tee(
     let mut buf = Vec::<u8>::new();
     let buf_sink = (&mut buf).into_sink();
 
-    #[allow(clippy::option_if_let_else)]
     let sink = if let Some(out) = out {
         let out_sink = out.compat_write().into_sink();
         buf_sink.fanout(out_sink).left_sink()
@@ -287,7 +286,7 @@ impl Cmd {
             Ok(status.code())
         });
 
-        let output = exec_tee(&mut reader, (!mute).then(|| &mut out)).await?;
+        let output = exec_tee(&mut reader, (!mute).then_some(&mut out)).await?;
         let code = code.await.map_err(CmdJoinError)??;
         exit_result(code, output)
     }
@@ -359,7 +358,7 @@ impl Cmd {
 
 impl std::fmt::Display for Cmd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let sudo: &str = self.should_sudo().then(|| "sudo -S ").unwrap_or("");
+        let sudo: &str = if self.should_sudo() { "sudo -S " } else { "" };
         let cmd = chain!(&self.cmd, &self.flags, &self.kws).join(" ");
         write!(f, "{sudo}{cmd}")
     }
