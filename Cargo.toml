@@ -59,7 +59,7 @@ tokio = { version = "1.20.1", features = [
 tokio-stream = "0.1.9"
 tokio-util = { version = "0.7.3", features = ["codec", "compat"] }
 tt-call = "1.0.8"
-which = "4.2.5"
+which = "4.3.0"
 
 [package.metadata.deb]
 copyright = "2020, Rami3L"
