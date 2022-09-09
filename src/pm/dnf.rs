@@ -11,7 +11,7 @@ use crate::{
     dispatch::Config,
     error::Result,
     exec::{self, Cmd},
-    print::{self, PROMPT_RUN},
+    print::{println_quoted, prompt},
 };
 
 macro_rules! docs_self {
@@ -141,7 +141,7 @@ impl Pm for Dnf {
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(&["rpm", "-qa"]).flags(flags);
         if !self.cfg.dry_run {
-            print::print_cmd(&cmd, PROMPT_RUN);
+            println_quoted(&*prompt::RUNNING, &cmd);
         }
         let out = self
             .check_output(cmd, PmMode::Mute, &Strategy::default())

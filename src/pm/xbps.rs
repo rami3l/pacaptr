@@ -13,7 +13,7 @@ use crate::{
     dispatch::Config,
     error::{Error, Result},
     exec::{Cmd, StatusCode},
-    print::{print_err, PROMPT_ERROR},
+    print::println_err,
 };
 
 macro_rules! docs_self {
@@ -91,7 +91,7 @@ impl Pm for Xbps {
                     acc
                 }
                 Err(missing) => {
-                    print_err(format!("package `{missing}` was not found"), PROMPT_ERROR);
+                    println_err(format_args!("package `{missing}` was not found"));
                     Err(Error::CmdStatusCodeError {
                         code: PKG_NOT_FOUND_CODE,
                         output: vec![],
@@ -145,7 +145,7 @@ impl Pm for Xbps {
                     acc
                 }
                 Err(missing) => {
-                    print_err(format!("package `{missing}` was not found"), PROMPT_ERROR);
+                    println_err(format_args!("package `{missing}` was not found"));
                     Err(Error::CmdStatusCodeError {
                         code: PKG_NOT_FOUND_CODE,
                         output: vec![],
