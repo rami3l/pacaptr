@@ -1,9 +1,15 @@
 //! Basic error definitions specific to this crate.
 
+use std::{
+    fmt::{self, Debug},
+    process::{ExitCode, Termination},
+};
+
 use thiserror::Error;
 use tokio::{io, task::JoinError};
 
 use crate::exec::{Output, StatusCode};
+use crate::print;
 
 /// A specialized [`Result`](std::result::Result) type used by
 /// [`pacaptr`](crate).
@@ -66,4 +72,35 @@ pub enum Error {
     /// Miscellaneous other error.
     #[error("{0}")]
     OtherError(String),
+}
+
+#[allow(clippy::module_name_repetitions)]
+/// A simple [`Error`] wrapper designed to be returned in the `main` function.
+/// It delegates its [`Debug`] implementation to the [`Display`] implementation
+/// of its underlying error.
+pub struct MainError(Error);
+
+impl From<Error> for MainError {
+    fn from(e: Error) -> Self {
+        MainError(e)
+    }
+}
+
+impl Debug for MainError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Erase the default "Error: " message header.
+        write!(f, "\r")?;
+        print::write(f, &*print::prompt::ERROR, &self.0)
+    }
+}
+
+impl Termination for MainError {
+    fn report(self) -> ExitCode {
+        #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+        match self.0 {
+            Error::CmdStatusCodeError { code, .. } => code as u8,
+            _ => 1,
+        }
+        .into()
+    }
 }

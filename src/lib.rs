@@ -1,3 +1,12 @@
+//! `pacaptr` is a `pacman`-like syntax wrapper for many package managers.
+//!
+//! # Compatibility Table
+//!
+//! Currently, `pacaptr` supports the following operations:
+#![doc = pacaptr_macros::compat_table!()]
+//! Note: Some flags are "translated" so are not shown in this table, eg. `-p`
+//! in `-Sp`.
+
 #![forbid(unsafe_code)]
 #![warn(
     clippy::pedantic,
@@ -8,15 +17,6 @@
     trivial_numeric_casts,
     unused_allocation
 )]
-
-//! `pacaptr` is a `pacman`-like syntax wrapper for many package managers.
-//!
-//! # Compatibility Table
-//!
-//! Currently, `pacaptr` supports the following operations:
-#![doc = pacaptr_macros::compat_table!()]
-//! Note: Some flags are "translated" so are not shown in this table, eg. `-p`
-//! in `-Sp`.
 
 pub mod dispatch;
 pub mod error;

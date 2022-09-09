@@ -1,19 +1,8 @@
 use clap::Parser;
-use pacaptr::{
-    dispatch::Pacaptr,
-    error::Error,
-    print::{print_err, PROMPT_ERROR},
-};
+use pacaptr::{dispatch::Pacaptr, error::MainError};
 
 #[tokio::main]
-async fn main() {
-    let res = Pacaptr::parse().dispatch().await;
-    // TODO: Replace this with `Termination`. Currently blocked by https://github.com/rust-lang/rust/issues/43301.
-    if let Err(e) = &res {
-        print_err(e, PROMPT_ERROR);
-        std::process::exit(match e {
-            Error::CmdStatusCodeError { code, .. } => *code,
-            _ => 1,
-        })
-    }
+async fn main() -> Result<(), MainError> {
+    Pacaptr::parse().dispatch().await?;
+    Ok(())
 }

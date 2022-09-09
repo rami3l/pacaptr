@@ -27,7 +27,7 @@ use which::which;
 
 use crate::{
     error::{Error, Result},
-    print::{print_cmd, print_question, PROMPT_CANCELED, PROMPT_PENDING, PROMPT_RUN},
+    print::{print_question, println_quoted, prompt},
 };
 
 /// Different ways in which a [`Cmd`] shall be dealt with.
@@ -224,16 +224,16 @@ impl Cmd {
     pub(crate) async fn exec(self, mode: Mode) -> Result<Output> {
         match mode {
             Mode::PrintCmd => {
-                print_cmd(&self, PROMPT_CANCELED);
+                println_quoted(&*prompt::CANCELED, &self);
                 Ok(Output::default())
             }
             Mode::Mute => self.exec_checkall(true).await,
             Mode::CheckAll => {
-                print_cmd(&self, PROMPT_RUN);
+                println_quoted(&*prompt::RUNNING, &self);
                 self.exec_checkall(false).await
             }
             Mode::CheckErr => {
-                print_cmd(&self, PROMPT_RUN);
+                println_quoted(&*prompt::RUNNING, &self);
                 self.exec_checkerr(false).await
             }
             Mode::Prompt => self.exec_prompt(false).await,
@@ -324,7 +324,7 @@ impl Cmd {
 
         // The answer obtained from the prompt. Here we use a closure for lazy eval.
         let answer = || {
-            print_cmd(&self, PROMPT_PENDING);
+            println_quoted(&*prompt::PENDING, &self);
             let answer = tokio::task::block_in_place(move || {
                 prompt(
                     "Proceed",
@@ -351,7 +351,7 @@ impl Cmd {
         if !proceed {
             return Ok(Output::default());
         }
-        print_cmd(&self, PROMPT_RUN);
+        println_quoted(&*prompt::RUNNING, &self);
         self.exec_checkerr(mute).await
     }
 }

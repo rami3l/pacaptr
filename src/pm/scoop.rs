@@ -10,7 +10,7 @@ use crate::{
     dispatch::Config,
     error::Result,
     exec::{self, Cmd},
-    print::{self, PROMPT_RUN},
+    print::{println_quoted, prompt},
 };
 
 macro_rules! docs_self {
@@ -48,7 +48,7 @@ impl Scoop {
     async fn search_regex(&self, cmd: &[&str], kws: &[&str], flags: &[&str]) -> Result<()> {
         let cmd = Cmd::new(cmd).flags(flags);
         if !self.cfg.dry_run {
-            print::print_cmd(&cmd, PROMPT_RUN);
+            println_quoted(&*prompt::RUNNING, &cmd);
         }
         let out_bytes = self
             .check_output(cmd, PmMode::Mute, &Strategy::default())
