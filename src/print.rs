@@ -8,8 +8,7 @@ pub mod style {
 
     pub static MESSAGE: Lazy<Style> = Lazy::new(|| Style::new().green().bold());
     pub static ERROR: Lazy<Style> = Lazy::new(|| Style::new().bright().red().bold());
-    pub static QUESTION: Lazy<Style> = Lazy::new(|| Style::new().yellow());
-    pub static OPTIONS: Lazy<Style> = Lazy::new(|| Style::new().underlined());
+    pub static QUESTION: Lazy<Style> = Lazy::new(|| Style::new().yellow().bold());
 }
 
 pub mod prompt {
@@ -27,6 +26,9 @@ pub mod prompt {
 }
 
 use std::fmt::{self, Display};
+
+use console::{style, Style};
+use dialoguer::theme::ColorfulTheme;
 
 /// The right indentation to be applied on prompt prefixes.
 static PROMPT_INDENT: usize = 9;
@@ -46,12 +48,6 @@ macro_rules! plain_format {
 macro_rules! quoted_format {
     () => {
         concat!(prompt_format!(), " `{}`")
-    };
-}
-
-macro_rules! question_format {
-    () => {
-        concat!(prompt_format!(), " {}? ")
     };
 }
 
@@ -94,12 +90,21 @@ pub(crate) fn println_quoted(prompt: impl Display, msg: impl Display) {
     );
 }
 
-/// Prints out a question after the given prompt.
-pub(crate) fn print_question(question: impl Display, options: impl Display) {
-    print!(
-        question_format!(),
-        style::QUESTION.apply_to(question),
-        style::OPTIONS.apply_to(options),
-        indent = PROMPT_INDENT
-    );
+/// Returns a [`dialoguer`] theme with the given prompt.
+pub(crate) fn question_theme(prompt: impl Display) -> impl dialoguer::theme::Theme {
+    let prompt_prefix = style::QUESTION.apply_to(format!(
+        prompt_format!(),
+        style::QUESTION.apply_to(prompt),
+        indent = PROMPT_INDENT,
+    ));
+    let active_item_prefix = style(">".into()).for_stderr();
+    ColorfulTheme {
+        success_prefix: prompt_prefix.clone(),
+        error_prefix: prompt_prefix.clone().red(),
+        prompt_prefix,
+        prompt_style: Style::new(),
+        prompt_suffix: style("".into()),
+        active_item_prefix,
+        ..ColorfulTheme::default()
+    }
 }
