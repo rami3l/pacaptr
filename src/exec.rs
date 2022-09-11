@@ -6,6 +6,7 @@ use std::{
 };
 
 use bytes::{Bytes, BytesMut};
+use dialoguer::FuzzySelect;
 use futures::prelude::*;
 use indoc::indoc;
 use is_root::is_root;
@@ -27,7 +28,7 @@ use which::which;
 
 use crate::{
     error::{Error, Result},
-    print::{print_question, println_quoted, prompt},
+    print::{println_quoted, prompt, question_theme},
 };
 
 /// Different ways in which a [`Cmd`] shall be dealt with.
@@ -323,31 +324,30 @@ impl Cmd {
         static ALL: AtomicBool = AtomicBool::new(false);
 
         // The answer obtained from the prompt. Here we use a closure for lazy eval.
-        let answer = || {
+        let answer = || -> Result<bool> {
             println_quoted(&*prompt::PENDING, &self);
             let answer = tokio::task::block_in_place(move || {
                 prompt(
                     "Proceed",
-                    "[YES/All/No/^C]",
-                    &["", "y", "yes", "a", "all", "n", "no"],
-                    false,
+                    "with the previous command?",
+                    &["yes", "all", "no"],
                 )
-            });
-            match answer {
+            })?;
+            Ok(match answer {
                 // The default answer is `Yes`.
-                "y" | "yes" | "" => true,
+                0 => true,
                 // You can also say `All` to answer `Yes` to all the other questions that follow.
-                "a" | "all" => {
+                1 => {
                     ALL.store(true, Ordering::SeqCst);
                     true
                 }
                 // Or you can say `No`.
-                "n" | "no" => false,
+                2 => false,
                 // ! I didn't put a `None` option because you can just Ctrl-C it if you want.
                 _ => unreachable!(),
-            }
+            })
         };
-        let proceed = ALL.load(Ordering::SeqCst) || answer();
+        let proceed = ALL.load(Ordering::SeqCst) || answer()?;
         if !proceed {
             return Ok(Output::default());
         }
@@ -364,34 +364,14 @@ impl std::fmt::Display for Cmd {
     }
 }
 
-/// Gives a prompt and returns one of the patterns matching the `stdin`.
-/// This action won't end until an expected pattern is found.
-#[must_use]
+/// Gives a prompt and returns the index of the user choice.
 #[allow(clippy::missing_panics_doc)]
-fn prompt<'a>(
-    question: &str,
-    options: &str,
-    expected: &[&'a str],
-    ascii_case_sensitive: bool,
-) -> &'a str {
-    use std::io::{self, Write};
-
-    std::iter::repeat_with(|| {
-        print_question(question, options);
-        io::stdout().flush().expect("Error while flushing stdout");
-        String::new().tap_mut(|buf| {
-            io::stdin()
-                .read_line(buf)
-                .expect("Error while reading user input");
-        })
-    })
-    .find_map(|answer| {
-        let answer = answer.trim();
-        expected.iter().find(|&&pat| {
-            pat == answer || (!ascii_case_sensitive && pat.eq_ignore_ascii_case(answer))
-        })
-    })
-    .unwrap() // It's impossible to find nothing out of an infinite loop.
+fn prompt<'a>(prompt: &str, question: &str, expected: &[&'a str]) -> io::Result<usize> {
+    FuzzySelect::with_theme(&question_theme(prompt))
+        .with_prompt(question)
+        .items(expected)
+        .default(0)
+        .interact()
 }
 
 macro_rules! docs_errors_grep {
