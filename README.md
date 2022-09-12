@@ -20,12 +20,12 @@
 
 `pac·apt·r`, or the _PACman AdaPTeR_, is a wrapper for many package managers with pacman-style command syntax, started as a Rust port of [icy/pacapt].
 
-Just set `pacman` as the alias of `pacaptr` on your non-ArchLinux OS, and you can run `pacman -Syu` wherever you like!
+Just set `pacman` as the alias of `pacaptr` on your non-Arch OS, and then you can run `pacman -Syu` wherever you like!
 
 ```smalltalk
 > pacaptr -S neofetch
   Pending `brew reinstall neofetch`
-  Proceed [YES/All/No/^C]? y
+  Proceed with the previous command? · yes
   Running `brew reinstall neofetch`
 ==> Downloading https://homebrew.bintray.com/bottles/neofetch-7.1.0
 ########################################################### 100.0%
@@ -76,7 +76,7 @@ Just set `pacman` as the alias of `pacaptr` on your non-ArchLinux OS, and you ca
 
 Coming from `Arch Linux` to `macOS`, I really like the idea of having an automated version of [Pacman Rosetta] for making common package managing tasks less of a travail thanks to the concise `pacman` syntax.
 
-That's why I decided to take inspiration from the existing `sh`-based project [icy/pacapt] to make a new CLI tool in Rust for better portability (especially for Windows) and easier maintenance.
+That's why I decided to take inspiration from the existing `sh`-based [icy/pacapt] to make a new CLI tool in Rust for better portability (especially for Windows) and easier maintenance.
 
 ## Supported Package Managers
 
@@ -88,7 +88,7 @@ That's why I decided to take inspiration from the existing `sh`-based project [i
 - External: `brew`, `conda`, [`pip`/`pip3`](#pip), `tlmgr`
   - These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
 
-As for now, the precedence is still (unfortunately) hardcoded. For example, if both `scoop` and `choco` are installed, `scoop` will be the default. You can however edit the default package manager in your [config](#configuration).
+As for now, the precedence is still (unfortunately) hard-coded. For example, if both `scoop` and `choco` are installed, `scoop` will be the default. You can however edit the default package manager in your [config](#configuration).
 
 Please refer to the [compatibility table] for more details on which operations are supported.
 
