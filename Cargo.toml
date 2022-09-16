@@ -36,7 +36,7 @@ dirs-next = "2.0.0"
 futures = { version = "0.3.24", default-features = false, features = ["std"] }
 indoc = "1.0.7"
 is-root = "0.1.2"
-itertools = "0.10.3"
+itertools = "0.10.4"
 macro_rules_attribute = "0.1.2"
 once_cell = "1.14.0"
 pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.16.1" }
