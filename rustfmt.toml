@@ -1,4 +1,8 @@
 unstable_features = true
+
 format_macro_matchers = true
 group_imports = "StdExternalCrate"
 wrap_comments = true
+
+use_field_init_shorthand = true
+trailing_semicolon = true
