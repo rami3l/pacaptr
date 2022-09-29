@@ -1,6 +1,6 @@
 //! Definitions for command line argument mapping and dispatching.
 
-use clap::{self, Parser};
+use clap::{self, ArgAction, Parser};
 use itertools::Itertools;
 use tap::prelude::*;
 use tokio::task;
@@ -15,7 +15,7 @@ use crate::{
 
 /// The command line options to be collected.
 #[derive(Debug, Parser)]
-#[clap(
+#[command(
     version = clap::crate_version!(),
     author = clap::crate_authors!(),
     about = clap::crate_description!(),
@@ -24,11 +24,11 @@ use crate::{
 )]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Pacaptr {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     ops: Operations,
 
     /// Specify the package manager to be invoked.
-    #[clap(
+    #[arg(
         global = true,
         number_of_values = 1,
         long = "using",
@@ -39,15 +39,15 @@ pub struct Pacaptr {
     using: Option<String>,
 
     /// Perform a dry run.
-    #[clap(global = true, long = "dry-run", visible_alias = "dryrun")]
+    #[arg(global = true, long = "dry-run", visible_alias = "dryrun")]
     dry_run: bool,
 
     /// Prevent reinstalling previously installed packages.
-    #[clap(global = true, long = "needed")]
+    #[arg(global = true, long = "needed")]
     needed: bool,
 
     /// Answer yes to every question.
-    #[clap(
+    #[arg(
         global = true,
         long = "no-confirm",
         visible_alias = "noconfirm",
@@ -56,139 +56,139 @@ pub struct Pacaptr {
     no_confirm: bool,
 
     /// Remove cache after installation.
-    #[clap(global = true, long = "no-cache", visible_alias = "nocache")]
+    #[arg(global = true, long = "no-cache", visible_alias = "nocache")]
     no_cache: bool,
 
     /// Package name or (sometimes) regex.
-    #[clap(global = true, name = "KEYWORDS")]
+    #[arg(global = true, name = "KEYWORDS")]
     keywords: Vec<String>,
 
     /// Extra Flags passed directly to backend.
-    #[clap(last = true, global = true, name = "EXTRA_FLAGS")]
+    #[arg(last = true, global = true, name = "EXTRA_FLAGS")]
     extra_flags: Vec<String>,
 }
 
 // For details on operations, flags and flagcounters, see: https://www.archlinux.org/pacman/pacman.8.html
 #[derive(Debug, Parser)]
-#[clap(about = clap::crate_description!())]
+#[command(about = clap::crate_description!())]
 enum Operations {
     /// Query the package database.
-    #[clap(short_flag = 'Q', long_flag = "query")]
+    #[command(short_flag = 'Q', long_flag = "query")]
     Query {
         /// View the ChangeLog of a package if it exists.
-        #[clap(short, long = "changelog")]
+        #[arg(short, long = "changelog")]
         c: bool,
 
         /// Restrict or filter output to explicitly installed packages.
-        #[clap(short, long = "explicit")]
+        #[arg(short, long = "explicit")]
         e: bool,
 
         /// Display information on a given package.
-        #[clap(short, long = "info", parse(from_occurrences))]
-        i: u32,
+        #[arg(short, long = "info", action(ArgAction::Count))]
+        i: u8,
 
         /// Check that all files owned by the given package(s) are present on
         /// the system.
-        #[clap(short, long = "check")]
+        #[arg(short, long = "check")]
         k: bool,
 
         /// List all files owned by a given package.
-        #[clap(short, long = "list")]
+        #[arg(short, long = "list")]
         l: bool,
 
         /// Restrict or filter output to packages that were not found in the
         /// sync database(s).
-        #[clap(short, long = "foreign")]
+        #[arg(short, long = "foreign")]
         m: bool,
 
         /// Search for packages that own the specified file(s).
-        #[clap(short, long = "owns")]
+        #[arg(short, long = "owns")]
         o: bool,
 
         /// Signifies that the package supplied on the command line is a file
         /// and not an entry in the database.
-        #[clap(short, long = "file")]
+        #[arg(short, long = "file")]
         p: bool,
 
         /// Search each locally-installed package for names or descriptions that
         /// match regexp.
-        #[clap(short, long = "search")]
+        #[arg(short, long = "search")]
         s: bool,
 
         /// Restrict or filter output to packages that are out-of-date on the
         /// local system.
-        #[clap(short, long = "upgrades")]
+        #[arg(short, long = "upgrades")]
         u: bool,
     },
 
     /// Remove package(s) from the system.
-    #[clap(short_flag = 'R', long_flag = "remove")]
+    #[command(short_flag = 'R', long_flag = "remove")]
     Remove {
         /// Ignore file backup designations.
-        #[clap(short, long = "nosave")]
+        #[arg(short, long = "nosave")]
         n: bool,
 
         /// Only print the targets instead of performing the actual operation.
-        #[clap(short, long = "print")]
+        #[arg(short, long = "print")]
         p: bool,
 
         /// Remove package(s) with all their dependencies that are no longer
         /// required.
-        #[clap(short, long = "recursive", parse(from_occurrences))]
-        s: u32,
+        #[arg(short, long = "recursive", action(ArgAction::Count))]
+        s: u8,
     },
 
     /// Synchronize packages.
-    #[clap(short_flag = 'S', long_flag = "sync")]
+    #[command(short_flag = 'S', long_flag = "sync")]
     Sync {
         /// Remove packages that are no longer installed from the cache as well
         /// as currently unused sync databases to free up disk space.
-        #[clap(short, long = "clean", parse(from_occurrences))]
-        c: u32,
+        #[arg(short, long = "clean", action(ArgAction::Count))]
+        c: u8,
 
         /// Display all the members for each package group specified.
-        #[clap(short, long = "groups")]
+        #[arg(short, long = "groups")]
         g: bool,
 
         /// Display information on a given sync database package.
-        #[clap(short, long = "info", parse(from_occurrences))]
-        i: u32,
+        #[arg(short, long = "info", action(ArgAction::Count))]
+        i: u8,
 
         /// List all packages in the specified repositories.
-        #[clap(short, long = "list")]
+        #[arg(short, long = "list")]
         l: bool,
 
         /// Only print the targets instead of performing the actual operation.
-        #[clap(short, long = "print")]
+        #[arg(short, long = "print")]
         p: bool,
 
         /// Search each package in the sync databases for names or descriptions
         /// that match regexp.
-        #[clap(short, long = "search")]
+        #[arg(short, long = "search")]
         s: bool,
 
         /// Upgrade all packages that are out-of-date Each currently-installed
         /// package will be examined and upgraded if a newer package exists.
-        #[clap(short, long = "sysupgrade")]
+        #[arg(short, long = "sysupgrade")]
         u: bool,
 
         /// Retrieve all packages from the server, but do not install/upgrade
         /// anything.
-        #[clap(short, long = "downloadonly")]
+        #[arg(short, long = "downloadonly")]
         w: bool,
 
         /// Download a fresh copy of the master package database from the
         /// server.
-        #[clap(short, long = "refresh")]
+        #[arg(short, long = "refresh")]
         y: bool,
     },
 
     /// Upgrade or add package(s) to the system and install the required
     /// dependencies from sync repositories.
-    #[clap(short_flag = 'U', long_flag = "update")]
+    #[command(short_flag = 'U', long_flag = "update")]
     Update {
         /// Only print the targets instead of performing the actual operation.
-        #[clap(short, long = "print")]
+        #[arg(short, long = "print")]
         p: bool,
     },
 }
@@ -237,7 +237,7 @@ impl Pacaptr {
                     $( $(if $key {
                         cfg.$val = true;
                     })* )?
-                    $( $(for _ in 0..($flag as u32) {
+                    $( $(for _ in 0..($flag as u8) {
                         options.push_str(stringify!($flag));
                     })* )?
                 } )*
@@ -368,7 +368,7 @@ pub(super) mod tests {
     #[should_panic(expected = "should run: suy")]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn simple_syu() {
-        let opt = dbg!(Pacaptr::parse_from(&["pacaptr", "-Syu"]));
+        let opt = dbg!(Pacaptr::parse_from(["pacaptr", "-Syu"]));
         let subcmd = &opt.ops;
 
         assert!(matches!(subcmd, &Operations::Sync{ u, y, .. } if y && u));
@@ -381,7 +381,7 @@ pub(super) mod tests {
     #[should_panic(expected = "should run: suy")]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn long_syu() {
-        let opt = dbg!(Pacaptr::parse_from(&[
+        let opt = dbg!(Pacaptr::parse_from([
             "pacaptr",
             "--sync",
             "--refresh",
@@ -399,7 +399,7 @@ pub(super) mod tests {
     #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn simple_sw() {
-        let opt = dbg!(Pacaptr::parse_from(&["pacaptr", "-Sw", "curl", "wget"]));
+        let opt = dbg!(Pacaptr::parse_from(["pacaptr", "-Sw", "curl", "wget"]));
         let subcmd = &opt.ops;
 
         assert!(matches!(subcmd, &Operations::Sync { w, .. } if w));
@@ -412,7 +412,7 @@ pub(super) mod tests {
     #[should_panic(expected = r#"should run: s ["docker"]"#)]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn other_flags() {
-        let opt = dbg!(Pacaptr::parse_from(&[
+        let opt = dbg!(Pacaptr::parse_from([
             "pacaptr", "-S", "--dryrun", "--yes", "docker"
         ]));
         let subcmd = &opt.ops;
@@ -429,7 +429,7 @@ pub(super) mod tests {
     #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn extra_flags() {
-        let opt = dbg!(Pacaptr::parse_from(&[
+        let opt = dbg!(Pacaptr::parse_from([
             "pacaptr",
             "-S",
             "--yes",
@@ -451,7 +451,7 @@ pub(super) mod tests {
     #[should_panic(expected = r#"should run: si ["docker", "--proxy=localhost:1234"]"#)]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn using() {
-        let opt = dbg!(Pacaptr::parse_from(&[
+        let opt = dbg!(Pacaptr::parse_from([
             "pacaptr",
             "--pm",
             "mockpm",
