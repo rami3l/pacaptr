@@ -103,7 +103,7 @@ pub(crate) fn question_theme(prompt: impl Display) -> impl dialoguer::theme::The
         error_prefix: prompt_prefix.clone().red(),
         prompt_prefix,
         prompt_style: Style::new(),
-        prompt_suffix: style("".into()),
+        prompt_suffix: style(String::new()),
         active_item_prefix,
         ..ColorfulTheme::default()
     }
