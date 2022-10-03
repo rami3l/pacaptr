@@ -1,4 +1,6 @@
-use std::{collections::BTreeMap, ffi::OsString, fmt::Debug, fs, path::Path, str::FromStr};
+use std::{
+    borrow::Cow, collections::BTreeMap, ffi::OsString, fmt::Debug, fs, path::Path, str::FromStr,
+};
 
 use anyhow::Context;
 use itertools::{chain, Itertools};
@@ -39,17 +41,19 @@ struct CompatRow {
 }
 
 impl Tabled for CompatRow {
-    const LENGTH: usize = 60;
+    const LENGTH: usize = 1 + METHODS.len();
 
-    fn fields(&self) -> Vec<String> {
-        self.fields.clone()
+    fn fields(&self) -> Vec<Cow<'static, str>> {
+        self.fields
+            .iter()
+            .map(|s| Cow::Owned(s.to_owned()))
+            .collect()
     }
 
-    fn headers() -> Vec<String> {
-        static HEADERS: Lazy<Vec<String>> = Lazy::new(|| {
-            // `["Module", "q", "qc", "qe", ..]`
-            chain!(["Module"], METHODS).map_into().collect()
-        });
+    fn headers() -> Vec<Cow<'static, str>> {
+        // `["Module", "q", "qc", "qe", ..]`
+        static HEADERS: Lazy<Vec<Cow<'static, str>>> =
+            Lazy::new(|| chain!(["Module"], METHODS).map_into().collect());
         HEADERS.clone()
     }
 }
@@ -88,8 +92,11 @@ fn make_table() -> anyhow::Result<String> {
         })
         .try_collect()?;
 
-    let table = Table::new(&data).with(TableStyle::blank());
-    Ok(format!("```\n{table}```\n"))
+    let mut table = Table::new(data);
+    Ok(format!(
+        "\n\n\n{}\n\n\n",
+        table.with(TableStyle::markdown())
+    ))
 }
 
 pub(crate) fn compat_table_impl() -> Result<TokenStream> {

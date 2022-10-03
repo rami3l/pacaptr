@@ -186,7 +186,7 @@ macro_rules! _decor_pm {(
 
 /// Send `methods!()` to `_decor_pm`, that is:
 ///
-/// ```rust
+/// ```txt
 /// _decor_pm! {
 ///     def = [{ trait Pm { .. } }]
 ///     methods = [{ q qc qe .. }] )
