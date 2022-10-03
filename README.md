@@ -2,13 +2,11 @@
 
 # pacaptr
 
-[![pacaptr][socialify badge]](https://rami3l.github.io/pacaptr/pacaptr/)
+[![pacaptr](https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&logo=https%3A%2F%2Fuser-images.githubusercontent.com%2F33851577%2F110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png&owner=1&pattern=Charlie%20Brown&theme=Light)](https://crates.io/crates/pacaptr)
 
 <!--
 [pacaptr-logo]: https://user-images.githubusercontent.com/33851577/110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png
 -->
-
-[socialify badge]: https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&logo=https%3A%2F%2Fuser-images.githubusercontent.com%2F33851577%2F110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png&owner=1&pattern=Charlie%20Brown&theme=Light
 
 <!--
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=flat-square&logo=rust&logoColor=white)
@@ -16,6 +14,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/pacaptr?style=flat-square)](https://crates.io/crates/pacaptr)
 [![docs.rs](https://img.shields.io/docsrs/pacaptr?style=flat-square)](https://docs.rs/pacaptr)
+[![Private APIs](https://img.shields.io/badge/docs-private--apis-lightgrey?style=flat-square)](https://rami3l.github.io/pacaptr/pacaptr)
 [![License](https://img.shields.io/github/license/rami3l/pacaptr?style=flat-square)](LICENSE)
 
 `pac·apt·r`, or the _PACman AdaPTeR_, is a wrapper for many package managers with pacman-style command syntax, started as a Rust port of [icy/pacapt].
@@ -85,7 +84,7 @@ That's why I decided to take inspiration from the existing `sh`-based [icy/pacap
 - Windows: `scoop`, [`choco`](#choco)
 - macOS: [`brew`](#brew), `port`, `apt` (through [Procursus])
 - Linux: `apt`, `apk`, `dnf`, `emerge`, `xbps`, `zypper`
-- External: `brew`, `conda`, [`pip`/`pip3`](#pip), `tlmgr`
+- External: `brew`, `conda`, `pip`/`pip3`, `tlmgr`
   - These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
 
 As for now, the precedence is still (unfortunately) hard-coded. For example, if both `scoop` and `choco` are installed, `scoop` will be the default. You can however edit the default package manager in your [config](#configuration).
@@ -222,7 +221,7 @@ Use this flag to just print out the command to be executed
 
 `Pending` means that the command execution has been blocked by a prompt; `Canceled` means it has been canceled in a dry run; `Running` means that it has started running.
 
-Some query commands might still be run, but anything "big" should have been stopped from running, eg. installation.
+Some query commands might still be run, but anything "big" should have been stopped from running, e.g. installation.
 For instance:
 
 ```bash
@@ -262,7 +261,7 @@ This option is useful when you want to reduce `Docker` image size, for example.
 
 - Please note that `cask` is for `macOS` only.
 
-- Be careful when a formula and a cask share the same name, eg. `docker`.
+- Be careful when a formula and a cask share the same name, e.g. `docker`.
 
   ```bash
   pacaptr -Si docker | rg cask
@@ -300,10 +299,6 @@ Sounds nice! Please let me take you to the [contributing guidelines](docs/CONTRI
 
 [pacman rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [icy/pacapt]: https://github.com/icy/pacapt
-[pacapt/#117]: https://github.com/icy/pacapt/issues/117
-[pacapt/#126]: https://github.com/icy/pacapt/issues/126
-[rmtree]: https://github.com/beeftornado/homebrew-rmtree
 [gsudo]: https://github.com/gerardog/gsudo
-[rs-dev]: https://github.com/rami3l/pacaptr/tree/rs-dev
 [compatibility table]: https://rami3l.github.io/pacaptr/pacaptr/#compatibility-table
 [procursus]: https://github.com/ProcursusTeam/Procursus
