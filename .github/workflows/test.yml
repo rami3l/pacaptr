@@ -33,7 +33,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
@@ -54,7 +54,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Install scoop
         shell: pwsh
         run: |
@@ -87,7 +87,7 @@ jobs:
           toolchain: stable
           target: aarch64-apple-darwin
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Set macOS environment variables
         # if: runner.os == 'macOS'
         run: |
@@ -136,7 +136,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
       - run: port installed
@@ -160,7 +160,7 @@ jobs:
           toolchain: stable
           target: x86_64-unknown-linux-musl
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Test build for musl
         run: cargo build --verbose --release --locked --target=x86_64-unknown-linux-musl
       - name: Test native build
@@ -186,7 +186,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
@@ -209,7 +209,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       # `pacaptr -Ss` might fail without this line.
       - run: emerge --sync || true
       - name: Build
@@ -238,7 +238,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
@@ -263,7 +263,7 @@ jobs:
       - name: Set up Rust environment manually
         run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
       # - run: echo "::add-path::$HOME/.cargo/bin"
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Build
         run: $HOME/.cargo/bin/cargo build --verbose
       - name: Run unit tests
@@ -288,7 +288,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - run: apk add -U build-base
       - name: Build
         run: cargo build --verbose
@@ -310,7 +310,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
       # - name: Run unit tests

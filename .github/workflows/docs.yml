@@ -31,7 +31,7 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Create
         run: cargo doc --document-private-items
       - name: Upload artifact
