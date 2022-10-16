@@ -64,8 +64,8 @@ jobs:
           (Resolve-Path ~\scoop\shims).Path >> $Env:GITHUB_PATH
       - name: Verity scoop installation
         run: |
-          powershell scoop help
           Get-Command scoop
+          powershell scoop help
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
@@ -87,20 +87,25 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v2
+      # Ironically, to install winget we need to install scoop first :D
+      # See: https://github.com/microsoft/winget-cli/issues/1328#issuecomment-1208640211
+      - name: Install scoop
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+          iwr -useb 'https://raw.githubusercontent.com/scoopinstaller/install/master/install.ps1' -outfile 'install.ps1'
+          .\install.ps1 -RunAsAdmin
+          (Resolve-Path ~\scoop\shims).Path >> $Env:GITHUB_PATH
+      - name: Verity scoop installation
+        run: |
+          Get-Command scoop
+          powershell scoop help
       - name: Install winget
         shell: pwsh
-        # See: https://github.com/actions/runner-images/issues/910#issuecomment-1009640391
+        run: scoop install winget
+      - name: Verity winget installation
         run: |
-          $ErrorActionPreference = 'Stop'
-          iwr $(iwr 'https://store.rg-adguard.net/api/GetFiles' -Method 'POST' -ContentType 'application/x-www-form-urlencoded' -Body 'type=PackageFamilyName&url=Microsoft.VCLibs.140.00_8wekyb3d8bbwe&ring=RP&lang=en-US' -UseBasicParsing | Foreach-Object Links | Where-Object outerHTML -match 'Microsoft.VCLibs.140.00_.+_x64__8wekyb3d8bbwe.appx' | Foreach-Object href) -OutFile $env:TEMP\vclibs.appx
-          iwr $(iwr 'https://store.rg-adguard.net/api/GetFiles' -Method 'POST' -ContentType 'application/x-www-form-urlencoded' -Body 'type=PackageFamilyName&url=Microsoft.VCLibs.140.00.UWPDesktop_8wekyb3d8bbwe&ring=RP&lang=en-US' -UseBasicParsing | Foreach-Object Links | Where-Object outerHTML -match 'Microsoft.VCLibs.140.00.UWPDesktop_.+_x64__8wekyb3d8bbwe.appx' | Foreach-Object href) -OutFile $env:TEMP\vclibsuwp.appx
-          iwr 'https://github.com/microsoft/winget-cli/releases/download/v1.3.2691/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile $env:TEMP\winget.msixbundle
-          iwr 'https://github.com/microsoft/winget-cli/releases/download/v1.3.2691/7bcb1a0ab33340daa57fa5b81faec616_License1.xml' -Outfile $env:TEMP\winget.license
-          Add-AppxProvisionedPackage -Online -PackagePath $env:TEMP\winget.msixbundle -LicensePath $env:TEMP\winget.license -DependencyPackagePath @("$env:TEMP\vclibs.appx", "$env:TEMP\vclibsuwp.appx")
-          # Create reparse point
-          $installationPath = (Get-AppxPackage Microsoft.DesktopAppInstaller).InstallLocation
-          Set-ExecutionAlias -Path "C:\Windows\System32\winget.exe" -PackageName "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" -EntryPoint "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe!winget" -Target "$installationPath\AppInstallerCLI.exe" -AppType Desktop -Version 3
-          explorer.exe "shell:appsFolder\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe!winget"
+          Get-Command winget
           winget --info
       - name: Build
         run: cargo build --verbose
