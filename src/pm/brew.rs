@@ -100,7 +100,7 @@ impl Pm for Brew {
         self.search_regex(Cmd::new(["brew", "list", "--formula"]).flags(flags), kws)
             .await?;
         if cfg!(target_os = "macos") {
-            self.search_regex(Cmd::new(["brew", "list", "--formula"]).flags(flags), kws)
+            self.search_regex(Cmd::new(["brew", "list", "--cask"]).flags(flags), kws)
                 .await?;
         }
 
