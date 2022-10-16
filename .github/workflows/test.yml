@@ -75,6 +75,27 @@ jobs:
       - name: Run heavy tests
         run: cargo test scoop --verbose -- --ignored
 
+  winget-test:
+    runs-on: windows-latest
+    needs: skip-check
+    if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build --verbose
+      - name: Run unit tests
+        run: cargo test tests --verbose
+      - name: Run smoke tests
+        run: cargo test winget --verbose
+      - name: Run heavy tests
+        run: cargo test winget --verbose -- --ignored
+
   brew-test:
     runs-on: macos-latest
     needs: skip-check
