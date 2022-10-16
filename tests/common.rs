@@ -90,7 +90,7 @@ impl<'t> Test<'t> {
             let cmd = match *input {
                 Input::Exec { cmd, kws } => chain!(cmd, kws).join(" "),
                 Input::Pacaptr { args, flags } => {
-                    format!("cargo run -- {}", chain!(args, flags).join(" "))
+                    format!("cargo run --quiet -- {}", chain!(args, flags).join(" "))
                 }
             };
             let got = cmd!(s, "{sh}")

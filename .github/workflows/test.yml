@@ -43,7 +43,7 @@ jobs:
       - name: Run heavy tests
         run: cargo test choco --verbose -- --ignored
 
-  scoop-test:
+  scoop-winget-test:
     runs-on: windows-latest
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
@@ -66,40 +66,8 @@ jobs:
         run: |
           Get-Command scoop
           powershell scoop help
-      - name: Build
-        run: cargo build --verbose
-      - name: Run unit tests
-        run: cargo test tests --verbose
-      - name: Run smoke tests
-        run: cargo test scoop --verbose
-      - name: Run heavy tests
-        run: cargo test scoop --verbose -- --ignored
-
-  winget-test:
-    runs-on: windows-latest
-    needs: skip-check
-    if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - uses: Swatinem/rust-cache@v2
       # Ironically, to install winget we need to install scoop first :D
       # See: https://github.com/microsoft/winget-cli/issues/1328#issuecomment-1208640211
-      - name: Install scoop
-        shell: pwsh
-        run: |
-          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-          iwr -useb 'https://raw.githubusercontent.com/scoopinstaller/install/master/install.ps1' -outfile 'install.ps1'
-          .\install.ps1 -RunAsAdmin
-          (Resolve-Path ~\scoop\shims).Path >> $Env:GITHUB_PATH
-      - name: Verity scoop installation
-        run: |
-          Get-Command scoop
-          powershell scoop help
       - name: Install winget
         shell: pwsh
         run: scoop install winget
@@ -112,9 +80,13 @@ jobs:
       - name: Run unit tests
         run: cargo test tests --verbose
       - name: Run smoke tests
-        run: cargo test winget --verbose
+        run: |
+          cargo test scoop --verbose
+          cargo test winget --verbose
       - name: Run heavy tests
-        run: cargo test winget --verbose -- --ignored
+        run: |
+          cargo test scoop --verbose -- --ignored
+          cargo test winget --verbose -- --ignored
 
   brew-test:
     runs-on: macos-latest

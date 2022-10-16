@@ -55,7 +55,8 @@ impl Pm for Winget {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.run(Cmd::new(["winget", "list"]).flags(flags)).await
+            self.run(Cmd::new(["winget", "list", "--accept-source-agreements"]).flags(flags))
+                .await
         } else {
             self.qs(kws, flags).await
         }
@@ -71,7 +72,9 @@ impl Pm for Winget {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.search_regex(Cmd::new(["winget", "list"]).flags(flags), kws)
+        Cmd::new(["winget", "list", "--accept-source-agreements"])
+            .flags(flags)
+            .pipe(|cmd| self.search_regex(cmd, kws))
             .await
     }
 
@@ -115,20 +118,28 @@ impl Pm for Winget {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(["winget", "show"]).kws(kws).flags(flags))
+        Cmd::new(["winget", "show", "--accept-source-agreements"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(["winget", "search"]).kws(kws).flags(flags))
+        Cmd::new(["winget", "search", "--accept-source-agreements"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(["winget", "source", "update"]).flags(flags))
+        Cmd::new(["winget", "source", "update", "--accept-source-agreements"])
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;
