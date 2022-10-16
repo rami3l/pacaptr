@@ -27,6 +27,7 @@ pm_mods! {
     scoop;
     tlmgr;
     unknown;
+    winget;
     xbps;
     zypper;
 }
@@ -40,7 +41,8 @@ use tt_call::tt_call;
 use crate::{
     dispatch::Config,
     error::Result,
-    exec::{Cmd, Mode, Output},
+    exec::{self, Cmd, Mode, Output},
+    print::{println_quoted, prompt},
 };
 
 /// The list of [`pacman`](https://wiki.archlinux.org/index.php/Pacman) methods supported by [`pacaptr`](crate).
@@ -301,14 +303,29 @@ trait PmHelper: Pm {
         self.run_with(cmd, PmMode::default(), &Strategy::default())
             .await
     }
+
+    /// Executes a command in [`PmMode::Mute`] and prints out the lines that
+    /// match against the given regex `patterns`.
+    async fn search_regex(&self, cmd: Cmd, patterns: &[&str]) -> Result<()> {
+        if !self.cfg().dry_run {
+            println_quoted(&*prompt::RUNNING, &cmd);
+        }
+        let out_bytes = self
+            .check_output(cmd, PmMode::Mute, &Strategy::default())
+            .await?;
+        exec::grep_print(&String::from_utf8(out_bytes)?, patterns)
+    }
 }
 
 impl<P: Pm> PmHelper for P {}
 
 /// Different ways in which a command shall be dealt with.
+///
 /// This is a [`Pm`] specified version intended to be used along with
 /// [`Strategy`].
-#[derive(Copy, Clone, Debug)]
+///
+/// Default value: [`PmMode::CheckErr`].
+#[derive(Copy, Clone, Debug, Default)]
 enum PmMode {
     /// Silently collects all the `stdout`/`stderr` combined. Print nothing.
     Mute,
@@ -320,13 +337,8 @@ enum PmMode {
 
     /// Prints out the command which should be executed, run it and collect its
     /// `stderr`. This will work with a colored `stdout`.
+    #[default]
     CheckErr,
-}
-
-impl Default for PmMode {
-    fn default() -> Self {
-        PmMode::CheckErr
-    }
 }
 
 impl From<PmMode> for Mode {
@@ -354,9 +366,12 @@ struct Strategy {
 }
 
 /// How a dry run is dealt with.
-#[derive(Debug, Clone)]
+///
+/// Default value: [`DryRunStrategy::PrintCmd`].
+#[derive(Debug, Clone, Default)]
 enum DryRunStrategy {
     /// Prints the command to be run, and stop.
+    #[default]
     PrintCmd,
     /// Invokes the corresponding package manager with the flags given.
     WithFlags(Vec<String>),
@@ -365,21 +380,18 @@ enum DryRunStrategy {
 impl DryRunStrategy {
     /// Invokes the corresponding package manager with the flags given.
     #[must_use]
-    fn with_flags(flags: &[impl AsRef<str>]) -> Self {
-        Self::WithFlags(flags.iter().map(|s| s.as_ref().into()).collect())
-    }
-}
-
-impl Default for DryRunStrategy {
-    fn default() -> Self {
-        DryRunStrategy::PrintCmd
+    fn with_flags(flags: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
+        Self::WithFlags(flags.into_iter().map(|s| s.as_ref().into()).collect())
     }
 }
 
 /// How the prompt is dealt with when running the package manager.
-#[derive(Debug, Clone)]
+///
+/// Default value: [`PromptStrategy::None`].
+#[derive(Debug, Clone, Default)]
 enum PromptStrategy {
     /// There is no prompt.
+    #[default]
     None,
     /// There is no prompt, but a custom prompt is added.
     CustomPrompt,
@@ -395,30 +407,27 @@ impl PromptStrategy {
     /// There is a native prompt provided by the package manager
     /// that can be disabled with a flag.
     #[must_use]
-    fn native_no_confirm(no_confirm: &[impl AsRef<str>]) -> Self {
-        Self::NativeNoConfirm(no_confirm.iter().map(|s| s.as_ref().into()).collect())
+    fn native_no_confirm(no_confirm: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
+        Self::NativeNoConfirm(no_confirm.into_iter().map(|s| s.as_ref().into()).collect())
     }
 
     #[must_use]
     /// There is a native prompt provided by the package manager
     /// that can be enabled with a flag.
-    fn native_confirm(confirm: &[impl AsRef<str>]) -> Self {
-        Self::NativeConfirm(confirm.iter().map(|s| s.as_ref().into()).collect())
-    }
-}
-
-impl Default for PromptStrategy {
-    fn default() -> Self {
-        PromptStrategy::None
+    fn native_confirm(confirm: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
+        Self::NativeConfirm(confirm.into_iter().map(|s| s.as_ref().into()).collect())
     }
 }
 
 /// How the cache is cleaned when `no_cache` is set to `true`.
-#[derive(Debug, Clone)]
+///
+/// Default value: [`PromptStrategy::None`].
+#[derive(Debug, Clone, Default)]
 enum NoCacheStrategy {
     /// Does not clean cache.
     /// This variant MUST be used when implementing cache cleaning methods like
     /// `-Sc`.
+    #[default]
     None,
     /// Uses `-Sc` to clean the cache.
     Sc,
@@ -433,13 +442,7 @@ enum NoCacheStrategy {
 impl NoCacheStrategy {
     /// Invokes the corresponding package manager with the flags given.
     #[must_use]
-    fn with_flags(flags: &[impl AsRef<str>]) -> Self {
-        Self::WithFlags(flags.iter().map(|s| s.as_ref().into()).collect())
-    }
-}
-
-impl Default for NoCacheStrategy {
-    fn default() -> Self {
-        NoCacheStrategy::None
+    fn with_flags(flags: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
+        Self::WithFlags(flags.into_iter().map(|s| s.as_ref().into()).collect())
     }
 }

@@ -81,7 +81,7 @@ That's why I decided to take inspiration from the existing `sh`-based [icy/pacap
 
 `pacaptr` currently supports the following package managers (in order of precedence):
 
-- Windows: `scoop`, [`choco`](#choco)
+- Windows: `scoop`, [`choco`](#choco), `winget`
 - macOS: [`brew`](#brew), `port`, `apt` (through [Procursus])
 - Linux: `apt`, `apk`, `dnf`, `emerge`, `xbps`, `zypper`
 - External: `brew`, `conda`, `pip`/`pip3`, `tlmgr`

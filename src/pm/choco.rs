@@ -61,7 +61,7 @@ impl Pm for Choco {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["choco", "list", "--localonly"])
+        Cmd::new(["choco", "list", "--localonly"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.check_dry(cmd))
@@ -75,13 +75,13 @@ impl Pm for Choco {
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.check_dry(Cmd::new(&["choco", "outdated"]).kws(kws).flags(flags))
+        self.check_dry(Cmd::new(["choco", "outdated"]).kws(kws).flags(flags))
             .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["choco", "uninstall"])
+        Cmd::new(["choco", "uninstall"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -91,7 +91,7 @@ impl Pm for Choco {
     /// Rss removes a package and its dependencies which are not required by any
     /// other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["choco", "uninstall", "--removedependencies"])
+        Cmd::new(["choco", "uninstall", "--removedependencies"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -101,7 +101,7 @@ impl Pm for Choco {
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(if self.cfg.needed {
-            &["choco", "install"]
+            &["choco", "install"][..]
         } else {
             &["choco", "install", "--force"]
         })
@@ -113,14 +113,14 @@ impl Pm for Choco {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.check_dry(Cmd::new(&["choco", "info"]).kws(kws).flags(flags))
+        self.check_dry(Cmd::new(["choco", "info"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.check_dry(Cmd::new(&["choco", "search"]).kws(kws).flags(flags))
+        self.check_dry(Cmd::new(["choco", "search"]).kws(kws).flags(flags))
             .await
     }
 
@@ -129,7 +129,7 @@ impl Pm for Choco {
         Cmd::new(if kws.is_empty() {
             &["choco", "upgrade", "all"]
         } else {
-            &["choco", "upgrade"]
+            &["choco", "upgrade"][..]
         })
         .kws(kws)
         .flags(flags)

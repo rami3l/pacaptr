@@ -104,31 +104,31 @@ pub(crate) struct Cmd {
 
 impl Cmd {
     /// Makes a new [`Cmd`] instance with the given [`cmd`](Cmd::cmd) part.
-    pub(crate) fn new(cmd: &[impl AsRef<str>]) -> Self {
+    pub(crate) fn new(cmd: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
         Cmd {
-            cmd: cmd.iter().map(|s| s.as_ref().into()).collect(),
+            cmd: cmd.into_iter().map(|s| s.as_ref().into()).collect(),
             ..Cmd::default()
         }
     }
 
     /// Makes a new [`Cmd`] instance with the given [`cmd`](Cmd::cmd) part,
     /// setting [`sudo`](field@Cmd::sudo) to `true`.
-    pub(crate) fn with_sudo(cmd: &[impl AsRef<str>]) -> Self {
+    pub(crate) fn with_sudo(cmd: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
         Cmd::new(cmd).sudo(true)
     }
 
     /// Overrides the value of [`flags`](field@Cmd::flags).
-    pub(crate) fn flags(self, flags: &[impl AsRef<str>]) -> Self {
+    pub(crate) fn flags(self, flags: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
         Cmd {
-            flags: flags.iter().map(|s| s.as_ref().into()).collect(),
+            flags: flags.into_iter().map(|s| s.as_ref().into()).collect(),
             ..self
         }
     }
 
     /// Overrides the value of [`kws`](field@Cmd::kws).
-    pub(crate) fn kws(self, kws: &[impl AsRef<str>]) -> Self {
+    pub(crate) fn kws(self, kws: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
         Cmd {
-            kws: kws.iter().map(|s| s.as_ref().into()).collect(),
+            kws: kws.into_iter().map(|s| s.as_ref().into()).collect(),
             ..self
         }
     }

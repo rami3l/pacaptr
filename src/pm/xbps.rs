@@ -60,14 +60,14 @@ impl Pm for Xbps {
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
             return self
-                .run(Cmd::new(&["xbps-query", "-l"]).kws(kws).flags(flags))
+                .run(Cmd::new(["xbps-query", "-l"]).kws(kws).flags(flags))
                 .await;
         }
 
         let lines: Vec<Result<Vec<u8>, String>> = stream::iter(kws)
             .map(Ok)
             .and_then(|&pkg| async {
-                let cmd = Cmd::new(&["xbps-query", "--property", "pkgver", pkg]).flags(flags);
+                let cmd = Cmd::new(["xbps-query", "--property", "pkgver", pkg]).flags(flags);
                 match self
                     .check_output(cmd, PmMode::Mute, &Strategy::default())
                     .await
@@ -105,14 +105,14 @@ impl Pm for Xbps {
     async fn qe(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
             return self
-                .run(Cmd::new(&["xbps-query", "-m"]).kws(kws).flags(flags))
+                .run(Cmd::new(["xbps-query", "-m"]).kws(kws).flags(flags))
                 .await;
         }
 
         let lines: Vec<Result<Vec<u8>, String>> = stream::iter(kws)
             .filter(|pkg| async {
                 let check_cmd =
-                    Cmd::new(&["xbps-query", "--property", "automatic-install", pkg]).flags(flags);
+                    Cmd::new(["xbps-query", "--property", "automatic-install", pkg]).flags(flags);
                 self.check_output(check_cmd, PmMode::Mute, &Strategy::default())
                     .await
                     // If a package is manually installed,
@@ -121,7 +121,7 @@ impl Pm for Xbps {
             })
             .map(Ok)
             .and_then(|&pkg| async {
-                let cmd = Cmd::new(&["xbps-query", "--property", "pkgver", pkg]).flags(flags);
+                let cmd = Cmd::new(["xbps-query", "--property", "pkgver", pkg]).flags(flags);
                 match self
                     .check_output(cmd, PmMode::Mute, &Strategy::default())
                     .await
@@ -157,26 +157,26 @@ impl Pm for Xbps {
 
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["xbps-query", "-S"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["xbps-query", "-S"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qii displays local packages which require X to be installed, aka local
     /// reverse dependencies.
     async fn qii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["xbps-query", "-X"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["xbps-query", "-X"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["xbps-query", "-f"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["xbps-query", "-f"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qs searches locally installed package for names or descriptions.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["xbps-query", "-s"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["xbps-query", "-s"]).kws(kws).flags(flags))
             .await
     }
 
@@ -220,21 +220,21 @@ impl Pm for Xbps {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["xbps-query", "-RS"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["xbps-query", "-RS"]).kws(kws).flags(flags))
             .await
     }
 
     /// Sii displays packages which require X to be installed, aka reverse
     /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["xbps-query", "-RX"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["xbps-query", "-RX"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["xbps-query", "-Rs"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["xbps-query", "-Rs"]).kws(kws).flags(flags))
             .await
     }
 
@@ -250,7 +250,7 @@ impl Pm for Xbps {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["xbps-install", "-S"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["xbps-install", "-S"]).kws(kws).flags(flags))
             .await
     }
 

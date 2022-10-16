@@ -6,12 +6,7 @@ use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
-use crate::{
-    dispatch::Config,
-    error::Result,
-    exec::{self, Cmd},
-    print::{println_quoted, prompt},
-};
+use crate::{dispatch::Config, error::Result, exec::Cmd};
 
 macro_rules! docs_self {
     () => {
@@ -60,7 +55,7 @@ impl Pm for Apk {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.run(Cmd::new(&["apk", "info"]).flags(flags)).await
+            self.run(Cmd::new(["apk", "info"]).flags(flags)).await
         } else {
             self.qs(kws, flags).await
         }
@@ -79,13 +74,13 @@ impl Pm for Apk {
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apk", "info", "-L"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["apk", "info", "-L"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["apk", "info", "--who-owns"])
+        Cmd::new(["apk", "info", "--who-owns"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -97,20 +92,14 @@ impl Pm for Apk {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = Cmd::new(&["apk", "info", "-d"]).flags(flags);
-        if !self.cfg.dry_run {
-            println_quoted(&*prompt::RUNNING, &cmd);
-        }
-        let out_bytes = self
-            .check_output(cmd, PmMode::Mute, &Strategy::default())
-            .await?;
-        exec::grep_print(&String::from_utf8(out_bytes)?, kws)
+        self.search_regex(Cmd::new(["apk", "info", "-d"]).flags(flags), kws)
+            .await
     }
 
     /// Qu lists packages which have an update available.
     //? Is that the right way to input '<'?
     async fn qu(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apk", "version", "-l", "<"]).flags(flags))
+        self.run(Cmd::new(["apk", "version", "-l", "<"]).flags(flags))
             .await
     }
 
@@ -178,35 +167,35 @@ impl Pm for Apk {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apk", "info", "-a"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["apk", "info", "-a"]).kws(kws).flags(flags))
             .await
     }
 
     /// Sii displays packages which require X to be installed, aka reverse
     /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apk", "info", "-r"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["apk", "info", "-r"]).kws(kws).flags(flags))
             .await
     }
 
     /// Sl displays a list of all packages in all installation sources that are
     /// handled by the packages management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apk", "search"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["apk", "search"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apk", "search", "-v"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["apk", "search", "-v"]).kws(kws).flags(flags))
             .await
     }
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(if kws.is_empty() {
-            &["apk", "upgrade"]
+            &["apk", "upgrade"][..]
         } else {
             &["apk", "add", "-u"]
         })
@@ -233,7 +222,7 @@ impl Pm for Apk {
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["apk", "fetch"])
+        Cmd::new(["apk", "fetch"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))

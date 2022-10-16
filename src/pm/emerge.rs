@@ -70,12 +70,12 @@ impl Pm for Emerge {
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["qlist"]).kws(kws).flags(flags)).await
+        self.run(Cmd::new(["qlist"]).kws(kws).flags(flags)).await
     }
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["qfile"]).kws(kws).flags(flags)).await
+        self.run(Cmd::new(["qfile"]).kws(kws).flags(flags)).await
     }
 
     /// Qs searches locally installed package for names or descriptions.
@@ -83,13 +83,13 @@ impl Pm for Emerge {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["qlist", "-I"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["qlist", "-I"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["emerge", "-uDNp", "@world"]).flags(flags))
+        self.run(Cmd::new(["emerge", "-uDNp", "@world"]).flags(flags))
             .await
     }
 
@@ -139,14 +139,14 @@ impl Pm for Emerge {
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let kws = kws.iter().map(|kw| format!("^{kw}$")).collect_vec();
-        self.run(Cmd::new(&["emerge", "-s"]).kws(&kws).flags(flags))
+        self.run(Cmd::new(["emerge", "-s"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["qsearch"]).kws(kws).flags(flags)).await
+        self.run(Cmd::new(["qsearch"]).kws(kws).flags(flags)).await
     }
 
     /// Su updates outdated packages.
