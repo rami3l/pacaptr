@@ -16,7 +16,7 @@ fn winget_fail() {
 fn winget_qi() {
     test_dsl! { r##"
         in --using winget -Qi wget
-        ou Wget is command-line utility for retrieving files using HTTP, HTTPS, FTP, and FTPS protocols.
+        ou utility for retrieving files using HTTP, HTTPS, FTP and FTPS
     "## }
 }
 
@@ -25,13 +25,15 @@ fn winget_qi() {
 fn winget_r_s() {
     test_dsl! { r##"
         in --using winget -S wget --yes
-        ou Found Wget [JernejSimoncic.Wget]
+        ou Found Wget
+        ou JernejSimoncic\.Wget
         ou Successfully installed
         in --using winget -Q
         ou Wget
-        ou [JernejSimoncic.Wget]
+        ou JernejSimoncic\.Wget
         in --using winget -R wget --yes
-        ou Found Wget [JernejSimoncic.Wget]
+        ou Found Wget
+        ou JernejSimoncic\.Wget
         ou Successfully uninstalled
     "## }
 }
@@ -40,7 +42,7 @@ fn winget_r_s() {
 fn winget_si() {
     test_dsl! { r##"
         in --using winget -Si wget
-        ou Wget is command-line utility for retrieving files using HTTP, HTTPS, FTP, and FTPS protocols.
+        ou utility for retrieving files using HTTP, HTTPS, FTP and FTPS
     "## }
 }
 
@@ -49,6 +51,6 @@ fn winget_ss() {
     test_dsl! { r##"
         in --using winget -Ss wget
         ou Wget
-        ou [JernejSimoncic.Wget]
+        ou JernejSimoncic\.Wget
     "## }
 }
