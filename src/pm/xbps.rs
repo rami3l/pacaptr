@@ -33,7 +33,7 @@ pub(crate) struct Xbps {
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_no_confirm(&["--yes"]),
+    prompt: PromptStrategy::native_no_confirm(["--yes"]),
     ..Strategy::default()
 });
 

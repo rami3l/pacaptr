@@ -24,17 +24,17 @@ pub(crate) struct Emerge {
 }
 
 static STRAT_ASK: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_confirm(&["--ask"]),
+    prompt: PromptStrategy::native_confirm(["--ask"]),
     ..Strategy::default()
 });
 
 static STRAT_INTERACTIVE: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_confirm(&["--interactive"]),
+    prompt: PromptStrategy::native_confirm(["--interactive"]),
     ..Strategy::default()
 });
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_confirm(&["--ask"]),
+    prompt: PromptStrategy::native_confirm(["--ask"]),
     no_cache: NoCacheStrategy::Scc,
     ..Strategy::default()
 });

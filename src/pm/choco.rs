@@ -24,13 +24,13 @@ pub(crate) struct Choco {
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_no_confirm(&["--yes"]),
-    dry_run: DryRunStrategy::with_flags(&["--what-if"]),
+    prompt: PromptStrategy::native_no_confirm(["--yes"]),
+    dry_run: DryRunStrategy::with_flags(["--what-if"]),
     ..Strategy::default()
 });
 
 static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
-    dry_run: DryRunStrategy::with_flags(&["--what-if"]),
+    dry_run: DryRunStrategy::with_flags(["--what-if"]),
     ..Strategy::default()
 });
 

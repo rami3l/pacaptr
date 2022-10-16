@@ -24,7 +24,7 @@ pub(crate) struct Conda {
 }
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
-    prompt: PromptStrategy::native_no_confirm(&["-y"]),
+    prompt: PromptStrategy::native_no_confirm(["-y"]),
     ..Strategy::default()
 });
 

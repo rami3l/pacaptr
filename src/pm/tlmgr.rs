@@ -23,7 +23,7 @@ pub(crate) struct Tlmgr {
 }
 
 static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
-    dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+    dry_run: DryRunStrategy::with_flags(["--dry-run"]),
     ..Strategy::default()
 });
 

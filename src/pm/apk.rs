@@ -29,7 +29,7 @@ static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
-    no_cache: NoCacheStrategy::with_flags(&["--no-cache"]),
+    no_cache: NoCacheStrategy::with_flags(["--no-cache"]),
     ..Strategy::default()
 });
 
