@@ -152,7 +152,7 @@ impl Pm for Brew {
     /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let strat = Strategy {
-            dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+            dry_run: DryRunStrategy::with_flags(["--dry-run"]),
             prompt: PromptStrategy::CustomPrompt,
             ..Strategy::default()
         };
@@ -166,7 +166,7 @@ impl Pm for Brew {
     /// Scc removes all files from the cache.
     async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         let strat = Strategy {
-            dry_run: DryRunStrategy::with_flags(&["--dry-run"]),
+            dry_run: DryRunStrategy::with_flags(["--dry-run"]),
             prompt: PromptStrategy::CustomPrompt,
             ..Strategy::default()
         };
