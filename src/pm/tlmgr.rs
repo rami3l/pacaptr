@@ -53,7 +53,7 @@ impl Pm for Tlmgr {
 
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["tlmgr", "info", "--only-installed"])
+        Cmd::new(["tlmgr", "info", "--only-installed"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -62,13 +62,13 @@ impl Pm for Tlmgr {
 
     /// Qk verifies one or more packages.
     async fn qk(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["tlmgr", "check", "files"]).flags(flags))
+        self.run(Cmd::new(["tlmgr", "check", "files"]).flags(flags))
             .await
     }
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["tlmgr", "info", "--only-installed", "--list"])
+        Cmd::new(["tlmgr", "info", "--only-installed", "--list"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -77,7 +77,7 @@ impl Pm for Tlmgr {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["tlmgr", "remove"])
+        Cmd::new(["tlmgr", "remove"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))
@@ -86,7 +86,7 @@ impl Pm for Tlmgr {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["tlmgr", "install"])
+        Cmd::new(["tlmgr", "install"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))
@@ -95,20 +95,20 @@ impl Pm for Tlmgr {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["tlmgr", "info"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["tlmgr", "info"]).kws(kws).flags(flags))
             .await
     }
 
     /// Sl displays a list of all packages in all installation sources that are
     /// handled by the packages management.
     async fn sl(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["tlmgr", "info"]).flags(flags)).await
+        self.run(Cmd::new(["tlmgr", "info"]).flags(flags)).await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["tlmgr", "search", "--global"])
+        Cmd::new(["tlmgr", "search", "--global"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -120,7 +120,7 @@ impl Pm for Tlmgr {
         Cmd::new(if kws.is_empty() {
             &["tlmgr", "update", "--self", "--all"]
         } else {
-            &["tlmgr", "update", "--self"]
+            &["tlmgr", "update", "--self"][..]
         })
         .kws(kws)
         .flags(flags)
@@ -137,7 +137,7 @@ impl Pm for Tlmgr {
     /// U upgrades or adds package(s) to the system and installs the required
     /// dependencies from sync repositories.
     async fn u(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["tlmgr", "install", "--file"])
+        Cmd::new(["tlmgr", "install", "--file"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))

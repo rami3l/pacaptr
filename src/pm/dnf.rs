@@ -7,12 +7,7 @@ use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
-use crate::{
-    dispatch::Config,
-    error::Result,
-    exec::{self, Cmd},
-    print::{println_quoted, prompt},
-};
+use crate::{dispatch::Config, error::Result, exec::Cmd};
 
 macro_rules! docs_self {
     () => {
@@ -66,7 +61,7 @@ impl Pm for Dnf {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.run(Cmd::new(&["rpm", "-qa", "--qf", "%{NAME} %{VERSION}\\n"]).flags(flags))
+            self.run(Cmd::new(["rpm", "-qa", "--qf", "%{NAME} %{VERSION}\\n"]).flags(flags))
                 .await
         } else {
             self.qs(kws, flags).await
@@ -75,7 +70,7 @@ impl Pm for Dnf {
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["rpm", "-q", "--changelog"])
+        Cmd::new(["rpm", "-q", "--changelog"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -84,7 +79,7 @@ impl Pm for Dnf {
 
     /// Qe lists packages installed explicitly (not as dependencies).
     async fn qe(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["dnf", "repoquery", "--userinstalled"])
+        Cmd::new(["dnf", "repoquery", "--userinstalled"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -110,27 +105,27 @@ impl Pm for Dnf {
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["rpm", "-ql"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["rpm", "-ql"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qm lists packages that are installed but are not available in any
     /// installation source (anymore).
     async fn qm(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["dnf", "list", "--extras"]).flags(flags))
+        self.run(Cmd::new(["dnf", "list", "--extras"]).flags(flags))
             .await
     }
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["rpm", "-qf"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["rpm", "-qf"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qp queries a package supplied through a file supplied on the command
     /// line rather than an entry in the package management database.
     async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["rpm", "-qip"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["rpm", "-qip"]).kws(kws).flags(flags))
             .await
     }
 
@@ -139,20 +134,13 @@ impl Pm for Dnf {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned. TODO: Is this right?
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = Cmd::new(&["rpm", "-qa"]).flags(flags);
-        if !self.cfg.dry_run {
-            println_quoted(&*prompt::RUNNING, &cmd);
-        }
-        let out = self
-            .check_output(cmd, PmMode::Mute, &Strategy::default())
-            .await?
-            .pipe(String::from_utf8)?;
-        exec::grep_print(&out, kws)
+        self.search_regex(Cmd::new(["rpm", "-qa"]).flags(flags), kws)
+            .await
     }
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["dnf", "list", "updates"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["dnf", "list", "updates"]).kws(kws).flags(flags))
             .await
     }
 
@@ -177,7 +165,7 @@ impl Pm for Dnf {
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["dnf", "clean", "expire-cache"])
+        Cmd::new(["dnf", "clean", "expire-cache"])
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT_CUSTOM))
             .await
@@ -185,7 +173,7 @@ impl Pm for Dnf {
 
     /// Scc removes all files from the cache.
     async fn scc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["dnf", "clean", "packages"])
+        Cmd::new(["dnf", "clean", "packages"])
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT_CUSTOM))
             .await
@@ -194,7 +182,7 @@ impl Pm for Dnf {
     /// Sccc ...
     /// What is this?
     async fn sccc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["dnf", "clean", "all"])
+        Cmd::new(["dnf", "clean", "all"])
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT_CUSTOM))
             .await
@@ -203,14 +191,14 @@ impl Pm for Dnf {
     /// Si displays remote package information: name, version, description, etc.
 
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["dnf", "info"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["dnf", "info"]).kws(kws).flags(flags))
             .await
     }
 
     /// Sii displays packages which require X to be installed, aka reverse
     /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["dnf", "repoquery", "--deplist"])
+        Cmd::new(["dnf", "repoquery", "--deplist"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -233,7 +221,7 @@ impl Pm for Dnf {
     /// Sl displays a list of all packages in all installation sources that are
     /// handled by the packages management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["dnf", "list", "--available"])
+        Cmd::new(["dnf", "list", "--available"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -243,7 +231,7 @@ impl Pm for Dnf {
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["dnf", "search"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["dnf", "search"]).kws(kws).flags(flags))
             .await
     }
 
@@ -275,7 +263,7 @@ impl Pm for Dnf {
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.sc(&[], flags).await?;
-        self.run(Cmd::new(&["dnf", "check-update"]).flags(flags))
+        self.run(Cmd::new(["dnf", "check-update"]).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;

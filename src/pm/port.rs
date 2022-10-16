@@ -54,13 +54,13 @@ impl Pm for Port {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["port", "installed"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["port", "installed"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["port", "log"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["port", "log"]).kws(kws).flags(flags))
             .await
     }
 
@@ -71,13 +71,13 @@ impl Pm for Port {
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["port", "contents"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["port", "contents"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["port", "provides"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["port", "provides"]).kws(kws).flags(flags))
             .await
     }
 
@@ -86,13 +86,13 @@ impl Pm for Port {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["port", "-v", "installed"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["port", "-v", "installed"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["port", "outdated"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["port", "outdated"]).kws(kws).flags(flags))
             .await
     }
 
@@ -130,7 +130,7 @@ impl Pm for Port {
         Cmd::with_sudo(if flags.is_empty() {
             &["port", "clean", "--all", "inactive"]
         } else {
-            &["port", "clean", "--all"]
+            &["port", "clean", "--all"][..]
         })
         .kws(kws)
         .flags(flags)
@@ -143,7 +143,7 @@ impl Pm for Port {
         Cmd::with_sudo(if flags.is_empty() {
             &["port", "clean", "--all", "installed"]
         } else {
-            &["port", "clean", "--all"]
+            &["port", "clean", "--all"][..]
         })
         .kws(kws)
         .flags(flags)
@@ -153,14 +153,14 @@ impl Pm for Port {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["port", "info"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["port", "info"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["port", "search"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["port", "search"]).kws(kws).flags(flags))
             .await
     }
 
@@ -169,7 +169,7 @@ impl Pm for Port {
         Cmd::with_sudo(if flags.is_empty() {
             &["port", "upgrade", "outdated"]
         } else {
-            &["port", "upgrade"]
+            &["port", "upgrade"][..]
         })
         .kws(kws)
         .flags(flags)
@@ -186,7 +186,7 @@ impl Pm for Port {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["port", "selfupdate"]).flags(flags))
+        self.run(Cmd::new(["port", "selfupdate"]).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;

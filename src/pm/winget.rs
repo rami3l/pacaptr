@@ -5,20 +5,20 @@ use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
-use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
+use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{dispatch::Config, error::Result, exec::Cmd};
 
 macro_rules! docs_self {
     () => {
         indoc! {"
-            The [Scoop CLI Installer](https://scoop.sh/).
+            The [Windows Package Manager CLI](https://github.com/microsoft/winget-cli).
         "}
     };
 }
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub(crate) struct Scoop {
+pub(crate) struct Winget {
     cfg: Config,
 }
 
@@ -29,24 +29,23 @@ static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
 
 static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
-    no_cache: NoCacheStrategy::Scc,
     ..Strategy::default()
 });
 
-impl Scoop {
+impl Winget {
     #[must_use]
     #[allow(missing_docs)]
     pub(crate) fn new(cfg: Config) -> Self {
-        Scoop { cfg }
+        Winget { cfg }
     }
 }
 
 // Windows is so special! It's better not to "sudo" automatically.
 #[async_trait]
-impl Pm for Scoop {
+impl Pm for Winget {
     /// Gets the name of the package manager.
     fn name(&self) -> &str {
-        "scoop"
+        "winget"
     }
 
     fn cfg(&self) -> &Config {
@@ -56,8 +55,7 @@ impl Pm for Scoop {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.run(Cmd::new(["powershell", "scoop", "list"]).flags(flags))
-                .await
+            self.run(Cmd::new(["winget", "list"]).flags(flags)).await
         } else {
             self.qs(kws, flags).await
         }
@@ -73,22 +71,13 @@ impl Pm for Scoop {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.search_regex(Cmd::new(["powershell", "scoop", "list"]).flags(flags), kws)
-            .await
-    }
-
-    /// Qu lists packages which have an update available.
-    async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["powershell", "scoop", "status"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
+        self.search_regex(Cmd::new(["winget", "list"]).flags(flags), kws)
             .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["powershell", "scoop", "uninstall"])
+        Cmd::new(["winget", "uninstall", "--accept-source-agreements"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -98,63 +87,67 @@ impl Pm for Scoop {
     /// Rn removes a package and skips the generation of configuration backup
     /// files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["powershell", "scoop", "uninstall", "--purge"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
-            .await
+        Cmd::new([
+            "winget",
+            "uninstall",
+            "--accept-source-agreements",
+            "--purge",
+        ])
+        .kws(kws)
+        .flags(flags)
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["powershell", "scoop", "install"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
-            .await
-    }
-
-    /// Sc removes all the cached packages that are not currently installed, and
-    /// the unused sync database.
-    async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["powershell", "scoop", "cache", "rm"])
-            .kws(if kws.is_empty() { &["*"] } else { kws })
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
-            .await
-    }
-
-    /// Scc removes all files from the cache.
-    async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.sc(kws, flags).await
+        Cmd::new([
+            "winget",
+            "install",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+        ])
+        .kws(kws)
+        .flags(flags)
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+        .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["powershell", "scoop", "info"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
+        self.run(Cmd::new(["winget", "show"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["powershell", "scoop", "search"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
+        self.run(Cmd::new(["winget", "search"]).kws(kws).flags(flags))
             .await
+    }
+
+    /// Sy refreshes the local package database.
+    async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.run(Cmd::new(["winget", "source", "update"]).flags(flags))
+            .await?;
+        if !kws.is_empty() {
+            self.s(kws, flags).await?;
+        }
+        Ok(())
     }
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["powershell", "scoop", "update"])
-            .kws(if kws.is_empty() { &["*"] } else { kws })
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
-            .await
+        Cmd::new([
+            "winget",
+            "upgrade",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+        ])
+        .kws(if kws.is_empty() { &["--all"] } else { kws })
+        .flags(flags)
+        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+        .await
     }
 
     /// Suy refreshes the local package database, then updates outdated
@@ -162,15 +155,5 @@ impl Pm for Scoop {
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.sy(&[], flags).await?;
         self.su(kws, flags).await
-    }
-
-    /// Sy refreshes the local package database.
-    async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(["powershell", "scoop", "update"]).flags(flags))
-            .await?;
-        if !kws.is_empty() {
-            self.s(kws, flags).await?;
-        }
-        Ok(())
     }
 }

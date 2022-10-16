@@ -20,8 +20,8 @@ pub(crate) use self::config::Config;
 use crate::{
     exec::is_exe,
     pm::{
-        Apk, Apt, Brew, Choco, Conda, Dnf, Emerge, Pip, Pm, Port, Scoop, Tlmgr, Unknown, Xbps,
-        Zypper,
+        Apk, Apt, Brew, Choco, Conda, Dnf, Emerge, Pip, Pm, Port, Scoop, Tlmgr, Unknown, Winget,
+        Xbps, Zypper,
     },
 };
 
@@ -29,7 +29,7 @@ use crate::{
 #[must_use]
 fn detect_pm_str<'s>() -> &'s str {
     let pairs: &[(&str, &str)] = match () {
-        _ if cfg!(target_os = "windows") => &[("scoop", ""), ("choco", "")],
+        _ if cfg!(target_os = "windows") => &[("scoop", ""), ("choco", ""), ("winget", "")],
 
         _ if cfg!(target_os = "macos") => &[
             ("brew", "/usr/local/bin/brew"),
@@ -72,6 +72,9 @@ impl From<Config> for Box<dyn Pm> {
 
             // Scoop
             "scoop" => Scoop::new(cfg).boxed(),
+
+            // Winget
+            "winget" => Winget::new(cfg).boxed(),
 
             // Homebrew/Linuxbrew
             "brew" => Brew::new(cfg).boxed(),

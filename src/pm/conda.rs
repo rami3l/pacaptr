@@ -7,12 +7,7 @@ use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
-use crate::{
-    dispatch::Config,
-    error::Result,
-    exec::{self, Cmd},
-    print::{println_quoted, prompt},
-};
+use crate::{dispatch::Config, error::Result, exec::Cmd};
 
 macro_rules! docs_self {
     () => {
@@ -55,7 +50,7 @@ impl Pm for Conda {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            self.run(Cmd::new(&["conda", "list"]).flags(flags)).await
+            self.run(Cmd::new(["conda", "list"]).flags(flags)).await
         } else {
             self.qs(kws, flags).await
         }
@@ -63,7 +58,7 @@ impl Pm for Conda {
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["conda", "package", "--which"])
+        Cmd::new(["conda", "package", "--which"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -75,20 +70,13 @@ impl Pm for Conda {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = Cmd::new(&["conda", "list"]).flags(flags);
-        if !self.cfg.dry_run {
-            println_quoted(&*prompt::RUNNING, &cmd);
-        }
-        let out_bytes = self
-            .check_output(cmd, PmMode::Mute, &Strategy::default())
-            .await?;
-        exec::grep_print(&String::from_utf8(out_bytes)?, kws)?;
-        Ok(())
+        self.search_regex(Cmd::new(["conda", "list"]).flags(flags), kws)
+            .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["conda", "remove"])
+        Cmd::new(["conda", "remove"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -97,7 +85,7 @@ impl Pm for Conda {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["conda", "install"])
+        Cmd::new(["conda", "install"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -107,7 +95,7 @@ impl Pm for Conda {
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["conda", "clean", "--all"])
+        Cmd::new(["conda", "clean", "--all"])
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
@@ -115,7 +103,7 @@ impl Pm for Conda {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["conda", "search", "--info"])
+        Cmd::new(["conda", "search", "--info"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -127,13 +115,13 @@ impl Pm for Conda {
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         stream::iter(kws)
             .map(|s| Ok(format!("*{s}*")))
-            .try_for_each(|kw| self.run(Cmd::new(&["conda", "search"]).kws(&[kw]).flags(flags)))
+            .try_for_each(|kw| self.run(Cmd::new(["conda", "search"]).kws([kw]).flags(flags)))
             .await
     }
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["conda", "update", "--all"])
+        Cmd::new(["conda", "update", "--all"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))

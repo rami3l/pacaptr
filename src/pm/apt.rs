@@ -54,7 +54,7 @@ impl Pm for Apt {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["apt", "list", "--installed"])
+        Cmd::new(["apt", "list", "--installed"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -63,19 +63,19 @@ impl Pm for Apt {
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apt", "changelog"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["apt", "changelog"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qe lists packages installed explicitly (not as dependencies).
     async fn qe(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apt-mark", "showmanual"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["apt-mark", "showmanual"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["dpkg-query", "-s"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["dpkg-query", "-s"]).kws(kws).flags(flags))
             .await
     }
 
@@ -87,14 +87,14 @@ impl Pm for Apt {
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["dpkg-query", "-S"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["dpkg-query", "-S"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qp queries a package supplied through a file supplied on the command
     /// line rather than an entry in the package management database.
     async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["dpkg-deb", "-I"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["dpkg-deb", "-I"]).kws(kws).flags(flags))
             .await
     }
 
@@ -150,7 +150,7 @@ impl Pm for Apt {
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(if self.cfg.needed {
-            &["apt", "install"]
+            &["apt", "install"][..]
         } else {
             &["apt", "install", "--reinstall"]
         })
@@ -194,21 +194,21 @@ impl Pm for Apt {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apt", "show"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["apt", "show"]).kws(kws).flags(flags))
             .await
     }
 
     /// Sii displays packages which require X to be installed, aka reverse
     /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apt", "rdepends"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["apt", "rdepends"]).kws(kws).flags(flags))
             .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["apt", "search"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["apt", "search"]).kws(kws).flags(flags))
             .await
     }
 

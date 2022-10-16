@@ -70,7 +70,7 @@ impl Pm for Zypper {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            Cmd::new(&["rpm", "-qa", "--qf", "%{NAME} %{VERSION}\\n"])
+            Cmd::new(["rpm", "-qa", "--qf", "%{NAME} %{VERSION}\\n"])
                 .flags(flags)
                 .pipe(|cmd| self.run(cmd))
                 .await
@@ -81,7 +81,7 @@ impl Pm for Zypper {
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["rpm", "-q", "--changelog"])
+        Cmd::new(["rpm", "-q", "--changelog"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
@@ -95,14 +95,14 @@ impl Pm for Zypper {
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["rpm", "-ql"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["rpm", "-ql"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qm lists packages that are installed but are not available in any
     /// installation source (anymore).
     async fn qm(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        let cmd = Cmd::new(&["zypper", "search", "-si"]).kws(kws).flags(flags);
+        let cmd = Cmd::new(["zypper", "search", "-si"]).kws(kws).flags(flags);
         let out_bytes = self
             .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?;
@@ -114,14 +114,14 @@ impl Pm for Zypper {
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["rpm", "-qf"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["rpm", "-qf"]).kws(kws).flags(flags))
             .await
     }
 
     /// Qp queries a package supplied through a file supplied on the command
     /// line rather than an entry in the package management database.
     async fn qp(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(&["rpm", "-qip"]).kws(kws).flags(flags))
+        self.run(Cmd::new(["rpm", "-qip"]).kws(kws).flags(flags))
             .await
     }
 
@@ -130,7 +130,7 @@ impl Pm for Zypper {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["zypper", "search", "--installed-only"])
+        Cmd::new(["zypper", "search", "--installed-only"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.check_dry(cmd))
@@ -139,7 +139,7 @@ impl Pm for Zypper {
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.check_dry(Cmd::new(&["zypper", "list-updates"]).kws(kws).flags(flags))
+        self.check_dry(Cmd::new(["zypper", "list-updates"]).kws(kws).flags(flags))
             .await
     }
 
@@ -204,7 +204,7 @@ impl Pm for Zypper {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(&["zypper", "info", "--requires"])
+        Cmd::new(["zypper", "info", "--requires"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.check_dry(cmd))
@@ -230,7 +230,7 @@ impl Pm for Zypper {
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.check_dry(Cmd::new(&["zypper", "search"]).kws(kws).flags(flags))
+        self.check_dry(Cmd::new(["zypper", "search"]).kws(kws).flags(flags))
             .await
     }
 
