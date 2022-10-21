@@ -97,14 +97,14 @@ pub(crate) fn question_theme(prompt: impl Display) -> impl dialoguer::theme::The
         style::QUESTION.apply_to(prompt),
         indent = PROMPT_INDENT,
     ));
-    let active_item_prefix = style(">".into()).for_stderr();
     ColorfulTheme {
         success_prefix: prompt_prefix.clone(),
         error_prefix: prompt_prefix.clone().red(),
         prompt_prefix,
         prompt_style: Style::new(),
         prompt_suffix: style(String::new()),
-        active_item_prefix,
+        active_item_prefix: style(">".into()).bold().for_stderr(),
+        active_item_style: Style::new().bold(),
         ..ColorfulTheme::default()
     }
 }

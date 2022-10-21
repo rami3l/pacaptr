@@ -330,7 +330,7 @@ impl Cmd {
                 prompt(
                     "Proceed",
                     "with the previous command?",
-                    &["yes", "all", "no"],
+                    &["Yes", "All", "No"],
                 )
             })?;
             Ok(match answer {
