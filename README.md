@@ -24,7 +24,7 @@ Just set `pacman` as the alias of `pacaptr` on your non-Arch OS, and then you ca
 ```smalltalk
 > pacaptr -S neofetch
   Pending `brew reinstall neofetch`
-  Proceed with the previous command? · yes
+  Proceed with the previous command? · Yes
   Running `brew reinstall neofetch`
 ==> Downloading https://homebrew.bintray.com/bottles/neofetch-7.1.0
 ########################################################### 100.0%
@@ -50,6 +50,7 @@ Just set `pacman` as the alias of `pacaptr` on your non-Arch OS, and then you ca
   - [Supported Package Managers](#supported-package-managers)
   - [Installation](#installation)
     - [`brew`](#brew)
+    - [`scoop`](#scoop)
     - [`choco`](#choco)
     - [`cargo`](#cargo)
     - [Packaging for `Debian`](#packaging-for-debian)
@@ -64,9 +65,9 @@ Just set `pacman` as the alias of `pacaptr` on your non-Arch OS, and then you ca
       - [`--nocache`, `--no-cache`](#--nocache---no-cache)
     - [Platform-Specific Tips](#platform-specific-tips)
       - [For `brew`](#for-brew)
+      - [For `scoop`](#for-scoop)
       - [For `choco`](#for-choco)
       - [For `pip`](#for-pip)
-      - [For `scoop`](#for-scoop)
     - [Feel Like Contributing?](#feel-like-contributing)
 
 ---
@@ -99,6 +100,13 @@ Please refer to the [compatibility table] for more details on which operations a
 
 ```bash
 brew install rami3l/tap/pacaptr
+```
+
+### `scoop`
+
+```powershell
+scoop bucket add extras
+scoop install pacaptr
 ```
 
 ### `choco`
@@ -277,14 +285,6 @@ This option is useful when you want to reduce `Docker` image size, for example.
   pacaptr -S docker -- --cask
   ```
 
-#### For `choco`
-
-- Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
-
-#### For `pip`
-
-- Use `pacaptr --using pip3` if you want to run the `pip3` command.
-
 #### For `scoop`
 
 - `pacaptr` launches a `powershell` subprocess to run `scoop`, so please make sure that you have set the right execution policy in `powershell` ([**not `pwsh`**](https://powershellexplained.com/2017-12-29-Powershell-what-is-pwsh/)):
@@ -292,6 +292,14 @@ This option is useful when you want to reduce `Docker` image size, for example.
   ```pwsh
   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
   ```
+
+#### For `choco`
+
+- Don't forget to run in an elevated shell! You can do this easily with tools like [gsudo].
+
+#### For `pip`
+
+- Use `pacaptr --using pip3` if you want to run the `pip3` command.
 
 ### Feel Like Contributing?
 
