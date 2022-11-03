@@ -103,7 +103,7 @@ impl Pm for Choco {
         Cmd::new(if self.cfg.needed {
             &["choco", "install"][..]
         } else {
-            &["choco", "install", "--force"]
+            &["choco", "install", "--force"][..]
         })
         .kws(kws)
         .flags(flags)
@@ -127,7 +127,7 @@ impl Pm for Choco {
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(if kws.is_empty() {
-            &["choco", "upgrade", "all"]
+            &["choco", "upgrade", "all"][..]
         } else {
             &["choco", "upgrade"][..]
         })

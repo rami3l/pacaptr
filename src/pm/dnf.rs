@@ -146,7 +146,7 @@ impl Pm for Dnf {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["dnf", "remove"])
+        Cmd::with_sudo(["dnf", "remove"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -155,7 +155,7 @@ impl Pm for Dnf {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["dnf", "install"])
+        Cmd::with_sudo(["dnf", "install"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
@@ -208,9 +208,9 @@ impl Pm for Dnf {
     /// Sg lists all packages belonging to the GROUP.
     async fn sg(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(if kws.is_empty() {
-            &["dnf", "group", "list"]
+            ["dnf", "group", "list"]
         } else {
-            &["dnf", "group", "info"]
+            ["dnf", "group", "info"]
         })
         .kws(kws)
         .flags(flags)
@@ -237,7 +237,7 @@ impl Pm for Dnf {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["dnf", "upgrade"])
+        Cmd::with_sudo(["dnf", "upgrade"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
@@ -253,7 +253,7 @@ impl Pm for Dnf {
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["dnf", "install", "--downloadonly"])
+        Cmd::with_sudo(["dnf", "install", "--downloadonly"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))

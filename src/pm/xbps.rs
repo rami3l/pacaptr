@@ -182,7 +182,7 @@ impl Pm for Xbps {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["xbps-remove"])
+        Cmd::with_sudo(["xbps-remove"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -192,7 +192,7 @@ impl Pm for Xbps {
     /// Rs removes a package and its dependencies which are not required by any
     /// other installed package, and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["xbps-remove", "-R"])
+        Cmd::with_sudo(["xbps-remove", "-R"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -201,7 +201,7 @@ impl Pm for Xbps {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["xbps-install"])
+        Cmd::with_sudo(["xbps-install"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -211,7 +211,7 @@ impl Pm for Xbps {
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["xbps-remove", "-O"])
+        Cmd::with_sudo(["xbps-remove", "-O"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -241,7 +241,7 @@ impl Pm for Xbps {
     /// Suy refreshes the local package database, then updates outdated
     /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["xbps-install", "-Su"])
+        Cmd::with_sudo(["xbps-install", "-Su"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -257,7 +257,7 @@ impl Pm for Xbps {
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["xbps-install", "-D"])
+        Cmd::with_sudo(["xbps-install", "-D"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -266,7 +266,7 @@ impl Pm for Xbps {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["xbps-install", "-u"])
+        Cmd::with_sudo(["xbps-install", "-u"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
