@@ -98,7 +98,7 @@ impl Pm for Port {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["port", "uninstall"])
+        Cmd::with_sudo(["port", "uninstall"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -108,7 +108,7 @@ impl Pm for Port {
     /// Rss removes a package and its dependencies which are not required by any
     /// other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["port", "uninstall", "--follow-dependencies"])
+        Cmd::with_sudo(["port", "uninstall", "--follow-dependencies"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
@@ -117,7 +117,7 @@ impl Pm for Port {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(&["port", "install"])
+        Cmd::with_sudo(["port", "install"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
@@ -128,7 +128,7 @@ impl Pm for Port {
     /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(if flags.is_empty() {
-            &["port", "clean", "--all", "inactive"]
+            &["port", "clean", "--all", "inactive"][..]
         } else {
             &["port", "clean", "--all"][..]
         })
@@ -141,7 +141,7 @@ impl Pm for Port {
     /// Scc removes all files from the cache.
     async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(if flags.is_empty() {
-            &["port", "clean", "--all", "installed"]
+            &["port", "clean", "--all", "installed"][..]
         } else {
             &["port", "clean", "--all"][..]
         })
@@ -167,7 +167,7 @@ impl Pm for Port {
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(if flags.is_empty() {
-            &["port", "upgrade", "outdated"]
+            &["port", "upgrade", "outdated"][..]
         } else {
             &["port", "upgrade"][..]
         })

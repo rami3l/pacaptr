@@ -155,7 +155,7 @@ impl Pm for Winget {
             "--accept-package-agreements",
             "--accept-source-agreements",
         ])
-        .kws(if kws.is_empty() { &["--all"] } else { kws })
+        .kws(if kws.is_empty() { &["--all"][..] } else { kws })
         .flags(flags)
         .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
         .await

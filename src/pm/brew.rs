@@ -135,12 +135,12 @@ impl Pm for Brew {
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(if self.cfg.needed {
-            &["brew", "install"]
+            ["brew", "install"]
         } else {
             // If the package is not installed, `brew reinstall` behaves just like `brew
             // install`, so `brew reinstall` matches perfectly the behavior of
             // `pacman -S`.
-            &["brew", "reinstall"]
+            ["brew", "reinstall"]
         })
         .kws(kws)
         .flags(flags)

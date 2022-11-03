@@ -118,7 +118,7 @@ impl Pm for Scoop {
     /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(["powershell", "scoop", "cache", "rm"])
-            .kws(if kws.is_empty() { &["*"] } else { kws })
+            .kws(if kws.is_empty() { &["*"][..] } else { kws })
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
             .await
@@ -151,7 +151,7 @@ impl Pm for Scoop {
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(["powershell", "scoop", "update"])
-            .kws(if kws.is_empty() { &["*"] } else { kws })
+            .kws(if kws.is_empty() { &["*"][..] } else { kws })
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
             .await

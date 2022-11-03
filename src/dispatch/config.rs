@@ -48,7 +48,7 @@ impl Config {
         Ok(home
             .join(".config")
             .join(crate_name)
-            .join(&format!("{crate_name}.toml")))
+            .join(format!("{crate_name}.toml")))
     }
 
     /// Gets the custom config file path specified by the `PACAPTR_CONFIG`

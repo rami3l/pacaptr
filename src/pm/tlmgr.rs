@@ -118,7 +118,7 @@ impl Pm for Tlmgr {
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(if kws.is_empty() {
-            &["tlmgr", "update", "--self", "--all"]
+            &["tlmgr", "update", "--self", "--all"][..]
         } else {
             &["tlmgr", "update", "--self"][..]
         })
