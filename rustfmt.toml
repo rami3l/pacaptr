@@ -1,4 +1,5 @@
 unstable_features = true
+version = "Two"
 
 format_macro_matchers = true
 group_imports = "StdExternalCrate"
