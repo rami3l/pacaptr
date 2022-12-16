@@ -15,4 +15,4 @@ regex = { version = "1.7.0", default-features = false, features = [
     "unicode-perl",
 ] }
 xml-rs = "0.8.4"
-xshell = "0.2.2"
+xshell = "0.2.3"

@@ -23,7 +23,7 @@ exclude = ["dist/**/*", "docs/**/*"]
 # [build-dependencies]
 
 [dev-dependencies]
-xshell = "0.2.2"
+xshell = "0.2.3"
 
 [dependencies]
 async-trait = "0.1.59"
