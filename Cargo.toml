@@ -34,7 +34,7 @@ console = "0.15.2"
 dialoguer = { version = "0.10.2", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
 futures = { version = "0.3.25", default-features = false, features = ["std"] }
-indoc = "1.0.7"
+indoc = "1.0.8"
 is-root = "0.1.2"
 itertools = "0.10.5"
 macro_rules_attribute = "0.1.3"
