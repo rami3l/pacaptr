@@ -59,7 +59,7 @@ tokio = { version = "1.23.0", features = [
 ] }
 tokio-stream = "0.1.11"
 tokio-util = { version = "0.7.4", features = ["codec", "compat"] }
-tt-call = "1.0.8"
+tt-call = "1.0.9"
 which = "4.3.0"
 
 [package.metadata.deb]
