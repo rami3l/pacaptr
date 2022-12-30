@@ -38,7 +38,7 @@ indoc = "1.0.8"
 is-root = "0.1.2"
 itertools = "0.10.5"
 macro_rules_attribute = "0.1.3"
-once_cell = "1.16.0"
+once_cell = "1.17.0"
 pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.17.0" }
 paste = "1.0.10"
 regex = { version = "1.7.0", default-features = false, features = [
