@@ -30,7 +30,7 @@ async-trait = "0.1.60"
 bytes = "1.3.0"
 clap = { version = "4.0.32", features = ["cargo", "derive"] }
 confy = "0.5.1"
-console = "0.15.3"
+console = "0.15.4"
 dialoguer = { version = "0.10.2", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
 futures = { version = "0.3.25", default-features = false, features = ["std"] }
