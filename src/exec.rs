@@ -365,8 +365,7 @@ impl std::fmt::Display for Cmd {
 }
 
 /// Gives a prompt and returns the index of the user choice.
-#[allow(clippy::missing_panics_doc)]
-fn prompt<'a>(prompt: &str, question: &str, expected: &[&'a str]) -> io::Result<usize> {
+fn prompt(prompt: &str, question: &str, expected: &[&str]) -> io::Result<usize> {
     FuzzySelect::with_theme(&question_theme(prompt))
         .with_prompt(question)
         .items(expected)

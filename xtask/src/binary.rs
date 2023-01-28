@@ -74,7 +74,7 @@ impl<'s> BinaryBuilder<'s> {
 
         println!(":: Generating sha256...");
         let shasum = cmd!(s, "openssl dgst -r -sha256 {asset}.tar.gz").read()?;
-        s.write_file(format!("{}.tar.gz.sha256", asset), shasum)?;
+        s.write_file(format!("{asset}.tar.gz.sha256"), shasum)?;
         Ok(())
     }
 
