@@ -3,8 +3,8 @@ use std::fs;
 use anyhow::Result;
 use xshell::{cmd, Shell};
 
-use super::{names::*, Runner};
-use crate::binary::*;
+use super::{names::targets, Runner};
+use crate::binary::{BinaryBuilder, LINUX_X64, MAC_ARM, MAC_UNIV, MAC_X64, WIN_X64};
 
 #[derive(Debug)]
 pub struct Publish {}

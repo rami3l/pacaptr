@@ -333,6 +333,7 @@ enum PmMode {
     /// Prints out the command which should be executed, run it and collect its
     /// `stdout`/`stderr` combined. Potentially dangerous as it destroys the
     /// colored `stdout`. Use it only if really necessary.
+    #[allow(dead_code)]
     CheckAll,
 
     /// Prints out the command which should be executed, run it and collect its
@@ -430,6 +431,7 @@ enum NoCacheStrategy {
     #[default]
     None,
     /// Uses `-Sc` to clean the cache.
+    #[allow(dead_code)]
     Sc,
     /// Uses `-Scc`.
     Scc,

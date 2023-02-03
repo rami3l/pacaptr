@@ -5,7 +5,7 @@ use regex::Regex;
 use xml::escape::escape_str_attribute;
 use xshell::{cmd, Shell};
 
-use super::{get_ref_from_env, names::*, Runner};
+use super::{get_ref_from_env, names::HOMEPAGE, Runner};
 use crate::binary::WIN_X64;
 use crate::replace;
 
@@ -14,9 +14,10 @@ pub struct BumpChoco {}
 
 impl Runner for BumpChoco {
     fn run(self) -> Result<()> {
-        if !cfg!(target_os = "windows") {
-            panic!("this action is meant to run under windows")
-        }
+        assert!(
+            cfg!(target_os = "windows"),
+            "this action is meant to run under windows"
+        );
 
         let s = Shell::new()?;
         let tag = get_ref_from_env()?;
@@ -100,6 +101,6 @@ fn checksum(path: &str, algo: &str) -> Result<String> {
         .read()?
         .split_whitespace()
         .next()
-        .map(|s| s.to_owned())
+        .map(Into::into)
         .ok_or_else(|| anyhow!("Failed to fetch checksum from `openssl dgst`"))
 }
