@@ -19,6 +19,7 @@ impl<'s> Binary<'s> {
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
 pub enum BinaryBuilder<'s> {
     Native(Binary<'s>),
 

@@ -44,10 +44,7 @@ impl Tabled for CompatRow {
     const LENGTH: usize = 1 + METHODS.len();
 
     fn fields(&self) -> Vec<Cow<'static, str>> {
-        self.fields
-            .iter()
-            .map(|s| Cow::Owned(s.to_owned()))
-            .collect()
+        self.fields.iter().map(|s| Cow::Owned(s.clone())).collect()
     }
 
     fn headers() -> Vec<Cow<'static, str>> {

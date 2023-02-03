@@ -61,6 +61,7 @@ pub(crate) fn write(
 }
 
 /// Prints out a message after the given prompt.
+#[allow(dead_code)]
 pub(crate) fn println(prompt: impl Display, msg: impl Display) {
     println!(
         plain_format!(),

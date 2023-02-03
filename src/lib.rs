@@ -9,6 +9,7 @@
 
 #![forbid(unsafe_code)]
 #![warn(
+    clippy::doc_markdown,
     clippy::pedantic,
     missing_copy_implementations,
     missing_debug_implementations,

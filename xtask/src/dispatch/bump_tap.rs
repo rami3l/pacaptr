@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use xshell::{cmd, Shell};
 
-use super::{get_ref_from_env, names::*, Runner};
+use super::{get_ref_from_env, names::HOMEPAGE, Runner};
 use crate::{
     binary::{LINUX_X64, MAC_UNIV},
     replace,
@@ -12,9 +12,10 @@ pub struct BumpTap {}
 
 impl Runner for BumpTap {
     fn run(self) -> Result<()> {
-        if cfg!(target_os = "windows") {
-            panic!("this action is not meant to run under windows")
-        }
+        assert!(
+            !cfg!(target_os = "windows"),
+            "this action is not meant to run under windows"
+        );
 
         let s = Shell::new()?;
         let tag = get_ref_from_env()?;

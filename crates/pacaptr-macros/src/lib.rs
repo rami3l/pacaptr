@@ -1,3 +1,12 @@
+#![forbid(unsafe_code)]
+#![warn(
+    clippy::doc_markdown,
+    clippy::pedantic,
+    rustdoc::broken_intra_doc_links,
+    trivial_numeric_casts,
+    unused_allocation
+)]
+
 mod compat_table;
 mod test_dsl;
 
@@ -76,6 +85,5 @@ pub fn compat_table(input: TokenStream) -> TokenStream {
 }
 
 fn res_token_stream(res: Result<impl Into<TokenStream>, syn::Error>) -> TokenStream {
-    res.map(Into::into)
-        .unwrap_or_else(|e| e.to_compile_error().into())
+    res.map_or_else(|e| e.to_compile_error().into(), Into::into)
 }
