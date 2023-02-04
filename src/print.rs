@@ -104,8 +104,9 @@ pub(crate) fn question_theme(prompt: impl Display) -> impl dialoguer::theme::The
         prompt_prefix,
         prompt_style: Style::new(),
         prompt_suffix: style(String::new()),
-        active_item_prefix: style(">".into()).bold().for_stderr(),
+        active_item_prefix: style("  *".into()).bold().for_stderr(),
         active_item_style: Style::new().bold(),
+        inactive_item_prefix: style("   ".into()).for_stderr(),
         ..ColorfulTheme::default()
     }
 }

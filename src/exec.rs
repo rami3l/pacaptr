@@ -323,8 +323,10 @@ impl Cmd {
         /// If the user has skipped all the prompts with `yes`.
         static ALL: AtomicBool = AtomicBool::new(false);
 
-        // The answer obtained from the prompt. Here we use a closure for lazy eval.
-        let answer = || -> Result<bool> {
+        // The answer obtained from the prompt.
+        // The only Atomic* we're dealing with is `ALL`, so `Ordering::Relaxed` is fine.
+        // See: <https://marabos.nl/atomics/memory-ordering.html#relaxed>
+        let proceed = ALL.load(Ordering::Relaxed) || {
             println_quoted(&*prompt::PENDING, &self);
             let answer = tokio::task::block_in_place(move || {
                 prompt(
@@ -333,21 +335,20 @@ impl Cmd {
                     &["Yes", "All", "No"],
                 )
             })?;
-            Ok(match answer {
+            match answer {
                 // The default answer is `Yes`.
                 0 => true,
                 // You can also say `All` to answer `Yes` to all the other questions that follow.
                 1 => {
-                    ALL.store(true, Ordering::SeqCst);
+                    ALL.store(true, Ordering::Relaxed);
                     true
                 }
                 // Or you can say `No`.
                 2 => false,
                 // ! I didn't put a `None` option because you can just Ctrl-C it if you want.
                 _ => unreachable!(),
-            })
+            }
         };
-        let proceed = ALL.load(Ordering::SeqCst) || answer()?;
         if !proceed {
             return Ok(Output::default());
         }
