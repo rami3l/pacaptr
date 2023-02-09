@@ -10,6 +10,7 @@
 #![forbid(unsafe_code)]
 #![warn(
     clippy::doc_markdown,
+    clippy::nursery,
     clippy::pedantic,
     missing_copy_implementations,
     missing_debug_implementations,

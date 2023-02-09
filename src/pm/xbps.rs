@@ -28,7 +28,7 @@ const PKG_NOT_FOUND_CODE: StatusCode = 2;
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub(crate) struct Xbps {
+pub struct Xbps {
     cfg: Config,
 }
 
@@ -40,8 +40,8 @@ static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
 impl Xbps {
     #[must_use]
     #[allow(missing_docs)]
-    pub(crate) fn new(cfg: Config) -> Self {
-        Xbps { cfg }
+    pub const fn new(cfg: Config) -> Self {
+        Self { cfg }
     }
 }
 

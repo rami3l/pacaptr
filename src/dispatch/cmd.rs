@@ -262,15 +262,15 @@ impl Pacaptr {
             },
         };
 
-        let pm = cfg.conv::<Box<dyn Pm>>();
+        let pm = cfg.conv::<Box<dyn Pm + Send>>();
 
-        let kws = self.keywords.iter().map(|s| s as _).collect_vec();
-        let flags = self.extra_flags.iter().map(|s| s as _).collect_vec();
+        let kws = self.keywords.iter().map(AsRef::as_ref).collect_vec();
+        let flags = self.extra_flags.iter().map(AsRef::as_ref).collect_vec();
 
         /// Call the method indicated by `options` on `pm`. That is:
         ///
         /// ```rust
-        /// match &options.to_lowercase() as _ {
+        /// match options.to_lowercase().as_ref() {
         ///     "q" => pm.q(&kws, &flags).await,
         ///     ..
         /// }
@@ -281,7 +281,7 @@ impl Pacaptr {
                 async fn $method:ident;
             )* }]
         ) => {
-            match &options.to_lowercase() as _ {
+            match options.to_lowercase().as_ref() {
                 $(stringify!($method) => pm.$method(&kws, &flags).await,)*
                 _ => Err(Error::ArgParseError {
                     msg: format!("Invalid flag combination `-{options}`"),
@@ -319,7 +319,7 @@ pub(super) mod tests {
 
     use super::*;
 
-    pub(crate) struct MockPm {
+    pub struct MockPm {
         pub cfg: Config,
     }
 

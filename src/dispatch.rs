@@ -57,7 +57,7 @@ fn detect_pm_str<'s>() -> &'s str {
         .unwrap_or("unknown")
 }
 
-impl From<Config> for Box<dyn Pm> {
+impl From<Config> for Box<dyn Pm + Send> {
     /// Generates the `Pm` instance according it's name, feeding it with the
     /// current `Config`.
     fn from(mut cfg: Config) -> Self {
@@ -66,7 +66,7 @@ impl From<Config> for Box<dyn Pm> {
         let pm = cfg.default_pm.get_or_insert_with(|| detect_pm_str().into());
 
         #[allow(clippy::match_single_binding)]
-        match pm as _ {
+        match pm.as_ref() {
             // Chocolatey
             "choco" => Choco::new(cfg).boxed(),
 

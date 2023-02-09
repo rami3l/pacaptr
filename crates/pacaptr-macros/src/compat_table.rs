@@ -96,7 +96,8 @@ fn make_table() -> anyhow::Result<String> {
     ))
 }
 
-pub(crate) fn compat_table_impl() -> Result<TokenStream> {
+#[allow(clippy::module_name_repetitions)]
+pub fn compat_table_impl() -> Result<TokenStream> {
     fn throw(e: &dyn Debug) -> Error {
         let msg = format!("{e:?}");
         Error::new(Span::call_site(), msg)

@@ -9,7 +9,7 @@ macro_rules! pm_mods {
     ( $( $vis:vis $mod:ident; )+ ) => {
         $(
             $vis mod $mod;
-            paste! { pub(crate) use self::$mod::[<$mod:camel>]; }
+            paste! { pub use self::$mod::[<$mod:camel>]; }
         )+
     }
 }
@@ -165,7 +165,7 @@ macro_rules! make_op_body {
 macro_rules! _decor_pm {(
     def = [{
         $( #[$meta0:meta] )*
-        $vis:vis trait $t:ident : $supert:ident {
+        $vis:vis trait $t:ident $(: $supert:ident)? {
             $( $inner:tt )*
         }
     }]
@@ -175,7 +175,7 @@ macro_rules! _decor_pm {(
     )* }]
 ) => {
     $( #[$meta0] )*
-    $vis trait $t : $supert {
+    $vis trait $t $(: $supert)? {
         $( $inner )*
 
         // * Automatically generated methods below... *
@@ -212,7 +212,7 @@ macro_rules! decor_pm {
 /// - <https://wiki.archlinux.org/index.php/Pacman/Rosetta>
 #[macro_rules_attribute(decor_pm!)]
 #[async_trait]
-pub(crate) trait Pm: Sync {
+pub trait Pm: Sync {
     /// Gets the name of the package manager.
     fn name(&self) -> &str;
 
@@ -220,9 +220,9 @@ pub(crate) trait Pm: Sync {
     fn cfg(&self) -> &Config;
 
     /// Wraps the [`Pm`] instance in a [`Box`].
-    fn boxed<'a>(self) -> Box<dyn Pm + 'a>
+    fn boxed<'a>(self) -> Box<dyn Pm + Send + 'a>
     where
-        Self: Sized + 'a,
+        Self: Sized + Send + 'a,
     {
         Box::new(self)
     }
@@ -279,7 +279,7 @@ trait PmHelper: Pm {
 
         // Perform the cleanup.
         if cfg.no_cache {
-            let flags = cmd.flags.iter().map(|s| s as _).collect_vec();
+            let flags = cmd.flags.iter().map(AsRef::as_ref).collect_vec();
             match &strat.no_cache {
                 NoCacheStrategy::Sc => self.sc(&[], &flags).await?,
                 NoCacheStrategy::Scc => self.scc(&[], &flags).await?,
@@ -345,9 +345,9 @@ enum PmMode {
 impl From<PmMode> for Mode {
     fn from(pm_mode: PmMode) -> Self {
         match pm_mode {
-            PmMode::Mute => Mode::Mute,
-            PmMode::CheckAll => Mode::CheckAll,
-            PmMode::CheckErr => Mode::CheckErr,
+            PmMode::Mute => Self::Mute,
+            PmMode::CheckAll => Self::CheckAll,
+            PmMode::CheckErr => Self::CheckErr,
         }
     }
 }

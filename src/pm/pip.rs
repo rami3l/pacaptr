@@ -22,7 +22,7 @@ macro_rules! docs_self {
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub(crate) struct Pip {
+pub struct Pip {
     cfg: Config,
 }
 
@@ -50,8 +50,8 @@ impl Pip {
 impl Pip {
     #[must_use]
     #[allow(missing_docs)]
-    pub(crate) fn new(cfg: Config) -> Self {
-        Pip { cfg }
+    pub const fn new(cfg: Config) -> Self {
+        Self { cfg }
     }
 }
 

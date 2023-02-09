@@ -19,7 +19,7 @@ macro_rules! docs_self {
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub(crate) struct Choco {
+pub struct Choco {
     cfg: Config,
 }
 
@@ -37,8 +37,8 @@ static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
 impl Choco {
     #[must_use]
     #[allow(missing_docs)]
-    pub(crate) fn new(cfg: Config) -> Self {
-        Choco { cfg }
+    pub const fn new(cfg: Config) -> Self {
+        Self { cfg }
     }
 
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {

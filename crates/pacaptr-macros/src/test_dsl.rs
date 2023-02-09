@@ -17,14 +17,15 @@ impl TestDslItem {
         let in_ = "in ";
         let ou = "ou ";
         let tokenize = |s: &str| s.split_whitespace().map_into().collect();
+        #[allow(clippy::option_if_let_else)]
         if let Some(rest) = ln.strip_prefix(in_bang) {
-            Ok(TestDslItem::InBang(tokenize(rest)))
+            Ok(Self::InBang(tokenize(rest)))
         } else if let Some(rest) = ln.strip_prefix(in_) {
-            Ok(TestDslItem::In(tokenize(rest)))
+            Ok(Self::In(tokenize(rest)))
         } else if let Some(rest) = ln.strip_prefix(im) {
-            Ok(TestDslItem::Im(tokenize(rest)))
+            Ok(Self::Im(tokenize(rest)))
         } else if let Some(rest) = ln.strip_prefix(ou) {
-            Ok(TestDslItem::Ou(rest.into()))
+            Ok(Self::Ou(rest.into()))
         } else {
             let msg = format!(
                 "Item must start with one of the following: {}, found `{}`",
@@ -40,19 +41,19 @@ impl TestDslItem {
 
     fn build(&self) -> Result<TokenStream> {
         match self {
-            TestDslItem::In(i) => {
+            Self::In(i) => {
                 let i = i.iter().map(|s| Literal::string(s)).collect_vec();
                 Ok(quote! { .pacaptr(&[ #(#i),* ], &[]) })
             }
-            TestDslItem::InBang(i) => {
+            Self::InBang(i) => {
                 let i = i.iter().map(|s| Literal::string(s)).collect_vec();
                 Ok(quote! { .exec(&[ #(#i),* ], &[]) })
             }
-            TestDslItem::Ou(o) => {
+            Self::Ou(o) => {
                 let o = Literal::string(o);
                 Ok(quote! { .output(&[ #o ]) })
             }
-            TestDslItem::Im(_) => {
+            Self::Im(_) => {
                 let msg = "`im` items are not yet supported";
                 Err(Error::new(Span::call_site(), msg))
             }
@@ -60,7 +61,8 @@ impl TestDslItem {
     }
 }
 
-pub(crate) fn test_dsl_impl(input: &str) -> Result<TokenStream> {
+#[allow(clippy::module_name_repetitions)]
+pub fn test_dsl_impl(input: &str) -> Result<TokenStream> {
     let items: Vec<TokenStream> = input
         .lines()
         .map(|ln| ln.trim_start().trim_end())
