@@ -33,7 +33,7 @@ use crate::{
 
 /// Different ways in which a [`Cmd`] shall be dealt with.
 #[derive(Copy, Clone, Debug)]
-pub(crate) enum Mode {
+pub enum Mode {
     /// Solely prints out the command that should be executed and stops.
     PrintCmd,
 
@@ -62,7 +62,7 @@ pub(crate) enum Mode {
 }
 
 /// The status code type returned by a [`Cmd`],
-pub(crate) type StatusCode = i32;
+pub type StatusCode = i32;
 
 /// Returns a [`Result`] for a [`Cmd`] according to if its exit status code
 /// indicates an error.
@@ -72,6 +72,7 @@ pub(crate) type StatusCode = i32;
 ///
 /// - [`Error::CmdStatusCodeError`], when `status` is `Some(n)` where `n != 0`.
 /// - [`Error::CmdInterruptedError`], when `status` is `None`.
+#[allow(clippy::missing_const_for_fn)]
 fn exit_result(code: Option<StatusCode>, output: Output) -> Result<Output> {
     match code {
         Some(0) => Ok(output),
@@ -82,12 +83,12 @@ fn exit_result(code: Option<StatusCode>, output: Output) -> Result<Output> {
 
 /// The type for captured `stdout`, and if set to [`Mode::CheckAll`], mixed with
 /// captured `stderr`.
-pub(crate) type Output = Vec<u8>;
+pub type Output = Vec<u8>;
 
 /// A command to be executed, provided in `command-flags-keywords` form.
 #[must_use]
 #[derive(Debug, Clone, Default)]
-pub(crate) struct Cmd {
+pub struct Cmd {
     /// Flag indicating If a **normal admin** needs to run this command with
     /// `sudo`.
     pub sudo: bool,
@@ -105,37 +106,34 @@ pub(crate) struct Cmd {
 impl Cmd {
     /// Makes a new [`Cmd`] instance with the given [`cmd`](Cmd::cmd) part.
     pub(crate) fn new(cmd: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
-        Cmd {
+        Self {
             cmd: cmd.into_iter().map(|s| s.as_ref().into()).collect(),
-            ..Cmd::default()
+            ..Self::default()
         }
     }
 
     /// Makes a new [`Cmd`] instance with the given [`cmd`](Cmd::cmd) part,
     /// setting [`sudo`](field@Cmd::sudo) to `true`.
     pub(crate) fn with_sudo(cmd: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
-        Cmd::new(cmd).sudo(true)
+        Self::new(cmd).sudo(true)
     }
 
     /// Overrides the value of [`flags`](field@Cmd::flags).
-    pub(crate) fn flags(self, flags: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
-        Cmd {
-            flags: flags.into_iter().map(|s| s.as_ref().into()).collect(),
-            ..self
-        }
+    pub(crate) fn flags(mut self, flags: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
+        self.flags = flags.into_iter().map(|s| s.as_ref().into()).collect();
+        self
     }
 
     /// Overrides the value of [`kws`](field@Cmd::kws).
-    pub(crate) fn kws(self, kws: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
-        Cmd {
-            kws: kws.into_iter().map(|s| s.as_ref().into()).collect(),
-            ..self
-        }
+    pub(crate) fn kws(mut self, kws: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
+        self.kws = kws.into_iter().map(|s| s.as_ref().into()).collect();
+        self
     }
 
     /// Overrides the value of [`sudo`](field@Cmd::sudo).
-    pub(crate) fn sudo(self, sudo: bool) -> Self {
-        Cmd { sudo, ..self }
+    pub(crate) const fn sudo(mut self, sudo: bool) -> Self {
+        self.sudo = sudo;
+        self
     }
 
     /// Determines if this command actually needs to run with `sudo -S`.
@@ -183,8 +181,8 @@ impl Cmd {
 /// * `src` - The input stream to read from.
 /// * `out` - The optional output stream to write to.
 async fn exec_tee(
-    src: impl Stream<Item = io::Result<Bytes>>,
-    out: Option<impl AsyncWrite>,
+    src: impl Stream<Item = io::Result<Bytes>> + Send,
+    out: Option<impl AsyncWrite + Send>,
 ) -> Result<Vec<u8>> {
     let mut buf = Vec::<u8>::new();
     let buf_sink = (&mut buf).into_sink();
@@ -405,7 +403,7 @@ fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
 
 /// Prints the result of [`grep`] line by line.
 #[doc = docs_errors_grep!()]
-pub(crate) fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
+pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
     grep(text, patterns).map(|lns| lns.iter().for_each(|ln| println!("{ln}")))
 }
 
@@ -413,7 +411,7 @@ pub(crate) fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
 ///
 /// To check by one parameter only, pass `""` to the other one.
 #[must_use]
-pub(crate) fn is_exe(name: &str, path: &str) -> bool {
+pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && which(path).is_ok()) || (!name.is_empty() && which(name).is_ok())
 }
 

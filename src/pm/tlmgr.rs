@@ -18,7 +18,7 @@ macro_rules! docs_self {
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub(crate) struct Tlmgr {
+pub struct Tlmgr {
     cfg: Config,
 }
 
@@ -30,8 +30,8 @@ static STRAT_CHECK_DRY: Lazy<Strategy> = Lazy::new(|| Strategy {
 impl Tlmgr {
     #[must_use]
     #[allow(missing_docs)]
-    pub(crate) fn new(cfg: Config) -> Self {
-        Tlmgr { cfg }
+    pub const fn new(cfg: Config) -> Self {
+        Self { cfg }
     }
 }
 

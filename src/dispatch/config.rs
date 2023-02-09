@@ -13,7 +13,7 @@ const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";
 #[must_use]
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 #[allow(clippy::struct_excessive_bools)]
-pub(crate) struct Config {
+pub struct Config {
     /// Perform a dry run.
     #[serde(default)]
     pub dry_run: bool,

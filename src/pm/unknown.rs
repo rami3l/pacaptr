@@ -16,7 +16,7 @@ macro_rules! docs_self {
 
 #[doc = docs_self!()]
 #[derive(Debug)]
-pub(crate) struct Unknown {
+pub struct Unknown {
     name: String,
     cfg: Config,
 }
@@ -25,7 +25,7 @@ impl Unknown {
     #[must_use]
     /// Creates a new [`Unknown`] package manager with the given name.
     pub(crate) fn new(name: &str) -> Self {
-        Unknown {
+        Self {
             name: format!("unknown package manager: {name}"),
             cfg: Config::default(),
         }

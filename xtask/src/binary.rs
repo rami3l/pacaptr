@@ -31,7 +31,7 @@ pub enum BinaryBuilder<'s> {
 }
 
 impl<'s> BinaryBuilder<'s> {
-    pub fn bin(&self) -> &Binary {
+    pub const fn bin(&self) -> &Binary {
         match self {
             BinaryBuilder::Native(bin) | BinaryBuilder::Cross { bin, .. } => bin,
         }

@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 #![warn(
     clippy::doc_markdown,
+    clippy::nursery,
     clippy::pedantic,
     rustdoc::broken_intra_doc_links,
     trivial_numeric_casts,

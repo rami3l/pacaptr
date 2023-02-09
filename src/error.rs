@@ -82,7 +82,7 @@ pub struct MainError(Error);
 
 impl From<Error> for MainError {
     fn from(e: Error) -> Self {
-        MainError(e)
+        Self(e)
     }
 }
 
