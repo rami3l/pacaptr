@@ -17,13 +17,7 @@ mod config;
 
 pub use self::cmd::Pacaptr;
 pub(crate) use self::config::Config;
-use crate::{
-    exec::is_exe,
-    pm::{
-        Apk, Apt, Brew, Choco, Conda, Dnf, Emerge, Pip, Pm, Port, Scoop, Tlmgr, Unknown, Winget,
-        Xbps, Zypper,
-    },
-};
+use crate::{exec::is_exe, pm::BoxPm};
 
 /// Detects the name of the package manager to be used in auto dispatch.
 #[must_use]
@@ -57,10 +51,15 @@ fn detect_pm_str<'s>() -> &'s str {
         .unwrap_or("unknown")
 }
 
-impl From<Config> for Box<dyn Pm + Send> {
+impl From<Config> for BoxPm<'_> {
     /// Generates the `Pm` instance according it's name, feeding it with the
     /// current `Config`.
     fn from(mut cfg: Config) -> Self {
+        use crate::pm::{
+            Apk, Apt, Brew, Choco, Conda, Dnf, Emerge, Pip, Pm, Port, Scoop, Tlmgr, Unknown,
+            Winget, Xbps, Zypper,
+        };
+
         // If the `Pm` to be used is not stated in any config,
         // we should fall back to automatic detection and overwrite `cfg`.
         let pm = cfg.default_pm.get_or_insert_with(|| detect_pm_str().into());

@@ -10,7 +10,7 @@ use crate::{
     dispatch::Config,
     error::{Error, Result},
     methods,
-    pm::Pm,
+    pm::BoxPm,
 };
 
 /// The command line options to be collected.
@@ -262,7 +262,7 @@ impl Pacaptr {
             },
         };
 
-        let pm = cfg.conv::<Box<dyn Pm + Send>>();
+        let pm = cfg.conv::<BoxPm>();
 
         let kws = self.keywords.iter().map(AsRef::as_ref).collect_vec();
         let flags = self.extra_flags.iter().map(AsRef::as_ref).collect_vec();
@@ -318,6 +318,7 @@ pub(super) mod tests {
     use tt_call::tt_call;
 
     use super::*;
+    use crate::pm::Pm;
 
     pub struct MockPm {
         pub cfg: Config,
