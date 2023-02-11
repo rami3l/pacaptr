@@ -220,13 +220,16 @@ pub trait Pm: Sync {
     fn cfg(&self) -> &Config;
 
     /// Wraps the [`Pm`] instance in a [`Box`].
-    fn boxed<'a>(self) -> Box<dyn Pm + Send + 'a>
+    fn boxed<'a>(self) -> BoxPm<'a>
     where
         Self: Sized + Send + 'a,
     {
         Box::new(self)
     }
 }
+
+/// An owned, dynamically typed [`Pm`].
+pub type BoxPm<'a> = Box<dyn Pm + Send + 'a>;
 
 /// Extra implementation helper functions for [`Pm`],
 /// focusing on the ability to run commands ([`Cmd`]s) in a configured and
