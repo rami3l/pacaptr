@@ -25,3 +25,7 @@ pub mod error;
 mod exec;
 mod pm;
 pub mod print;
+
+mod _built {
+    include!(concat!(env!("OUT_DIR"), "/built.rs"));
+}

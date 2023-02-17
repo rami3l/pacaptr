@@ -7,6 +7,7 @@ use tokio::task;
 use tt_call::tt_call;
 
 use crate::{
+    _built::GIT_VERSION,
     dispatch::Config,
     error::{Error, Result},
     methods,
@@ -16,7 +17,7 @@ use crate::{
 /// The command line options to be collected.
 #[derive(Debug, Parser)]
 #[command(
-    version = clap::crate_version!(),
+    version = GIT_VERSION.unwrap_or(clap::crate_version!()),
     author = clap::crate_authors!(),
     about = clap::crate_description!(),
     subcommand_required = true,
