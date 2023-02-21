@@ -122,6 +122,27 @@ impl Pm for Brew {
             .await
     }
 
+    /// Rn removes a package and skips the generation of configuration backup
+    /// files.
+    async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        Cmd::new(["brew", "uninstall", "--zap", "-f"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .await
+    }
+
+    /// Rns removes a package and its dependencies which are not required by any
+    /// other installed package, and skips the generation of configuration
+    /// backup files.
+    async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.rn(kws, flags).await?;
+        Cmd::new(["brew", "autoremove"])
+            .flags(flags)
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .await
+    }
+
     /// Rs removes a package and its dependencies which are not required by any
     /// other installed package, and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
