@@ -207,7 +207,10 @@ impl Pm for Brew {
     /// Sii displays packages which require X to be installed, aka reverse
     /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(["brew", "uses"]).kws(kws).flags(flags))
+        Cmd::new(["brew", "uses", "--eval-all"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
             .await
     }
 
