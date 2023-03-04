@@ -358,6 +358,7 @@ impl From<PmMode> for Mode {
 /// A set of intrinsic properties of a command in the context of a specific
 /// package manager, indicating how it is run.
 #[derive(Clone, Debug, Default)]
+#[must_use]
 struct Strategy {
     /// How a dry run is dealt with.
     dry_run: DryRunStrategy,
@@ -372,6 +373,7 @@ struct Strategy {
 /// How a dry run is dealt with.
 ///
 /// Default value: [`DryRunStrategy::PrintCmd`].
+#[must_use]
 #[derive(Debug, Clone, Default)]
 enum DryRunStrategy {
     /// Prints the command to be run, and stop.
@@ -383,7 +385,6 @@ enum DryRunStrategy {
 
 impl DryRunStrategy {
     /// Invokes the corresponding package manager with the flags given.
-    #[must_use]
     fn with_flags(flags: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
         Self::WithFlags(flags.into_iter().map(|s| s.as_ref().into()).collect())
     }
@@ -392,6 +393,7 @@ impl DryRunStrategy {
 /// How the prompt is dealt with when running the package manager.
 ///
 /// Default value: [`PromptStrategy::None`].
+#[must_use]
 #[derive(Debug, Clone, Default)]
 enum PromptStrategy {
     /// There is no prompt.
@@ -410,12 +412,10 @@ enum PromptStrategy {
 impl PromptStrategy {
     /// There is a native prompt provided by the package manager
     /// that can be disabled with a flag.
-    #[must_use]
     fn native_no_confirm(no_confirm: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
         Self::NativeNoConfirm(no_confirm.into_iter().map(|s| s.as_ref().into()).collect())
     }
 
-    #[must_use]
     /// There is a native prompt provided by the package manager
     /// that can be enabled with a flag.
     fn native_confirm(confirm: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
@@ -426,6 +426,7 @@ impl PromptStrategy {
 /// How the cache is cleaned when `no_cache` is set to `true`.
 ///
 /// Default value: [`PromptStrategy::None`].
+#[must_use]
 #[derive(Debug, Clone, Default)]
 enum NoCacheStrategy {
     /// Does not clean cache.
@@ -446,7 +447,6 @@ enum NoCacheStrategy {
 
 impl NoCacheStrategy {
     /// Invokes the corresponding package manager with the flags given.
-    #[must_use]
     fn with_flags(flags: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
         Self::WithFlags(flags.into_iter().map(|s| s.as_ref().into()).collect())
     }
