@@ -165,6 +165,8 @@ I decided not to trash user's `$HOME` without their permission, so:
 
 - If the config file is not present anyway, a default one will be loaded with `Default::default`, and no files will be written.
 
+- Any config item can be overridden by the corresponding `PACAPTR_*` environment variable. For example, `PACAPTR_NEEDED=false` is prioritized over `needed = true` in `pacaptr.toml`.
+
 <details><summary>Example</summary>
 
 ```toml

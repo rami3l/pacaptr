@@ -1,13 +1,30 @@
 //! APIs for reading [`pacaptr`](crate) configurations from the filesystem.
+//!
+//! I decided not to trash user's `$HOME` without their permission, so:
+//! - If the user hasn't yet specified any path to look at, we will look for the
+//!   config file in the default path.
+//! - If the config file is not present anyway, a default one will be loaded
+//!   with [`Default::default`], and no files will be written.
+//! - Any config item can be overridden by the corresponding `PACAPTR_*`
+//!   environment variable. For example, `PACAPTR_NEEDED=false` is prioritized
+//!   over `needed = true` in `pacaptr.toml`.
 
 use std::{env, path::PathBuf};
 
+use figment::{
+    providers::{Env, Format, Toml},
+    Figment, Provider,
+};
 use serde::{Deserialize, Serialize};
 
-use crate::error::{Error, Result};
+/// The crate name.
+const CRATE_NAME: &str = clap::crate_name!();
+
+/// The environment variable prefix for config item literals.
+const CONFIG_ITEM_ENV_PREFIX: &str = "PACAPTR_";
 
 /// The environment variable name for custom config file path.
-const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";
+const CONFIG_FILE_ENV: &str = "PACAPTR_CONFIG";
 
 /// Configurations that may vary when running the package manager.
 #[must_use]
@@ -15,73 +32,47 @@ const CONFIG_ENV_VAR: &str = "PACAPTR_CONFIG";
 #[allow(clippy::struct_excessive_bools)]
 pub struct Config {
     /// Perform a dry run.
-    #[serde(default)]
     pub dry_run: bool,
 
     /// Prevent reinstalling previously installed packages.
-    #[serde(default)]
     pub needed: bool,
 
     /// Answer yes to every question.
-    #[serde(default)]
     pub no_confirm: bool,
 
     /// Remove cache after installation.
-    #[serde(default)]
     pub no_cache: bool,
 
     /// The default package manager to be invoked.
-    #[serde(default)]
     pub default_pm: Option<String>,
 }
 
 impl Config {
     /// The default config file path is `$HOME/.config/pacaptr/pacaptr.toml`.
-    ///
-    /// # Errors
-    /// Returns an [`Error::ConfigError`] when `$HOME` is not found.
-    fn default_path() -> Result<PathBuf> {
-        let crate_name = clap::crate_name!();
-        let home = dirs_next::home_dir().ok_or_else(|| Error::ConfigError {
-            msg: "$HOME path not found".into(),
-        })?;
-        Ok(home
-            .join(".config")
-            .join(crate_name)
-            .join(format!("{crate_name}.toml")))
+    fn default_path() -> Option<PathBuf> {
+        dirs_next::home_dir().map(|home| {
+            home.join(".config")
+                .join(CRATE_NAME)
+                .join(format!("{CRATE_NAME}.toml"))
+        })
     }
 
     /// Gets the custom config file path specified by the `PACAPTR_CONFIG`
     /// environment variable.
-    ///
-    /// # Errors
-    /// Returns an [`Error::ConfigError`] when the config path is not found in
-    /// the environmental variable.
-    fn custom_path() -> Result<PathBuf> {
-        env::var(CONFIG_ENV_VAR)
-            .map_err(|e| Error::ConfigError {
-                msg: format!("Config path environment variable not found: {e}"),
-            })
-            .map(PathBuf::from)
+    fn custom_path() -> Option<PathBuf> {
+        env::var(CONFIG_FILE_ENV).ok().map(PathBuf::from)
     }
 
-    /// Loads up the config file from the user-specified path.
-    ///
-    /// I decided not to trash user's `$HOME` without their permission, so:
-    /// - If the user hasn't yet specified any path to look at, we will look for
-    ///   the config file in the default path.
-    /// - If the config file is not present anyway, a default one will be loaded
-    ///   with [`Default::default`], and no files will be written.
-    ///
-    /// # Errors
-    /// Returns an [`Error::ConfigError`] when the config file loading fails.
-    pub(crate) fn try_load() -> Result<Self> {
-        let path = Self::custom_path().or_else(|_e| Self::default_path())?;
-        if !path.exists() {
-            return Ok(Self::default());
-        }
-        confy::load_path(&path).map_err(|_e| Error::ConfigError {
-            msg: format!("Failed to read config at `{:?}`", &path),
-        })
+    /// Returns the config [`Provider`] from the user-specified file path.
+    pub(crate) fn file_provider() -> impl Provider {
+        Self::custom_path()
+            .or_else(Self::default_path)
+            .map(Toml::file)
+            .map_or_else(Figment::new, Figment::from)
+    }
+
+    /// Returns the environment config [`Provider`].
+    pub(crate) fn env_provider() -> impl Provider {
+        Env::prefixed(CONFIG_ITEM_ENV_PREFIX)
     }
 }
