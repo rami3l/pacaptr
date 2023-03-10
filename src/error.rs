@@ -25,9 +25,8 @@ pub enum Error {
     ArgParseError { msg: String },
 
     /// Error when handling a [`Config`](crate::dispatch::Config).
-    #[error("Failed to handle config: {msg}")]
-    #[allow(missing_docs)]
-    ConfigError { msg: String },
+    #[error(transparent)]
+    ConfigError(#[from] figment::Error),
 
     /// An [`Cmd`](crate::exec::Cmd) fails to finish.
     #[error("Failed to get exit code of subprocess: {0}")]

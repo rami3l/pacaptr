@@ -30,10 +30,10 @@ xshell = "0.2.3"
 async-trait = "0.1.66"
 bytes = "1.4.0"
 clap = { version = "4.1.8", features = ["cargo", "derive"] }
-confy = "0.5.1"
 console = "0.15.5"
 dialoguer = { version = "0.10.3", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
+figment = { version = "0.10.8", features = ["env", "toml"] }
 futures = { version = "0.3.26", default-features = false, features = ["std"] }
 indoc = "2.0.1"
 is-root = "0.1.2"

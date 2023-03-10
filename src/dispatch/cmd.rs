@@ -1,6 +1,7 @@
 //! Definitions for command line argument mapping and dispatching.
 
 use clap::{self, ArgAction, Parser};
+use figment::{providers::Serialized, Figment};
 use itertools::Itertools;
 use tap::prelude::*;
 use tokio::task;
@@ -195,16 +196,15 @@ enum Operations {
 }
 
 impl Pacaptr {
-    /// Generates current [`Config`] by merging current command line arguments
-    /// and options obtained with [`clap`] with the dotfile [`Config`], which
-    /// has a lower precedence.
-    fn merge_cfg(&self, dotfile: Config) -> Config {
+    /// Generates current [`Config`] according to current command line
+    /// arguments.
+    fn cfg(&self) -> Config {
         Config {
-            dry_run: self.dry_run || dotfile.dry_run,
-            needed: self.needed || dotfile.dry_run,
-            no_confirm: self.no_confirm || dotfile.no_confirm,
-            no_cache: self.no_cache || dotfile.no_cache,
-            default_pm: self.using.clone().or(dotfile.default_pm),
+            dry_run: self.dry_run,
+            needed: self.needed,
+            no_confirm: self.no_confirm,
+            no_cache: self.no_cache,
+            default_pm: self.using.clone(),
         }
     }
 
@@ -305,8 +305,13 @@ impl Pacaptr {
     /// See [`Error`](crate::error::Error) for a list of possible errors.
     #[allow(trivial_numeric_casts)]
     pub async fn dispatch(&self) -> Result<()> {
-        let dotfile = task::block_in_place(Config::try_load);
-        let cfg = self.merge_cfg(dotfile?);
+        let cfg = task::block_in_place(|| {
+            Figment::new()
+                .merge(Config::file_provider())
+                .merge(Config::env_provider())
+                .join(Serialized::defaults(self.cfg()))
+                .extract()
+        })?;
         self.dispatch_from(cfg).await
     }
 }
