@@ -27,7 +27,7 @@ built = { version = "0.6.0", features = ["git2"] }
 xshell = "0.2.3"
 
 [dependencies]
-async-trait = "0.1.65"
+async-trait = "0.1.66"
 bytes = "1.4.0"
 clap = { version = "4.1.8", features = ["cargo", "derive"] }
 confy = "0.5.1"
