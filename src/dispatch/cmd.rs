@@ -196,7 +196,7 @@ enum Operations {
 }
 
 impl Pacaptr {
-    /// Generates current [`Config`] according to current command line
+    /// Generates the current [`Config`] according to current command line
     /// arguments.
     fn cfg(&self) -> Config {
         Config {
@@ -303,7 +303,6 @@ impl Pacaptr {
     ///
     /// # Errors
     /// See [`Error`](crate::error::Error) for a list of possible errors.
-    #[allow(trivial_numeric_casts)]
     pub async fn dispatch(&self) -> Result<()> {
         let cfg = task::block_in_place(|| {
             Figment::new()
