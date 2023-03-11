@@ -7,6 +7,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
 
 jobs:
   create-release:
@@ -39,22 +40,18 @@ jobs:
           - os: ubuntu-latest
             # artifact_name: pacaptr
             # asset_name: pacaptr-linux-amd64
-
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-
       - name: Set macOS environment variables
         if: runner.os == 'macOS'
         run: |
           echo "SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)" >> $GITHUB_ENV
           echo "MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)" >> $GITHUB_ENV
-
       - name: Publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,11 +62,9 @@ jobs:
     runs-on: windows-latest
     needs: [publish]
     if: ${{ !contains(github.ref, '-') }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
       - name: Publish to choco
         env:
           CHOCO_API_KEY: ${{ secrets.CHOCO_API_KEY }}
@@ -79,32 +74,26 @@ jobs:
     name: Bump formula version for homebrew
     needs: [publish]
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
       - name: Get current tag
         uses: olegtarasov/get-tag@v2.1
         id: get_tag
-
       - name: Generate new formula as `pacaptr.rb`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cargo xtask bump-tap
-
       - name: Checkout tap
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_ACTIONS_TOKEN }}
           repository: rami3l/homebrew-tap
           path: homebrew-tap
-
       - name: Overwrite formula
         run: |
           cp ./pacaptr.rb homebrew-tap/pacaptr.rb
           ls homebrew-tap
-
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
