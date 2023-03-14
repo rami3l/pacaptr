@@ -7,7 +7,7 @@ use common::*;
 #[should_panic(expected = "Failed with pattern `^Package: wget$`")]
 fn pkcon_fail() {
     test_dsl! { r##"
-        in -Si fish
+        in --using pkcon -Si fish
         ou ^Package: wget$
     "## }
 }
@@ -15,15 +15,15 @@ fn pkcon_fail() {
 #[test]
 fn pkcon_q() {
     test_dsl! { r##"
-        in -Q
+        in --using pkcon -Q
         ou apt
     "## }
 }
 
 #[test]
-fn pkcon_qi() {
+fn pkcon_qs() {
     test_dsl! { r##"
-        in -Qi apt
+        in --using pkcon -Qs apt
         ou Installed
     "## }
 }
@@ -33,15 +33,15 @@ fn pkcon_qi() {
 fn pkcon_r_s() {
     test_dsl! { r##"
         # Update package databases
-        in -Sy
+        in --using pkcon -Sy
 
         # Now installation
-        in -S fish --yes
+        in --using pkcon -S fish --yes
         in ! which fish
         ou /bin/fish
 
         # Now remove the package
-        in -R fish --yes
+        in --using pkcon -R fish --yes
         ou Finished
     "## }
 }
@@ -49,7 +49,7 @@ fn pkcon_r_s() {
 #[test]
 fn pkcon_si() {
     test_dsl! { r##"
-        in -Si wget
+        in --using pkcon -Si wget
         ou retrieves files from the web
     "## }
 }

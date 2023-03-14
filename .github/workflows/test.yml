@@ -313,7 +313,7 @@ jobs:
       - name: Run heavy tests
         run: cargo test apk --verbose -- --ignored
 
-  pip-conda-test:
+  pkcon-pip-conda-test:
     runs-on: ubuntu-latest
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
@@ -325,15 +325,18 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v2
+      - run: |
+          sudo apt update
+          sudo apt install -y packagekit packagekit-tools
       - name: Build
         run: cargo build --verbose
-      # - name: Run unit tests
-      #   run: cargo test tests --verbose
       - name: Run smoke tests
         run: |
+          cargo test pkcon --verbose
           cargo test pip --verbose
           cargo test conda --verbose
       - name: Run heavy tests
         run: |
+          cargo test pkcon --verbose -- --ignored
           cargo test pip --verbose -- --ignored
           cargo test conda --verbose -- --ignored
