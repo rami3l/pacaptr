@@ -303,7 +303,7 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v2
-      - run: apk add -U build-base
+      - run: apk add -U build-base tar
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
