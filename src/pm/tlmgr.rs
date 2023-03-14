@@ -100,7 +100,7 @@ impl Pm for Tlmgr {
     }
 
     /// Sl displays a list of all packages in all installation sources that are
-    /// handled by the packages management.
+    /// handled by the package management.
     async fn sl(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(["tlmgr", "info"]).flags(flags)).await
     }

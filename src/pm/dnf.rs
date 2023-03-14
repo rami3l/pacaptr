@@ -88,12 +88,12 @@ impl Pm for Dnf {
 
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        stream::iter(&[
-            &["dnf", "info", "--installed"],
-            &["dnf", "repoquery", "--deplist"],
+        stream::iter([
+            ["dnf", "info", "--installed"],
+            ["dnf", "repoquery", "--deplist"],
         ])
         .map(Ok)
-        .try_for_each(|&cmd| self.run(Cmd::new(cmd).kws(kws).flags(flags)))
+        .try_for_each(|cmd| self.run(Cmd::new(cmd).kws(kws).flags(flags)))
         .await
     }
 
@@ -219,7 +219,7 @@ impl Pm for Dnf {
     }
 
     /// Sl displays a list of all packages in all installation sources that are
-    /// handled by the packages management.
+    /// handled by the package management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(["dnf", "list", "--available"])
             .kws(kws)
