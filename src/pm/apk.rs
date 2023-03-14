@@ -179,7 +179,7 @@ impl Pm for Apk {
     }
 
     /// Sl displays a list of all packages in all installation sources that are
-    /// handled by the packages management.
+    /// handled by the package management.
     async fn sl(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(["apk", "search"]).kws(kws).flags(flags))
             .await

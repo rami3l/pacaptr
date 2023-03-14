@@ -36,8 +36,8 @@ fn detect_pm_str<'s>() -> &'s str {
         _ if cfg!(target_os = "linux") => &[
             ("apk", "/sbin/apk"),
             ("apt", "/usr/bin/apt"),
-            ("emerge", "/usr/bin/emerge"),
             ("dnf", "/usr/bin/dnf"),
+            ("emerge", "/usr/bin/emerge"),
             ("xbps-install", "/usr/bin/xbps-install"),
             ("zypper", "/usr/bin/zypper"),
         ],
@@ -56,7 +56,7 @@ impl From<Config> for BoxPm<'_> {
     /// current `Config`.
     fn from(mut cfg: Config) -> Self {
         use crate::pm::{
-            Apk, Apt, Brew, Choco, Conda, Dnf, Emerge, Pip, Pm, Port, Scoop, Tlmgr, Unknown,
+            Apk, Apt, Brew, Choco, Conda, Dnf, Emerge, Pip, Pkcon, Pm, Port, Scoop, Tlmgr, Unknown,
             Winget, Xbps, Zypper,
         };
 
@@ -106,6 +106,9 @@ impl From<Config> for BoxPm<'_> {
 
             // Pip
             "pip" | "pip3" => Pip::new(cfg).boxed(),
+
+            // PackageKit
+            "pkcon" => Pkcon::new(cfg).boxed(),
 
             // Tlmgr
             "tlmgr" => Tlmgr::new(cfg).boxed(),

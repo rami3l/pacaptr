@@ -23,6 +23,7 @@ pm_mods! {
     dnf;
     emerge;
     pip;
+    pkcon;
     port;
     scoop;
     tlmgr;
@@ -128,7 +129,7 @@ macro_rules! methods {
                 /// Sii displays packages which require X to be installed, aka reverse dependencies.
                 async fn sii;
 
-                /// Sl displays a list of all packages in all installation sources that are handled by the packages management.
+                /// Sl displays a list of all packages in all installation sources that are handled by the package management.
                 async fn sl;
 
                 /// Ss searches for package(s) by searching the expression in name, description, short description.
