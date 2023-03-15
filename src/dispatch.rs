@@ -47,7 +47,7 @@ fn detect_pm_str<'s>() -> &'s str {
 
     pairs
         .iter()
-        .find_map(|(name, path)| is_exe(name, path).then_some(*name))
+        .find_map(|&(name, path)| is_exe(name, path).then_some(name))
         .unwrap_or("unknown")
 }
 

@@ -205,7 +205,7 @@ This can be useful when you are running Linux and you want to use `linuxbrew`, f
 
 If you are not `root` and you wish to do something requiring `sudo`, `pacaptr` will do it for you by invoking `sudo -S`.
 
-This feature is currently available for `apk`, `apt`, `dnf`, `emerge`, `port` and `zypper`.
+This feature is currently available for `apk`, `apt`, `dnf`, `emerge`, `pkcon`, `port`, `xbps` and `zypper`.
 
 #### Extra flags support
 
