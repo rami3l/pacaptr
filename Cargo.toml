@@ -34,7 +34,7 @@ console = "0.15.5"
 dialoguer = { version = "0.10.3", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
 figment = { version = "0.10.8", features = ["env", "toml"] }
-futures = { version = "0.3.26", default-features = false, features = ["std"] }
+futures = { version = "0.3.27", default-features = false, features = ["std"] }
 indoc = "2.0.1"
 is-root = "0.1.2"
 itertools = "0.10.5"
