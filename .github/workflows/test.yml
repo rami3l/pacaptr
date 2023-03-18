@@ -129,10 +129,23 @@ jobs:
         run: |
           sw_vers > macos_build.txt
           cat macos_build.txt
+      # https://github.com/actions/cache/issues/629#issuecomment-1189184648
+      - name: Create gtar wrapper
+        uses: 1arp/create-a-file-action@0.2
+        with:
+          path: target
+          file: gtar
+          content: |
+            #!/bin/sh
+            exec sudo /usr/local/bin/gtar.orig "$@"
+      - name: Install gtar wrapper
+        run: |
+          sudo mv /usr/local/bin/gtar /usr/local/bin/gtar.orig
+          sudo mv target/gtar /usr/local/bin/gtar
+          sudo chmod +x /usr/local/bin/gtar
       - name: Cache MacPorts
         id: cache-macports
-        # uses: actions/cache@v2
-        uses: john-shaffer/cache@sudo-tar
+        uses: actions/cache@v3
         with:
           path: /opt/local/
           key: ${{ runner.os }}-macports-${{ hashFiles('macos_build.txt') }}
