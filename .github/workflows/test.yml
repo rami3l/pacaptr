@@ -57,7 +57,7 @@ jobs:
           override: true
       - uses: Swatinem/rust-cache@v2
       - name: Install scoop
-        shell: pwsh
+        shell: powershell
         run: |
           Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
           iwr -useb 'https://raw.githubusercontent.com/scoopinstaller/install/master/install.ps1' -outfile 'install.ps1'
@@ -70,7 +70,7 @@ jobs:
       # Ironically, to install winget we need to install scoop first :D
       # See: https://github.com/microsoft/winget-cli/issues/1328#issuecomment-1208640211
       - name: Install winget
-        shell: pwsh
+        shell: powershell
         run: scoop install winget
       - name: Verity winget installation
         run: |
