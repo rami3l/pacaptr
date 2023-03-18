@@ -42,11 +42,7 @@ jobs:
             # asset_name: pacaptr-linux-amd64
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - name: Set macOS environment variables
         if: runner.os == 'macOS'
         run: |

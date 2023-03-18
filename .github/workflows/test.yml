@@ -29,11 +29,7 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
@@ -50,11 +46,7 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Install scoop
         shell: powershell
@@ -95,12 +87,9 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          target: aarch64-apple-darwin
-          override: true
+          targets: aarch64-apple-darwin
       - uses: Swatinem/rust-cache@v2
       - name: Set macOS environment variables
         # if: runner.os == 'macOS'
@@ -158,11 +147,7 @@ jobs:
           curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
           source ./macports-ci install
           sudo port install wget
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
@@ -181,12 +166,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       # - run: apt-get update && apt-get install -y curl build-essential
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          target: x86_64-unknown-linux-musl
-          override: true
+          targets: x86_64-unknown-linux-musl
       - uses: Swatinem/rust-cache@v2
       - name: Test build for musl
         run: cargo build --verbose --release --locked --target=x86_64-unknown-linux-musl
@@ -208,11 +190,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: dnf install -y make automake gcc gcc-c++ kernel-devel
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
@@ -231,11 +209,7 @@ jobs:
       image: gentoo/stage3
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       # `pacaptr -Ss` might fail without this line.
       - run: emerge --sync || true
@@ -258,13 +232,9 @@ jobs:
       - name: Install required packages
         run: |
           xbps-install -y -Su || (xbps-install -y -u xbps && xbps-install -y -Su)
-          xbps-install -y base-devel curl
+          xbps-install -y base-devel curl bash
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
@@ -310,13 +280,9 @@ jobs:
       RUSTFLAGS: "-C target-feature=-crt-static"
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - run: apk add -U build-base tar bash
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: apk add -U build-base tar
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
@@ -332,11 +298,7 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: |
           sudo apt update
