@@ -7,7 +7,7 @@ version = "0.17.2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.69"
+anyhow = "1.0.70"
 const_format = "0.2.30"
 pico-args = "0.5.0"
 regex = { version = "1.7.1", default-features = false, features = [

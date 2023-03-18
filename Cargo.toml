@@ -27,9 +27,9 @@ built = { version = "0.6.0", features = ["git2"] }
 xshell = "0.2.3"
 
 [dependencies]
-async-trait = "0.1.66"
+async-trait = "0.1.67"
 bytes = "1.4.0"
-clap = { version = "4.1.9", features = ["cargo", "derive"] }
+clap = { version = "4.1.10", features = ["cargo", "derive"] }
 console = "0.15.5"
 dialoguer = { version = "0.10.3", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
@@ -47,9 +47,9 @@ regex = { version = "1.7.1", default-features = false, features = [
   "perf",
   "unicode-perl",
 ] }
-serde = { version = "1.0.156", features = ["derive"] }
+serde = { version = "1.0.157", features = ["derive"] }
 tap = "1.0.1"
-thiserror = "1.0.39"
+thiserror = "1.0.40"
 tokio = { version = "1.26.0", features = [
   "io-std",
   "io-util",
