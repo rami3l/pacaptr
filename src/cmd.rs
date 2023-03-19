@@ -327,8 +327,8 @@ impl Pacaptr {
     }
 }
 
-#[cfg(test)]
-pub(super) mod tests {
+#[cfg(all(test, feature = "test"))]
+mod tests {
     use once_cell::sync::Lazy;
     use tokio::test;
 

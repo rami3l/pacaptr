@@ -290,7 +290,7 @@ impl From<Config> for BoxPm<'_> {
             "tlmgr" => Tlmgr::new(cfg).boxed(),
 
             // Test-only mock package manager
-            #[cfg(test)]
+            #[cfg(feature = "test")]
             "mockpm" => {
                 use self::tests::MockPm;
                 MockPm { cfg }.boxed()
@@ -555,7 +555,8 @@ impl NoCacheStrategy {
     }
 }
 
-#[cfg(test)]
+#[allow(missing_docs)]
+#[cfg(feature = "test")]
 pub mod tests {
     use async_trait::async_trait;
     use tt_call::tt_call;

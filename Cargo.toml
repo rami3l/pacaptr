@@ -17,8 +17,9 @@ include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
 exclude = ["dist/**/*", "docs/**/*"]
 # build = "build.rs"
 
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = [".", "xtask", "crates/*"]
 
 [build-dependencies]
 built = { version = "0.6.0", features = ["git2"] }
@@ -63,6 +64,21 @@ tokio-util = { version = "0.7.7", features = ["codec", "compat"] }
 tt-call = "1.0.9"
 which = "4.4.0"
 
+[features]
+docs = []
+test = []
+
+[profile.release]
+codegen-units = 1
+debug = 0
+lto = true
+opt-level = "z"
+panic = "abort"
+strip = "symbols"
+
+[package.metadata."docs.rs"]
+all-features = true
+
 [package.metadata.deb]
 copyright = "2020, Rami3L"
 maintainer = "Rami3L <rami3l@outlook.com>"
@@ -85,14 +101,3 @@ A Rust port of icy/pacapt, a wrapper for many package managers with \
 pacman-style command syntax."""
 priority = "optional"
 section = "utility"
-
-[workspace]
-members = [".", "xtask", "crates/*"]
-
-[profile.release]
-codegen-units = 1
-debug = 0
-lto = true
-opt-level = "z"
-panic = "abort"
-strip = "symbols"

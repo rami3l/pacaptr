@@ -1,6 +1,6 @@
 //! A big part of these tests are copied from https://guide.macports.org/#using.port.installed.
 
-#![cfg(target_os = "macos")]
+#![cfg(all(target_os = "macos", feature = "test"))]
 
 mod common;
 use common::*;
