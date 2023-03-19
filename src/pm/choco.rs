@@ -7,7 +7,7 @@ use tap::prelude::*;
 
 use super::{DryRunStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::exec::Cmd;
-use crate::{dispatch::Config, error::Result};
+use crate::{config::Config, error::Result};
 
 macro_rules! docs_self {
     () => {

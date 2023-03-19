@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use indoc::indoc;
 
 use super::Pm;
-use crate::dispatch::Config;
+use crate::config::Config;
 
 macro_rules! docs_self {
     () => {

@@ -64,7 +64,8 @@ impl Config {
     }
 
     /// Returns the config [`Provider`] from the user-specified file path.
-    pub(crate) fn file_provider() -> impl Provider {
+    #[must_use]
+    pub fn file_provider() -> impl Provider {
         Self::custom_path()
             .or_else(Self::default_path)
             .map(Toml::file)
@@ -72,7 +73,8 @@ impl Config {
     }
 
     /// Returns the environment config [`Provider`].
-    pub(crate) fn env_provider() -> impl Provider {
+    #[must_use]
+    pub fn env_provider() -> impl Provider {
         Env::prefixed(CONFIG_ITEM_ENV_PREFIX)
     }
 }

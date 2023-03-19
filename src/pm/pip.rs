@@ -7,7 +7,7 @@ use tap::prelude::*;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
-    dispatch::Config,
+    config::Config,
     error::{Error, Result},
     exec::Cmd,
 };

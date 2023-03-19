@@ -13,7 +13,7 @@ use crate::print;
 
 /// A specialized [`Result`](std::result::Result) type used by
 /// [`pacaptr`](crate).
-pub(crate) type Result<T, E = Error> = std::result::Result<T, E>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 /// Error type for the [`pacaptr`](crate) library.
 #[derive(Debug, Error)]
@@ -24,7 +24,7 @@ pub enum Error {
     #[allow(missing_docs)]
     ArgParseError { msg: String },
 
-    /// Error when handling a [`Config`](crate::dispatch::Config).
+    /// Error when handling a [`Config`](crate::config::Config).
     #[error(transparent)]
     ConfigError(#[from] figment::Error),
 
@@ -74,9 +74,9 @@ pub enum Error {
 }
 
 #[allow(clippy::module_name_repetitions)]
-/// A simple [`Error`] wrapper designed to be returned in the `main` function.
-/// It delegates its [`Debug`] implementation to the [`Display`] implementation
-/// of its underlying error.
+/// A simple [`enum@Error`] wrapper designed to be returned in the `main`
+/// function. It delegates its [`Debug`] implementation to the
+/// [`std::fmt::Display`] implementation of its underlying error.
 pub struct MainError(Error);
 
 impl From<Error> for MainError {

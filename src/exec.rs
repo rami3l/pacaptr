@@ -387,7 +387,7 @@ macro_rules! docs_errors_grep {
 /// We suppose that all patterns are legal regular expressions.
 /// An error message will be returned if this is not the case.
 #[doc = docs_errors_grep!()]
-fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
+pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
     let patterns: Vec<Regex> = patterns
         .iter()
         .map(|pat| {
