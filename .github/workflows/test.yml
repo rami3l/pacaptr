@@ -34,11 +34,11 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
-        run: cargo test tests --verbose
+        run: cargo test --features=test tests
       - name: Run smoke tests
-        run: cargo test choco --verbose
+        run: cargo test --features=test choco
       - name: Run heavy tests
-        run: cargo test choco --verbose -- --ignored
+        run: cargo test --features=test choco -- --ignored
 
   scoop-winget-test:
     runs-on: windows-latest
@@ -71,15 +71,15 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
-        run: cargo test tests --verbose
+        run: cargo test --features=test tests
       - name: Run smoke tests
         run: |
-          cargo test scoop --verbose
-          cargo test winget --verbose
+          cargo test --features=test scoop 
+          cargo test --features=test winget
       - name: Run heavy tests
         run: |
-          cargo test scoop --verbose -- --ignored
-          cargo test winget --verbose -- --ignored
+          cargo test --features=test scoop -- --ignored
+          cargo test --features=test winget -- --ignored
 
   brew-test:
     runs-on: macos-latest
@@ -102,11 +102,11 @@ jobs:
         run: cargo build --verbose
       # - run: brew list
       - name: Run unit tests
-        run: cargo test tests --verbose
+        run: cargo test --features=test tests
       - name: Run smoke tests
-        run: cargo test brew --verbose
+        run: cargo test --features=test brew
       - name: Run heavy tests
-        run: cargo test brew --verbose -- --ignored
+        run: cargo test --features=test brew -- --ignored
 
   port-test:
     runs-on: macos-latest
@@ -153,11 +153,11 @@ jobs:
         run: cargo build --verbose
       - run: port installed
       - name: Run unit tests
-        run: cargo test tests --verbose
+        run: cargo test --features=test tests
       - name: Run smoke tests
-        run: cargo test port --verbose
+        run: cargo test --features=test port
       - name: Run heavy tests
-        run: cargo test port --verbose -- --ignored
+        run: cargo test --features=test port -- --ignored
 
   apt-test:
     runs-on: ubuntu-latest
@@ -175,11 +175,11 @@ jobs:
       - name: Test native build
         run: cargo build --verbose
       - name: Run unit tests
-        run: cargo test tests --verbose
+        run: cargo test --features=test tests
       - name: Run smoke tests
-        run: cargo test apt --verbose
+        run: cargo test --features=test apt
       - name: Run heavy tests
-        run: cargo test apt --verbose -- --ignored
+        run: cargo test --features=test apt -- --ignored
 
   dnf-test:
     runs-on: ubuntu-latest
@@ -195,11 +195,11 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
-        run: cargo test tests --verbose
+        run: cargo test --features=test tests
       - name: Run smoke tests
-        run: cargo test dnf --verbose
+        run: cargo test --features=test dnf
       - name: Run heavy tests
-        run: cargo test dnf --verbose -- --ignored
+        run: cargo test --features=test dnf -- --ignored
 
   emerge-test:
     runs-on: ubuntu-latest
@@ -216,11 +216,11 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
-        run: cargo test tests --verbose
+        run: cargo test --features=test tests
       - name: Run smoke tests
-        run: cargo test emerge --verbose
+        run: cargo test --features=test emerge
       - name: Run heavy tests
-        run: cargo test emerge --verbose -- --ignored
+        run: cargo test --features=test emerge -- --ignored
 
   xbps-test:
     runs-on: ubuntu-latest
@@ -239,11 +239,11 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
-        run: cargo test tests --verbose
+        run: cargo test --features=test tests
       - name: Run smoke tests
-        run: cargo test xbps --verbose
+        run: cargo test --features=test xbps
       - name: Run heavy tests
-        run: cargo test xbps --verbose -- --ignored
+        run: cargo test --features=test xbps -- --ignored
 
   zypper-test:
     runs-on: ubuntu-latest
@@ -251,24 +251,21 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
       image: opensuse/leap:latest
-    defaults:
-      run:
-        shell: sh
     steps:
-      - run: zypper install -y tar gzip curl gcc
+      - run: zypper install -y tar gzip curl gcc bash
       - uses: actions/checkout@v3
+      #  uses: dtolnay/rust-toolchain@stable
       - name: Set up Rust environment manually
         run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-      # - run: echo "::add-path::$HOME/.cargo/bin"
       - uses: Swatinem/rust-cache@v2
       - name: Build
         run: $HOME/.cargo/bin/cargo build --verbose
       - name: Run unit tests
-        run: $HOME/.cargo/bin/cargo test tests --verbose
+        run: $HOME/.cargo/bin/cargo test --features=test tests
       - name: Run smoke tests
-        run: $HOME/.cargo/bin/cargo test zypper --verbose -- --test-threads=1
+        run: $HOME/.cargo/bin/cargo test --features=test zypper -- --test-threads=1
       - name: Run heavy tests
-        run: $HOME/.cargo/bin/cargo test zypper --verbose -- --ignored --test-threads=1
+        run: $HOME/.cargo/bin/cargo test --features=test zypper -- --ignored --test-threads=1
 
   apk-test:
     runs-on: ubuntu-latest
@@ -286,11 +283,11 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - name: Run unit tests
-        run: cargo test tests --verbose
+        run: cargo test --features=test tests
       - name: Run smoke tests
-        run: cargo test apk --verbose
+        run: cargo test --features=test apk
       - name: Run heavy tests
-        run: cargo test apk --verbose -- --ignored
+        run: cargo test --features=test apk -- --ignored
 
   pkcon-pip-conda-test:
     runs-on: ubuntu-latest
@@ -307,11 +304,11 @@ jobs:
         run: cargo build --verbose
       - name: Run smoke tests
         run: |
-          cargo test pkcon --verbose
-          cargo test pip --verbose
-          cargo test conda --verbose
+          cargo test --features=test pkcon 
+          cargo test --features=test pip 
+          cargo test --features=test conda
       - name: Run heavy tests
         run: |
-          cargo test pkcon --verbose -- --ignored
-          cargo test pip --verbose -- --ignored
-          cargo test conda --verbose -- --ignored
+          cargo test --features=test pkcon -- --ignored
+          cargo test --features=test pip -- --ignored
+          cargo test --features=test conda -- --ignored

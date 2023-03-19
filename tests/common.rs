@@ -1,3 +1,5 @@
+#![cfg(feature = "test")]
+
 use itertools::{chain, Itertools};
 pub use pacaptr_macros::test_dsl;
 use regex::RegexBuilder;

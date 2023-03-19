@@ -1,4 +1,4 @@
-#![cfg(unix)]
+#![cfg(all(unix, feature = "test"))]
 
 mod common;
 use common::*;

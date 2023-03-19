@@ -1,3 +1,5 @@
+#![cfg(feature = "test")]
+
 mod common;
 use common::*;
 

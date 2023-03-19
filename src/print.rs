@@ -2,7 +2,7 @@
 
 #![allow(missing_docs, clippy::module_name_repetitions)]
 
-pub mod style {
+pub(crate) mod style {
     use console::Style;
     use once_cell::sync::Lazy;
 
@@ -11,7 +11,7 @@ pub mod style {
     pub static QUESTION: Lazy<Style> = Lazy::new(|| Style::new().yellow().bold());
 }
 
-pub mod prompt {
+pub(crate) mod prompt {
     use once_cell::sync::Lazy;
 
     use crate::print::style;
@@ -21,6 +21,7 @@ pub mod prompt {
     pub static CANCELED: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Canceled"));
     pub static PENDING: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Pending"));
     pub static RUNNING: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Running"));
+    #[allow(dead_code)]
     pub static INFO: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Info"));
     pub static ERROR: Lazy<StyledStr> = Lazy::new(|| style::ERROR.apply_to("Error"));
 }
