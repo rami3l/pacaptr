@@ -10,7 +10,7 @@ use tap::Pipe;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
-    dispatch::Config,
+    config::Config,
     error::{Error, Result},
     exec::{Cmd, StatusCode},
     print::println_err,
@@ -52,7 +52,7 @@ impl Pm for Xbps {
         "xbps"
     }
 
-    fn cfg(&self) -> &crate::dispatch::Config {
+    fn cfg(&self) -> &crate::config::Config {
         &self.cfg
     }
 

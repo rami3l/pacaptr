@@ -7,7 +7,7 @@ use tap::prelude::*;
 
 use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
-    dispatch::Config,
+    config::Config,
     error::Result,
     exec::{self, Cmd},
 };

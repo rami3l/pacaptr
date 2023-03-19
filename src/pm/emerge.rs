@@ -7,7 +7,7 @@ use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
-use crate::{dispatch::Config, error::Result, exec::Cmd};
+use crate::{config::Config, error::Result, exec::Cmd};
 
 macro_rules! docs_self {
     () => {
