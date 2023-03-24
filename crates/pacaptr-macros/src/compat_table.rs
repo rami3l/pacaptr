@@ -79,7 +79,7 @@ fn make_table() -> anyhow::Result<String> {
             let data = METHODS.map(|method| {
                 items
                     .get(method)
-                    .expect("Implementation details not registered")
+                    .expect("implementation details not registered")
                     .then(|| "*")
                     .unwrap_or("")
             });
