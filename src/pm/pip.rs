@@ -37,6 +37,12 @@ static STRAT_UNINSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
 });
 
 impl Pip {
+    #[must_use]
+    #[allow(missing_docs)]
+    pub const fn new(cfg: Config) -> Self {
+        Self { cfg }
+    }
+
     /// Returns the command used to invoke [`Pip`], eg. `pip`, `pip3`.
     #[must_use]
     fn cmd(&self) -> &str {
@@ -44,14 +50,6 @@ impl Pip {
             .default_pm
             .as_deref()
             .expect("default package manager should have been assigned before initialization")
-    }
-}
-
-impl Pip {
-    #[must_use]
-    #[allow(missing_docs)]
-    pub const fn new(cfg: Config) -> Self {
-        Self { cfg }
     }
 }
 

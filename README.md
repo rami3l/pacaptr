@@ -17,7 +17,7 @@
 [![Private APIs](https://img.shields.io/badge/docs-private--apis-lightgrey?style=flat-square)](https://rami3l.github.io/pacaptr/pacaptr)
 [![License](https://img.shields.io/github/license/rami3l/pacaptr?style=flat-square)](LICENSE)
 
-`pac·apt·r`, or the _PACman AdaPTeR_, is a wrapper for many package managers with pacman-style command syntax, started as a Rust port of [icy/pacapt].
+`pac·apt·r`, or the _PACman AdaPTeR_, is a wrapper for many package managers that allows you to use pacman commands with them.
 
 Just set `pacman` as the alias of `pacaptr` on your non-Arch OS, and then you can run `pacman -Syu` wherever you like!
 
@@ -76,7 +76,7 @@ Just set `pacman` as the alias of `pacaptr` on your non-Arch OS, and then you ca
 
 Coming from `Arch Linux` to `macOS`, I really like the idea of having an automated version of [Pacman Rosetta] for making common package managing tasks less of a travail thanks to the concise `pacman` syntax.
 
-That's why I decided to take inspiration from the existing `sh`-based [icy/pacapt] to make a new CLI tool in Rust for better portability (especially for Windows) and easier maintenance.
+That's why I decided to take inspiration from the existing `sh`-based [icy/pacapt] to make a new CLI tool in Rust for better portability (especially for Windows and macOS) and easier maintenance.
 
 ## Supported Package Managers
 
@@ -88,7 +88,7 @@ That's why I decided to take inspiration from the existing `sh`-based [icy/pacap
 - External: `brew`, `conda`, `pip`/`pip3`, `pkcon`, `tlmgr`
   - These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
 
-As for now, the precedence is still (unfortunately) hard-coded. For example, if both `scoop` and `choco` are installed, `scoop` will be the default. You can however edit the default package manager in your [config](#configuration).
+As for now, the precedence is still (unfortunately) hard-coded. For example, if both `scoop` and `choco` are installed, `scoop` will be the default. You can, however, edit the default package manager in your [config](#configuration).
 
 Please refer to the [compatibility table] for more details on which operations are supported.
 
@@ -123,7 +123,7 @@ To install the release version from crates.io:
 cargo install pacaptr
 ```
 
-To install `master` version from GitHub:
+To install the `master` version from GitHub:
 
 ```bash
 cargo install pacaptr --git https://github.com/rami3l/pacaptr.git
@@ -142,7 +142,7 @@ To uninstall:
 cargo uninstall pacaptr
 ```
 
-For `Alpine Linux` users, `cargo build` might not just work, in this case, please try the following instead:
+For `Alpine Linux` users, `cargo build` might not just work. Please try the following instead:
 
 ```bash
 RUSTFLAGS="-C target-feature=-crt-static" cargo build
@@ -289,7 +289,7 @@ This option is useful when you want to reduce `Docker` image size, for example.
 
 #### For `scoop`
 
-- `pacaptr` launches a `powershell` subprocess to run `scoop`, so please make sure that you have set the right execution policy in `powershell` ([**not `pwsh`**](https://powershellexplained.com/2017-12-29-Powershell-what-is-pwsh/)):
+- `pacaptr` launches a [`pwsh`](https://powershellexplained.com/2017-12-29-Powershell-what-is-pwsh/) subprocess to run `scoop`, or a `powershell` one if `pwsh` is not found in `$PATH`. Please make sure that you have set the right execution policy in the corresponding shell:
 
   ```pwsh
   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser

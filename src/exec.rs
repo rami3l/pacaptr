@@ -163,7 +163,7 @@ impl Cmd {
             let (cmd, subcmd) = self
                 .cmd
                 .split_first()
-                .expect("Failed to build Cmd, command is empty");
+                .expect("failed to build Cmd, command is empty");
             Exec::new(cmd).tap_mut(|builder| {
                 builder.args(subcmd).args(&self.flags).args(&self.kws);
             })
