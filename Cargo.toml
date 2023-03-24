@@ -48,7 +48,7 @@ regex = { version = "1.7.1", default-features = false, features = [
   "perf",
   "unicode-perl",
 ] }
-serde = { version = "1.0.157", features = ["derive"] }
+serde = { version = "1.0.158", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "1.0.40"
 tokio = { version = "1.26.0", features = [
