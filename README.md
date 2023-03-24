@@ -82,11 +82,27 @@ That's why I decided to take inspiration from the existing `sh`-based [icy/pacap
 
 `pacaptr` currently supports the following package managers (in order of precedence):
 
-- Windows: `scoop`, [`choco`](#choco), `winget`
-- macOS: [`brew`](#brew), `port`, `apt` (through [Procursus])
-- Linux: `apt`, `apk`, `dnf`, `emerge`, `xbps`, `zypper`
-- External: `brew`, `conda`, `pip`/`pip3`, `pkcon`, `tlmgr`
-  - These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
+- Windows
+  - [`scoop`](#for-scoop)
+  - [`choco`](#for-choco)
+  - `winget`
+- macOS
+  - [`brew`](#for-brew)
+  - `port`
+  - `apt` (through [Procursus])
+- Linux
+  - `apt`
+  - `apk`
+  - `dnf`
+  - `emerge`
+  - `xbps`
+  - `zypper`
+- External: These are only available with the [`pacaptr --using <name>`](#--using---pm) syntax.
+  - `brew`
+  - `conda`
+  - [`pip`](#for-pip)/[`pip3`](#for-pip)
+  - `pkcon`
+  - `tlmgr`
 
 As for now, the precedence is still (unfortunately) hard-coded. For example, if both `scoop` and `choco` are installed, `scoop` will be the default. You can, however, edit the default package manager in your [config](#configuration).
 
