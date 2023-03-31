@@ -98,6 +98,15 @@ impl Pm for Apt {
             .await
     }
 
+    /// Qs searches locally installed package for names or descriptions.
+    // According to https://www.archlinux.org/pacman/pacman.8.html#_query_options_apply_to_em_q_em_a_id_qo_a,
+    // when including multiple search terms, only packages with descriptions
+    // matching ALL of those terms are returned.
+    async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        self.search_regex(Cmd::new(["dpkg-query", "-l"]).flags(flags), kws)
+            .await
+    }
+
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(["apt", "upgrade", "--trivial-only"])
