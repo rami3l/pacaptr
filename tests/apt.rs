@@ -68,6 +68,15 @@ fn apt_qp_sw() {
     "## }
 }
 
+#[cfg(target_os = "linux")]
+#[test]
+fn apt_qs() {
+    test_dsl! { r##"
+        in -Qs shell
+        ou Bourne Again SHell
+    "## }
+}
+
 #[test]
 #[ignore]
 fn apt_r_s() {

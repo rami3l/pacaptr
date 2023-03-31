@@ -87,7 +87,7 @@ impl Pm for Scoop {
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new([&self.shell, "-Command", "scoop", "list"])
             .flags(flags)
-            .pipe(|cmd| self.search_regex(cmd, kws))
+            .pipe(|cmd| self.search_regex_with_header(cmd, kws, 4))
             .await
     }
 

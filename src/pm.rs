@@ -410,16 +410,30 @@ pub trait PmHelper: Pm {
             .await
     }
 
-    /// Executes a command in [`PmMode::Mute`] and prints out the lines that
-    /// match against the given regex `patterns`.
+    /// Executes a command in [`PmMode::Mute`] and prints the output lines
+    /// that match against the given regex `patterns`.
     async fn search_regex(&self, cmd: Cmd, patterns: &[&str]) -> Result<()> {
+        self.search_regex_with_header(cmd, patterns, 0).await
+    }
+
+    /// Executes a command in [`PmMode::Mute`] and prints `header_lines` of
+    /// header followed by the output lines that match against the given regex
+    /// `patterns`.
+    /// If `header_lines >= text.lines().count()`, then the
+    /// output lines are printed without changes.
+    async fn search_regex_with_header(
+        &self,
+        cmd: Cmd,
+        patterns: &[&str],
+        header_lines: usize,
+    ) -> Result<()> {
         if !self.cfg().dry_run {
             println_quoted(&*prompt::RUNNING, &cmd);
         }
         let out_bytes = self
             .check_output(cmd, PmMode::Mute, &Strategy::default())
             .await?;
-        exec::grep_print(&String::from_utf8(out_bytes)?, patterns)
+        exec::grep_print_with_header(&String::from_utf8(out_bytes)?, patterns, header_lines)
     }
 }
 

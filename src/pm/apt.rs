@@ -103,7 +103,9 @@ impl Pm for Apt {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.search_regex(Cmd::new(["dpkg-query", "-l"]).flags(flags), kws)
+        Cmd::new(["dpkg-query", "-l"])
+            .flags(flags)
+            .pipe(|cmd| self.search_regex_with_header(cmd, kws, 4))
             .await
     }
 
