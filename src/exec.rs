@@ -11,7 +11,7 @@ use futures::prelude::*;
 use indoc::indoc;
 use is_root::is_root;
 use itertools::{chain, Itertools};
-use regex::Regex;
+use regex::{RegexSet, RegexSetBuilder};
 use tap::prelude::*;
 use tokio::{
     io::{self, AsyncRead, AsyncWrite},
@@ -388,23 +388,34 @@ macro_rules! docs_errors_grep {
 /// An error message will be returned if this is not the case.
 #[doc = docs_errors_grep!()]
 pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
-    let patterns: Vec<Regex> = patterns
-        .iter()
-        .map(|pat| {
-            Regex::new(pat)
-                .map_err(|_e| Error::OtherError(format!("pattern `{pat}` is ill-formed")))
-        })
-        .try_collect()?;
+    let patterns: RegexSet = RegexSetBuilder::new(patterns)
+        .case_insensitive(true)
+        .build()
+        .map_err(|e| Error::OtherError(format!("ill-formed patterns found: {e:?}")))?;
     Ok(text
         .lines()
-        .filter(|line| patterns.iter().all(|pat| pat.is_match(line)))
+        .filter(|line| patterns.matches(line).into_iter().count() == patterns.len())
         .collect())
 }
 
 /// Prints the result of [`grep`] line by line.
 #[doc = docs_errors_grep!()]
 pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
-    grep(text, patterns).map(|lns| lns.iter().for_each(|ln| println!("{ln}")))
+    grep_print_with_header(text, patterns, 0)
+}
+
+/// Prints the result of [`grep`] line by line, with `header_lines` of header
+/// prepended.
+/// If `header_lines >= text.lines().count()`, then `text` is printed without
+/// changes.
+#[doc = docs_errors_grep!()]
+pub fn grep_print_with_header(text: &str, patterns: &[&str], header_lines: usize) -> Result<()> {
+    let lns = text.lines();
+    lns.take(header_lines).for_each(|ln| println!("{ln}"));
+    grep(text, patterns)?
+        .into_iter()
+        .for_each(|ln| println!("{ln}"));
+    Ok(())
 }
 
 /// Checks if an executable exists by name (consult `$PATH`) or by path.
