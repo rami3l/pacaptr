@@ -392,7 +392,7 @@ pub fn grep<'t>(text: &'t str, patterns: &[&str]) -> Result<Vec<&'t str>> {
         .iter()
         .map(|pat| {
             Regex::new(pat)
-                .map_err(|_e| Error::OtherError(format!("Pattern `{pat}` is ill-formed")))
+                .map_err(|_e| Error::OtherError(format!("pattern `{pat}` is ill-formed")))
         })
         .try_collect()?;
     Ok(text
