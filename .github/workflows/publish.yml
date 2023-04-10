@@ -91,7 +91,7 @@ jobs:
           cp ./pacaptr.rb homebrew-tap/pacaptr.rb
           ls homebrew-tap
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
           path: homebrew-tap
           token: ${{ secrets.GH_ACTIONS_TOKEN }}
