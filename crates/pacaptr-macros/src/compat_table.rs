@@ -8,7 +8,7 @@ use once_cell::sync::Lazy;
 use proc_macro2::{Span, TokenStream};
 use regex::Regex;
 use syn::{Error, Result};
-use tabled::{style::Style as TableStyle, Table, Tabled};
+use tabled::{settings::Style as TableStyle, Table, Tabled};
 
 const PM_IMPL_DIR: &str = "src/pm/";
 
