@@ -19,7 +19,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 #[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum Error {
-    /// Error while parsing CLI arguments.
+    /// Error when parsing CLI arguments.
     #[error("Failed to parse arguments: {msg}")]
     #[allow(missing_docs)]
     ArgParseError { msg: String },
@@ -28,30 +28,30 @@ pub enum Error {
     #[error(transparent)]
     ConfigError(#[from] figment::Error),
 
-    /// An [`Cmd`](crate::exec::Cmd) fails to finish.
+    /// A [`Cmd`](crate::exec::Cmd) failed to finish.
     #[error("Failed to get exit code of subprocess: {0}")]
     CmdJoinError(JoinError),
 
-    /// An [`Cmd`](crate::exec::Cmd) fails to spawn.
+    /// A [`Cmd`](crate::exec::Cmd) failed to spawn.
     #[error("Failed to spawn subprocess: {0}")]
     CmdSpawnError(io::Error),
 
-    /// Error when trying to get the `stdout`/`stderr`/... handler out of a
-    /// running an [`Cmd`](crate::exec::Cmd).
+    /// Error when trying to get a handle (e.g. `stdout`, `stderr`) out of a
+    /// running [`Cmd`](crate::exec::Cmd).
     #[error("Subprocess didn't have a handle to {handle}")]
     #[allow(missing_docs)]
     CmdNoHandleError { handle: String },
 
-    /// An [`Cmd`](crate::exec::Cmd) fails while waiting for it to finish.
+    /// A [`Cmd`](crate::exec::Cmd) failed when waiting for it to finish.
     #[error("Subprocess failed while running: {0}")]
     CmdWaitError(io::Error),
 
-    /// An [`Cmd`](crate::exec::Cmd) exits with an error.
+    /// A [`Cmd`](crate::exec::Cmd) exited with an error.
     #[error("Subprocess exited with code {code}")]
     #[allow(missing_docs)]
     CmdStatusCodeError { code: StatusCode, output: Output },
 
-    /// An [`Cmd`](crate::exec::Cmd) gets interrupted by a signal.
+    /// A [`Cmd`](crate::exec::Cmd) was interrupted by a signal.
     #[error("Subprocess interrupted by signal")]
     CmdInterruptedError,
 
@@ -59,7 +59,7 @@ pub enum Error {
     #[error(transparent)]
     FromUtf8Error(#[from] std::string::FromUtf8Error),
 
-    /// An unmentioned case of [`io::Error`].
+    /// A non-specific [`io::Error`].
     #[error(transparent)]
     IoError(#[from] io::Error),
 

@@ -93,13 +93,13 @@ pub struct Cmd {
     /// `sudo`.
     pub sudo: bool,
 
-    /// The "command" part of the command string, eg. `brew install`.
+    /// The "command" part of the command string, e.g. `brew install`.
     pub cmd: Vec<String>,
 
-    /// The "flags" part of the command string, eg. `--dry-run`.
+    /// The "flags" part of the command string, e.g. `--dry-run`.
     pub flags: Vec<String>,
 
-    /// The "keywords" part of the command string, eg. `curl fish`.
+    /// The "keywords" part of the command string, e.g. `curl fish`.
     pub kws: Vec<String>,
 }
 
