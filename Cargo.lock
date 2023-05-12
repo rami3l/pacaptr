@@ -1404,9 +1404,9 @@ checksum = "1a515f5799fe4961cb532f983ce2b23082366b898e52ffbce459c86f67c8378a"
 
 [[package]]
 name = "xml-rs"
-version = "0.8.5"
+version = "0.8.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "374b609fb36c36ce3501094dc0548f7df5d8d102224b65bc59812e4a5425d571"
+checksum = "dc95a04ea24f543cd9be5aab44f963fa35589c99e18415c38fb2b17e133bf8d2"
 
 [[package]]
 name = "xshell"
