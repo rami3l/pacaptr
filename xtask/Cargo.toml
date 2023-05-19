@@ -14,5 +14,5 @@ regex = { version = "1.8.1", default-features = false, features = [
     "std",
     "unicode-perl",
 ] }
-xml-rs = "0.8.10"
+xml-rs = "0.8.11"
 xshell = "0.2.3"
