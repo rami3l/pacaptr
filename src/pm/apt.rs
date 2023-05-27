@@ -39,6 +39,15 @@ impl Apt {
     pub const fn new(cfg: Config) -> Self {
         Self { cfg }
     }
+
+    /// Returns the command used to invoke [`Apt`], eg. `apt`, `pkg`.
+    #[must_use]
+    fn cmd(&self) -> &str {
+        self.cfg
+            .default_pm
+            .as_deref()
+            .expect("default package manager should have been assigned before initialization")
+    }
 }
 
 #[async_trait]
@@ -160,11 +169,11 @@ impl Pm for Apt {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(if self.cfg.needed {
-            &["apt", "install"][..]
+        if self.cfg.needed {
+            Cmd::with_sudo(&[self.cmd(), "install"][..])
         } else {
-            &["apt", "install", "--reinstall"][..]
-        })
+            Cmd::with_sudo(&[self.cmd(), "install", "--reinstall"][..])
+        }
         .kws(kws)
         .flags(flags)
         .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
@@ -219,7 +228,7 @@ impl Pm for Apt {
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::new(["apt", "search"]).kws(kws).flags(flags))
+        self.run(Cmd::new([self.cmd(), "search"]).kws(kws).flags(flags))
             .await
     }
 
@@ -249,7 +258,7 @@ impl Pm for Apt {
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apt", "install", "--download-only"])
+        Cmd::with_sudo([self.cmd(), "install", "--download-only"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
@@ -258,7 +267,7 @@ impl Pm for Apt {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.run(Cmd::with_sudo(["apt", "update"]).flags(flags))
+        self.run(Cmd::with_sudo([self.cmd(), "update"]).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;
