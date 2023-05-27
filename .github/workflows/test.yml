@@ -36,9 +36,9 @@ jobs:
       - name: Run unit tests
         run: cargo test --features=test tests
       - name: Run smoke tests
-        run: cargo test --features=test choco
+        run: cargo test --features=test choco -- --test-threads=1
       - name: Run heavy tests
-        run: cargo test --features=test choco -- --ignored
+        run: cargo test --features=test choco -- --ignored --test-threads=1
 
   scoop-winget-test:
     runs-on: windows-latest
