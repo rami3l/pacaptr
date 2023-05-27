@@ -33,6 +33,8 @@ pm_mods! {
     zypper;
 }
 
+use std::env;
+
 use async_trait::async_trait;
 use itertools::Itertools;
 use macro_rules_attribute::macro_rules_attribute;
@@ -258,7 +260,7 @@ impl From<Config> for BoxPm<'_> {
             "port" if cfg!(target_os = "macos") => Port::new(cfg).boxed(),
 
             // Apt for Debian/Ubuntu/Termux (newer versions)
-            "apt" => Apt::new(cfg).boxed(),
+            "apt" | "pkg" => Apt::new(cfg).boxed(),
 
             // Apk for Alpine
             "apk" => Apk::new(cfg).boxed(),
@@ -304,7 +306,17 @@ impl From<Config> for BoxPm<'_> {
 
 /// Detects the name of the package manager to be used in auto dispatch.
 #[must_use]
-fn detect_pm_str<'s>() -> &'s str {
+fn detect_pm_str() -> &'static str {
+    /// Check if one of the following conditions are met:
+    /// - `$TERMUX_APP_PACKAGE_MANAGER` is `apt`;
+    /// - `$TERMUX_MAIN_PACKAGE_FORMAT` is `debian`.
+    ///
+    /// See: <https://github.com/rami3l/pacaptr/issues/576#issuecomment-1565122604>
+    fn is_termux_apt() -> bool {
+        env::var("TERMUX_APP_PACKAGE_MANAGER").as_deref() == Ok("apt")
+            || env::var("TERMUX_MAIN_PACKAGE_FORMAT").as_deref() == Ok("debian")
+    }
+
     let pairs: &[(&str, &str)] = match () {
         _ if cfg!(target_os = "windows") => &[("scoop", ""), ("choco", ""), ("winget", "")],
 
@@ -331,7 +343,12 @@ fn detect_pm_str<'s>() -> &'s str {
     pairs
         .iter()
         .find_map(|&(name, path)| is_exe(name, path).then_some(name))
-        .unwrap_or("unknown")
+        .map_or("unknown", |name| {
+            if name == "apt" && is_termux_apt() {
+                return "pkg";
+            }
+            name
+        })
 }
 
 /// Extra implementation helper functions for [`Pm`],
