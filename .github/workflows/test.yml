@@ -186,13 +186,18 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
-      # image: termux/termux-docker:x86_64
-      image: termux/termux-docker:latest
-      # https://github.com/termux/termux-docker#root-shell
-      options: --user system
+      # image: termux/termux-docker:latest
+      image: termux/termux-docker:x86_64
     steps:
-      - run: pkg install -y curl build-essential
+      # HACK: Fool GitHub Actions into thinking that we're running Alpine.
+      # See: <https://github.com/actions/runner/issues/2115>
+      - run: |
+          /entrypoint.sh pkg install -y tree
+          tree /__e/
+          echo 'ID=alpine' > /etc/os-release
       - uses: actions/checkout@v3
+      # https://github.com/termux/termux-docker/issues/51#issuecomment-1565328900
+      - run: /entrypoint.sh pkg install -y curl build-essential
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Test native build
