@@ -61,7 +61,7 @@ impl Pm for Choco {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["choco", "list", "--localonly"])
+        Cmd::new(["choco", "list"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.check_dry(cmd))

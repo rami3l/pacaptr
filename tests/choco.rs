@@ -37,7 +37,7 @@ fn choco_qi() {
 fn choco_r_s() {
     test_dsl! { r##"
         in -S wget --yes
-        ou The install of wget was successful.
+        ou The install of Wget was successful.
         in -R wget --yes
         ou Wget has been successfully uninstalled.
     "## }
