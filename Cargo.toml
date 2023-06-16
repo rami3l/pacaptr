@@ -30,7 +30,7 @@ xshell = "0.2.3"
 [dependencies]
 async-trait = "0.1.68"
 bytes = "1.4.0"
-clap = { version = "4.3.3", features = ["cargo", "derive"] }
+clap = { version = "4.3.4", features = ["cargo", "derive"] }
 console = "0.15.7"
 dialoguer = { version = "0.10.4", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
