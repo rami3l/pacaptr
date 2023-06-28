@@ -49,7 +49,7 @@ fn conda_r_s() {
 fn conda_si() {
     test_dsl! { r##"
         in --using conda -Si sympy
-        ou https://repo.anaconda.com/pkgs
+        ou repo\.anaconda\.com/pkgs
     "## }
 }
 

@@ -25,7 +25,7 @@ fn apt_q() {
 fn apt_qc() {
     test_dsl! { r##"
         in -Qc wget
-        ou @ubuntu.com
+        ou ubuntu\.com
     "## }
 }
 
