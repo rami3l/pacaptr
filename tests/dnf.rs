@@ -24,7 +24,7 @@ fn dnf_q() {
 fn dnf_qc() {
     test_dsl! { r##"
         in -Qc dnf
-        ou redhat.com
+        ou redhat\.com
     "## }
 }
 

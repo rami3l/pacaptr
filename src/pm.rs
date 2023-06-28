@@ -464,7 +464,7 @@ impl<P: Pm> PmHelper for P {}
 /// Default value: [`PmMode::CheckErr`].
 #[derive(Copy, Clone, Debug, Default)]
 pub enum PmMode {
-    /// Silently collects all the `stdout`/`stderr` combined. Print nothing.
+    /// Silently collects all the `stdout`/`stderr` combined. Prints nothing.
     Mute,
 
     /// Prints out the command which should be executed, run it and collect its

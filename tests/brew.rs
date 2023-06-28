@@ -26,7 +26,7 @@ fn brew_q() {
 fn brew_qc() {
     test_dsl! { r##"
         in --using brew -Qc curl
-        ou github.com
+        ou github\.com
     "## }
 }
 
