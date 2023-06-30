@@ -52,7 +52,7 @@ regex = { version = "1.8.4", default-features = false, features = [
 serde = { version = "1.0.164", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "1.0.40"
-tokio = { version = "1.29.0", features = [
+tokio = { version = "1.29.1", features = [
   "io-std",
   "io-util",
   "macros",
