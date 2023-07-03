@@ -3,6 +3,7 @@
 use std::{
     fmt::{self, Debug},
     process::{ExitCode, Termination},
+    string::FromUtf8Error,
 };
 
 use thiserror::Error;
@@ -29,7 +30,7 @@ pub enum Error {
     ConfigError(#[from] figment::Error),
 
     /// A [`Cmd`](crate::exec::Cmd) failed to finish.
-    #[error("Failed to get exit code of subprocess: {0}")]
+    #[error("Failed to finish subprocess execution: {0}")]
     CmdJoinError(JoinError),
 
     /// A [`Cmd`](crate::exec::Cmd) failed to spawn.
@@ -57,7 +58,7 @@ pub enum Error {
 
     /// Error while converting a [`Vec<u8>`] to a [`String`].
     #[error(transparent)]
-    FromUtf8Error(#[from] std::string::FromUtf8Error),
+    FromUtf8Error(#[from] FromUtf8Error),
 
     /// Error while rendering a dialog.
     #[error(transparent)]
@@ -67,12 +68,16 @@ pub enum Error {
     #[error(transparent)]
     IoError(#[from] io::Error),
 
+    /// A generic [`JoinError`].
+    #[error(transparent)]
+    JoinError(#[from] JoinError),
+
     /// A [`Pm`](crate::pm::Pm) operation is not implemented.
     #[error("Operation `{op}` is unimplemented for `{pm}`")]
     #[allow(missing_docs)]
     OperationUnimplementedError { op: String, pm: String },
 
-    /// Miscellaneous other error.
+    /// An error from a non-specified category.
     #[error("{0}")]
     OtherError(String),
 }
