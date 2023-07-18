@@ -30,7 +30,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
       - name: Create
-        run: cargo doc --all-features --document-private-items
+        run: cargo doc --all-features --document-private-items --no-deps
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
