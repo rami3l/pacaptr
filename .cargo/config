@@ -1,2 +1,3 @@
-[alias]
-xtask = "run --manifest-path ./xtask/Cargo.toml --"
+# https://users.rust-lang.org/t/cross-compiling-how-to-statically-link-glibc/83907/2
+[target.aarch64-unknown-linux-musl]
+linker = "aarch64-linux-gnu-gcc"

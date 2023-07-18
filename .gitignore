@@ -33,3 +33,6 @@
 
 # Choco files that should get ignored
 ignore.*
+
+# ** GoReleaser **
+dist/
