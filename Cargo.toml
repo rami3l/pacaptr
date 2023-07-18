@@ -14,12 +14,12 @@ keywords = ["package-management"]
 categories = ["command-line-utilities"]
 
 include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
-exclude = ["dist/**/*", "docs/**/*"]
+# exclude = ["dist/**/*", "docs/**/*"]
 # build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [workspace]
-members = [".", "xtask", "crates/*"]
+members = [".", "crates/*"]
 
 [build-dependencies]
 built = { version = "0.6.1", features = ["git2"] }

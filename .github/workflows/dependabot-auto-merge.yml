@@ -11,10 +11,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           # Hack: https://github.com/ahmadnassri/action-dependabot-auto-merge/issues/58#issuecomment-981520187
-          token: ${{ secrets.GH_ACTIONS_TOKEN }}
+          token: ${{ secrets.TAP_GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.sha }}
 
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
           target: patch
-          github-token: ${{ secrets.GH_ACTIONS_TOKEN }}
+          github-token: ${{ secrets.TAP_GITHUB_TOKEN }}

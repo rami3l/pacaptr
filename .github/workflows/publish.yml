@@ -15,79 +15,95 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
           prerelease: ${{ contains(github.ref, '-') }}
 
-  publish:
-    name: Publish for ${{ matrix.os }}
+  build-release:
+    name: Build release binaries for ${{ matrix.target }}
     needs: [create-release]
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            # artifact_name: pacaptr.exe
-            # asset_name: pacaptr-windows-amd64
+            target: x86_64-pc-windows-msvc
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
           - os: macos-latest
-            # artifact_name: pacaptr
-            # asset_name: pacaptr-macos-amd64
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
           - os: ubuntu-latest
-            # artifact_name: pacaptr
-            # asset_name: pacaptr-linux-amd64
+            target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Set macOS environment variables
-        if: runner.os == 'macOS'
+
+      - name: Setup extra build tools
+        if: matrix.target == 'aarch64-unknown-linux-musl'
         run: |
-          echo "SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)" >> $GITHUB_ENV
-          echo "MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.1 --show-sdk-platform-version)" >> $GITHUB_ENV
-      - name: Publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cargo xtask publish
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
 
-  bump-choco-version:
-    name: Publish app on Chocolatey
-    runs-on: windows-latest
-    needs: [publish]
-    if: ${{ !contains(github.ref, '-') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Publish to choco
-        env:
-          CHOCO_API_KEY: ${{ secrets.CHOCO_API_KEY }}
-        run: cargo xtask bump-choco
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
-  bump-tap-version:
-    name: Bump formula version for homebrew
-    needs: [publish]
+      - name: Build
+        run: |
+          cargo build --verbose --bin=pacaptr --release --locked --target=${{ matrix.target }}
+
+      # https://github.com/vercel/turbo/blob/ea934d13038361c24a1f71cad3b490d6c0936f37/.github/workflows/turborepo-release.yml#L268-L272
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: pacaptr-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/pacaptr*
+          retention-days: 1
+
+  publish:
+    name: Publish via GoReleaser
+    needs: [build-release]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Generate new formula as `pacaptr.rb`
+      - uses: actions/checkout@v3
+
+      # https://github.com/vercel/turbo/blob/ea934d13038361c24a1f71cad3b490d6c0936f37/.github/workflows/turborepo-release.yml#L306-L309
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: target/gh-artifacts
+
+      # Here we use `mv` to map Rust targets to Golang ones.
+      # https://github.com/vercel/turbo/blob/ea934d13038361c24a1f71cad3b490d6c0936f37/.github/workflows/turborepo-release.yml#L313-L318
+      - name: Modify and inspect artifacts
+        run: |
+          echo $PWD
+          chmod -R 777 target/gh-artifacts
+          ls -laR target/gh-artifacts
+          mv -f target/gh-artifacts/pacaptr-x86_64-pc-windows-msvc target/gh-artifacts/pacaptr_windows_amd64_v1
+          mv -f target/gh-artifacts/pacaptr-aarch64-pc-windows-msvc target/gh-artifacts/pacaptr_windows_arm64
+          mv -f target/gh-artifacts/pacaptr-x86_64-apple-darwin target/gh-artifacts/pacaptr_darwin_amd64_v1
+          mv -f target/gh-artifacts/pacaptr-aarch64-apple-darwin target/gh-artifacts/pacaptr_darwin_arm64
+          mv -f target/gh-artifacts/pacaptr-x86_64-unknown-linux-musl target/gh-artifacts/pacaptr_linux_amd64_v1
+          mv -f target/gh-artifacts/pacaptr-aarch64-unknown-linux-musl target/gh-artifacts/pacaptr_linux_arm64
+          echo '======='
+          ls -laR target/gh-artifacts
+
+      # https://goreleaser.com/ci/actions/?h=github+act#usage
+      - name: Publish via GoReleaser
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean --debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cargo xtask bump-tap
-      - name: Checkout tap
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GH_ACTIONS_TOKEN }}
-          repository: rami3l/homebrew-tap
-          path: homebrew-tap
-      - name: Overwrite formula
-        run: |
-          cp ./pacaptr.rb homebrew-tap/pacaptr.rb
-          ls homebrew-tap
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          path: homebrew-tap
-          token: ${{ secrets.GH_ACTIONS_TOKEN }}
-          # https://github.com/orgs/community/discussions/26686#discussioncomment-3544088
-          title: "feat: add `pacaptr` ${{ github.ref_name }}"
-          commit-message: "feat: add `pacaptr` ${{ github.ref_name }}"
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+          CHOCO_API_KEY: ${{ secrets.CHOCO_API_KEY }}

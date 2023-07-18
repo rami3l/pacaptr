@@ -1,0 +1,124 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# Adapted from https://github.com/LGUG2Z/komorebi/blob/e240bc770619fa7c1f311b8a376551f2dde8a2d7/.goreleaser.yml
+project_name: pacaptr
+
+before:
+  hooks:
+    - bash -c 'echo "package main; func main() {}" > dummy.go'
+
+builds:
+  - id: pacaptr
+    binary: pacaptr
+    main: dummy.go
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - arm64
+      - amd64
+    hooks:
+      # Actually override the release binary.
+      post: bash -c 'mv -f target/gh-artifacts/pacaptr_{{ .Target }}/{{ .Name }} {{ .Path }}'
+
+universal_binaries:
+  - replace: true
+
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}-
+      {{- .Os }}-
+      {{- if eq .Arch "all" }}universal2
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # Use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+brews:
+  # https://goreleaser.com/customization/homebrew/
+  - homepage: https://github.com/rami3l/pacaptr
+    description: Pacman-like syntax wrapper for many package managers.
+    license: GPL-3.0-only
+
+    install: |
+      bin.install "pacaptr"
+
+    test: |
+      system "#{bin}/pacaptr --help"
+
+    # TODO: Remove this when moving out of testing.
+    # skip_upload: auto
+    skip_upload: false
+
+    # https://github.com/goreleaser/goreleaser/blob/a0f0d01a8143913cde72ebc1248abef089ae9b27/.goreleaser.yaml#L211
+    repository:
+      owner: rami3l
+      name: homebrew-tap
+      branch: "{{.ProjectName}}-{{.Version}}"
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+      pull_request:
+        enabled: true
+        base:
+          owner: rami3l
+          name: homebrew-tap
+          branch: master
+
+chocolateys:
+  - package_source_url: https://github.com/rami3l/pacaptr
+    owners: Rami3L
+
+    # == SOFTWARE SPECIFIC SECTION ==
+    title: pacaptr (Install)
+    authors: Rami3L
+    project_url: https://github.com/rami3l/pacaptr
+    copyright: 2020 Rami3L
+    license_url: https://opensource.org/license/gpl-3-0
+    require_license_acceptance: false
+    project_source_url: https://github.com/rami3l/pacaptr
+    bug_tracker_url: https://github.com/rami3l/pacaptr/issues
+    tags: pacaptr pacman
+    summary: Pacman-like syntax wrapper for many package managers.
+    description: |
+      # pacaptr
+
+      `pacaptr` is a Rust port of [icy/pacapt], a wrapper for many package managers with pacman-style command syntax.
+
+      Run `pacaptr -Syu` on the OS of your choice!
+
+    # == PUBLISH SPECIFIC SECTION ==
+    api_key: "{{ .Env.CHOCO_API_KEY }}"
+    # TODO: Publish the nupkg release if not prerelease.
+    # println!(":: Setting choco API key...");
+    # let choco_api_key = env::var("CHOCO_API_KEY")?;
+    # cmd!(
+    #     s,
+    #     "choco apikey --key {choco_api_key} --source https://push.chocolatey.org --verbose"
+    # )
+    # .run()?;
+
+    # println!(":: Packing up NuGet package...");
+    # cmd!(s, "choco pack {nuspec_path} --verbose").run()?;
+
+    # println!(":: Pushing to choco repository...");
+    # cmd!(
+    #     s,
+    #     "choco push pacaptr.{ver}.nupkg --source https://push.chocolatey.org --verbose"
+    # )
+    # .run()?;
+    skip_publish: true
