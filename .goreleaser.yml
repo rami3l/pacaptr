@@ -6,7 +6,7 @@ project_name: pacaptr
 
 before:
   hooks:
-    - bash -c 'echo "package main; func main() {}" > dummy.go'
+    - bash -c 'echo "package main; func main() { panic(0xdeadbeef) }" > dummy.go'
 
 builds:
   - id: pacaptr
