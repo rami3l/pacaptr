@@ -2,10 +2,10 @@
 
 # pacaptr
 
-[![pacaptr](https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&logo=https%3A%2F%2Fuser-images.githubusercontent.com%2F33851577%2F110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png&owner=1&pattern=Charlie%20Brown&theme=Light)](https://crates.io/crates/pacaptr)
+[![pacaptr](https://socialify.git.ci/rami3l/pacaptr/image?description=1&font=Inter&logo=https%3A%2F%2Fgithub.com%2Frami3l%2Fpacaptr%2Fblob%2Fmaster%2Fassets%2Flogo.png%3Fraw%3Dtrue&name=1&owner=1&pattern=Solid&theme=Light)](https://crates.io/crates/pacaptr)
 
 <!--
-[pacaptr-logo]: https://user-images.githubusercontent.com/33851577/110216527-e61d7980-7eaf-11eb-9c83-9ab6bccc067a.png
+[pacaptr-logo]: https://github.com/rami3l/pacaptr/blob/master/assets/logo.png?raw=true
 -->
 
 <!--

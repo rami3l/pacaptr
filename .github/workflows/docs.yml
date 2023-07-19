@@ -31,6 +31,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Create
         run: cargo doc --all-features --document-private-items --no-deps
+      # https://github.com/actions/upload-pages-artifact#example-permissions-fix-for-linux
+      - name: Fix permissions
+        run: |
+          chmod -c -R +rX "./target/doc" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
