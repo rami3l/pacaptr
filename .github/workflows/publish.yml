@@ -72,6 +72,8 @@ jobs:
     needs: [build-release]
     runs-on: ubuntu-latest
     container:
+      # Note: It is also possible to install `choco` directly:
+      # https://github.com/JetBrains/qodana-cli/blob/29134e654dc4878e0587f02338c5101bce327560/.github/workflows/release.yml#L19-L27
       image: chocolatey/choco:latest-linux
     steps:
       - name: Setup build essential
@@ -115,8 +117,20 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --clean --debug
+          args: release --debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
           CHOCO_API_KEY: ${{ secrets.CHOCO_API_KEY }}
+
+      # https://github.com/goreleaser/goreleaser/blob/2a3009757a8996cdcf2a77deb0e5fa413d1f2660/internal/pipe/chocolatey/chocolatey.go#L158
+      - name: Inspect generated artifacts
+        run: |
+          ls -laR dist/
+          cat dist/pacaptr.choco/pacaptr.nuspec
+
+      # https://github.com/goreleaser/goreleaser/blob/2a3009757a8996cdcf2a77deb0e5fa413d1f2660/internal/pipe/chocolatey/chocolatey.go#L201-L208
+      # https://stackoverflow.com/a/75835172
+      - name: Publish app on Chocolatey
+        run: |
+          choco push dist/*.nupkg --source https://push.chocolatey.org --api-key ${{ secrets.CHOCO_API_KEY }} --verbose ${{ contains(github.ref, '-') && '--noop' || '' }}

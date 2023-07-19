@@ -62,9 +62,7 @@ brews:
     test: |
       system "#{bin}/pacaptr --help"
 
-    # TODO: Remove this when moving out of testing.
-    # skip_upload: auto
-    skip_upload: false
+    skip_upload: auto
 
     # https://github.com/goreleaser/goreleaser/blob/a0f0d01a8143913cde72ebc1248abef089ae9b27/.goreleaser.yaml#L211
     repository:
@@ -80,7 +78,8 @@ brews:
           branch: master
 
 chocolateys:
-  - package_source_url: https://github.com/rami3l/pacaptr
+  - name: pacaptr
+    package_source_url: https://github.com/rami3l/pacaptr
     owners: Rami3L
 
     # == SOFTWARE SPECIFIC SECTION ==
@@ -94,6 +93,7 @@ chocolateys:
     bug_tracker_url: https://github.com/rami3l/pacaptr/issues
     tags: pacaptr pacman
     summary: Pacman-like syntax wrapper for many package managers.
+    release_notes: "https://github.com/rami3l/pacaptr/releases/tag/v{{ .Version }}"
     description: |
       # pacaptr
 
@@ -102,23 +102,7 @@ chocolateys:
       Run `pacaptr -Syu` on the OS of your choice!
 
     # == PUBLISH SPECIFIC SECTION ==
+    source_repo: "https://push.chocolatey.org/"
     api_key: "{{ .Env.CHOCO_API_KEY }}"
-    # TODO: Publish the nupkg release if not prerelease.
-    # println!(":: Setting choco API key...");
-    # let choco_api_key = env::var("CHOCO_API_KEY")?;
-    # cmd!(
-    #     s,
-    #     "choco apikey --key {choco_api_key} --source https://push.chocolatey.org --verbose"
-    # )
-    # .run()?;
-
-    # println!(":: Packing up NuGet package...");
-    # cmd!(s, "choco pack {nuspec_path} --verbose").run()?;
-
-    # println!(":: Pushing to choco repository...");
-    # cmd!(
-    #     s,
-    #     "choco push pacaptr.{ver}.nupkg --source https://push.chocolatey.org --verbose"
-    # )
-    # .run()?;
+    # Publishing is handled in `.github\workflows\publish.yml`.
     skip_publish: true
