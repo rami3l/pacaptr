@@ -668,7 +668,7 @@ checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
 
 [[package]]
 name = "pacaptr"
-version = "0.19.1"
+version = "0.19.2"
 dependencies = [
  "async-trait",
  "built",
@@ -700,7 +700,7 @@ dependencies = [
 
 [[package]]
 name = "pacaptr-macros"
-version = "0.19.1"
+version = "0.19.2"
 dependencies = [
  "anyhow",
  "itertools",
