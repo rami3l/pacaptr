@@ -50,8 +50,8 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - "^docs:"
-      - "^test:"
+      - "^test"
+      - "^chore"
 
 brews:
   # https://goreleaser.com/customization/homebrew/
