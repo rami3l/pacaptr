@@ -47,11 +47,11 @@ use crate::{compat_table::compat_table_impl, test_dsl::test_dsl_impl};
 ///        in -S screen --yes
 ///
 ///        # Verify installation.
-///        in ! which screen    
+///        in ! which screen
 ///        ou ^/usr/bin/screen
 ///
-///        # Remove `screen` and verify removal.
-///        in -R screen --yes  
+///        # Remove `screen` and verify the removal.
+///        in -R screen --yes
 ///        in -Qi screen
 ///        ou ^Status: deinstall
 ///    "## }

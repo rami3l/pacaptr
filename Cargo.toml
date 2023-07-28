@@ -1,3 +1,5 @@
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [package]
 name = "pacaptr"
 version = "0.19.2"
@@ -17,7 +19,30 @@ include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
 # exclude = ["dist/**/*", "docs/**/*"]
 # build = "build.rs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[package.metadata.docs.rs]
+all-features = true
+
+[package.metadata.deb]
+copyright = "2020, Rami3L"
+maintainer = "Rami3L <rami3l@outlook.com>"
+# license-file = ["LICENSE", "4"]
+assets = [
+  [
+    "target/release/pacaptr",
+    "usr/bin/",
+    "755",
+  ],
+  [
+    "README.md",
+    "usr/share/doc/pacaptr/README",
+    "644",
+  ],
+]
+depends = "$auto"
+extended-description = "Pacman-like syntax wrapper for many package managers."
+priority = "optional"
+section = "utility"
+
 [workspace]
 members = [".", "crates/*"]
 
@@ -77,28 +102,6 @@ opt-level = "z"
 panic = "abort"
 strip = "symbols"
 
-[package.metadata."docs.rs"]
-all-features = true
-
-[package.metadata.deb]
-copyright = "2020, Rami3L"
-maintainer = "Rami3L <rami3l@outlook.com>"
-# license-file = ["LICENSE", "4"]
-assets = [
-  [
-    "target/release/pacaptr",
-    "usr/bin/",
-    "755",
-  ],
-  [
-    "README.md",
-    "usr/share/doc/pacaptr/README",
-    "644",
-  ],
-]
-depends = "$auto"
-extended-description = """\
-A Rust port of icy/pacapt, a wrapper for many package managers with \
-pacman-style command syntax."""
-priority = "optional"
-section = "utility"
+# https://github.com/pksunkara/cargo-workspaces/tree/master#config
+[workspace.metadata.workspaces]
+no_individual_tags = true
