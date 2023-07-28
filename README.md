@@ -42,36 +42,6 @@ Just set `pacman` as the alias of `pacaptr` on your non-Arch OS, and then you ca
 
 ---
 
-## Contents
-
-- [pacaptr](#pacaptr)
-  - [Contents](#contents)
-  - [Why `pacaptr`?](#why-pacaptr)
-  - [Supported Package Managers](#supported-package-managers)
-  - [Installation](#installation)
-    - [`brew`](#brew)
-    - [`scoop`](#scoop)
-    - [`choco`](#choco)
-    - [`cargo`](#cargo)
-    - [Packaging for `Debian`](#packaging-for-debian)
-  - [Configuration](#configuration)
-  - [Tips](#tips)
-    - [Universal](#universal)
-      - [`--using`, `--pm`](#--using---pm)
-      - [Automatic `sudo` invocation](#automatic-sudo-invocation)
-      - [Extra flags support](#extra-flags-support)
-      - [`--dryrun`, `--dry-run`](#--dryrun---dry-run)
-      - [`--yes`, `--noconfirm`, `--no-confirm`](#--yes---noconfirm---no-confirm)
-      - [`--nocache`, `--no-cache`](#--nocache---no-cache)
-    - [Platform-Specific Tips](#platform-specific-tips)
-      - [For `brew`](#for-brew)
-      - [For `scoop`](#for-scoop)
-      - [For `choco`](#for-choco)
-      - [For `pip`](#for-pip)
-    - [Feel Like Contributing?](#feel-like-contributing)
-
----
-
 ## Why `pacaptr`?
 
 Coming from `Arch Linux` to `macOS`, I really like the idea of having an automated version of [Pacman Rosetta] for making common package managing tasks less of a travail thanks to the concise `pacman` syntax.
@@ -110,28 +80,38 @@ Please refer to the [compatibility table] for more details on which operations a
 
 ## Installation
 
-[We need your help](https://github.com/rami3l/pacaptr/issues/5) to achieve binary distribution of `pacaptr` on more platforms!
+> 💡 [We need your help](https://github.com/rami3l/pacaptr/issues/5) to achieve binary distribution of `pacaptr` on more platforms!
 
-### `brew`
+### Brew
+
+[![Tap Updated](https://img.shields.io/github/last-commit/rami3l/homebrew-tap/master?style=flat-square&label=tap%20updated)](https://github.com/rami3l/homebrew-tap)
 
 ```bash
 brew install rami3l/tap/pacaptr
 ```
 
-### `scoop`
+### Scoop
+
+[![Scoop Version](https://img.shields.io/scoop/v/pacaptr?bucket=extras&style=flat-square)](https://scoop.sh/#/apps?q=pacaptr&o=true)
 
 ```powershell
 scoop bucket add extras
 scoop install pacaptr
 ```
 
-### `choco`
+### Choco
+
+[![Chocolatey Version](https://img.shields.io/chocolatey/v/pacaptr?style=flat-square)](https://community.chocolatey.org/packages/pacaptr)
+[![Chocolatey Downloads](https://img.shields.io/chocolatey/dt/pacaptr?style=flat-square)](https://community.chocolatey.org/packages/pacaptr)
 
 ```powershell
 choco install pacaptr
 ```
 
-### `cargo`
+### Cargo
+
+[![Cargo Version](https://img.shields.io/crates/v/pacaptr?style=flat-square)](https://crates.io/crates/pacaptr)
+[![Cargo Downloads](https://img.shields.io/crates/d/pacaptr?style=flat-square)](https://crates.io/crates/pacaptr)
 
 To install the release version from crates.io:
 
@@ -139,7 +119,7 @@ To install the release version from crates.io:
 cargo install pacaptr
 ```
 
-To install the `master` version from GitHub:
+Alternatively, to install the `master` version from GitHub:
 
 ```bash
 cargo install pacaptr --git https://github.com/rami3l/pacaptr.git
@@ -149,7 +129,8 @@ To clone and install (for the interested Rustaceans):
 
 ```bash
 git clone https://github.com/rami3l/pacaptr.git && cd pacaptr
-cargo install --path . # Output path is usually `$HOME/.cargo/bin/pacaptr`.
+cargo install --path .
+# The output path is usually `$HOME/.cargo/bin/pacaptr`.
 ```
 
 To uninstall:
@@ -158,13 +139,13 @@ To uninstall:
 cargo uninstall pacaptr
 ```
 
-For `Alpine Linux` users, `cargo build` might not just work. Please try the following instead:
+For `Alpine Linux` users, `cargo build` might not work. Please try the following instead:
 
 ```bash
 RUSTFLAGS="-C target-feature=-crt-static" cargo build
 ```
 
-### Packaging for `Debian`
+### Packaging for Debian
 
 ```bash
 cargo install cargo-deb
