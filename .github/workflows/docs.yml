@@ -31,6 +31,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Create
         run: cargo doc --all-features --document-private-items --no-deps
+      # https://dev.to/deciduously/prepare-your-rust-api-docs-for-github-pages-2n5i
+      - name: Patch `index.html`
+        run: |
+          echo '<meta http-equiv="refresh" content="0; url=pacaptr/index.html">' > ./target/doc/index.html
       # https://github.com/actions/upload-pages-artifact#example-permissions-fix-for-linux
       - name: Fix permissions
         run: |

@@ -14,7 +14,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/pacaptr?style=flat-square)](https://crates.io/crates/pacaptr)
 [![docs.rs](https://img.shields.io/docsrs/pacaptr?style=flat-square)](https://docs.rs/pacaptr)
-[![Private APIs](https://img.shields.io/badge/docs-private--apis-lightgrey?style=flat-square)](https://rami3l.github.io/pacaptr/pacaptr)
+[![Private APIs](https://img.shields.io/badge/docs-private--apis-lightgrey?style=flat-square)](https://rami3l.github.io/pacaptr)
 [![License](https://img.shields.io/github/license/rami3l/pacaptr?style=flat-square)](LICENSE)
 
 `pac·apt·r`, or the _PACman AdaPTeR_, is a wrapper for many package managers that allows you to use pacman commands with them.

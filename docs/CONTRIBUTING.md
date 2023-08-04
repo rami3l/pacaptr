@@ -25,7 +25,7 @@ Some discussions concerning certain crucial design choices haven't been made yet
 The API docs is a good starting point if you want to dive a little deeper into this project.
 You can get it in one of the following ways:
 
-- See the precompiled version on [GitHub Pages](https://rami3l.github.io/pacaptr/pacaptr/).
+- See the precompiled version on [GitHub Pages](https://rami3l.github.io/pacaptr).
 - Compile from source:
 
   ```bash
