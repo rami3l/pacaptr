@@ -27,12 +27,17 @@ use tt_call::tt_call;
 
 use crate::_built::GIT_VERSION;
 
+fn version() -> &'static str {
+    GIT_VERSION.unwrap_or(clap::crate_version!())
+}
+
 /// The command line options to be collected.
 #[derive(Debug, Parser)]
 #[command(
-    version = GIT_VERSION.unwrap_or(clap::crate_version!()),
+    version = version(),
     author = clap::crate_authors!(),
     about = clap::crate_description!(),
+    before_help = format!("{} {}", clap::crate_name!(), version()),
     subcommand_required = true,
     arg_required_else_help = true,
 )]
