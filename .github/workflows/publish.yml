@@ -8,6 +8,8 @@ on:
 env:
   CARGO_TERM_COLOR: always
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+  # https://users.rust-lang.org/t/cross-compiling-how-to-statically-link-glibc/83907/2
+  CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gcc
 
 jobs:
   create-release:
