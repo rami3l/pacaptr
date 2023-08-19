@@ -16,6 +16,7 @@ use figment::{
     Figment, Provider,
 };
 use serde::{Deserialize, Serialize};
+use tap::prelude::*;
 
 /// The crate name.
 const CRATE_NAME: &str = clap::crate_name!();
@@ -48,22 +49,31 @@ pub struct Config {
 }
 
 impl Config {
-    /// The default config file path is `$HOME/.config/pacaptr/pacaptr.toml`.
+    /// The default config file path is defined with the following precedence:
+    ///
+    /// - `$XDG_CONFIG_HOME/pacaptr/pacaptr.toml`, if `$XDG_CONFIG_HOME` is set;
+    /// - `$HOME/.config/pacaptr/pacaptr.toml`.
+    ///
+    /// This aligns with `fish`'s behavior.
+    /// See: <https://github.com/fish-shell/fish-shell/issues/3170#issuecomment-228311857>
     fn default_path() -> Option<PathBuf> {
-        dirs_next::home_dir().map(|home| {
-            home.join(".config")
-                .join(CRATE_NAME)
-                .join(format!("{CRATE_NAME}.toml"))
-        })
+        env::var_os("XDG_CONFIG_HOME")
+            .map(PathBuf::from)
+            .filter(|p| p.is_absolute())
+            .or_else(|| dirs_next::home_dir().map(|p| p.join(".config")))
+            .tap_some_mut(|p| {
+                p.extend([CRATE_NAME, &format!("{CRATE_NAME}.toml")]);
+            })
     }
 
     /// Gets the custom config file path specified by the `PACAPTR_CONFIG`
     /// environment variable.
     fn custom_path() -> Option<PathBuf> {
-        env::var(CONFIG_FILE_ENV).ok().map(PathBuf::from)
+        env::var_os(CONFIG_FILE_ENV).map(PathBuf::from)
     }
 
-    /// Returns the config [`Provider`] from the user-specified file path.
+    /// Returns the config [`Provider`] from the custom or default config file
+    /// path.
     #[must_use]
     pub fn file_provider() -> impl Provider {
         Self::custom_path()

@@ -154,7 +154,11 @@ cargo deb
 
 ## Configuration
 
-The default path for the config file is `$HOME/.config/pacaptr/pacaptr.toml`, which can be overridden by the `PACAPTR_CONFIG` environment variable.
+The config file path is defined with the following precedence:
+
+- `$PACAPTR_CONFIG`, if it is set;
+- `$XDG_CONFIG_HOME/pacaptr/pacaptr.toml`, if `$XDG_CONFIG_HOME` is set;
+- `$HOME/.config/pacaptr/pacaptr.toml`.
 
 I decided not to trash user's `$HOME` without their permission, so:
 
