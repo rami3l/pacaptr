@@ -410,10 +410,12 @@ pub fn grep_print(text: &str, patterns: &[&str]) -> Result<()> {
 /// changes.
 #[doc = docs_errors_grep!()]
 pub fn grep_print_with_header(text: &str, patterns: &[&str], header_lines: usize) -> Result<()> {
-    let lns = text.lines();
-    lns.take(header_lines).for_each(|ln| println!("{ln}"));
-    grep(text, patterns)?
-        .into_iter()
+    let lns = text.lines().collect_vec();
+    let (header, rest) = lns.split_at(header_lines);
+    header
+        .iter()
+        .copied()
+        .chain(grep(&rest.join("\n"), patterns)?)
         .for_each(|ln| println!("{ln}"));
     Ok(())
 }

@@ -224,7 +224,7 @@ impl Pm for Zypper {
             .check_output(cmd, PmMode::Mute, &STRAT_CHECK_DRY)
             .await?
             .pipe(String::from_utf8)?;
-        exec::grep_print_with_header(&out, kws, 2)
+        exec::grep_print_with_header(&out, kws, 4)
     }
 
     /// Ss searches for package(s) by searching the expression in name,
