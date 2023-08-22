@@ -70,6 +70,9 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v3
+      # NOTE: Since Rust is pre-installed in the runner,
+      # it's faster to run `rust-cache` before `rust-toolchain`.
+      # This is not the case for jobs running in Docker images.
       - name: Download cached build
         uses: Swatinem/rust-cache@v2
         with:
@@ -247,14 +250,14 @@ jobs:
       - uses: actions/checkout@v3
       - name: Setup extra build tools
         run: dnf install -y make automake gcc gcc-c++ kernel-devel
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
       - name: Download cached build
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
           save-if: false
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-musl
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -276,14 +279,14 @@ jobs:
         run: |
           # `pacaptr -Ss` might fail without this line.
           emerge --sync || true
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
       - name: Download cached build
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
           save-if: false
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-musl
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -305,14 +308,14 @@ jobs:
           xbps-install -y -Su || (xbps-install -y -u xbps && xbps-install -y -Su)
           xbps-install -y base-devel curl bash
       - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
       - name: Download cached build
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
           save-if: false
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-musl
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -332,14 +335,14 @@ jobs:
       - name: Setup extra build tools
         run: zypper install -y tar gzip curl gcc bash
       - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
       - name: Download cached build
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
           save-if: false
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-musl
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -360,14 +363,14 @@ jobs:
         run: |
           apk add -U build-base tar bash
       - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
       - name: Download cached build
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
           save-if: false
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-musl
       - name: Build and run tests
         env:
           RUSTFLAGS: "-C target-feature=-crt-static"
