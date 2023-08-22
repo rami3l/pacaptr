@@ -28,6 +28,7 @@ jobs:
   build:
     name: build (${{ matrix.target }})
     needs: skip-check
+    if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
