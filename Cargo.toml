@@ -55,7 +55,7 @@ xshell = "0.2.5"
 [dependencies]
 async-trait = "0.1.73"
 bytes = "1.4.0"
-clap = { version = "4.3.21", features = ["cargo", "derive"] }
+clap = { version = "4.3.23", features = ["cargo", "derive"] }
 console = "0.15.7"
 dialoguer = { version = "0.10.4", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
@@ -74,10 +74,10 @@ regex = { version = "1.9.3", default-features = false, features = [
   "unicode-case",
   "unicode-perl",
 ] }
-serde = { version = "1.0.183", features = ["derive"] }
+serde = { version = "1.0.185", features = ["derive"] }
 tap = "1.0.1"
-thiserror = "1.0.46"
-tokio = { version = "1.31.0", features = [
+thiserror = "1.0.47"
+tokio = { version = "1.32.0", features = [
   "io-std",
   "io-util",
   "macros",
