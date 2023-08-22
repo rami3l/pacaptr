@@ -108,11 +108,9 @@ fn zypper_si() {
 #[test]
 fn zypper_sl() {
     test_dsl! { r##"
-        in -Sl
-        ou Main Repository
-        ou wget
         in -Sl wget
-        ou Main Repository
+        ou Repository
+        ou openSUSE
         ou wget
     "## }
 }

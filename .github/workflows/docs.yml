@@ -27,8 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
+      - uses: dtolnay/rust-toolchain@nightly
       - name: Create
         run: cargo doc --all-features --document-private-items --no-deps
       # https://dev.to/deciduously/prepare-your-rust-api-docs-for-github-pages-2n5i

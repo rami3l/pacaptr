@@ -9,6 +9,8 @@ on:
 env:
   CARGO_TERM_COLOR: always
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+  # https://users.rust-lang.org/t/cross-compiling-how-to-statically-link-glibc/83907/2
+  CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gcc
 
 jobs:
   skip-check:
@@ -23,35 +25,82 @@ jobs:
           concurrent_skipping: same_content
           do_not_skip: '["pull_request"]'
 
+  build:
+    name: build (${{ matrix.target }})
+    needs: skip-check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            target2: aarch64-pc-windows-msvc
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            target2: aarch64-apple-darwin
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            target2: aarch64-unknown-linux-musl
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup extra build tools
+        if: matrix.target2 == 'aarch64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+      - id: cache_build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+      - name: Setup Rust
+        if: ${{ !steps.cache_build.outputs.cache-hit }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }},${{ matrix.target2 }}
+      - name: Build
+        if: ${{ !steps.cache_build.outputs.cache-hit }}
+        run: |
+          cargo build --verbose --all-targets --target=${{ matrix.target }}
+          cargo build --verbose --release --locked --target=${{ matrix.target2 }}
+
   choco-test:
     runs-on: windows-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v3
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-pc-windows-msvc
-      - uses: Swatinem/rust-cache@v2
-      - name: Test build for aarch64
-        run: cargo build --verbose --release --locked --target=aarch64-pc-windows-msvc
-      - name: Build
-        run: cargo build --verbose
-      - name: Run unit tests
-        run: cargo test --features=test tests
-      - name: Run smoke tests
-        run: cargo test --features=test choco -- --test-threads=1
-      - name: Run heavy tests
-        run: cargo test --features=test choco -- --ignored --test-threads=1
+          targets: x86_64-pc-windows-msvc
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-pc-windows-msvc
+        run: |
+          cargo build --verbose
+          cargo test --features=test tests
+          cargo test --features=test choco -- --test-threads=1
+          cargo test --features=test choco -- --ignored --test-threads=1
 
   scoop-winget-test:
     runs-on: windows-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v3
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+        with:
+          targets: x86_64-pc-windows-msvc
       - name: Install scoop
         shell: powershell
         run: |
@@ -72,44 +121,45 @@ jobs:
         run: |
           Get-Command winget
           winget --info
-      - name: Build
-        run: cargo build --verbose
-      - name: Run unit tests
-        run: cargo test --features=test tests
-      - name: Run smoke tests
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-pc-windows-msvc
         run: |
+          cargo build --verbose
+          cargo test --features=test tests
+
           cargo test --features=test scoop
           cargo test --features=test winget
-      - name: Run heavy tests
-        run: |
+
           cargo test --features=test scoop -- --ignored
           cargo test --features=test winget -- --ignored
 
   brew-test:
     runs-on: macos-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v3
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-apple-darwin
-      - uses: Swatinem/rust-cache@v2
-      - name: Test build for aarch64
-        run: cargo build --verbose --release --locked --target=aarch64-apple-darwin
-      - name: Test native build
-        run: cargo build --verbose
-      # - run: brew list
-      - name: Run unit tests
-        run: cargo test --features=test tests
-      - name: Run smoke tests
-        run: cargo test --features=test brew
-      - name: Run heavy tests
-        run: cargo test --features=test brew -- --ignored
+          targets: x86_64-apple-darwin
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-apple-darwin
+        run: |
+          cargo build --verbose
+          cargo test --features=test tests
+          cargo test --features=test brew
+          cargo test --features=test brew -- --ignored
 
   port-test:
     runs-on: macos-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v3
@@ -119,7 +169,7 @@ jobs:
           cat macos_build.txt
       # https://github.com/actions/cache/issues/629#issuecomment-1189184648
       - name: Create gtar wrapper
-        uses: 1arp/create-a-file-action@0.2
+        uses: fertrig/create-file-action@1.0.2
         with:
           path: target
           file: gtar
@@ -146,176 +196,216 @@ jobs:
           curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
           source ./macports-ci install
           sudo port install wget
+          port installed
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Build
-        run: cargo build --verbose
-      - run: port installed
-      - name: Run unit tests
-        run: cargo test --features=test tests
-      - name: Run smoke tests
-        run: cargo test --features=test port
-      - name: Run heavy tests
-        run: cargo test --features=test port -- --ignored
+        with:
+          targets: x86_64-apple-darwin
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-apple-darwin
+        run: |
+          cargo build --verbose
+          cargo test --features=test tests
+          cargo test --features=test port
+          cargo test --features=test port -- --ignored
 
   apt-test:
     runs-on: ubuntu-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
-    env:
-      # https://users.rust-lang.org/t/cross-compiling-how-to-statically-link-glibc/83907/2
-      CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gcc
     steps:
       - uses: actions/checkout@v3
-      - name: Setup extra build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-unknown-linux-musl,aarch64-unknown-linux-musl
-      - uses: Swatinem/rust-cache@v2
-      - name: Test build for aarch64 musl
-        run: cargo build --verbose --release --locked --target=aarch64-unknown-linux-musl
-      - name: Test build for x86_64 musl
-        run: cargo build --verbose --release --locked --target=x86_64-unknown-linux-musl
-      - name: Test native build
-        run: cargo build --verbose
-      - name: Run unit tests
-        run: cargo test --features=test tests
-      - name: Run smoke tests
-        run: cargo test --features=test apt
-      - name: Run heavy tests
-        run: cargo test --features=test apt -- --ignored
+          targets: x86_64-unknown-linux-musl
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
+        run: |
+          cargo build --verbose
+          cargo test --features=test tests
+          cargo test --features=test apt
+          cargo test --features=test apt -- --ignored
 
   dnf-test:
     runs-on: ubuntu-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
       image: fedora:latest
     steps:
       - uses: actions/checkout@v3
-      - run: dnf install -y make automake gcc gcc-c++ kernel-devel
+      - name: Setup extra build tools
+        run: dnf install -y make automake gcc gcc-c++ kernel-devel
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Build
-        run: cargo build --verbose
-      - name: Run unit tests
-        run: cargo test --features=test tests
-      - name: Run smoke tests
-        run: cargo test --features=test dnf
-      - name: Run heavy tests
-        run: cargo test --features=test dnf -- --ignored
+        with:
+          targets: x86_64-unknown-linux-musl
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
+        run: |
+          cargo build --verbose
+          cargo test --features=test tests
+          cargo test --features=test dnf
+          cargo test --features=test dnf -- --ignored
 
   emerge-test:
     runs-on: ubuntu-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
       image: gentoo/stage3
     steps:
       - uses: actions/checkout@v3
+      - name: Setup extra build tools
+        run: |
+          # `pacaptr -Ss` might fail without this line.
+          emerge --sync || true
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      # `pacaptr -Ss` might fail without this line.
-      - run: emerge --sync || true
-      - name: Build
-        run: cargo build --verbose
-      - name: Run unit tests
-        run: cargo test --features=test tests
-      - name: Run smoke tests
-        run: cargo test --features=test emerge
-      - name: Run heavy tests
-        run: cargo test --features=test emerge -- --ignored
+        with:
+          targets: x86_64-unknown-linux-musl
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
+        run: |
+          cargo build --verbose
+          cargo test --features=test tests
+          cargo test --features=test emerge
+          cargo test --features=test emerge -- --ignored
 
   xbps-test:
     runs-on: ubuntu-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
       image: voidlinux/voidlinux:latest
     steps:
-      - name: Install required packages
+      - name: Setup extra build tools
         run: |
           xbps-install -y -Su || (xbps-install -y -u xbps && xbps-install -y -Su)
           xbps-install -y base-devel curl bash
       - uses: actions/checkout@v3
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Build
-        run: cargo build --verbose
-      - name: Run unit tests
-        run: cargo test --features=test tests
-      - name: Run smoke tests
-        run: cargo test --features=test xbps
-      - name: Run heavy tests
-        run: cargo test --features=test xbps -- --ignored
+        with:
+          targets: x86_64-unknown-linux-musl
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
+        run: |
+          cargo build --verbose
+          cargo test --features=test tests
+          cargo test --features=test xbps
+          cargo test --features=test xbps -- --ignored
 
   zypper-test:
     runs-on: ubuntu-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
-      image: opensuse/leap:latest
+      image: registry.opensuse.org/opensuse/bci/rust:latest
     steps:
-      - run: zypper install -y tar gzip curl gcc bash
+      - name: Setup extra build tools
+        run: zypper install -y tar gzip curl gcc bash
       - uses: actions/checkout@v3
-      #  uses: dtolnay/rust-toolchain@stable
-      - name: Set up Rust environment manually
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-      - uses: Swatinem/rust-cache@v2
-      - name: Build
-        run: $HOME/.cargo/bin/cargo build --verbose
-      - name: Run unit tests
-        run: $HOME/.cargo/bin/cargo test --features=test tests
-      - name: Run smoke tests
-        run: $HOME/.cargo/bin/cargo test --features=test zypper -- --test-threads=1
-      - name: Run heavy tests
-        run: $HOME/.cargo/bin/cargo test --features=test zypper -- --ignored --test-threads=1
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
+        run: |
+          cargo build --verbose
+          cargo test --features=test tests
+          cargo test --features=test zypper -- --test-threads=1
+          cargo test --features=test zypper -- --ignored --test-threads=1
 
   apk-test:
     runs-on: ubuntu-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
       image: rust:alpine
-    env:
-      RUSTFLAGS: "-C target-feature=-crt-static"
     steps:
+      - name: Setup extra build tools
+        run: |
+          apk add -U build-base tar bash
       - uses: actions/checkout@v3
-      - run: apk add -U build-base tar bash
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Build
-        run: cargo build --verbose
-      - name: Run unit tests
-        run: cargo test --features=test tests
-      - name: Run smoke tests
-        run: cargo test --features=test apk
-      - name: Run heavy tests
-        run: cargo test --features=test apk -- --ignored
+        with:
+          targets: x86_64-unknown-linux-musl
+      - name: Build and run tests
+        env:
+          RUSTFLAGS: "-C target-feature=-crt-static"
+          CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
+        run: |
+          cargo build --verbose
+          cargo test --features=test tests
+          cargo test --features=test apk
+          cargo test --features=test apk -- --ignored
 
   pkcon-pip-conda-test:
     runs-on: ubuntu-latest
-    needs: skip-check
+    needs: build
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v3
+      - name: Setup extra build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y packagekit packagekit-tools gcc-aarch64-linux-gnu
+      - name: Download cached build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+          save-if: false
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: |
-          sudo apt update
-          sudo apt install -y packagekit packagekit-tools
-      - name: Build
-        run: cargo build --verbose
-      - name: Run smoke tests
+        with:
+          targets: x86_64-unknown-linux-musl
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
         run: |
-          cargo test --features=test pkcon 
-          cargo test --features=test pip 
+          cargo build --verbose
+
+          cargo test --features=test pkcon
+          cargo test --features=test pip
           cargo test --features=test conda
-      - name: Run heavy tests
-        run: |
+
           cargo test --features=test pkcon -- --ignored
           cargo test --features=test pip -- --ignored
           cargo test --features=test conda -- --ignored
