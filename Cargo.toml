@@ -91,7 +91,6 @@ tt-call = "1.0.9"
 which = "4.4.0"
 
 [features]
-docs = []
 test = []
 
 [profile.release]
