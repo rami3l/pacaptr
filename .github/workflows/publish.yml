@@ -16,7 +16,7 @@ jobs:
     name: Create GitHub release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Create release
         uses: softprops/action-gh-release@v1
@@ -44,7 +44,7 @@ jobs:
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup extra build tools
         if: matrix.target == 'aarch64-unknown-linux-musl'
@@ -82,7 +82,7 @@ jobs:
         run: |
           apt-get update && apt-get install -y git curl build-essential
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Golang
         uses: actions/setup-go@v4
