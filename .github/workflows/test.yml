@@ -112,7 +112,7 @@ jobs:
           iwr -useb 'https://raw.githubusercontent.com/scoopinstaller/install/master/install.ps1' -outfile 'install.ps1'
           .\install.ps1 -RunAsAdmin
           (Resolve-Path ~\scoop\shims).Path >> $Env:GITHUB_PATH
-      - name: Verity scoop installation
+      - name: Verify scoop installation
         run: |
           Get-Command scoop
           powershell scoop help
@@ -121,7 +121,7 @@ jobs:
       - name: Install winget
         shell: powershell
         run: scoop install winget
-      - name: Verity winget installation
+      - name: Verify winget installation
         run: |
           Get-Command winget
           winget --info
