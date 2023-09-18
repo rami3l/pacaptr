@@ -118,8 +118,7 @@ macro_rules! methods {
                 /// Scc removes all files from the cache.
                 async fn scc;
 
-                /// Sccc ...
-                /// What is this?
+                /// Sccc performs a deeper cleaning of the cache than `Scc` (if applicable).
                 async fn sccc;
 
                 /// Sg lists all packages belonging to the GROUP.

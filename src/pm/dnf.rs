@@ -180,8 +180,7 @@ impl Pm for Dnf {
             .await
     }
 
-    /// Sccc ...
-    /// What is this?
+    /// Sccc performs a deeper cleaning of the cache than `Scc` (if applicable).
     async fn sccc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(["dnf", "clean", "all"])
             .flags(flags)
