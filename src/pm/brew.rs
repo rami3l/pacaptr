@@ -198,6 +198,20 @@ impl Pm for Brew {
             .await
     }
 
+    /// Sccc performs a deeper cleaning of the cache than `Scc` (if applicable).
+    async fn sccc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
+        let strat = Strategy {
+            dry_run: DryRunStrategy::with_flags(["--dry-run"]),
+            prompt: PromptStrategy::CustomPrompt,
+            ..Strategy::default()
+        };
+        Cmd::new(["brew", "cleanup", "--prune=all"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &strat))
+            .await
+    }
+
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(["brew", "info"]).kws(kws).flags(flags))
