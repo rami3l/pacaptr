@@ -55,12 +55,12 @@ jobs:
         with:
           shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
       - name: Setup Rust
-        if: ${{ !steps.cache_build.outputs.cache-hit }}
+        if: ${{ steps.cache_build.outputs.cache-hit != 'true' }}
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }},${{ matrix.target2 }}
       - name: Build
-        if: ${{ !steps.cache_build.outputs.cache-hit }}
+        if: ${{ steps.cache_build.outputs.cache-hit != 'true' }}
         run: |
           cargo build --verbose --all-targets --target=${{ matrix.target }}
           cargo build --verbose --release --locked --target=${{ matrix.target2 }}
