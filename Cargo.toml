@@ -62,7 +62,6 @@ dirs-next = "2.0.0"
 figment = { version = "0.10.10", features = ["env", "toml"] }
 futures = { version = "0.3.28", default-features = false, features = ["std"] }
 indoc = "2.0.4"
-is-root = "0.1.3"
 itertools = "0.11.0"
 macro_rules_attribute = "0.2.0"
 once_cell = "1.18.0"
@@ -89,6 +88,12 @@ tokio-stream = "0.1.14"
 tokio-util = { version = "0.7.8", features = ["codec", "compat"] }
 tt-call = "1.0.9"
 which = "4.4.2"
+
+[target.'cfg(windows)'.dependencies]
+is_elevated = "0.1.2"
+
+[target.'cfg(unix)'.dependencies]
+uzers = { version = "0.11.3", default-features = false }
 
 [features]
 test = []

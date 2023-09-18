@@ -1,4 +1,4 @@
-#![cfg(all(target_os = "windows", feature = "test"))]
+#![cfg(all(windows, feature = "test"))]
 
 mod common;
 use common::*;

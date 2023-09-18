@@ -9,7 +9,6 @@ use bytes::{Bytes, BytesMut};
 use dialoguer::FuzzySelect;
 use futures::prelude::*;
 use indoc::indoc;
-use is_root::is_root;
 use itertools::{chain, Itertools};
 use regex::{RegexSet, RegexSetBuilder};
 use tap::prelude::*;
@@ -89,7 +88,7 @@ pub type Output = Vec<u8>;
 #[must_use]
 #[derive(Debug, Clone, Default)]
 pub struct Cmd {
-    /// Flag indicating If a **normal admin** needs to run this command with
+    /// Flag indicating if a **normal admin** needs to run this command with
     /// `sudo`.
     pub sudo: bool,
 
@@ -426,6 +425,20 @@ pub fn grep_print_with_header(text: &str, patterns: &[&str], header_lines: usize
 #[must_use]
 pub fn is_exe(name: &str, path: &str) -> bool {
     (!path.is_empty() && which(path).is_ok()) || (!name.is_empty() && which(name).is_ok())
+}
+
+/// Checks if the current user is root or admin.
+#[cfg(windows)]
+#[must_use]
+pub fn is_root() -> bool {
+    is_elevated::is_elevated()
+}
+
+/// Checks if the current user is root or admin.
+#[cfg(unix)]
+#[must_use]
+pub fn is_root() -> bool {
+    uzers::get_current_uid() == 0
 }
 
 /// Turns an [`AsyncRead`] into a [`Stream`].

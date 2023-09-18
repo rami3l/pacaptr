@@ -317,7 +317,7 @@ fn detect_pm_str() -> &'static str {
     }
 
     let pairs: &[(&str, &str)] = match () {
-        _ if cfg!(target_os = "windows") => &[("scoop", ""), ("choco", ""), ("winget", "")],
+        _ if cfg!(windows) => &[("scoop", ""), ("choco", ""), ("winget", "")],
 
         _ if cfg!(target_os = "macos") => &[
             ("brew", "/usr/local/bin/brew"),
