@@ -53,6 +53,7 @@
     "rmtree",
     "rustfmt",
     "saxutils",
+    "sccc",
     "SDKROOT",
     "strat",
     "struct",
