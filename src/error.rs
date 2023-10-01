@@ -59,6 +59,10 @@ pub enum Error {
     #[error(transparent)]
     FromUtf8Error(#[from] std::string::FromUtf8Error),
 
+    /// Error while rendering a dialog.
+    #[error(transparent)]
+    DialogError(#[from] dialoguer::Error),
+
     /// A non-specific [`io::Error`].
     #[error(transparent)]
     IoError(#[from] io::Error),
