@@ -11,6 +11,9 @@ env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   # https://users.rust-lang.org/t/cross-compiling-how-to-statically-link-glibc/83907/2
   CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gcc
+  # https://github.com/Mozilla-Actions/sccache-action#rust-code
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: sccache
 
 jobs:
   skip-check:
@@ -50,10 +53,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu
-      - id: cache_build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Setup Rust
         if: ${{ steps.cache_build.outputs.cache-hit != 'true' }}
         uses: dtolnay/rust-toolchain@stable
@@ -71,14 +72,8 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
-      # NOTE: Since Rust is pre-installed in the runner,
-      # it's faster to run `rust-cache` before `rust-toolchain`.
-      # This is not the case for jobs running in Docker images.
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
@@ -97,11 +92,8 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
@@ -144,11 +136,8 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-apple-darwin
@@ -201,11 +190,8 @@ jobs:
           source ./macports-ci install
           sudo port install wget
           port installed
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-apple-darwin
@@ -224,11 +210,8 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
@@ -254,11 +237,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -283,11 +263,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -312,11 +289,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -339,11 +313,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -367,11 +338,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - name: Build and run tests
         env:
           RUSTFLAGS: "-C target-feature=-crt-static"
@@ -392,11 +360,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y packagekit packagekit-tools gcc-aarch64-linux-gnu
-      - name: Download cached build
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: pacaptr-test-${{ runner.os }}-${{ runner.arch }}
-          save-if: false
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
