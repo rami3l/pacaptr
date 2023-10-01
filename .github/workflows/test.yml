@@ -67,6 +67,7 @@ jobs:
 
   choco-test:
     runs-on: windows-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
@@ -86,6 +87,7 @@ jobs:
 
   scoop-winget-test:
     runs-on: windows-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
@@ -129,6 +131,7 @@ jobs:
 
   brew-test:
     runs-on: macos-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
@@ -148,6 +151,7 @@ jobs:
 
   port-test:
     runs-on: macos-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
@@ -201,6 +205,7 @@ jobs:
 
   apt-test:
     runs-on: ubuntu-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
@@ -220,6 +225,7 @@ jobs:
 
   dnf-test:
     runs-on: ubuntu-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
       image: fedora:latest
@@ -243,6 +249,7 @@ jobs:
 
   emerge-test:
     runs-on: ubuntu-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
       image: gentoo/stage3
@@ -268,6 +275,7 @@ jobs:
 
   xbps-test:
     runs-on: ubuntu-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
       image: voidlinux/voidlinux:latest
@@ -293,6 +301,7 @@ jobs:
 
   zypper-test:
     runs-on: ubuntu-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
       image: registry.opensuse.org/opensuse/bci/rust:latest
@@ -316,6 +325,7 @@ jobs:
 
   apk-test:
     runs-on: ubuntu-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
       image: rust:alpine
@@ -341,6 +351,7 @@ jobs:
 
   pkcon-pip-conda-test:
     runs-on: ubuntu-latest
+    needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
