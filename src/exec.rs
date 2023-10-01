@@ -363,12 +363,12 @@ impl std::fmt::Display for Cmd {
 }
 
 /// Gives a prompt and returns the index of the user choice.
-fn prompt(prompt: &str, question: &str, expected: &[&str]) -> io::Result<usize> {
-    FuzzySelect::with_theme(&question_theme(prompt))
+fn prompt(prompt: &str, question: &str, expected: &[&str]) -> Result<usize> {
+    Ok(FuzzySelect::with_theme(&question_theme(prompt))
         .with_prompt(question)
         .items(expected)
         .default(0)
-        .interact()
+        .interact()?)
 }
 
 macro_rules! docs_errors_grep {

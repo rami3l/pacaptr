@@ -57,7 +57,7 @@ async-trait = "0.1.73"
 bytes = "1.5.0"
 clap = { version = "4.4.6", features = ["cargo", "derive"] }
 console = "0.15.7"
-dialoguer = { version = "0.10.4", features = ["fuzzy-select"] }
+dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
 figment = { version = "0.10.10", features = ["env", "toml"] }
 futures = { version = "0.3.28", default-features = false, features = ["std"] }
