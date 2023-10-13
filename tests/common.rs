@@ -21,8 +21,8 @@ enum Input<'i> {
 /// Returns the platform specific prefix of calling a command encoded as string.
 const fn cmd_prefix() -> (&'static str, &'static [&'static str]) {
     match () {
-        _ if cfg!(windows) => ("powershell", &["-Command"]),
-        _ => ("sh", &["-c"]),
+        () if cfg!(windows) => ("powershell", &["-Command"]),
+        () => ("sh", &["-c"]),
     }
 }
 

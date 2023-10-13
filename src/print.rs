@@ -11,7 +11,7 @@ pub(crate) mod style {
     pub static QUESTION: Lazy<Style> = Lazy::new(|| Style::new().yellow().bold());
 }
 
-pub(crate) mod prompt {
+pub mod prompt {
     use once_cell::sync::Lazy;
 
     use crate::print::style;
@@ -21,7 +21,6 @@ pub(crate) mod prompt {
     pub static CANCELED: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Canceled"));
     pub static PENDING: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Pending"));
     pub static RUNNING: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Running"));
-    #[allow(dead_code)]
     pub static INFO: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Info"));
     pub static ERROR: Lazy<StyledStr> = Lazy::new(|| style::ERROR.apply_to("Error"));
 }
@@ -53,17 +52,13 @@ macro_rules! quoted_format {
 }
 
 /// Writes a message after the given prompt.
-pub(crate) fn write(
-    f: &mut fmt::Formatter,
-    prompt: impl Display,
-    msg: impl Display,
-) -> fmt::Result {
+#[allow(clippy::missing_errors_doc)]
+pub fn write(f: &mut fmt::Formatter, prompt: impl Display, msg: impl Display) -> fmt::Result {
     write!(f, plain_format!(), prompt, msg, indent = PROMPT_INDENT)
 }
 
 /// Prints out a message after the given prompt.
-#[allow(dead_code)]
-pub(crate) fn println(prompt: impl Display, msg: impl Display) {
+pub fn println(prompt: impl Display, msg: impl Display) {
     println!(
         plain_format!(),
         style::MESSAGE.apply_to(prompt),
@@ -73,7 +68,7 @@ pub(crate) fn println(prompt: impl Display, msg: impl Display) {
 }
 
 /// Prints out an error message.
-pub(crate) fn println_err(msg: impl Display) {
+pub fn println_err(msg: impl Display) {
     println!(
         plain_format!(),
         &*prompt::ERROR,
@@ -83,7 +78,7 @@ pub(crate) fn println_err(msg: impl Display) {
 }
 
 /// Prints out a backtick-quoted message after the given prompt.
-pub(crate) fn println_quoted(prompt: impl Display, msg: impl Display) {
+pub fn println_quoted(prompt: impl Display, msg: impl Display) {
     println!(
         quoted_format!(),
         style::MESSAGE.apply_to(prompt),
