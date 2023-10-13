@@ -20,6 +20,7 @@ use pacaptr::{
     error::{Error, Result},
     methods,
     pm::BoxPm,
+    print::{println, prompt},
 };
 use tap::prelude::*;
 use tokio::task;
@@ -262,6 +263,14 @@ impl Pacaptr {
             }
             options.chars().sorted_unstable().pipe(String::from_iter)
         }};}
+
+        // Ensure that the cursor is not hidden when `Ctrl-C` is used.
+        // See: https://github.com/console-rs/dialoguer/issues/77#issuecomment-669986406
+        _ = ctrlc::set_handler(move || {
+            let term = console::Term::stdout();
+            _ = term.show_cursor();
+        })
+        .tap_err(|e| println(&*prompt::INFO, e));
 
         let options = collect_options! {
             Query {

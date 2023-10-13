@@ -317,17 +317,17 @@ fn detect_pm_str() -> &'static str {
     }
 
     let pairs: &[(&str, &str)] = match () {
-        _ if cfg!(windows) => &[("scoop", ""), ("choco", ""), ("winget", "")],
+        () if cfg!(windows) => &[("scoop", ""), ("choco", ""), ("winget", "")],
 
-        _ if cfg!(target_os = "macos") => &[
+        () if cfg!(target_os = "macos") => &[
             ("brew", "/usr/local/bin/brew"),
             ("port", "/opt/local/bin/port"),
             ("apt", "/opt/procursus/bin/apt"),
         ],
 
-        _ if cfg!(target_os = "ios") => &[("apt", "/usr/bin/apt")],
+        () if cfg!(target_os = "ios") => &[("apt", "/usr/bin/apt")],
 
-        _ if cfg!(target_os = "linux") => &[
+        () if cfg!(target_os = "linux") => &[
             ("apk", "/sbin/apk"),
             ("apt", "/usr/bin/apt"),
             ("dnf", "/usr/bin/dnf"),
@@ -336,7 +336,7 @@ fn detect_pm_str() -> &'static str {
             ("zypper", "/usr/bin/zypper"),
         ],
 
-        _ => &[],
+        () => &[],
     };
 
     pairs
