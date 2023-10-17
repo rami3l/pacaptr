@@ -22,6 +22,17 @@ include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
 [package.metadata.docs.rs]
 all-features = true
 
+[package.metadata.binstall]
+bin-dir = "{ bin }{ binary-ext }"
+
+[package.metadata.binstall.overrides]
+x86_64-apple-darwin.pkg-url = "{ repo }/releases/download/v{ version }/{ name }-darwin-universal2{ archive-suffix }"
+aarch64-apple-darwin.pkg-url = "{ repo }/releases/download/v{ version }/{ name }-darwin-universal2{ archive-suffix }"
+x86_64-pc-windows-msvc = { pkg-url = "{ repo }/releases/download/v{ version }/{ name }-windows-amd64{ archive-suffix }", pkg-fmt = "zip" }
+aarch64-pc-windows-msvc = { pkg-url = "{ repo }/releases/download/v{ version }/{ name }-windows-arm64{ archive-suffix }", pkg-fmt = "zip" }
+x86_64-unknown-linux-musl.pkg-url = "{ repo }/releases/download/v{ version }/{ name }-linux-amd64{ archive-suffix }"
+aarch64-unknown-linux-musl.pkg-url = "{ repo }/releases/download/v{ version }/{ name }-linux-arm64{ archive-suffix }"
+
 [package.metadata.deb]
 copyright = "2020, Rami3L"
 maintainer = "Rami3L <rami3l@outlook.com>"
