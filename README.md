@@ -80,7 +80,7 @@ Please refer to the [compatibility table] for more details on which operations a
 
 ## Installation
 
-> 💡 [We need your help](https://github.com/rami3l/pacaptr/issues/5) to achieve binary distribution of `pacaptr` on more platforms!
+> **Note** > [We need your help](https://github.com/rami3l/pacaptr/issues/5) to achieve binary distribution of `pacaptr` on more platforms!
 
 ### Brew
 
@@ -113,19 +113,25 @@ choco install pacaptr
 [![Cargo Version](https://img.shields.io/crates/v/pacaptr?style=flat-square)](https://crates.io/crates/pacaptr)
 [![Cargo Downloads](https://img.shields.io/crates/d/pacaptr?style=flat-square)](https://crates.io/crates/pacaptr)
 
-To install the release version from crates.io:
+If you have installed [`cargo-binstall`], the fastest way of installing `pacaptr` via `cargo` is by running:
+
+```bash
+cargo binstall pacaptr
+```
+
+To build and install the release version from crates.io:
 
 ```bash
 cargo install pacaptr
 ```
 
-Alternatively, to install the `master` version from GitHub:
+To build and install the `master` version from GitHub:
 
 ```bash
 cargo install pacaptr --git https://github.com/rami3l/pacaptr.git
 ```
 
-To clone and install (for the interested Rustaceans):
+For those who are interested, it is also possible to build and install from your local repo:
 
 ```bash
 git clone https://github.com/rami3l/pacaptr.git && cd pacaptr
@@ -308,8 +314,9 @@ This option is useful when you want to reduce `Docker` image size, for example.
 
 Sounds nice! Please let me take you to the [contributing guidelines](docs/CONTRIBUTING.md) :)
 
-[pacman rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
-[icy/pacapt]: https://github.com/icy/pacapt
-[gsudo]: https://github.com/gerardog/gsudo
+[`cargo-binstall`]: https://github.com/cargo-bins/cargo-binstall
 [compatibility table]: https://rami3l.github.io/pacaptr/pacaptr/#compatibility-table
+[gsudo]: https://github.com/gerardog/gsudo
+[icy/pacapt]: https://github.com/icy/pacapt
+[pacman rosetta]: https://wiki.archlinux.org/index.php/Pacman/Rosetta
 [procursus]: https://github.com/ProcursusTeam/Procursus
