@@ -29,7 +29,7 @@ jobs:
           do_not_skip: '["pull_request"]'
 
   build:
-    name: build (${{ matrix.target2 }})
+    name: build (${{ matrix.os }} native + ${{ matrix.target2 }})
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     runs-on: ${{ matrix.os }}
@@ -60,6 +60,14 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target2 }}
+      - name: Setup cargo-binstall
+        uses: cargo-bins/cargo-binstall@main
+      - name: Test installation via cargo-binstall (${{ matrix.os }} native)
+        run: |
+          cargo binstall pacaptr --manifest-path=./Cargo.toml --dry-run --strategies=crate-meta-data --log-level=debug
+      - name: Test installation via cargo-binstall (${{ matrix.target2 }})
+        run: |
+          cargo binstall pacaptr --manifest-path=./Cargo.toml --dry-run --strategies=crate-meta-data --log-level=debug --targets=${{ matrix.target2 }}
       - name: Build
         if: ${{ steps.cache_build.outputs.cache-hit != 'true' }}
         run: |
