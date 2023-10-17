@@ -80,7 +80,9 @@ Please refer to the [compatibility table] for more details on which operations a
 
 ## Installation
 
-> **Note** > [We need your help](https://github.com/rami3l/pacaptr/issues/5) to achieve binary distribution of `pacaptr` on more platforms!
+<!-- prettier-ignore -->
+> **Note**
+> [We need your help](https://github.com/rami3l/pacaptr/issues/5) to achieve binary distribution of `pacaptr` on more platforms!
 
 ### Brew
 
