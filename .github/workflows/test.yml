@@ -289,7 +289,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     container:
-      image: voidlinux/voidlinux:latest
+      image: ghcr.io/void-linux/void-glibc-full:latest
     steps:
       - name: Setup extra build tools
         run: |
