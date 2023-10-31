@@ -61,14 +61,14 @@ jobs:
         with:
           targets: ${{ matrix.target2 }}
       - name: Setup cargo-binstall
-        if: matrix.os != 'windows-latest' #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
+        if: github.event_name == 'pull_request' && matrix.os != 'windows-latest' #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
         uses: cargo-bins/cargo-binstall@main
       - name: Test installation via cargo-binstall (${{ matrix.os }} native)
-        if: matrix.os != 'windows-latest' #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
+        if: github.event_name == 'pull_request' && matrix.os != 'windows-latest' #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
         run: |
           cargo binstall pacaptr --manifest-path=./Cargo.toml --dry-run --strategies=crate-meta-data --log-level=debug
       - name: Test installation via cargo-binstall (${{ matrix.target2 }})
-        if: matrix.os != 'windows-latest' #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
+        if: github.event_name == 'pull_request' && matrix.os != 'windows-latest' #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
         run: |
           cargo binstall pacaptr --manifest-path=./Cargo.toml --dry-run --strategies=crate-meta-data --log-level=debug --targets=${{ matrix.target2 }}
       - name: Build
