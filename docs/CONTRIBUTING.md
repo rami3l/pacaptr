@@ -9,6 +9,7 @@ Welcome to `pacaptr`!
   - [WARNING](#warning)
   - [Coding Conventions](#coding-conventions)
   - [API Docs](#api-docs)
+  - [Making a New Release](#making-a-new-release)
 
 ## WARNING
 
@@ -30,4 +31,26 @@ You can get it in one of the following ways:
 
   ```bash
   cargo doc --document-private-items --open
+  ```
+
+## Making a New Release
+
+We currently use the following release procedure:
+
+- Push a single new version tag to `master`, which will make the CI generate a new GitHub release together with the necessary artifacts.
+
+  This step requires `cargo-workspaces` to be installed:
+
+  ```bash
+  cargo ws version --all --no-individual-tags
+  ```
+
+- Publish the new version to crates.io via `cargo publish`:
+
+  ```bash
+  cargo publish -p pacaptr-macros --dry-run
+  cargo publish -p pacaptr-macros
+
+  cargo publish --dry-run
+  cargo publish
   ```
