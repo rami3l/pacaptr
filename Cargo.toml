@@ -1,12 +1,22 @@
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[workspace]
+resolver = "2"
+members = [".", "crates/*"]
+
+[workspace.package]
+license = "GPL-3.0"
+edition = "2021"
+
+# https://github.com/pksunkara/cargo-workspaces/tree/master#config
+[workspace.metadata.workspaces]
+no_individual_tags = true
+
 [package]
 name = "pacaptr"
 version = "0.20.0"
-edition = "2021"
-license = "GPL-3.0"
-
-authors = ["Rami3L <rami3l@outlook.com>"]
+license.workspace = true
+edition.workspace = true
 homepage = "https://github.com/rami3l/pacaptr"
 repository = "https://github.com/rami3l/pacaptr"
 description = "Pacman-like syntax wrapper for many package managers."
@@ -54,9 +64,6 @@ extended-description = "Pacman-like syntax wrapper for many package managers."
 priority = "optional"
 section = "utility"
 
-[workspace]
-members = [".", "crates/*"]
-
 [build-dependencies]
 built = { version = "0.7.1", features = ["git2"] }
 
@@ -85,7 +92,7 @@ regex = { version = "1.10.2", default-features = false, features = [
   "unicode-case",
   "unicode-perl",
 ] }
-serde = { version = "1.0.190", features = ["derive"] }
+serde = { version = "1.0.192", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "1.0.50"
 tokio = { version = "1.33.0", features = [
@@ -117,7 +124,3 @@ lto = true
 opt-level = "z"
 panic = "abort"
 strip = "symbols"
-
-# https://github.com/pksunkara/cargo-workspaces/tree/master#config
-[workspace.metadata.workspaces]
-no_individual_tags = true
