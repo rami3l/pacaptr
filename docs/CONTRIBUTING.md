@@ -1,20 +1,11 @@
 # Contributing to `pacaptr`
 
+<!-- prettier-ignore -->
+> **Warning**
+> This project is still slowly evolving, and the conventions and the APIs could be changed.
+> Some discussions concerning certain crucial design choices haven't been made yet.
+
 Welcome to `pacaptr`!
-
-## Contents
-
-- [Contributing to `pacaptr`](#contributing-to-pacaptr)
-  - [Contents](#contents)
-  - [WARNING](#warning)
-  - [Coding Conventions](#coding-conventions)
-  - [API Docs](#api-docs)
-  - [Making a New Release](#making-a-new-release)
-
-## WARNING
-
-This project is still slowly evolving, and the conventions and the APIs could be changed.
-Some discussions concerning certain crucial design choices haven't been made yet.
 
 ## Coding Conventions
 
@@ -35,22 +26,18 @@ You can get it in one of the following ways:
 
 ## Making a New Release
 
-We currently use the following release procedure:
+We currently make a new release by pushing a single new version tag to `master`, which will make the CI generate a new GitHub release together with the necessary artifacts.
 
-- Push a single new version tag to `master`, which will make the CI generate a new GitHub release together with the necessary artifacts.
+To make this automatic (and to push the new version to crates.io at the same time, it is recommended to use [`cargo-release`](https://github.com/crate-ci/cargo-release):
 
-  This step requires `cargo-workspaces` to be installed:
-
-  ```bash
-  cargo ws version --all --no-individual-tags
-  ```
-
-- Publish the new version to crates.io via `cargo publish`:
+- Perform a dry run to see if everything is OK[^patch]:
 
   ```bash
-  cargo publish -p pacaptr-macros --dry-run
-  cargo publish -p pacaptr-macros
-
-  cargo publish --dry-run
-  cargo publish
+  cargo release --workspace patch
   ```
+
+  [^patch]:
+      This example uses `patch` (0.0.1).
+      Depending on the situation, `minor` (0.1) or `major` (1.0) might be used instead.
+
+- Add `-x` to actually publish the new version.
