@@ -8,9 +8,12 @@ members = [".", "crates/*"]
 license = "GPL-3.0"
 edition = "2021"
 
-# https://github.com/pksunkara/cargo-workspaces/tree/master#config
-[workspace.metadata.workspaces]
-no_individual_tags = true
+# https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md#configuration
+[workspace.metadata.release]
+allow-branch = ["master"]
+pre-release-commit-message = "chore: release {{crate_name}} v{{version}}"
+# https://github.com/crate-ci/cargo-release/issues/333
+tag = false
 
 [package]
 name = "pacaptr"
@@ -31,6 +34,11 @@ include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
 
 [package.metadata.docs.rs]
 all-features = true
+
+[package.metadata.release]
+# https://github.com/crate-ci/cargo-release/issues/333
+tag = true
+tag-message = ""
 
 [package.metadata.binstall]
 bin-dir = "{ bin }{ binary-ext }"
