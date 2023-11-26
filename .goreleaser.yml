@@ -59,8 +59,19 @@ brews:
     description: Pacman-like syntax wrapper for many package managers.
     license: GPL-3.0-only
 
+    custom_block: |
+      head "https://github.com/rami3l/pacaptr.git"
+
+      head do
+        depends_on "rust" => :build
+      end
+
     install: |
-      bin.install "pacaptr"
+      if build.head? then
+        system "cargo", "install", *std_cargo_args
+      else
+        bin.install "pacaptr"
+      end
 
     test: |
       system "#{bin}/pacaptr --help"
