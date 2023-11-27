@@ -11,7 +11,7 @@ edition = "2021"
 # https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md#configuration
 [workspace.metadata.release]
 allow-branch = ["master"]
-pre-release-commit-message = "chore: release {{crate_name}} v{{version}}"
+pre-release-commit-message = "dist: cut a new release"
 # https://github.com/crate-ci/cargo-release/issues/333
 tag = false
 
