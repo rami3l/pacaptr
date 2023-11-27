@@ -28,7 +28,7 @@ You can get it in one of the following ways:
 
 We currently make a new release by pushing a single new version tag to `master`, which will make the CI generate a new GitHub release together with the necessary artifacts.
 
-To make this automatic (and to push the new version to crates.io at the same time, it is recommended to use [`cargo-release`](https://github.com/crate-ci/cargo-release):
+To make this automatic (and to push the new version to crates.io at the same time), it is recommended to use [`cargo-release`](https://github.com/crate-ci/cargo-release):
 
 - Perform a dry run to see if everything is OK[^patch]:
 
