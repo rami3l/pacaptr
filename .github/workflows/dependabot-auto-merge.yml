@@ -16,5 +16,7 @@ jobs:
 
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
+          # https://docs.github.com/en/enterprise-server@3.6/code-security/dependabot/working-with-dependabot/managing-pull-requests-for-dependency-updates
+          command: squash and merge
           target: patch
           github-token: ${{ secrets.TAP_GITHUB_TOKEN }}
