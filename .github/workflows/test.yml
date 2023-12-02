@@ -74,6 +74,7 @@ jobs:
       - name: Build
         if: ${{ steps.cache_build.outputs.cache-hit != 'true' }}
         run: |
+          cargo build --verbose --locked
           cargo build --verbose --locked --target=${{ matrix.target2 }}
 
   choco-test:
