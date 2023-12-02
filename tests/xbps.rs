@@ -66,7 +66,7 @@ fn xbps_si() {
 fn xbps_sii() {
     test_dsl! {"
         in -Sii xbps
-        ou base-voidstrap
+        ou base-system
     "}
 }
 
