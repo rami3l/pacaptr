@@ -15,6 +15,21 @@ pre-release-commit-message = "dist: cut a new release"
 # https://github.com/crate-ci/cargo-release/issues/333
 tag = false
 
+[workspace.lints.rust]
+missing_copy_implementations = "warn"
+missing_debug_implementations = "warn"
+trivial_numeric_casts = "warn"
+unsafe_code = "forbid"
+unused_allocation = "warn"
+
+[workspace.lints.clippy]
+doc_markdown = "warn"
+nursery = "warn"
+pedantic = "warn"
+
+[workspace.lints.rustdoc]
+broken_intra_doc_links = "warn"
+
 [package]
 name = "pacaptr"
 version = "0.20.1"
@@ -132,3 +147,6 @@ lto = true
 opt-level = "z"
 panic = "abort"
 strip = "symbols"
+
+[lints]
+workspace = true
