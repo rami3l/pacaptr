@@ -21,3 +21,6 @@ quote = "1.0.33"
 regex = "1.10.2"
 syn = "2.0.39"
 tabled = "0.14.0"
+
+[lints]
+workspace = true

@@ -15,18 +15,7 @@
         in `-Sp`.
     "##}
 )]
-#![forbid(unsafe_code)]
-#![warn(
-    clippy::doc_markdown,
-    clippy::nursery,
-    clippy::pedantic,
-    missing_copy_implementations,
-    missing_debug_implementations,
-    missing_docs,
-    rustdoc::broken_intra_doc_links,
-    trivial_numeric_casts,
-    unused_allocation
-)]
+#![warn(missing_docs)]
 
 pub mod config;
 pub mod error;

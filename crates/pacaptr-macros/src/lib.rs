@@ -1,13 +1,3 @@
-#![forbid(unsafe_code)]
-#![warn(
-    clippy::doc_markdown,
-    clippy::nursery,
-    clippy::pedantic,
-    rustdoc::broken_intra_doc_links,
-    trivial_numeric_casts,
-    unused_allocation
-)]
-
 mod compat_table;
 mod test_dsl;
 
