@@ -1,4 +1,5 @@
 #![cfg(feature = "test")]
+#![allow(clippy::missing_panics_doc)]
 
 use itertools::{chain, Itertools};
 pub use pacaptr_macros::test_dsl;
@@ -26,19 +27,22 @@ const fn cmd_prefix() -> (&'static str, &'static [&'static str]) {
     }
 }
 
+#[derive(Debug)]
 pub struct Test<'t> {
     sequence: Vec<(Input<'t>, Vec<&'t str>)>,
     pending_input: Option<Input<'t>>,
 }
 
 impl<'t> Test<'t> {
-    pub fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Test {
             sequence: Vec::new(),
             pending_input: None,
         }
     }
 
+    #[must_use]
     pub fn pacaptr(mut self, args: &'t [&str], flags: &'t [&str]) -> Self {
         // Guard against consecutive inputs without calling `self.output()`.
         if self.pending_input.is_some() {
@@ -49,6 +53,7 @@ impl<'t> Test<'t> {
     }
 
     #[allow(dead_code)]
+    #[must_use]
     pub fn exec(mut self, cmd: &'t [&str], kws: &'t [&str]) -> Self {
         // Guard against consecutive inputs without calling `self.output()`.
         if self.pending_input.is_some() {
@@ -58,9 +63,10 @@ impl<'t> Test<'t> {
         self
     }
 
+    #[must_use]
     pub fn output(mut self, out: &'t [&str]) -> Self {
         if let Some(cmd) = self.pending_input.take() {
-            self.sequence.push((cmd, out.into()))
+            self.sequence.push((cmd, out.into()));
         } else if let Some((_cmd, outs)) = self.sequence.last_mut() {
             outs.extend(out);
         } else {
@@ -71,23 +77,21 @@ impl<'t> Test<'t> {
 
     pub fn run(&self) {
         let try_match = |out: &str, patterns: &[&str]| {
-            patterns.iter().for_each(|p| {
+            for &p in patterns {
                 let re = RegexBuilder::new(p).multi_line(true).build().unwrap();
                 let is_match = re.is_match(out);
-                assert!(is_match, "Failed with pattern `{p}`, got `{out}`")
-            })
+                assert!(is_match, "Failed with pattern `{p}`, got `{out}`");
+            }
         };
 
         // Prevent running the test before `self.sequence` is configured.
-        if self.sequence.is_empty() {
-            panic!("Test sequence not yet configured")
-        }
+        assert!(
+            !self.sequence.is_empty(),
+            "Test sequence not yet configured"
+        );
 
         let s = Shell::new().unwrap();
-        self.sequence.iter().for_each(|(input, patterns)| {
-            // got = cmd.run()
-            // if not matches_all(got, patterns):
-            //     raise MatchError(some_msg)
+        for (input, patterns) in &self.sequence {
             let (sh, sh_args) = cmd_prefix();
             let cmd = match *input {
                 Input::Exec { cmd, kws } => chain!(cmd, kws).join(" "),
@@ -102,7 +106,7 @@ impl<'t> Test<'t> {
                 .unwrap();
             println!("{got}");
             try_match(&got, patterns);
-        })
+        }
     }
 }
 

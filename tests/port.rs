@@ -1,4 +1,4 @@
-//! A big part of these tests are copied from https://guide.macports.org/#using.port.installed.
+//! A big part of these tests are copied from <https://guide.macports.org/#using.port.installed>.
 
 #![cfg(all(target_os = "macos", feature = "test"))]
 
