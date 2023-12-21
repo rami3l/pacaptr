@@ -94,9 +94,9 @@ built = { version = "0.7.1", features = ["git2"] }
 xshell = "0.2.5"
 
 [dependencies]
-async-trait = "0.1.74"
+async-trait = "0.1.75"
 bytes = "1.5.0"
-clap = { version = "4.4.10", features = ["cargo", "derive"] }
+clap = { version = "4.4.11", features = ["cargo", "derive"] }
 console = "0.15.7"
 ctrlc = { version = "3.4.1", features = ["termination"] }
 dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
@@ -106,7 +106,7 @@ futures = { version = "0.3.29", default-features = false, features = ["std"] }
 indoc = "2.0.4"
 itertools = "0.12.0"
 macro_rules_attribute = "0.2.0"
-once_cell = "1.18.0"
+once_cell = "1.19.0"
 pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.20.1" }
 paste = "1.0.14"
 regex = { version = "1.10.2", default-features = false, features = [
@@ -117,8 +117,8 @@ regex = { version = "1.10.2", default-features = false, features = [
 ] }
 serde = { version = "1.0.193", features = ["derive"] }
 tap = "1.0.1"
-thiserror = "1.0.50"
-tokio = { version = "1.34.0", features = [
+thiserror = "1.0.51"
+tokio = { version = "1.35.1", features = [
   "io-std",
   "io-util",
   "macros",
