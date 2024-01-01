@@ -98,7 +98,7 @@ async-trait = "0.1.75"
 bytes = "1.5.0"
 clap = { version = "4.4.11", features = ["cargo", "derive"] }
 console = "0.15.7"
-ctrlc = { version = "3.4.1", features = ["termination"] }
+ctrlc = { version = "3.4.2", features = ["termination"] }
 dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
 figment = { version = "0.10.12", features = ["env", "toml"] }
