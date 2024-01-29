@@ -25,7 +25,7 @@ pub enum Error {
     ArgParseError { msg: String },
 
     /// Error when handling a [`Config`](crate::config::Config).
-    #[error(transparent)]
+    #[error("Failed to parse config: {0}")]
     ConfigError(#[from] figment::Error),
 
     /// A [`Cmd`](crate::exec::Cmd) failed to finish.

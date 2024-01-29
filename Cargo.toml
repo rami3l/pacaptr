@@ -101,7 +101,7 @@ console = "0.15.7"
 ctrlc = { version = "3.4.2", features = ["termination"] }
 dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
-figment = { version = "0.10.12", features = ["env", "toml"] }
+figment = { version = "0.10.14", features = ["env", "toml"] }
 futures = { version = "0.3.30", default-features = false, features = ["std"] }
 indoc = "2.0.4"
 itertools = "0.12.0"

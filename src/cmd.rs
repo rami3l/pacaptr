@@ -13,7 +13,7 @@
 //!   above.
 
 use clap::{self, ArgAction, Parser};
-use figment::{providers::Serialized, Figment};
+use figment::Figment;
 use itertools::Itertools;
 use pacaptr::{
     config::Config,
@@ -327,16 +327,20 @@ impl Pacaptr {
     /// Runs [`dispatch_from`](Pacaptr::dispatch_from) with automatically
     /// detected [`Config`].
     ///
+    /// The [`Config`] precedence is defined in the following order:
+    /// - CLI flags;
+    /// - Environment variables;
+    /// - The config file.
+    ///
     /// # Errors
     /// See [`Error`](crate::error::Error) for a list of possible errors.
     pub async fn dispatch(&self) -> Result<()> {
-        let cfg = task::block_in_place(|| {
+        let cfg = self.cfg().join(task::block_in_place(|| {
             Figment::new()
-                .merge(Config::file_provider())
-                .merge(Config::env_provider())
-                .join(Serialized::defaults(self.cfg()))
-                .extract()
-        })?;
+                .join(Config::env_provider())
+                .join(Config::file_provider())
+                .extract::<Config>()
+        })?);
         self.dispatch_from(cfg).await
     }
 }

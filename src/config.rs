@@ -33,15 +33,19 @@ const CONFIG_FILE_ENV: &str = "PACAPTR_CONFIG";
 #[allow(clippy::struct_excessive_bools)]
 pub struct Config {
     /// Perform a dry run.
+    #[serde(default)]
     pub dry_run: bool,
 
     /// Prevent reinstalling previously installed packages.
+    #[serde(default)]
     pub needed: bool,
 
     /// Answer yes to every question.
+    #[serde(default)]
     pub no_confirm: bool,
 
     /// Remove cache after installation.
+    #[serde(default)]
     pub no_cache: bool,
 
     /// The default package manager to be invoked.
@@ -49,6 +53,17 @@ pub struct Config {
 }
 
 impl Config {
+    /// Performs a left-biased join of two `Config`s.
+    pub fn join(&self, other: Self) -> Self {
+        Self {
+            dry_run: self.dry_run || other.dry_run,
+            needed: self.needed || other.dry_run,
+            no_confirm: self.no_confirm || other.no_confirm,
+            no_cache: self.no_cache || other.no_cache,
+            default_pm: self.default_pm.clone().or(other.default_pm),
+        }
+    }
+
     /// The default config file path is defined with the following precedence:
     ///
     /// - `$XDG_CONFIG_HOME/pacaptr/pacaptr.toml`, if `$XDG_CONFIG_HOME` is set;
@@ -78,8 +93,7 @@ impl Config {
     pub fn file_provider() -> impl Provider {
         Self::custom_path()
             .or_else(Self::default_path)
-            .map(Toml::file)
-            .map_or_else(Figment::new, Figment::from)
+            .map_or_else(Figment::new, |f| Figment::from(Toml::file(f)))
     }
 
     /// Returns the environment config [`Provider`].
