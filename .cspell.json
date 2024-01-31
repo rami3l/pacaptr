@@ -1,5 +1,7 @@
 {
-  "cSpell.words": [
+  "version": "0.2",
+  "language": "en",
+  "words": [
     "aarch",
     "algos",
     "binutils",
@@ -68,6 +70,7 @@
     "sysupgrade",
     "tasksel",
     "Tazpkg",
+    "thiserror",
     "Tlmgr",
     "unmerge",
     "Unmerging",
