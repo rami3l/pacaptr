@@ -40,9 +40,9 @@ jobs:
           - os: windows-latest
             # target: x86_64-pc-windows-msvc
             target2: aarch64-pc-windows-msvc
-          - os: macos-latest
-            # target: x86_64-apple-darwin
-            target2: aarch64-apple-darwin
+          - os: macos-14
+            # target: aarch64-apple-darwin
+            target2: x86_64-apple-darwin
           - os: ubuntu-latest
             # target: x86_64-unknown-linux-musl
             target2: aarch64-unknown-linux-musl
@@ -142,7 +142,7 @@ jobs:
           cargo test --features=test winget -- --ignored
 
   brew-test:
-    runs-on: macos-latest
+    runs-on: macos-14
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
@@ -151,10 +151,10 @@ jobs:
         uses: mozilla-actions/sccache-action@v0.0.3
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-apple-darwin
+          targets: aarch64-apple-darwin
       - name: Build and run tests
         env:
-          CARGO_BUILD_TARGET: x86_64-apple-darwin
+          CARGO_BUILD_TARGET: aarch64-apple-darwin
         run: |
           cargo build --verbose
           cargo test --features=test tests
@@ -162,7 +162,7 @@ jobs:
           cargo test --features=test brew -- --ignored
 
   port-test:
-    runs-on: macos-latest
+    runs-on: macos-14
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
@@ -173,18 +173,17 @@ jobs:
           cat macos_build.txt
       # https://github.com/actions/cache/issues/629#issuecomment-1189184648
       - name: Create gtar wrapper
-        uses: fertrig/create-file-action@1.0.2
-        with:
-          path: target
-          file: gtar
-          content: |
-            #!/bin/sh
-            exec sudo /usr/local/bin/gtar.orig "$@"
+        run: |
+          mkdir target
+          cat << EOF > "target/gtar"
+          #!/bin/sh
+          exec sudo /opt/homebrew/bin/gtar.orig "$@"
+          EOF
       - name: Install gtar wrapper
         run: |
-          sudo mv /usr/local/bin/gtar /usr/local/bin/gtar.orig
-          sudo mv target/gtar /usr/local/bin/gtar
-          sudo chmod +x /usr/local/bin/gtar
+          sudo mv /opt/homebrew/bin/gtar /opt/homebrew/bin/gtar.orig
+          sudo mv target/gtar /opt/homebrew/bin/gtar
+          sudo chmod +x /opt/homebrew/bin/gtar
       - name: Cache MacPorts
         id: cache-macports
         uses: actions/cache@v4
@@ -205,10 +204,10 @@ jobs:
         uses: mozilla-actions/sccache-action@v0.0.3
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-apple-darwin
+          targets: aarch64-apple-darwin
       - name: Build and run tests
         env:
-          CARGO_BUILD_TARGET: x86_64-apple-darwin
+          CARGO_BUILD_TARGET: aarch64-apple-darwin
         run: |
           cargo build --verbose
           cargo test --features=test tests
