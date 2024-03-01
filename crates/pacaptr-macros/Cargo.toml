@@ -19,7 +19,7 @@ once_cell = "1.19.0"
 proc-macro2 = "1.0.78"
 quote = "1.0.35"
 regex = "1.10.3"
-syn = "2.0.48"
+syn = "2.0.52"
 tabled = "0.15.0"
 
 [lints]
