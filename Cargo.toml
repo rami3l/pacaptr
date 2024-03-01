@@ -115,7 +115,7 @@ regex = { version = "1.10.3", default-features = false, features = [
   "unicode-case",
   "unicode-perl",
 ] }
-serde = { version = "1.0.196", features = ["derive"] }
+serde = { version = "1.0.197", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "1.0.56"
 tokio = { version = "1.35.1", features = [
