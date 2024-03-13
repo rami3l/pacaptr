@@ -1,20 +1,19 @@
 //! APIs for spawning subprocesses and handling their results.
 
-use std::{
-    process::Stdio,
-    sync::atomic::{AtomicBool, Ordering},
-};
+use std::process::Stdio;
 
 use bytes::{Bytes, BytesMut};
 use dialoguer::FuzzySelect;
 use futures::prelude::*;
 use indoc::indoc;
 use itertools::{chain, Itertools};
+use once_cell::sync::Lazy;
 use regex::{RegexSet, RegexSetBuilder};
 use tap::prelude::*;
 use tokio::{
     io::{self, AsyncRead, AsyncWrite},
     process::Command as Exec,
+    sync::Mutex,
     task::JoinHandle,
 };
 #[allow(clippy::wildcard_imports)]
@@ -318,32 +317,38 @@ impl Cmd {
     #[doc = docs_errors_exec!()]
     async fn exec_prompt(self, mute: bool) -> Result<Output> {
         /// If the user has skipped all the prompts with `yes`.
-        static ALL: AtomicBool = AtomicBool::new(false);
+        ///
+        /// The [`Mutex`] is required to mutually exclude the prompt.
+        static ALL: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
 
         // The answer obtained from the prompt.
-        // The only Atomic* we're dealing with is `ALL`, so `Ordering::Relaxed` is fine.
-        // See: <https://marabos.nl/atomics/memory-ordering.html#relaxed>
-        let proceed = ALL.load(Ordering::Relaxed) || {
-            println_quoted(&*prompt::PENDING, &self);
-            let answer = tokio::task::block_in_place(move || {
-                prompt(
-                    "Proceed",
-                    "with the previous command?",
-                    &["Yes", "All", "No"],
-                )
-            })?;
-            match answer {
-                // The default answer is `Yes`.
-                0 => true,
-                // You can also say `All` to answer `Yes` to all the other questions that follow.
-                1 => {
-                    ALL.store(true, Ordering::Relaxed);
-                    true
+        let proceed = {
+            let mut all = ALL.lock().await;
+            *all || {
+                println_quoted(&*prompt::PENDING, &self);
+                let answer = tokio::task::spawn_blocking(move || {
+                    prompt(
+                        "Proceed",
+                        "with the previous command?",
+                        &["Yes", "All", "No"],
+                    )
+                })
+                .await??;
+                match answer {
+                    // The default answer is `Yes`.
+                    0 => true,
+                    // You can also say `All` to answer `Yes` to all the other questions that
+                    // follow.
+                    1 => {
+                        *all = true;
+                        true
+                    }
+                    // Or you can say `No`.
+                    2 => false,
+                    // TODO: This might need some changes.
+                    // ! I didn't put a `None` option because you can just Ctrl-C it if you want.
+                    _ => unreachable!(),
                 }
-                // Or you can say `No`.
-                2 => false,
-                // ! I didn't put a `None` option because you can just Ctrl-C it if you want.
-                _ => unreachable!(),
             }
         };
         if !proceed {
