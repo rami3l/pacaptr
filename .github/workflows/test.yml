@@ -175,8 +175,9 @@ jobs:
       - name: Create gtar wrapper
         run: |
           mkdir target
-          cat << EOF > "target/gtar"
-          #!/bin/sh
+          cat << 'EOF' > "target/gtar"
+          #!/bin/bash
+          set -x
           exec sudo /opt/homebrew/bin/gtar.orig "$@"
           EOF
       - name: Install gtar wrapper
@@ -184,6 +185,7 @@ jobs:
           sudo mv /opt/homebrew/bin/gtar /opt/homebrew/bin/gtar.orig
           sudo mv target/gtar /opt/homebrew/bin/gtar
           sudo chmod +x /opt/homebrew/bin/gtar
+          /opt/homebrew/bin/gtar --usage
       - name: Cache MacPorts
         id: cache-macports
         uses: actions/cache@v4
