@@ -95,7 +95,7 @@ xshell = "0.2.5"
 
 [dependencies]
 async-trait = "0.1.77"
-bytes = "1.5.0"
+bytes = "1.6.0"
 clap = { version = "4.5.1", features = ["cargo", "derive"] }
 console = "0.15.8"
 ctrlc = { version = "3.4.4", features = ["termination"] }
