@@ -1,22 +1,13 @@
-#![doc = docs_self!()]
+//! The [Homebrew Package Manager](https://brew.sh/).
 
 use async_trait::async_trait;
-use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-macro_rules! docs_self {
-    () => {
-        indoc! {"
-            The [Homebrew Package Manager](https://brew.sh/).
-        "}
-    };
-}
-
-#[doc = docs_self!()]
+/// The [Homebrew Package Manager](https://brew.sh/).
 #[derive(Debug)]
 pub struct Brew {
     cfg: Config,

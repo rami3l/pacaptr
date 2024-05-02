@@ -1,10 +1,9 @@
-#![doc = docs_self!()]
+//! The [X Binary Package System](https://github.com/void-linux/xbps).
 
 use std::io::Write;
 
 use async_trait::async_trait;
 use futures::prelude::*;
-use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::Pipe;
 
@@ -16,21 +15,13 @@ use crate::{
     print::println_err,
 };
 
-macro_rules! docs_self {
-    () => {
-        indoc! {"
-            The [X Binary Package System](https://github.com/void-linux/xbps).
-        "}
-    };
-}
-
-const PKG_NOT_FOUND_CODE: StatusCode = 2;
-
-#[doc = docs_self!()]
+/// The [X Binary Package System](https://github.com/void-linux/xbps).
 #[derive(Debug)]
 pub struct Xbps {
     cfg: Config,
 }
+
+const PKG_NOT_FOUND_CODE: StatusCode = 2;
 
 static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(["--yes"]),

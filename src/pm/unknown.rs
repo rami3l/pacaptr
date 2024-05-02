@@ -1,20 +1,11 @@
-#![doc = docs_self!()]
+//! An empty mapping for unidentified package managers.
 
 use async_trait::async_trait;
-use indoc::indoc;
 
 use super::Pm;
 use crate::config::Config;
 
-macro_rules! docs_self {
-    () => {
-        indoc! {"
-            An empty mapping for unidentified package managers.
-        "}
-    };
-}
-
-#[doc = docs_self!()]
+/// An empty mapping for unidentified package managers.
 #[derive(Debug)]
 pub struct Unknown {
     name: String,

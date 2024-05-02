@@ -95,7 +95,7 @@ enum Operations {
     /// Query the package database.
     #[command(short_flag = 'Q', long_flag = "query")]
     Query {
-        /// View the ChangeLog of a package if it exists.
+        /// View the changelog of a package if it exists.
         #[arg(short, long = "changelog")]
         c: bool,
 
@@ -256,7 +256,7 @@ impl Pacaptr {
                     $( $(if $key {
                         cfg.$val = true;
                     })* )?
-                    $( $(for _ in 0..($flag as u8) {
+                    $( $(for _ in 0..(u8::from($flag)) {
                         options.push_str(stringify!($flag));
                     })* )?
                 } )*

@@ -1,22 +1,13 @@
-#![doc = docs_self!()]
+//! The [Advanced Package Tool](https://salsa.debian.org/apt-team/apt).
 
 use async_trait::async_trait;
-use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-macro_rules! docs_self {
-    () => {
-        indoc! {"
-            The [Advanced Package Tool](https://salsa.debian.org/apt-team/apt).
-        "}
-    };
-}
-
-#[doc = docs_self!()]
+/// The [Advanced Package Tool](https://salsa.debian.org/apt-team/apt).
 #[derive(Debug)]
 pub struct Apt {
     cfg: Config,

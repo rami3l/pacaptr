@@ -1,7 +1,6 @@
-#![doc = docs_self!()]
+//! The [Portage Package Manager](https://wiki.gentoo.org/wiki/Portage).
 
 use async_trait::async_trait;
-use indoc::indoc;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
@@ -9,15 +8,7 @@ use tap::prelude::*;
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-macro_rules! docs_self {
-    () => {
-        indoc! {"
-            The [Portage Package Manager](https://wiki.gentoo.org/wiki/Portage).
-        "}
-    };
-}
-
-#[doc = docs_self!()]
+/// The [Portage Package Manager](https://wiki.gentoo.org/wiki/Portage).
 #[derive(Debug)]
 pub struct Emerge {
     cfg: Config,
