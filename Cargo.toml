@@ -135,7 +135,7 @@ which = "6.0.1"
 is_elevated = "0.1.2"
 
 [target.'cfg(unix)'.dependencies]
-nix = { version = "0.28.0", default_features = false, features = ["user"] }
+nix = { version = "0.28.0", default-features = false, features = ["user"] }
 
 [features]
 test = []
