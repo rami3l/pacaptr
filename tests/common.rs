@@ -27,7 +27,7 @@ const fn cmd_prefix() -> (&'static str, &'static [&'static str]) {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Test<'t> {
     sequence: Vec<(Input<'t>, Vec<&'t str>)>,
     pending_input: Option<Input<'t>>,
@@ -35,11 +35,8 @@ pub struct Test<'t> {
 
 impl<'t> Test<'t> {
     #[must_use]
-    pub const fn new() -> Self {
-        Test {
-            sequence: Vec::new(),
-            pending_input: None,
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 
     #[must_use]
@@ -107,11 +104,5 @@ impl<'t> Test<'t> {
             println!("{got}");
             try_match(&got, patterns);
         }
-    }
-}
-
-impl<'t> Default for Test<'t> {
-    fn default() -> Self {
-        Test::new()
     }
 }
