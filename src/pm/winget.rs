@@ -1,22 +1,13 @@
-#![doc = docs_self!()]
+//! The [Windows Package Manager CLI](https://github.com/microsoft/winget-cli).
 
 use async_trait::async_trait;
-use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-macro_rules! docs_self {
-    () => {
-        indoc! {"
-            The [Windows Package Manager CLI](https://github.com/microsoft/winget-cli).
-        "}
-    };
-}
-
-#[doc = docs_self!()]
+/// The [Windows Package Manager CLI](https://github.com/microsoft/winget-cli).
 #[derive(Debug)]
 pub struct Winget {
     cfg: Config,

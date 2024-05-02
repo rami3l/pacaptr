@@ -1,7 +1,6 @@
-#![doc = docs_self!()]
+//! The [Python Package Installer](https://pip.pypa.io/).
 
 use async_trait::async_trait;
-use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
@@ -12,15 +11,7 @@ use crate::{
     exec::Cmd,
 };
 
-macro_rules! docs_self {
-    () => {
-        indoc! {"
-            The [Python Package Installer](https://pip.pypa.io/).
-        "}
-    };
-}
-
-#[doc = docs_self!()]
+/// The [Python Package Installer](https://pip.pypa.io/).
 #[derive(Debug)]
 pub struct Pip {
     cfg: Config,

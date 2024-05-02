@@ -1,23 +1,14 @@
-#![doc = docs_self!()]
+//! The [PackageKit Console Client](https://www.freedesktop.org/software/PackageKit).
 
 use async_trait::async_trait;
 use futures::prelude::*;
-use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-macro_rules! docs_self {
-    () => {
-        indoc! {"
-            The [PackageKit Console Client](https://www.freedesktop.org/software/PackageKit).
-        "}
-    };
-}
-
-#[doc = docs_self!()]
+/// The [PackageKit Console Client](https://www.freedesktop.org/software/PackageKit).
 #[derive(Debug)]
 pub struct Pkcon {
     cfg: Config,
