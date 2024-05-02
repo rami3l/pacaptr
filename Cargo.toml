@@ -88,22 +88,22 @@ priority = "optional"
 section = "utility"
 
 [build-dependencies]
-built = { version = "0.7.1", features = ["git2"] }
+built = { version = "0.7.2", features = ["git2"] }
 
 [dev-dependencies]
-xshell = "0.2.5"
+xshell = "0.2.6"
 
 [dependencies]
-async-trait = "0.1.77"
-bytes = "1.5.0"
-clap = { version = "4.5.1", features = ["cargo", "derive"] }
+async-trait = "0.1.80"
+bytes = "1.6.0"
+clap = { version = "4.5.4", features = ["cargo", "derive"] }
 console = "0.15.8"
 ctrlc = { version = "3.4.4", features = ["termination"] }
 dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
-figment = { version = "0.10.14", features = ["env", "toml"] }
+figment = { version = "0.10.18", features = ["env", "toml"] }
 futures = { version = "0.3.30", default-features = false, features = ["std"] }
-indoc = "2.0.4"
+indoc = "2.0.5"
 itertools = "0.12.1"
 macro_rules_attribute = "0.2.0"
 once_cell = "1.19.0"
@@ -115,10 +115,10 @@ regex = { version = "1.10.4", default-features = false, features = [
   "unicode-case",
   "unicode-perl",
 ] }
-serde = { version = "1.0.197", features = ["derive"] }
+serde = { version = "1.0.200", features = ["derive"] }
 tap = "1.0.1"
-thiserror = "1.0.58"
-tokio = { version = "1.35.1", features = [
+thiserror = "1.0.59"
+tokio = { version = "1.37.0", features = [
   "io-std",
   "io-util",
   "macros",
@@ -135,7 +135,7 @@ which = "6.0.1"
 is_elevated = "0.1.2"
 
 [target.'cfg(unix)'.dependencies]
-uzers = { version = "0.11.3", default-features = false }
+nix = { version = "0.28.0", default_features = false, features = ["user"] }
 
 [features]
 test = []
