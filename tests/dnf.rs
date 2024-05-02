@@ -7,7 +7,7 @@ use common::*;
 #[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
 fn dnf_fail() {
     test_dsl! { r##"
-        in -Si wget
+        in -Si wget2
         ou Why not use curl instead?
     "## }
 }
@@ -63,11 +63,11 @@ fn dnf_qo() {
 #[test]
 fn dnf_qp_sw() {
     test_dsl! { r##"
-        in -Sw wget --yes
+        in -Sw wget2 --yes
         ou The downloaded packages were saved in cache
-        in -Qp /var/cache/dnf/*/packages/wget-*.rpm
+        in -Qp /var/cache/dnf/*/packages/wget2-*.rpm
         ou wget
-        ou A utility for retrieving files using the HTTP or FTP protocols
+        ou An advanced file and recursive website downloader
     "## }
 }
 
@@ -83,12 +83,12 @@ fn dnf_qs() {
 #[ignore]
 fn dnf_r_s() {
     test_dsl! { r##"
-        in -S wget --yes
+        in -S wget2 --yes
         ou Installed:
         ou Complete!
-        in ! wget -V
+        in ! wget2 -V
         ou GNU Wget
-        in -R wget --yes
+        in -R wget2 --yes
         ou Removed:
         ou Complete!
     "## }
@@ -97,15 +97,15 @@ fn dnf_r_s() {
 #[test]
 fn dnf_si() {
     test_dsl! { r##"
-        in -Si wget
-        ou A utility for retrieving files using the HTTP or FTP protocols
+        in -Si wget2
+        ou An advanced file and recursive website downloader
     "## }
 }
 
 #[test]
 fn dnf_sii() {
     test_dsl! { r##"
-        in -Sii wget
+        in -Sii wget2
         ou package: wget
         ou dependency: libc.so
     "## }
@@ -127,7 +127,7 @@ fn dnf_sg() {
 #[test]
 fn dnf_sl() {
     test_dsl! { r##"
-        in -Sl wget
+        in -Sl wget2
         ou Available Packages
         ou wget
     "## }
@@ -137,7 +137,7 @@ fn dnf_sl() {
 fn dnf_ss() {
     test_dsl! { r##"
         in -Ss wget
-        ou Name Exactly Matched: wget
-        ou A utility for retrieving files using the HTTP or FTP protocols
+        ou Matched: wget
+        ou An advanced file and recursive website downloader
     "## }
 }
