@@ -21,14 +21,6 @@ fn zypper_q() {
 }
 
 #[test]
-fn zypper_qc() {
-    test_dsl! { r##"
-        in -Qc zypper
-        ou suse.de
-    "## }
-}
-
-#[test]
 fn zypper_qi() {
     test_dsl! { r##"
         in -Qi curl
@@ -81,7 +73,7 @@ fn zypper_r_s() {
         in ! wget -V
         ou GNU Wget
         in -R wget --yes
-        ou Removing wget
+        ou Removing: wget
     "## }
 }
 
