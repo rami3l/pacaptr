@@ -438,7 +438,7 @@ pub fn is_root() -> bool {
 #[cfg(unix)]
 #[must_use]
 pub fn is_root() -> bool {
-    uzers::get_current_uid() == 0
+    nix::unistd::Uid::current().is_root()
 }
 
 /// Turns an [`AsyncRead`] into a [`Stream`].
