@@ -1,4 +1,4 @@
-#![doc = docs_self!()]
+#![doc = doc_self!()]
 
 use async_trait::async_trait;
 use indoc::indoc;
@@ -12,16 +12,16 @@ use crate::{
     exec::Cmd,
 };
 
-macro_rules! docs_self {
+macro_rules! doc_self {
     () => {
         indoc! {"
             The [Python Package Installer](https://pip.pypa.io/).
         "}
     };
 }
-use docs_self;
+use doc_self;
 
-#[doc = docs_self!()]
+#[doc = doc_self!()]
 #[derive(Debug)]
 pub struct Pip {
     cfg: Config,

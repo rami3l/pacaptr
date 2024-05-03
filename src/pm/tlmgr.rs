@@ -1,4 +1,4 @@
-#![doc = docs_self!()]
+#![doc = doc_self!()]
 
 use async_trait::async_trait;
 use indoc::indoc;
@@ -8,16 +8,16 @@ use tap::prelude::*;
 use super::{DryRunStrategy, Pm, PmHelper, PmMode, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-macro_rules! docs_self {
+macro_rules! doc_self {
     () => {
         indoc! {"
             The [TexLive Package Manager](https://www.tug.org/texlive/tlmgr.html).
         "}
     };
 }
-use docs_self;
+use doc_self;
 
-#[doc = docs_self!()]
+#[doc = doc_self!()]
 #[derive(Debug)]
 pub struct Tlmgr {
     cfg: Config,

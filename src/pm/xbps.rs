@@ -1,4 +1,4 @@
-#![doc = docs_self!()]
+#![doc = doc_self!()]
 
 use std::io::Write;
 
@@ -16,16 +16,16 @@ use crate::{
     print::println_err,
 };
 
-macro_rules! docs_self {
+macro_rules! doc_self {
     () => {
         indoc! {"
             The [X Binary Package System](https://github.com/void-linux/xbps).
         "}
     };
 }
-use docs_self;
+use doc_self;
 
-#[doc = docs_self!()]
+#[doc = doc_self!()]
 #[derive(Debug)]
 pub struct Xbps {
     cfg: Config,
