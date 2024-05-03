@@ -1,6 +1,7 @@
-//! The [Chocolatey Package Manager](https://chocolatey.org/).
+#![doc = docs_self!()]
 
 use async_trait::async_trait;
+use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
@@ -8,7 +9,16 @@ use super::{DryRunStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::exec::Cmd;
 use crate::{config::Config, error::Result};
 
-/// The [Chocolatey Package Manager](https://chocolatey.org/).
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            The [Chocolatey Package Manager](https://chocolatey.org/).
+        "}
+    };
+}
+use docs_self;
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Choco {
     cfg: Config,

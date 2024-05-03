@@ -1,13 +1,23 @@
-//! The [MacPorts Package Manager](https://www.macports.org/).
+#![doc = docs_self!()]
 
 use async_trait::async_trait;
+use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-/// The [MacPorts Package Manager](https://www.macports.org/).
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            The [MacPorts Package Manager](https://www.macports.org/).
+        "}
+    };
+}
+use docs_self;
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Port {
     cfg: Config,
