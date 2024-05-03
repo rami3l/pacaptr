@@ -1,6 +1,7 @@
-//! The [Scoop CLI Installer](https://scoop.sh/).
+#![doc = docs_self!()]
 
 use async_trait::async_trait;
+use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 use which::which;
@@ -8,7 +9,16 @@ use which::which;
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-/// The [Scoop CLI Installer](https://scoop.sh/).
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            The [Scoop CLI Installer](https://scoop.sh/).
+        "}
+    };
+}
+use docs_self;
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Scoop {
     cfg: Config,

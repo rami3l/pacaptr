@@ -1,9 +1,10 @@
-//! The [X Binary Package System](https://github.com/void-linux/xbps).
+#![doc = docs_self!()]
 
 use std::io::Write;
 
 use async_trait::async_trait;
 use futures::prelude::*;
+use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::Pipe;
 
@@ -15,7 +16,16 @@ use crate::{
     print::println_err,
 };
 
-/// The [X Binary Package System](https://github.com/void-linux/xbps).
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            The [X Binary Package System](https://github.com/void-linux/xbps).
+        "}
+    };
+}
+use docs_self;
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Xbps {
     cfg: Config,

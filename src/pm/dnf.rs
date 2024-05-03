@@ -1,14 +1,24 @@
-//! The [Dandified YUM](https://github.com/rpm-software-management/dnf).
+#![doc = docs_self!()]
 
 use async_trait::async_trait;
 use futures::prelude::*;
+use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-/// The [Dandified YUM](https://github.com/rpm-software-management/dnf).
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            The [Dandified YUM](https://github.com/rpm-software-management/dnf).
+        "}
+    };
+}
+use docs_self;
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Dnf {
     cfg: Config,

@@ -1,13 +1,23 @@
-//! The [TexLive Package Manager](https://www.tug.org/texlive/tlmgr.html).
+#![doc = docs_self!()]
 
 use async_trait::async_trait;
+use indoc::indoc;
 use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{DryRunStrategy, Pm, PmHelper, PmMode, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-/// The [TexLive Package Manager](https://www.tug.org/texlive/tlmgr.html).
+macro_rules! docs_self {
+    () => {
+        indoc! {"
+            The [TexLive Package Manager](https://www.tug.org/texlive/tlmgr.html).
+        "}
+    };
+}
+use docs_self;
+
+#[doc = docs_self!()]
 #[derive(Debug)]
 pub struct Tlmgr {
     cfg: Config,
