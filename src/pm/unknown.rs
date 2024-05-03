@@ -1,4 +1,4 @@
-#![doc = docs_self!()]
+#![doc = doc_self!()]
 
 use async_trait::async_trait;
 use indoc::indoc;
@@ -6,16 +6,16 @@ use indoc::indoc;
 use super::Pm;
 use crate::config::Config;
 
-macro_rules! docs_self {
+macro_rules! doc_self {
     () => {
         indoc! {"
             An empty mapping for unidentified package managers.
         "}
     };
 }
-use docs_self;
+use doc_self;
 
-#[doc = docs_self!()]
+#[doc = doc_self!()]
 #[derive(Debug)]
 pub struct Unknown {
     name: String,

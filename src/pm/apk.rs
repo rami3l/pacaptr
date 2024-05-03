@@ -1,4 +1,4 @@
-#![doc = docs_self!()]
+#![doc = doc_self!()]
 
 use async_trait::async_trait;
 use indoc::indoc;
@@ -8,16 +8,16 @@ use tap::prelude::*;
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-macro_rules! docs_self {
+macro_rules! doc_self {
     () => {
         indoc! {r"
             The [Alpine Linux package management system](https://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management).
         "}
     };
 }
-use docs_self;
+use doc_self;
 
-#[doc = docs_self!()]
+#[doc = doc_self!()]
 #[derive(Debug)]
 pub struct Apk {
     cfg: Config,

@@ -1,4 +1,4 @@
-#![doc = docs_self!()]
+#![doc = doc_self!()]
 
 use async_trait::async_trait;
 use futures::prelude::*;
@@ -9,16 +9,16 @@ use tap::prelude::*;
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
-macro_rules! docs_self {
+macro_rules! doc_self {
     () => {
         indoc! {"
             The [PackageKit Console Client](https://www.freedesktop.org/software/PackageKit).
         "}
     };
 }
-use docs_self;
+use doc_self;
 
-#[doc = docs_self!()]
+#[doc = doc_self!()]
 #[derive(Debug)]
 pub struct Pkcon {
     cfg: Config,
