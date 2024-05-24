@@ -1,13 +1,13 @@
 mod compat_table;
+#[cfg(feature = "test")]
 mod test_dsl;
 
 use anyhow::Result;
-use itertools::Itertools;
-use litrs::StringLit;
 use proc_macro::TokenStream;
-use quote::quote;
 
-use crate::{compat_table::compat_table_impl, test_dsl::test_dsl_impl};
+use crate::compat_table::compat_table_impl;
+#[cfg(feature = "test")]
+use crate::test_dsl::test_dsl_impl;
 
 /// A DSL (Domain-Specific Language) embedded in Rust, in order to simplify the
 /// form of smoke tests.
@@ -47,8 +47,13 @@ use crate::{compat_table::compat_table_impl, test_dsl::test_dsl_impl};
 ///    "## }
 /// }
 /// ```
+#[cfg(feature = "test")]
 #[proc_macro]
 pub fn test_dsl(input: TokenStream) -> TokenStream {
+    use itertools::Itertools;
+    use litrs::StringLit;
+    use quote::quote;
+
     let input = input.into_iter().collect_vec();
     if input.len() != 1 {
         let msg = format!(

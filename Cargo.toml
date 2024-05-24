@@ -91,6 +91,9 @@ section = "utility"
 built = { version = "0.7.2", features = ["git2"] }
 
 [dev-dependencies]
+pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.21.0", features = [
+  "test",
+] }
 xshell = "0.2.6"
 
 [dependencies]
