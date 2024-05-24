@@ -12,14 +12,14 @@ description = "Implementation of several macros used in pacaptr."
 proc-macro = true
 
 [dependencies]
-anyhow = "1.0.82"
-itertools = "0.12.1"
+anyhow = "1.0.86"
+itertools = "0.13.0"
 litrs = { version = "0.4.1", optional = true }
 once_cell = "1.19.0"
-proc-macro2 = "1.0.81"
+proc-macro2 = "1.0.83"
 quote = { version = "1.0.36", optional = true }
 regex = "1.10.4"
-syn = "2.0.60"
+syn = "2.0.66"
 tabled = "0.15.0"
 
 [features]
