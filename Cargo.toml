@@ -91,9 +91,6 @@ section = "utility"
 built = { version = "0.7.3", features = ["git2"] }
 
 [dev-dependencies]
-pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.21.0", features = [
-  "test",
-] }
 xshell = "0.2.6"
 
 [dependencies]
@@ -141,7 +138,7 @@ is_elevated = "0.1.2"
 nix = { version = "0.28.0", default-features = false, features = ["user"] }
 
 [features]
-test = []
+test = ["pacaptr-macros/test"]
 
 [profile.release]
 codegen-units = 1
