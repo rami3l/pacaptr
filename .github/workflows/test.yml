@@ -40,7 +40,7 @@ jobs:
           - os: windows-latest
             # target: x86_64-pc-windows-msvc
             target2: aarch64-pc-windows-msvc
-          - os: macos-14
+          - os: macos-latest
             # target: aarch64-apple-darwin
             target2: x86_64-apple-darwin
           - os: ubuntu-latest
@@ -142,7 +142,7 @@ jobs:
           cargo test --features=test winget -- --ignored
 
   brew-test:
-    runs-on: macos-14
+    runs-on: macos-latest
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
@@ -162,7 +162,7 @@ jobs:
           cargo test --features=test brew -- --ignored
 
   port-test:
-    runs-on: macos-14
+    runs-on: macos-latest
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
