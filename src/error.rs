@@ -8,8 +8,10 @@ use std::{
 use thiserror::Error;
 use tokio::{io, task::JoinError};
 
-use crate::exec::{Output, StatusCode};
-use crate::print;
+use crate::{
+    exec::{Output, StatusCode},
+    print,
+};
 
 /// A specialized [`Result`](std::result::Result) type used by
 /// [`pacaptr`](crate).
