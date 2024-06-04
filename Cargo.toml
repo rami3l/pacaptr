@@ -97,15 +97,15 @@ priority = "optional"
 section = "utility"
 
 [build-dependencies]
-built = { version = "0.7.3", features = ["git2"] }
+built = { version = "0.7.4", features = ["git2"] }
 
 [dev-dependencies]
 xshell = "0.2.6"
 
 [dependencies]
-async-trait = "0.1.80"
-bytes = "1.6.0"
-clap = { version = "4.5.8", features = ["cargo", "derive"] }
+async-trait = "0.1.81"
+bytes = "1.6.1"
+clap = { version = "4.5.9", features = ["cargo", "derive"] }
 console = "0.15.8"
 ctrlc = { version = "3.4.4", features = ["termination"] }
 dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
@@ -119,9 +119,9 @@ once_cell = { workspace = true }
 pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.21.0" }
 paste = "1.0.15"
 regex = { workspace = true }
-serde = { version = "1.0.203", features = ["derive"] }
+serde = { version = "1.0.204", features = ["derive"] }
 tap = "1.0.1"
-thiserror = "1.0.61"
+thiserror = "1.0.62"
 thiserror-ext = "0.2.0"
 tokio = { version = "1.38.0", features = [
   "io-std",
