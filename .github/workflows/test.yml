@@ -371,7 +371,7 @@ jobs:
       - name: Setup extra build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y packagekit packagekit-tools gcc-aarch64-linux-gnu
+          sudo apt-get install -y packagekit packagekit-tools
       - name: Run sccache-cache
         uses: mozilla-actions/sccache-action@v0.0.5
       - uses: dtolnay/rust-toolchain@stable
