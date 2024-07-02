@@ -49,7 +49,7 @@ fn pkcon_r_s() {
 #[test]
 fn pkcon_si() {
     test_dsl! { r##"
-        in --using pkcon -Si wget
-        ou retrieves files from the web
+        in --using pkcon -Si fish
+        ou friendly interactive shell
     "## }
 }
