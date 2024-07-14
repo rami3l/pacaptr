@@ -60,15 +60,26 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target2 }}
-      - name: Setup cargo-binstall
-        if: github.event_name == 'pull_request' && matrix.os != 'windows-latest' #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
-        uses: cargo-bins/cargo-binstall@main
+      - name: Setup `cargo-binstall` and `taplo`
+        if: ${{ github.event_name == 'pull_request' && !contains(matrix.os, 'windows') }} #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
+        uses: taiki-e/install-action@v2
+        with:
+          tool: taplo-cli
+      - name: Check TOML format
+        if: ${{ contains(matrix.os, 'ubuntu') }}
+        run: |
+          taplo fmt
+          git diff --exit-code
+      - name: Check Rust format
+        if: ${{ contains(matrix.os, 'ubuntu') }}
+        run: |
+          cargo fmt --all --check
       - name: Test installation via cargo-binstall (${{ matrix.os }} native)
-        if: github.event_name == 'pull_request' && matrix.os != 'windows-latest' #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
+        if: ${{ github.event_name == 'pull_request' && !contains(matrix.os, 'windows') }} #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
         run: |
           cargo binstall pacaptr --manifest-path=./Cargo.toml --dry-run --strategies=crate-meta-data --log-level=debug
       - name: Test installation via cargo-binstall (${{ matrix.target2 }})
-        if: github.event_name == 'pull_request' && matrix.os != 'windows-latest' #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
+        if: ${{ github.event_name == 'pull_request' && !contains(matrix.os, 'windows') }} #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
         run: |
           cargo binstall pacaptr --manifest-path=./Cargo.toml --dry-run --strategies=crate-meta-data --log-level=debug --targets=${{ matrix.target2 }}
       - name: Build
