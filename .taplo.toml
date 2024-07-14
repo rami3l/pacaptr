@@ -1,0 +1,16 @@
+include = ["**/*.toml"]
+
+[[rule]]
+include = ["**/Cargo.toml"]
+keys = [
+  "build-dependencies",
+  "dependencies",
+  "dev-dependencies",
+  "workspace.dependencies",
+  "workspace.lints.clippy",
+  "workspace.lints.rust",
+  "workspace.lints.rustdoc",
+]
+
+[rule.formatting]
+reorder_keys = true
