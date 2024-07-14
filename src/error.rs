@@ -22,39 +22,39 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 #[non_exhaustive]
 pub enum Error {
     /// Error when parsing CLI arguments.
-    #[error("Failed to parse arguments: {msg}")]
     #[allow(missing_docs)]
+    #[error("failed to parse arguments: {msg}")]
     ArgParseError { msg: String },
 
     /// Error when handling a [`Config`](crate::config::Config).
-    #[error("Failed to parse config: {0}")]
+    #[error("failed to parse config")]
     ConfigError(#[from] figment::Error),
 
     /// A [`Cmd`](crate::exec::Cmd) failed to finish.
-    #[error("Failed to get exit code of subprocess: {0}")]
-    CmdJoinError(JoinError),
+    #[error("failed to get exit code of subprocess")]
+    CmdJoinError(#[from] JoinError),
 
     /// A [`Cmd`](crate::exec::Cmd) failed to spawn.
-    #[error("Failed to spawn subprocess: {0}")]
-    CmdSpawnError(io::Error),
+    #[error("failed to spawn subprocess")]
+    CmdSpawnError(#[source] io::Error),
 
     /// Error when trying to get a handle (e.g. `stdout`, `stderr`) out of a
     /// running [`Cmd`](crate::exec::Cmd).
-    #[error("Subprocess didn't have a handle to {handle}")]
     #[allow(missing_docs)]
+    #[error("subprocess didn't have a handle to {handle}")]
     CmdNoHandleError { handle: String },
 
     /// A [`Cmd`](crate::exec::Cmd) failed when waiting for it to finish.
-    #[error("Subprocess failed while running: {0}")]
-    CmdWaitError(io::Error),
+    #[error("subprocess failed while running")]
+    CmdWaitError(#[source] io::Error),
 
     /// A [`Cmd`](crate::exec::Cmd) exited with an error.
-    #[error("Subprocess exited with code {code}")]
     #[allow(missing_docs)]
+    #[error("subprocess exited with code {code}")]
     CmdStatusCodeError { code: StatusCode, output: Output },
 
     /// A [`Cmd`](crate::exec::Cmd) was interrupted by a signal.
-    #[error("Subprocess interrupted by signal")]
+    #[error("subprocess interrupted by signal")]
     CmdInterruptedError,
 
     /// Error while converting a [`Vec<u8>`] to a [`String`].
@@ -70,8 +70,8 @@ pub enum Error {
     IoError(#[from] io::Error),
 
     /// A [`Pm`](crate::pm::Pm) operation is not implemented.
-    #[error("Operation `{op}` is unimplemented for `{pm}`")]
     #[allow(missing_docs)]
+    #[error("operation `{op}` is unimplemented for `{pm}`")]
     OperationUnimplementedError { op: String, pm: String },
 
     /// Miscellaneous other error.

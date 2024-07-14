@@ -4,7 +4,7 @@ mod common;
 use common::*;
 
 #[test]
-#[should_panic(expected = "Failed with pattern `^Package: wget$`")]
+#[should_panic(expected = "failed with pattern `^Package: wget$`")]
 fn pkcon_fail() {
     test_dsl! { r##"
         in --using pkcon -Si fish

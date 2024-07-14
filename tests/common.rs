@@ -67,7 +67,7 @@ impl<'t> Test<'t> {
         } else if let Some((_cmd, outs)) = self.sequence.last_mut() {
             outs.extend(out);
         } else {
-            panic!("Expect an input before an output");
+            panic!("expect an input before an output");
         }
         self
     }
@@ -77,7 +77,7 @@ impl<'t> Test<'t> {
             for &p in patterns {
                 let re = RegexBuilder::new(p).multi_line(true).build().unwrap();
                 let is_match = re.is_match(out);
-                assert!(is_match, "Failed with pattern `{p}`, got `{out}`");
+                assert!(is_match, "failed with pattern `{p}`, got `{out}`");
             }
         };
 

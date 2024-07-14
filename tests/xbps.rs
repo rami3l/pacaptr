@@ -4,7 +4,7 @@ mod common;
 use common::*;
 
 #[test]
-#[should_panic(expected = "Failed with pattern `^pkgname: wget$`")]
+#[should_panic(expected = "failed with pattern `^pkgname: wget$`")]
 fn xbps_fail() {
     test_dsl! {"
         in -Si fish-shell
