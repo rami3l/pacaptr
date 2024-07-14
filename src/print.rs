@@ -25,7 +25,7 @@ pub mod prompt {
     pub static ERROR: Lazy<StyledStr> = Lazy::new(|| style::ERROR.apply_to("Error"));
 }
 
-use std::fmt::{self, Display};
+use std::fmt::{self, Debug, Display};
 
 use console::{style, Style};
 use dialoguer::theme::ColorfulTheme;
@@ -51,10 +51,16 @@ macro_rules! quoted_format {
     };
 }
 
-/// Writes a message after the given prompt.
+/// Writes an error after the given prompt.
 #[allow(clippy::missing_errors_doc)]
-pub fn write(f: &mut fmt::Formatter, prompt: impl Display, msg: impl Display) -> fmt::Result {
-    write!(f, plain_format!(), prompt, msg, indent = PROMPT_INDENT)
+pub fn write_err(f: &mut fmt::Formatter, prompt: impl Display, err: impl Debug) -> fmt::Result {
+    write!(
+        f,
+        concat!(prompt_format!(), " {:?}"),
+        prompt,
+        err,
+        indent = PROMPT_INDENT,
+    )
 }
 
 /// Prints out a message after the given prompt.
@@ -63,7 +69,7 @@ pub fn println(prompt: impl Display, msg: impl Display) {
         plain_format!(),
         style::MESSAGE.apply_to(prompt),
         msg,
-        indent = PROMPT_INDENT
+        indent = PROMPT_INDENT,
     );
 }
 
@@ -73,7 +79,7 @@ pub fn println_err(msg: impl Display) {
         plain_format!(),
         &*prompt::ERROR,
         msg,
-        indent = PROMPT_INDENT
+        indent = PROMPT_INDENT,
     );
 }
 
@@ -83,7 +89,7 @@ pub fn println_quoted(prompt: impl Display, msg: impl Display) {
         quoted_format!(),
         style::MESSAGE.apply_to(prompt),
         msg,
-        indent = PROMPT_INDENT
+        indent = PROMPT_INDENT,
     );
 }
 

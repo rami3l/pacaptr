@@ -6,6 +6,7 @@ use std::{
 };
 
 use thiserror::Error;
+use thiserror_ext::AsReport;
 use tokio::{io, task::JoinError};
 
 use crate::{
@@ -79,10 +80,10 @@ pub enum Error {
     OtherError(String),
 }
 
-#[allow(clippy::module_name_repetitions)]
 /// A simple [`enum@Error`] wrapper designed to be returned in the `main`
 /// function. It delegates its [`Debug`] implementation to the
 /// [`std::fmt::Display`] implementation of its underlying error.
+#[allow(clippy::module_name_repetitions)]
 pub struct MainError(Error);
 
 impl From<Error> for MainError {
@@ -95,7 +96,7 @@ impl Debug for MainError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // Erase the default "Error: " message header.
         write!(f, "\r")?;
-        print::write(f, &*print::prompt::ERROR, &self.0)
+        print::write_err(f, &*print::prompt::ERROR, &self.0.as_report())
     }
 }
 
