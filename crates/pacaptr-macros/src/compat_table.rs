@@ -57,8 +57,8 @@ impl Tabled for CompatRow {
 
 fn make_table() -> anyhow::Result<String> {
     let paths: Vec<fs::DirEntry> = fs::read_dir(PM_IMPL_DIR)
-        .context("Failed while reading PM_IMPL_DIR")?
-        .map(|entry| entry.context("Error while reading path"))
+        .context("failed while reading PM_IMPL_DIR")?
+        .map(|entry| entry.context("error while reading path"))
         .try_collect()?;
 
     let excluded_names = ["mod.rs", "unknown.rs"];
@@ -84,7 +84,7 @@ fn make_table() -> anyhow::Result<String> {
                     .unwrap_or("")
             });
             file.to_str()
-                .context("Failed to convert `file: OsString` to `&str`")
+                .context("failed to convert `file: OsString` to `&str`")
                 .map(|file| make_row(file, data))
         })
         .try_collect()?;

@@ -4,7 +4,7 @@ mod common;
 use common::*;
 
 #[test]
-#[should_panic(expected = "Failed with pattern `GNU Wget is not a free software package`")]
+#[should_panic(expected = "failed with pattern `GNU Wget is not a free software package`")]
 fn scoop_fail() {
     test_dsl! { r##"
         in --using scoop -Si wget

@@ -4,7 +4,7 @@ mod common;
 use common::*;
 
 #[test]
-#[should_panic(expected = "Failed with pattern `Here comes the sun`")]
+#[should_panic(expected = "failed with pattern `Here comes the sun`")]
 fn pip_fail() {
     test_dsl! { r##"
         in --using pip -Qi wheel

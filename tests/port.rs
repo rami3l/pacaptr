@@ -6,7 +6,7 @@ mod common;
 use common::*;
 
 #[test]
-#[should_panic(expected = "Failed with pattern `curl is not keg-only`")]
+#[should_panic(expected = "failed with pattern `curl is not keg-only`")]
 fn port_fail() {
     test_dsl! { r##"
         in --using port -Si curl

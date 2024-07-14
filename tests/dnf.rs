@@ -4,7 +4,7 @@ mod common;
 use common::*;
 
 #[test]
-#[should_panic(expected = "Failed with pattern `Why not use curl instead?`")]
+#[should_panic(expected = "failed with pattern `Why not use curl instead?`")]
 fn dnf_fail() {
     test_dsl! { r##"
         in -Si wget2

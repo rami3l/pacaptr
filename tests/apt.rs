@@ -4,7 +4,7 @@ mod common;
 use common::*;
 
 #[test]
-#[should_panic(expected = "Failed with pattern `^Package: wget$`")]
+#[should_panic(expected = "failed with pattern `^Package: wget$`")]
 fn apt_fail() {
     test_dsl! { r##"
         in -Si fish
