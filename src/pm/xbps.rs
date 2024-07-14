@@ -65,7 +65,7 @@ impl Pm for Xbps {
                 .await;
         }
 
-        let lines: Vec<Result<Vec<u8>, String>> = stream::iter(kws)
+        let lines: Vec<_> = stream::iter(kws)
             .map(Ok)
             .and_then(|&pkg| async {
                 let cmd = Cmd::new(["xbps-query", "--property", "pkgver", pkg]).flags(flags);
@@ -76,8 +76,8 @@ impl Pm for Xbps {
                     Ok(line) => Ok(Ok(line)),
                     Err(Error::CmdStatusCodeError {
                         code: PKG_NOT_FOUND_CODE,
-                        ..
-                    }) => Ok(Err(pkg.to_owned())),
+                        output,
+                    }) => Ok(Err((pkg.to_owned(), output))),
                     Err(e) => Err(e),
                 }
             })
@@ -85,21 +85,16 @@ impl Pm for Xbps {
             .await?;
 
         let mut stdout = std::io::stdout();
-        lines.into_iter().try_fold(Ok(()), |acc, line| {
-            std::io::Result::Ok(match line {
-                Ok(line) => {
-                    stdout.write_all(&line)?;
-                    acc
-                }
-                Err(missing) => {
-                    println_err(format_args!("package `{missing}` was not found"));
-                    Err(Error::CmdStatusCodeError {
-                        code: PKG_NOT_FOUND_CODE,
-                        output: vec![],
-                    })
-                }
-            })
-        })?
+        lines.into_iter().try_for_each(|line| match line {
+            Ok(line) => stdout.write_all(&line).map_err(Into::into),
+            Err((missing, output)) => {
+                println_err(format_args!("package `{missing}` was not found"));
+                Err(Error::CmdStatusCodeError {
+                    code: PKG_NOT_FOUND_CODE,
+                    output,
+                })
+            }
+        })
     }
 
     /// Qe lists packages installed explicitly (not as dependencies).
