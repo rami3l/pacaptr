@@ -122,6 +122,7 @@ regex = { workspace = true }
 serde = { version = "1.0.203", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "1.0.61"
+thiserror-ext = "0.2.0"
 tokio = { version = "1.38.0", features = [
   "io-std",
   "io-util",
