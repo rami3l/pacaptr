@@ -34,7 +34,6 @@ unsafe_code = "forbid"
 unused_allocation = "warn"
 
 [workspace.lints.clippy]
-doc_markdown = "warn"
 nursery = "warn"
 pedantic = "warn"
 
