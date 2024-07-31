@@ -347,12 +347,13 @@ impl Pacaptr {
 
 #[cfg(all(test, feature = "test"))]
 mod tests {
-    use once_cell::sync::Lazy;
+    use std::sync::LazyLock;
+
     use tokio::test;
 
     use super::*;
 
-    static MOCK_CFG: Lazy<Config> = Lazy::new(|| Config {
+    static MOCK_CFG: LazyLock<Config> = LazyLock::new(|| Config {
         default_pm: Some("mockpm".into()),
         ..Config::default()
     });

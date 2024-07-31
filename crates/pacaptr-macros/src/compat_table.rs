@@ -1,10 +1,10 @@
 use std::{
     borrow::Cow, collections::BTreeMap, ffi::OsString, fmt::Debug, fs, path::Path, str::FromStr,
+    sync::LazyLock,
 };
 
 use anyhow::Context;
 use itertools::{chain, Itertools};
-use once_cell::sync::Lazy;
 use proc_macro2::{Span, TokenStream};
 use regex::Regex;
 use syn::{Error, Result};
@@ -49,8 +49,8 @@ impl Tabled for CompatRow {
 
     fn headers() -> Vec<Cow<'static, str>> {
         // `["Module", "q", "qc", "qe", ..]`
-        static HEADERS: Lazy<Vec<Cow<'static, str>>> =
-            Lazy::new(|| chain!(["Module"], METHODS).map_into().collect());
+        static HEADERS: LazyLock<Vec<Cow<'static, str>>> =
+            LazyLock::new(|| chain!(["Module"], METHODS).map_into().collect());
         HEADERS.clone()
     }
 }

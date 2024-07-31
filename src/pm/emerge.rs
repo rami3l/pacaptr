@@ -1,9 +1,10 @@
 #![doc = doc_self!()]
 
+use std::sync::LazyLock;
+
 use async_trait::async_trait;
 use indoc::indoc;
 use itertools::Itertools;
-use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
@@ -24,17 +25,17 @@ pub struct Emerge {
     cfg: Config,
 }
 
-static STRAT_ASK: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_ASK: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::native_confirm(["--ask"]),
     ..Strategy::default()
 });
 
-static STRAT_INTERACTIVE: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_INTERACTIVE: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::native_confirm(["--interactive"]),
     ..Strategy::default()
 });
 
-static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_INSTALL: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::native_confirm(["--ask"]),
     no_cache: NoCacheStrategy::Scc,
     ..Strategy::default()

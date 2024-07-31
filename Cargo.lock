@@ -730,7 +730,6 @@ dependencies = [
  "itertools",
  "macro_rules_attribute",
  "nix 0.29.0",
- "once_cell",
  "pacaptr-macros",
  "paste",
  "regex",

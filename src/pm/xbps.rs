@@ -1,11 +1,10 @@
 #![doc = doc_self!()]
 
-use std::io::Write;
+use std::{io::Write, sync::LazyLock};
 
 use async_trait::async_trait;
 use futures::prelude::*;
 use indoc::indoc;
-use once_cell::sync::Lazy;
 use tap::Pipe;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
@@ -33,7 +32,7 @@ pub struct Xbps {
 
 const PKG_NOT_FOUND_CODE: StatusCode = 2;
 
-static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_PROMPT: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(["--yes"]),
     ..Strategy::default()
 });
