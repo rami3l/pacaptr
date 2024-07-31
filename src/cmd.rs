@@ -1,16 +1,20 @@
 //! Definitions for command line argument mapping and dispatching.
 //!
 //! An overall introduction of how this module works:
+//!
 //! 1. [`clap`] handles command line arguments and generate a [`Pacaptr`]
-//!   instance holding all the flags and options.
+//!    instance holding all the flags and options.
+//!
 //! 2. [`Config`] reads the configuration file (if it exists) and then merges it
-//!   with the current command line arguments using [`Pacaptr::merge_cfg`].
+//!    with the current command line arguments using [`Pacaptr::merge_cfg`].
+//!
 //! 3. The correct package manager to be used will be indicated by the user
-//!   (through command line arguments or config file), or, if this is not the
-//!   case, automatically detected by [`detect_pm_str`].
+//!    (through command line arguments or config file), or, if this is not the
+//!    case, automatically detected by [`detect_pm_str`].
+//!
 //! 4. [`Pacaptr::dispatch`] will call the corresponding trait method, eg.
-//!   `.suy()`, according to the combination of flags and options obtained
-//!   above.
+//!    `.suy()`, according to the combination of flags and options obtained
+//!    above.
 
 use clap::{self, ArgAction, Parser};
 use figment::Figment;

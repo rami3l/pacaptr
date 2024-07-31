@@ -96,7 +96,7 @@ impl Debug for MainError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // Erase the default "Error: " message header.
         write!(f, "\r")?;
-        print::write_err(f, &*print::prompt::ERROR, &self.0.as_report())
+        print::write_err(f, &*print::prompt::ERROR, self.0.as_report())
     }
 }
 
