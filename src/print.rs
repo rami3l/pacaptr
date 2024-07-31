@@ -3,26 +3,28 @@
 #![allow(missing_docs, clippy::module_name_repetitions)]
 
 pub(crate) mod style {
-    use console::Style;
-    use once_cell::sync::Lazy;
+    use std::sync::LazyLock;
 
-    pub static MESSAGE: Lazy<Style> = Lazy::new(|| Style::new().green().bold());
-    pub static ERROR: Lazy<Style> = Lazy::new(|| Style::new().bright().red().bold());
-    pub static QUESTION: Lazy<Style> = Lazy::new(|| Style::new().yellow().bold());
+    use console::Style;
+
+    pub static MESSAGE: LazyLock<Style> = LazyLock::new(|| Style::new().green().bold());
+    pub static ERROR: LazyLock<Style> = LazyLock::new(|| Style::new().bright().red().bold());
+    pub static QUESTION: LazyLock<Style> = LazyLock::new(|| Style::new().yellow().bold());
 }
 
 pub mod prompt {
-    use once_cell::sync::Lazy;
+    use std::sync::LazyLock;
 
     use crate::print::style;
 
     type StyledStr<'a> = console::StyledObject<&'a str>;
 
-    pub static CANCELED: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Canceled"));
-    pub static PENDING: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Pending"));
-    pub static RUNNING: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Running"));
-    pub static INFO: Lazy<StyledStr> = Lazy::new(|| style::MESSAGE.apply_to("Info"));
-    pub static ERROR: Lazy<StyledStr> = Lazy::new(|| style::ERROR.apply_to("Error"));
+    pub static CANCELED: LazyLock<StyledStr> =
+        LazyLock::new(|| style::MESSAGE.apply_to("Canceled"));
+    pub static PENDING: LazyLock<StyledStr> = LazyLock::new(|| style::MESSAGE.apply_to("Pending"));
+    pub static RUNNING: LazyLock<StyledStr> = LazyLock::new(|| style::MESSAGE.apply_to("Running"));
+    pub static INFO: LazyLock<StyledStr> = LazyLock::new(|| style::MESSAGE.apply_to("Info"));
+    pub static ERROR: LazyLock<StyledStr> = LazyLock::new(|| style::ERROR.apply_to("Error"));
 }
 
 use std::fmt::{self, Debug, Display};

@@ -115,7 +115,6 @@ futures = { version = "0.3.30", default-features = false, features = ["std"] }
 indoc = "2.0.5"
 itertools = { workspace = true }
 macro_rules_attribute = "0.2.0"
-once_cell = { workspace = true }
 pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.21.0" }
 paste = "1.0.15"
 regex = { workspace = true }

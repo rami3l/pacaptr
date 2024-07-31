@@ -1,9 +1,10 @@
 #![doc = doc_self!()]
 
+use std::sync::LazyLock;
+
 use async_trait::async_trait;
 use futures::prelude::*;
 use indoc::indoc;
-use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
@@ -24,7 +25,7 @@ pub struct Conda {
     cfg: Config,
 }
 
-static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_PROMPT: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(["-y"]),
     ..Strategy::default()
 });

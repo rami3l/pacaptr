@@ -1,8 +1,9 @@
 #![doc = doc_self!()]
 
+use std::sync::LazyLock;
+
 use async_trait::async_trait;
 use indoc::indoc;
-use once_cell::sync::Lazy;
 use tap::prelude::*;
 use which::which;
 
@@ -25,12 +26,12 @@ pub struct Scoop {
     shell: String,
 }
 
-static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_PROMPT: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     ..Strategy::default()
 });
 
-static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_INSTALL: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     no_cache: NoCacheStrategy::Scc,
     ..Strategy::default()

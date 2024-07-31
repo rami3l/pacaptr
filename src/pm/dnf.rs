@@ -1,9 +1,10 @@
 #![doc = doc_self!()]
 
+use std::sync::LazyLock;
+
 use async_trait::async_trait;
 use futures::prelude::*;
 use indoc::indoc;
-use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
@@ -24,17 +25,17 @@ pub struct Dnf {
     cfg: Config,
 }
 
-static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_PROMPT: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(["-y"]),
     ..Strategy::default()
 });
 
-static STRAT_PROMPT_CUSTOM: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_PROMPT_CUSTOM: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     ..Strategy::default()
 });
 
-static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_INSTALL: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::native_no_confirm(["-y"]),
     no_cache: NoCacheStrategy::Sccc,
     ..Strategy::default()

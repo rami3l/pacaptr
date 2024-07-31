@@ -1,8 +1,9 @@
 #![doc = doc_self!()]
 
+use std::sync::LazyLock;
+
 use async_trait::async_trait;
 use indoc::indoc;
-use once_cell::sync::Lazy;
 use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
@@ -23,12 +24,12 @@ pub struct Apk {
     cfg: Config,
 }
 
-static STRAT_PROMPT: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_PROMPT: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     ..Strategy::default()
 });
 
-static STRAT_INSTALL: Lazy<Strategy> = Lazy::new(|| Strategy {
+static STRAT_INSTALL: LazyLock<Strategy> = LazyLock::new(|| Strategy {
     prompt: PromptStrategy::CustomPrompt,
     no_cache: NoCacheStrategy::with_flags(["--no-cache"]),
     ..Strategy::default()
