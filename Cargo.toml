@@ -104,7 +104,7 @@ xshell = "0.2.6"
 [dependencies]
 async-trait = "0.1.81"
 bytes = "1.6.1"
-clap = { version = "4.5.9", features = ["cargo", "derive"] }
+clap = { version = "4.5.13", features = ["cargo", "derive"] }
 console = "0.15.8"
 ctrlc = { version = "3.4.4", features = ["termination"] }
 dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
