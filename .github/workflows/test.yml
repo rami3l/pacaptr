@@ -61,7 +61,7 @@ jobs:
         with:
           targets: ${{ matrix.target2 }}
       - name: Setup `cargo-binstall` and `taplo`
-        if: ${{ github.event_name == 'pull_request' && !contains(matrix.os, 'windows') }} #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
+        if: ${{ !contains(matrix.os, 'windows') }} #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
         uses: taiki-e/install-action@v2
         with:
           tool: taplo-cli
