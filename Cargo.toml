@@ -117,7 +117,7 @@ macro_rules_attribute = "0.2.0"
 pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.21.0" }
 paste = "1.0.15"
 regex = { workspace = true }
-serde = { version = "1.0.204", features = ["derive"] }
+serde = { version = "1.0.209", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "1.0.62"
 thiserror-ext = "0.2.0"
