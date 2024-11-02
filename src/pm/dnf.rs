@@ -90,19 +90,21 @@ impl Pm for Dnf {
 
     /// Qi displays local package information: name, version, description, etc.
     async fn qi(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        stream::iter([
-            ["dnf", "info", "--installed"],
-            ["dnf", "repoquery", "--deplist"],
-        ])
-        .map(Ok)
-        .try_for_each(|cmd| self.run(Cmd::new(cmd).kws(kws).flags(flags)))
-        .await
+        Cmd::new(["dnf", "info", "--installed"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
+            .await
     }
 
     /// Qii displays local packages which require X to be installed, aka local
     /// reverse dependencies.
     async fn qii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        self.qi(kws, flags).await
+        Cmd::new(["dnf", "repoquery", "--installed", "--whatdepends"])
+            .kws(kws)
+            .flags(flags)
+            .pipe(|cmd| self.run(cmd))
+            .await
     }
 
     /// Ql displays files provided by local package.
@@ -200,7 +202,7 @@ impl Pm for Dnf {
     /// Sii displays packages which require X to be installed, aka reverse
     /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["dnf", "repoquery", "--deplist"])
+        Cmd::new(["dnf", "repoquery", "--whatdepends"])
             .kws(kws)
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
