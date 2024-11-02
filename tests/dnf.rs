@@ -23,7 +23,7 @@ fn dnf_q() {
 #[test]
 fn dnf_qc() {
     test_dsl! { r##"
-        in -Qc dnf
+        in -Qc dnf5
         ou redhat\.com
     "## }
 }
@@ -39,15 +39,15 @@ fn dnf_qe() {
 #[test]
 fn dnf_qi() {
     test_dsl! { r##"
-        in -Qi dnf
-        ou Utility that allows users to manage packages on their systems.
+        in -Qi dnf5
+        ou Command-line package manager
     "## }
 }
 
 #[test]
 fn dnf_ql() {
     test_dsl! { r##"
-        in -Ql dnf
+        in -Ql dnf5
         ou /usr/share/man/man8/dnf.8.gz
     "## }
 }
@@ -64,10 +64,10 @@ fn dnf_qo() {
 fn dnf_qp_sw() {
     test_dsl! { r##"
         in -Sw wget2 --yes
-        ou The downloaded packages were saved in cache
-        in -Qp /var/cache/dnf/*/packages/wget2-*.rpm
+        ou wget2
+        in -Qp /var/cache/*dnf*/*/packages/wget2-*.rpm
         ou wget
-        ou An advanced file and recursive website downloader
+        ou file and recursive website downloader
     "## }
 }
 
@@ -84,13 +84,11 @@ fn dnf_qs() {
 fn dnf_r_s() {
     test_dsl! { r##"
         in -S wget2 --yes
-        ou Installed:
-        ou Complete!
+        ou Installing
         in ! wget2 -V
         ou GNU Wget
         in -R wget2 --yes
-        ou Removed:
-        ou Complete!
+        ou Removing
     "## }
 }
 
@@ -105,9 +103,8 @@ fn dnf_si() {
 #[test]
 fn dnf_sii() {
     test_dsl! { r##"
-        in -Sii wget2
-        ou package: wget
-        ou dependency: libc.so
+        in -Sii curl
+        ou rpm
     "## }
 }
 
@@ -115,11 +112,9 @@ fn dnf_sii() {
 fn dnf_sg() {
     test_dsl! { r##"
         in -Sg
-        ou Available Groups:
         ou LibreOffice
         in -Sg LibreOffice
-        ou Group: LibreOffice
-        ou Description: LibreOffice Productivity Suite
+        ou LibreOffice Productivity Suite
         ou libreoffice-writer
     "## }
 }
@@ -128,7 +123,7 @@ fn dnf_sg() {
 fn dnf_sl() {
     test_dsl! { r##"
         in -Sl wget2
-        ou Available Packages
+        ou Available packages
         ou wget
     "## }
 }
@@ -137,7 +132,6 @@ fn dnf_sl() {
 fn dnf_ss() {
     test_dsl! { r##"
         in -Ss wget
-        ou Matched: wget
         ou An advanced file and recursive website downloader
     "## }
 }
