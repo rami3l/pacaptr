@@ -96,13 +96,17 @@ impl<'t> Test<'t> {
                     format!("cargo run --quiet -- {}", chain!(args, flags).join(" "))
                 }
             };
-            let got = cmd!(s, "{sh}")
-                .args(sh_args)
-                .arg(dbg!(&cmd))
-                .read()
-                .unwrap();
+            let cmd = cmd!(s, "{sh}").args(sh_args).arg(dbg!(&cmd));
+            let output = cmd.ignore_status().output().unwrap();
+            let got = String::from_utf8_lossy(&output.stdout);
             println!("{got}");
             try_match(&got, patterns);
+            let code = output.status.code();
+            let got_stderr = String::from_utf8_lossy(&output.stderr);
+            assert!(
+                output.status.success(),
+                "failed with exit code {code:?} and the following stderr: {got_stderr}"
+            );
         }
     }
 }
