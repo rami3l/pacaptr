@@ -16,6 +16,7 @@
     "##}
 )]
 #![warn(missing_docs)]
+#![cfg_attr(any(test, feature = "test"), allow(clippy::wildcard_imports))]
 
 pub mod config;
 pub mod error;

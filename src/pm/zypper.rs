@@ -61,7 +61,7 @@ impl Zypper {
 #[async_trait]
 impl Pm for Zypper {
     /// Gets the name of the package manager.
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "zypper"
     }
 

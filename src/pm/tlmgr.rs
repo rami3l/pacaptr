@@ -40,7 +40,7 @@ impl Tlmgr {
 #[async_trait]
 impl Pm for Tlmgr {
     /// Gets the name of the package manager.
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "tlmgr"
     }
 
