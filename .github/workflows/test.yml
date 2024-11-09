@@ -73,16 +73,9 @@ jobs:
         if: ${{ contains(matrix.os, 'ubuntu') }}
         run: |
           cargo fmt --all --check
-      - name: Test installation via cargo-binstall (${{ matrix.os }} native)
-        if: ${{ false }}
-        # if: ${{ github.event_name == 'pull_request' }}
+      - name: Lint Rust
         run: |
-          cargo binstall pacaptr --manifest-path=./Cargo.toml --dry-run --strategies=crate-meta-data --log-level=debug
-      - name: Test installation via cargo-binstall (${{ matrix.target2 }})
-        if: ${{ false }}
-        # if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          cargo binstall pacaptr --manifest-path=./Cargo.toml --dry-run --strategies=crate-meta-data --log-level=debug --targets=${{ matrix.target2 }}
+          cargo clippy --all-targets --all-features
       - name: Build
         if: ${{ steps.cache_build.outputs.cache-hit != 'true' }}
         run: |
