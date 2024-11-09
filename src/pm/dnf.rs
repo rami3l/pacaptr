@@ -3,7 +3,6 @@
 use std::sync::LazyLock;
 
 use async_trait::async_trait;
-use futures::prelude::*;
 use indoc::indoc;
 use tap::prelude::*;
 
@@ -52,7 +51,7 @@ impl Dnf {
 #[async_trait]
 impl Pm for Dnf {
     /// Gets the name of the package manager.
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "dnf"
     }
 

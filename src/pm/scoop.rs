@@ -59,7 +59,7 @@ impl Scoop {
 #[async_trait]
 impl Pm for Scoop {
     /// Gets the name of the package manager.
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "scoop"
     }
 

@@ -46,7 +46,7 @@ impl Brew {
 #[async_trait]
 impl Pm for Brew {
     /// Gets the name of the package manager.
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "brew"
     }
 

@@ -41,7 +41,7 @@ impl Conda {
 #[async_trait]
 impl Pm for Conda {
     /// Gets the name of the package manager.
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "conda"
     }
 

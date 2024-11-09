@@ -55,7 +55,7 @@ impl Apt {
 #[async_trait]
 impl Pm for Apt {
     /// Gets the name of the package manager.
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "apt"
     }
 

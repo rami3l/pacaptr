@@ -30,7 +30,7 @@ fn check_methods(file: &Path) -> anyhow::Result<BTreeMap<String, bool>> {
         .map(|&method| {
             // A function definition (rg. `rs`) is written as follows:
             // `(async) fn rs(..) {..}`
-            let found = Regex::new(&format!(r#"fn\s+{method}\s*\("#))?.is_match(&contents);
+            let found = Regex::new(&format!(r"fn\s+{method}\s*\("))?.is_match(&contents);
             Ok((method.to_owned(), found))
         })
         .try_collect()

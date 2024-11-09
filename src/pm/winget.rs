@@ -46,7 +46,7 @@ impl Winget {
 #[async_trait]
 impl Pm for Winget {
     /// Gets the name of the package manager.
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "winget"
     }
 
