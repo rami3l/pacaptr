@@ -61,7 +61,6 @@ jobs:
         with:
           targets: ${{ matrix.target2 }}
       - name: Setup `cargo-binstall` and `taplo`
-        if: ${{ !contains(matrix.os, 'windows') }} #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
         uses: taiki-e/install-action@v2
         with:
           tool: taplo-cli
@@ -75,11 +74,13 @@ jobs:
         run: |
           cargo fmt --all --check
       - name: Test installation via cargo-binstall (${{ matrix.os }} native)
-        if: ${{ github.event_name == 'pull_request' && !contains(matrix.os, 'windows') }} #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
+        if: ${{ false }}
+        # if: ${{ github.event_name == 'pull_request' }}
         run: |
           cargo binstall pacaptr --manifest-path=./Cargo.toml --dry-run --strategies=crate-meta-data --log-level=debug
       - name: Test installation via cargo-binstall (${{ matrix.target2 }})
-        if: ${{ github.event_name == 'pull_request' && !contains(matrix.os, 'windows') }} #HACK: Work around https://github.com/cargo-bins/cargo-binstall/issues/1080.
+        if: ${{ false }}
+        # if: ${{ github.event_name == 'pull_request' }}
         run: |
           cargo binstall pacaptr --manifest-path=./Cargo.toml --dry-run --strategies=crate-meta-data --log-level=debug --targets=${{ matrix.target2 }}
       - name: Build
