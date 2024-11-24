@@ -1,7 +1,10 @@
 name: publish
 
 on:
+  # pull_request:
   push:
+    branches:
+      - master
     tags:
       - "*"
 
@@ -17,8 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
 
       - name: Create release
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           prerelease: ${{ contains(github.ref, '-') }}
@@ -45,6 +50,9 @@ jobs:
             target: aarch64-unknown-linux-musl
     steps:
       - uses: actions/checkout@v4
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
 
       - name: Setup extra build tools
         if: matrix.target == 'aarch64-unknown-linux-musl'
@@ -74,7 +82,7 @@ jobs:
     needs: [build-release]
     runs-on: ubuntu-latest
     container:
-      # Note: It is also possible to install `choco` directly:
+      # NOTE: It is also possible to install `choco` directly:
       # https://github.com/JetBrains/qodana-cli/blob/29134e654dc4878e0587f02338c5101bce327560/.github/workflows/release.yml#L19-L27
       image: chocolatey/choco:latest-linux
     steps:
@@ -87,7 +95,7 @@ jobs:
       - name: Setup Golang
         uses: actions/setup-go@v5
         with:
-          go-version: ">=1.20.0"
+          go-version: stable
 
       # https://github.com/vercel/turbo/blob/ea934d13038361c24a1f71cad3b490d6c0936f37/.github/workflows/turborepo-release.yml#L306-L309
       - name: Download artifacts
@@ -104,11 +112,11 @@ jobs:
           chown -R $(id -u):$(id -g) $PWD
           chmod -R 744 target/gh-artifacts
           ls -laR target/gh-artifacts
-          mv -f target/gh-artifacts/pacaptr-x86_64-pc-windows-msvc target/gh-artifacts/pacaptr_windows_amd64_v1
+          mv -f target/gh-artifacts/pacaptr-x86_64-pc-windows-msvc target/gh-artifacts/pacaptr_windows_amd64
           mv -f target/gh-artifacts/pacaptr-aarch64-pc-windows-msvc target/gh-artifacts/pacaptr_windows_arm64
-          mv -f target/gh-artifacts/pacaptr-x86_64-apple-darwin target/gh-artifacts/pacaptr_darwin_amd64_v1
+          mv -f target/gh-artifacts/pacaptr-x86_64-apple-darwin target/gh-artifacts/pacaptr_darwin_amd64
           mv -f target/gh-artifacts/pacaptr-aarch64-apple-darwin target/gh-artifacts/pacaptr_darwin_arm64
-          mv -f target/gh-artifacts/pacaptr-x86_64-unknown-linux-musl target/gh-artifacts/pacaptr_linux_amd64_v1
+          mv -f target/gh-artifacts/pacaptr-x86_64-unknown-linux-musl target/gh-artifacts/pacaptr_linux_amd64
           mv -f target/gh-artifacts/pacaptr-aarch64-unknown-linux-musl target/gh-artifacts/pacaptr_linux_arm64
           echo '======='
           ls -laR target/gh-artifacts
@@ -119,7 +127,7 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --debug
+          args: release --clean  --verbose ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags/') && ' ' || '--snapshot --skip=publish' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
@@ -134,5 +142,6 @@ jobs:
       # https://github.com/goreleaser/goreleaser/blob/2a3009757a8996cdcf2a77deb0e5fa413d1f2660/internal/pipe/chocolatey/chocolatey.go#L201-L208
       # https://stackoverflow.com/a/75835172
       - name: Publish app on Chocolatey
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
         run: |
-          choco push dist/*.nupkg --source https://push.chocolatey.org --api-key ${{ secrets.CHOCO_API_KEY }} --verbose ${{ contains(github.ref, '-') && '--noop' || '' }}
+          choco push dist/*.nupkg --source https://push.chocolatey.org --api-key ${{ secrets.CHOCO_API_KEY }} --verbose ${{ contains(github.ref, '-') && '--noop' || ' ' }}
