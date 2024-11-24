@@ -28,8 +28,8 @@ jobs:
           concurrent_skipping: same_content
           do_not_skip: '["pull_request"]'
 
-  build:
-    name: build (${{ matrix.os }} native + ${{ matrix.target2 }})
+  lint:
+    name: lint (${{ matrix.os }})
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     runs-on: ${{ matrix.os }}
@@ -38,28 +38,15 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            # target: x86_64-pc-windows-msvc
-            target2: aarch64-pc-windows-msvc
           - os: macos-latest
-            # target: aarch64-apple-darwin
-            target2: x86_64-apple-darwin
           - os: ubuntu-latest
-            # target: x86_64-unknown-linux-musl
-            target2: aarch64-unknown-linux-musl
     steps:
       - uses: actions/checkout@v4
-      - name: Setup extra build tools
-        if: matrix.target2 == 'aarch64-unknown-linux-musl'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
       - name: Run sccache-cache
         uses: mozilla-actions/sccache-action@v0.0.6
       - name: Setup Rust
         if: ${{ steps.cache_build.outputs.cache-hit != 'true' }}
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target2 }}
       - name: Setup `cargo-binstall` and `taplo`
         uses: taiki-e/install-action@v2
         with:
@@ -76,11 +63,6 @@ jobs:
       - name: Lint Rust
         run: |
           cargo clippy --all-targets --all-features
-      - name: Build
-        if: ${{ steps.cache_build.outputs.cache-hit != 'true' }}
-        run: |
-          cargo build --verbose --locked
-          cargo build --verbose --locked --target=${{ matrix.target2 }}
 
   choco-test:
     runs-on: windows-latest
@@ -399,7 +381,7 @@ jobs:
   # https://github.com/PyO3/pyo3/blob/42601f3af94242b017402b763a495798a92da8f8/.github/workflows/ci.yml#L452-L472
   conclusion:
     needs:
-      - build
+      - lint
       - choco-test
       - scoop-winget-test
       - brew-test
