@@ -31,7 +31,7 @@ use crate::{
 };
 
 /// Different ways in which a [`Cmd`] shall be dealt with.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Default, Debug)]
 pub enum Mode {
     /// Solely prints out the command that should be executed and stops.
     PrintCmd,
@@ -57,6 +57,7 @@ pub enum Mode {
     /// Prints out the command which should be executed, runs it and collects
     /// its `stderr`. Also, this will ask for confirmation before
     /// proceeding.
+    #[default]
     Prompt,
 }
 
