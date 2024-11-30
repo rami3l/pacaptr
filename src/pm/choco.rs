@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use indoc::indoc;
 use tap::prelude::*;
 
-use super::{DryRunStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
+use super::{DryRunStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
 macro_rules! doc_self {
@@ -43,7 +43,7 @@ impl Choco {
     }
 
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
-        self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY)
+        self.run_with(cmd, self.default_mode(), &STRAT_CHECK_DRY)
             .await
     }
 }
@@ -85,7 +85,7 @@ impl Pm for Choco {
         Cmd::new(["choco", "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -95,7 +95,7 @@ impl Pm for Choco {
         Cmd::new(["choco", "uninstall", "--removedependencies"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -108,7 +108,7 @@ impl Pm for Choco {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
         .await
     }
 
@@ -134,7 +134,7 @@ impl Pm for Choco {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
         .await
     }
 

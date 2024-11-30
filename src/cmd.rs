@@ -63,7 +63,7 @@ pub struct Pacaptr {
     using: Option<String>,
 
     /// Perform a dry run.
-    #[arg(global = true, long = "dry-run", visible_alias = "dryrun")]
+    #[arg(global = true, long, visible_alias = "dryrun")]
     dry_run: bool,
 
     /// Prevent reinstalling previously installed packages.
@@ -73,15 +73,19 @@ pub struct Pacaptr {
     /// Answer yes to every question.
     #[arg(
         global = true,
-        long = "no-confirm",
+        long,
         visible_alias = "noconfirm",
         visible_alias = "yes"
     )]
     no_confirm: bool,
 
     /// Remove cache after installation.
-    #[arg(global = true, long = "no-cache", visible_alias = "nocache")]
+    #[arg(global = true, long, visible_alias = "nocache")]
     no_cache: bool,
+
+    /// Suppress log output.
+    #[arg(global = true, long, conflicts_with = "dry_run")]
+    quiet: bool,
 
     /// Package name or (sometimes) regex.
     #[arg(global = true, name = "KEYWORDS")]
@@ -226,6 +230,7 @@ impl Pacaptr {
             needed: self.needed,
             no_confirm: self.no_confirm,
             no_cache: self.no_cache,
+            quiet: self.quiet,
             default_pm: self.using.clone(),
         }
     }

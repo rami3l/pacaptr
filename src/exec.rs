@@ -44,13 +44,19 @@ pub enum Mode {
     ///
     /// This is potentially dangerous as it destroys the colored `stdout`. Use
     /// it only if really necessary.
-    CheckAll,
+    CheckAll {
+        /// Whether the log output should be suppressed.
+        quiet: bool,
+    },
 
     /// Prints out the command which should be executed, runs it and collects
     /// its `stderr`.
     ///
     /// This will work with a colored `stdout`.
-    CheckErr,
+    CheckErr {
+        /// Whether the log output should be suppressed.
+        quiet: bool,
+    },
 
     /// A CUSTOM prompt implemented by a `pacaptr` module itself.
     ///
@@ -227,12 +233,16 @@ impl Cmd {
                 Ok(Output::default())
             }
             Mode::Mute => self.exec_checkall(true).await,
-            Mode::CheckAll => {
-                println_quoted(&*prompt::RUNNING, &self);
+            Mode::CheckAll { quiet } => {
+                if !quiet {
+                    println_quoted(&*prompt::RUNNING, &self);
+                }
                 self.exec_checkall(false).await
             }
-            Mode::CheckErr => {
-                println_quoted(&*prompt::RUNNING, &self);
+            Mode::CheckErr { quiet } => {
+                if !quiet {
+                    println_quoted(&*prompt::RUNNING, &self);
+                }
                 self.exec_checkerr(false).await
             }
             Mode::Prompt => self.exec_prompt(false).await,

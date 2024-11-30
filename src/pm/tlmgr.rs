@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use indoc::indoc;
 use tap::prelude::*;
 
-use super::{DryRunStrategy, Pm, PmHelper, PmMode, Strategy};
+use super::{DryRunStrategy, Pm, PmHelper, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
 macro_rules! doc_self {
@@ -82,7 +82,7 @@ impl Pm for Tlmgr {
         Cmd::new(["tlmgr", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_CHECK_DRY))
             .await
     }
 
@@ -91,7 +91,7 @@ impl Pm for Tlmgr {
         Cmd::new(["tlmgr", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_CHECK_DRY))
             .await
     }
 
@@ -126,7 +126,7 @@ impl Pm for Tlmgr {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))
+        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_CHECK_DRY))
         .await
     }
 
@@ -142,7 +142,7 @@ impl Pm for Tlmgr {
         Cmd::new(["tlmgr", "install", "--file"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_CHECK_DRY))
             .await
     }
 }

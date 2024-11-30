@@ -48,6 +48,10 @@ pub struct Config {
     #[serde(default)]
     pub no_cache: bool,
 
+    /// Suppress log output.
+    #[serde(default)]
+    pub quiet: bool,
+
     /// The default package manager to be invoked.
     pub default_pm: Option<String>,
 }
@@ -60,6 +64,7 @@ impl Config {
             needed: self.needed || other.dry_run,
             no_confirm: self.no_confirm || other.no_confirm,
             no_cache: self.no_cache || other.no_cache,
+            quiet: self.quiet || other.quiet,
             default_pm: self.default_pm.clone().or(other.default_pm),
         }
     }

@@ -413,6 +413,12 @@ pub trait PmHelper: Pm {
         Ok(res)
     }
 
+    /// Returns the default [`PmMode`] for this [`Pm`].
+    fn default_mode(&self) -> PmMode {
+        let quiet = self.cfg().quiet;
+        PmMode::CheckErr { quiet }
+    }
+
     /// Executes a command in the context of the [`Pm`] implementation,
     /// with custom [`PmMode`] and [`Strategy`].
     async fn run_with(&self, cmd: Cmd, mode: PmMode, strat: &Strategy) -> Result<()> {
@@ -422,7 +428,7 @@ pub trait PmHelper: Pm {
     /// Executes a command in the context of the [`Pm`] implementation with
     /// default settings.
     async fn run(&self, cmd: Cmd) -> Result<()> {
-        self.run_with(cmd, PmMode::default(), &Strategy::default())
+        self.run_with(cmd, self.default_mode(), &Strategy::default())
             .await
     }
 
@@ -459,31 +465,38 @@ impl<P: Pm> PmHelper for P {}
 ///
 /// This is a [`Pm`] specified version intended to be used along with
 /// [`Strategy`].
-///
-/// Default value: [`PmMode::CheckErr`].
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug)]
 pub enum PmMode {
     /// Silently collects all the `stdout`/`stderr` combined. Prints nothing.
     Mute,
 
-    /// Prints out the command which should be executed, run it and collect its
-    /// `stdout`/`stderr` combined. Potentially dangerous as it destroys the
-    /// colored `stdout`. Use it only if really necessary.
+    /// Prints out the command which should be executed, runs it and collects
+    /// its `stdout`/`stderr` combined.
+    ///
+    /// This is potentially dangerous as it destroys the colored `stdout`. Use
+    /// it only if really necessary.
     #[allow(dead_code)]
-    CheckAll,
+    CheckAll {
+        /// Whether the log output should be suppressed.
+        quiet: bool,
+    },
 
-    /// Prints out the command which should be executed, run it and collect its
-    /// `stderr`. This will work with a colored `stdout`.
-    #[default]
-    CheckErr,
+    /// Prints out the command which should be executed, runs it and collects
+    /// its `stderr`.
+    ///
+    /// This will work with a colored `stdout`.
+    CheckErr {
+        /// Whether the log output should be suppressed.
+        quiet: bool,
+    },
 }
 
 impl From<PmMode> for Mode {
     fn from(pm_mode: PmMode) -> Self {
         match pm_mode {
             PmMode::Mute => Self::Mute,
-            PmMode::CheckAll => Self::CheckAll,
-            PmMode::CheckErr => Self::CheckErr,
+            PmMode::CheckAll { quiet } => Self::CheckAll { quiet },
+            PmMode::CheckErr { quiet } => Self::CheckErr { quiet },
         }
     }
 }

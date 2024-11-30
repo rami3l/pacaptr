@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use indoc::indoc;
 use tap::prelude::*;
 
-use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
+use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
 macro_rules! doc_self {
@@ -110,7 +110,7 @@ impl Pm for Apk {
         Cmd::with_sudo(["apk", "del"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -120,7 +120,7 @@ impl Pm for Apk {
         Cmd::with_sudo(["apk", "del", "--purge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -131,7 +131,7 @@ impl Pm for Apk {
         Cmd::with_sudo(["apk", "del", "--purge", "-r"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -146,7 +146,7 @@ impl Pm for Apk {
         Cmd::with_sudo(["apk", "add"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
@@ -155,7 +155,7 @@ impl Pm for Apk {
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(["apk", "cache", "-v", "clean"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -163,7 +163,7 @@ impl Pm for Apk {
     async fn scc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(["rm", "-vrf", "/var/cache/apk/*"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -203,7 +203,7 @@ impl Pm for Apk {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
         .await
     }
 
@@ -217,7 +217,7 @@ impl Pm for Apk {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
         .await
     }
 
@@ -227,7 +227,7 @@ impl Pm for Apk {
         Cmd::new(["apk", "fetch"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -247,7 +247,7 @@ impl Pm for Apk {
         Cmd::with_sudo(["apk", "add", "--allow-untrusted"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 }

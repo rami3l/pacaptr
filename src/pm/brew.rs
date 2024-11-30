@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use indoc::indoc;
 use tap::prelude::*;
 
-use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
+use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
 macro_rules! doc_self {
@@ -120,7 +120,7 @@ impl Pm for Brew {
         Cmd::new(["brew", "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -130,7 +130,7 @@ impl Pm for Brew {
         Cmd::new(["brew", "uninstall", "--zap", "-f"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -141,7 +141,7 @@ impl Pm for Brew {
         self.rn(kws, flags).await?;
         Cmd::new(["brew", "autoremove"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -151,7 +151,7 @@ impl Pm for Brew {
         self.r(kws, flags).await?;
         Cmd::new(["brew", "autoremove"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -167,7 +167,7 @@ impl Pm for Brew {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
         .await
     }
 
@@ -182,7 +182,7 @@ impl Pm for Brew {
         Cmd::new(["brew", "cleanup"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &strat))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &strat))
             .await
     }
 
@@ -196,7 +196,7 @@ impl Pm for Brew {
         Cmd::new(["brew", "cleanup", "-s"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &strat))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &strat))
             .await
     }
 
@@ -210,7 +210,7 @@ impl Pm for Brew {
         Cmd::new(["brew", "cleanup", "--prune=all"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &strat))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &strat))
             .await
     }
 
@@ -242,7 +242,7 @@ impl Pm for Brew {
         Cmd::new(["brew", "upgrade"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
@@ -259,7 +259,7 @@ impl Pm for Brew {
         Cmd::new(["brew", "fetch"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
