@@ -11,9 +11,6 @@ env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   # https://users.rust-lang.org/t/cross-compiling-how-to-statically-link-glibc/83907/2
   CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gcc
-  # https://github.com/Mozilla-Actions/sccache-action#rust-code
-  SCCACHE_GHA_ENABLED: "true"
-  RUSTC_WRAPPER: sccache
 
 jobs:
   skip-check:
@@ -42,8 +39,6 @@ jobs:
           - os: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - name: Setup Rust
         if: ${{ steps.cache_build.outputs.cache-hit != 'true' }}
         uses: dtolnay/rust-toolchain@stable
@@ -70,8 +65,6 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
@@ -90,8 +83,6 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
@@ -134,8 +125,6 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin
@@ -189,8 +178,6 @@ jobs:
           source ./macports-ci install
           sudo port install wget
           port installed
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin
@@ -209,8 +196,6 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
@@ -236,8 +221,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -262,8 +245,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -288,8 +269,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -312,8 +291,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
@@ -337,8 +314,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - name: Build and run tests
         env:
           RUSTFLAGS: "-C target-feature=-crt-static"
@@ -359,8 +334,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y packagekit packagekit-tools
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
