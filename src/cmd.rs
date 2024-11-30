@@ -85,7 +85,7 @@ pub struct Pacaptr {
 
     /// Suppress log output.
     #[arg(global = true, long, conflicts_with = "dry_run")]
-    quiet: bool,
+    quiet: Option<bool>,
 
     /// Package name or (sometimes) regex.
     #[arg(global = true, name = "KEYWORDS")]
