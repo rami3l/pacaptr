@@ -2,30 +2,8 @@
 
 #![allow(missing_docs, clippy::module_name_repetitions)]
 
-pub(crate) mod style {
-    use std::sync::LazyLock;
-
-    use console::Style;
-
-    pub static MESSAGE: LazyLock<Style> = LazyLock::new(|| Style::new().green().bold());
-    pub static ERROR: LazyLock<Style> = LazyLock::new(|| Style::new().bright().red().bold());
-    pub static QUESTION: LazyLock<Style> = LazyLock::new(|| Style::new().yellow().bold());
-}
-
-pub mod prompt {
-    use std::sync::LazyLock;
-
-    use crate::print::style;
-
-    type StyledStr<'a> = console::StyledObject<&'a str>;
-
-    pub static CANCELED: LazyLock<StyledStr> =
-        LazyLock::new(|| style::MESSAGE.apply_to("Canceled"));
-    pub static PENDING: LazyLock<StyledStr> = LazyLock::new(|| style::MESSAGE.apply_to("Pending"));
-    pub static RUNNING: LazyLock<StyledStr> = LazyLock::new(|| style::MESSAGE.apply_to("Running"));
-    pub static INFO: LazyLock<StyledStr> = LazyLock::new(|| style::MESSAGE.apply_to("Info"));
-    pub static ERROR: LazyLock<StyledStr> = LazyLock::new(|| style::ERROR.apply_to("Error"));
-}
+pub mod prompt;
+pub(crate) mod style;
 
 use std::fmt::{self, Debug, Display};
 
