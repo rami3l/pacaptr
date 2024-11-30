@@ -415,7 +415,7 @@ pub trait PmHelper: Pm {
 
     /// Returns the default [`PmMode`] for this [`Pm`].
     fn default_mode(&self) -> PmMode {
-        let quiet = self.cfg().quiet;
+        let quiet = self.cfg().quiet();
         PmMode::CheckErr { quiet }
     }
 

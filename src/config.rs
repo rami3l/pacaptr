@@ -49,14 +49,21 @@ pub struct Config {
     pub no_cache: bool,
 
     /// Suppress log output.
-    #[serde(default)]
-    pub quiet: bool,
+    pub quiet: Option<bool>,
 
     /// The default package manager to be invoked.
     pub default_pm: Option<String>,
 }
 
 impl Config {
+    /// Returns the value of the `quiet` flag if it is present,
+    /// otherwise returns whether the current `stdout` is **not** a TTY.
+    #[must_use]
+    pub fn quiet(&self) -> bool {
+        self.quiet
+            .unwrap_or_else(|| !console::Term::stdout().is_term())
+    }
+
     /// Performs a left-biased join of two `Config`s.
     pub fn join(&self, other: Self) -> Self {
         Self {
@@ -64,7 +71,7 @@ impl Config {
             needed: self.needed || other.dry_run,
             no_confirm: self.no_confirm || other.no_confirm,
             no_cache: self.no_cache || other.no_cache,
-            quiet: self.quiet || other.quiet,
+            quiet: self.quiet.or(other.quiet),
             default_pm: self.default_pm.clone().or(other.default_pm),
         }
     }
