@@ -53,7 +53,7 @@ impl Zypper {
     }
 
     async fn check_dry(&self, cmd: Cmd) -> Result<()> {
-        self.run_with(cmd, PmMode::default(), &STRAT_CHECK_DRY)
+        self.run_with(cmd, self.default_mode(), &STRAT_CHECK_DRY)
             .await
     }
 }
@@ -150,7 +150,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(["zypper", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -160,7 +160,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(["zypper", "remove", "--clean-deps"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -169,7 +169,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(["zypper", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
@@ -182,7 +182,7 @@ impl Pm for Zypper {
         };
         Cmd::with_sudo(["zypper", "clean"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &strat))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &strat))
             .await
     }
 
@@ -240,7 +240,7 @@ impl Pm for Zypper {
     async fn su(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(["zypper", "--no-refresh", "dist-upgrade"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
@@ -249,7 +249,7 @@ impl Pm for Zypper {
     async fn suy(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::with_sudo(["zypper", "dist-upgrade"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
@@ -259,7 +259,7 @@ impl Pm for Zypper {
         Cmd::with_sudo(["zypper", "install", "--download-only"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 

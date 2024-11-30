@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use indoc::indoc;
 use tap::prelude::*;
 
-use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
+use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
 macro_rules! doc_self {
@@ -153,7 +153,7 @@ impl Pm for Dnf {
         Cmd::with_sudo(["dnf", "remove"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -162,7 +162,7 @@ impl Pm for Dnf {
         Cmd::with_sudo(["dnf", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
@@ -171,7 +171,7 @@ impl Pm for Dnf {
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(["dnf", "clean", "expire-cache"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT_CUSTOM))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT_CUSTOM))
             .await
     }
 
@@ -179,7 +179,7 @@ impl Pm for Dnf {
     async fn scc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(["dnf", "clean", "packages"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT_CUSTOM))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT_CUSTOM))
             .await
     }
 
@@ -187,7 +187,7 @@ impl Pm for Dnf {
     async fn sccc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
         Cmd::new(["dnf", "clean", "all"])
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT_CUSTOM))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT_CUSTOM))
             .await
     }
 
@@ -243,7 +243,7 @@ impl Pm for Dnf {
         Cmd::with_sudo(["dnf", "upgrade"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
@@ -259,7 +259,7 @@ impl Pm for Dnf {
         Cmd::with_sudo(["dnf", "install", "--downloadonly"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 

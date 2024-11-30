@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use indoc::indoc;
 use tap::prelude::*;
 
-use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
+use super::{Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{
     config::Config,
     error::{Error, Result},
@@ -104,7 +104,7 @@ impl Pm for Pip {
         Cmd::new([self.cmd(), "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_UNINSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_UNINSTALL))
             .await
     }
 
@@ -113,7 +113,7 @@ impl Pm for Pip {
         Cmd::new([self.cmd(), "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 

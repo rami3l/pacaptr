@@ -7,7 +7,7 @@ use futures::prelude::*;
 use indoc::indoc;
 use tap::prelude::*;
 
-use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
+use super::{Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
 macro_rules! doc_self {
@@ -122,7 +122,7 @@ impl Pm for Pkcon {
                 Cmd::with_sudo(["pkcon", "remove"])
                     .kws([kw])
                     .flags(flags)
-                    .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+                    .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             })
             .await
     }
@@ -136,7 +136,7 @@ impl Pm for Pkcon {
                 Cmd::with_sudo(["pkcon", "remove", "--autoremove"])
                     .kws([kw])
                     .flags(flags)
-                    .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+                    .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             })
             .await
     }
@@ -150,7 +150,7 @@ impl Pm for Pkcon {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
         .await
     }
 
@@ -179,7 +179,7 @@ impl Pm for Pkcon {
         Cmd::with_sudo(["pkcon", "update"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -196,7 +196,7 @@ impl Pm for Pkcon {
         Cmd::with_sudo(["pkcon", "install", "--only-download"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 

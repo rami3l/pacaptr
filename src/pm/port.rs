@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use indoc::indoc;
 use tap::prelude::*;
 
-use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
+use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
 macro_rules! doc_self {
@@ -103,7 +103,7 @@ impl Pm for Port {
         Cmd::with_sudo(["port", "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -113,7 +113,7 @@ impl Pm for Port {
         Cmd::with_sudo(["port", "uninstall", "--follow-dependencies"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -122,7 +122,7 @@ impl Pm for Port {
         Cmd::with_sudo(["port", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
@@ -136,7 +136,7 @@ impl Pm for Port {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
         .await
     }
 
@@ -149,7 +149,7 @@ impl Pm for Port {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
         .await
     }
 
@@ -175,7 +175,7 @@ impl Pm for Port {
         })
         .kws(kws)
         .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
         .await
     }
 

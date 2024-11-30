@@ -7,7 +7,7 @@ use indoc::indoc;
 use tap::prelude::*;
 use which::which;
 
-use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
+use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
 macro_rules! doc_self {
@@ -107,7 +107,7 @@ impl Pm for Scoop {
         Cmd::new([&self.shell, "-Command", "scoop", "uninstall"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -117,7 +117,7 @@ impl Pm for Scoop {
         Cmd::new([&self.shell, "-Command", "scoop", "uninstall", "--purge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -126,7 +126,7 @@ impl Pm for Scoop {
         Cmd::new([&self.shell, "-Command", "scoop", "install"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
@@ -136,7 +136,7 @@ impl Pm for Scoop {
         Cmd::new([&self.shell, "-Command", "scoop", "cache", "rm"])
             .kws(if kws.is_empty() { &["*"][..] } else { kws })
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_PROMPT))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
             .await
     }
 
@@ -169,7 +169,7 @@ impl Pm for Scoop {
         Cmd::new([&self.shell, "-Command", "scoop", "update"])
             .kws(if kws.is_empty() { &["*"][..] } else { kws })
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 

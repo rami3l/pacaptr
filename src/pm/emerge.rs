@@ -7,7 +7,7 @@ use indoc::indoc;
 use itertools::Itertools;
 use tap::prelude::*;
 
-use super::{NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
+use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
 
 macro_rules! doc_self {
@@ -100,7 +100,7 @@ impl Pm for Emerge {
         Cmd::with_sudo(["emerge", "--unmerge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_ASK))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_ASK))
             .await
     }
 
@@ -110,7 +110,7 @@ impl Pm for Emerge {
         Cmd::with_sudo(["emerge", "--depclean"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_ASK))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_ASK))
             .await
     }
 
@@ -119,7 +119,7 @@ impl Pm for Emerge {
         Cmd::with_sudo(["emerge"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
@@ -129,7 +129,7 @@ impl Pm for Emerge {
         Cmd::with_sudo(["eclean-dist"])
             .kws(kws)
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INTERACTIVE))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INTERACTIVE))
             .await
     }
 
@@ -156,7 +156,7 @@ impl Pm for Emerge {
         Cmd::with_sudo(["emerge", "-uDN"])
             .kws(if kws.is_empty() { &["@world"][..] } else { kws })
             .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, PmMode::default(), &STRAT_INSTALL))
+            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
             .await
     }
 
