@@ -1,5 +1,5 @@
 #![cfg(feature = "test")]
-#![allow(clippy::missing_panics_doc)]
+#![allow(clippy::dbg_macro, clippy::missing_panics_doc)]
 
 use itertools::{chain, Itertools};
 pub use pacaptr_macros::test_dsl;
