@@ -449,7 +449,8 @@ pub trait PmHelper: Pm {
         patterns: &[&str],
         header_lines: usize,
     ) -> Result<()> {
-        if !self.cfg().dry_run {
+        let cfg = self.cfg();
+        if !(cfg.dry_run || cfg.quiet()) {
             println_quoted(&*prompt::RUNNING, &cmd);
         }
         let out_bytes = self
