@@ -85,7 +85,7 @@ pub struct Pacaptr {
 
     /// Suppress log output.
     #[arg(global = true, long, conflicts_with = "dry_run")]
-    quiet: Option<bool>,
+    quiet: bool,
 
     /// Package name or (sometimes) regex.
     #[arg(global = true, name = "KEYWORDS")]
@@ -230,7 +230,7 @@ impl Pacaptr {
             needed: self.needed,
             no_confirm: self.no_confirm,
             no_cache: self.no_cache,
-            quiet: self.quiet,
+            quiet: self.quiet.then_some(true),
             default_pm: self.using.clone(),
         }
     }
