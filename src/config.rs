@@ -13,9 +13,10 @@ use std::{env, path::PathBuf};
 
 use figment::{
     providers::{Env, Format, Toml},
+    util::bool_from_str_or_int,
     Figment, Provider,
 };
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use tap::prelude::*;
 
 /// The crate name.
@@ -33,26 +34,31 @@ const CONFIG_FILE_ENV: &str = "PACAPTR_CONFIG";
 #[allow(clippy::struct_excessive_bools)]
 pub struct Config {
     /// Perform a dry run.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "bool_from_str_or_int")]
     pub dry_run: bool,
 
     /// Prevent reinstalling previously installed packages.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "bool_from_str_or_int")]
     pub needed: bool,
 
     /// Answer yes to every question.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "bool_from_str_or_int")]
     pub no_confirm: bool,
 
     /// Remove cache after installation.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "bool_from_str_or_int")]
     pub no_cache: bool,
 
     /// Suppress log output.
+    #[serde(default, deserialize_with = "option_bool_from_str_or_int")]
     pub quiet: Option<bool>,
 
     /// The default package manager to be invoked.
     pub default_pm: Option<String>,
+}
+
+fn option_bool_from_str_or_int<'de, D: Deserializer<'de>>(de: D) -> Result<Option<bool>, D::Error> {
+    bool_from_str_or_int(de).map(Some)
 }
 
 impl Config {
