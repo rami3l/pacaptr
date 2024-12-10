@@ -356,6 +356,8 @@ impl Pacaptr {
 
 #[cfg(all(test, feature = "test"))]
 mod tests {
+    #![allow(clippy::dbg_macro)]
+
     use std::sync::LazyLock;
 
     use tokio::test;

@@ -34,8 +34,10 @@ unsafe_code = "forbid"
 unused_allocation = "warn"
 
 [workspace.lints.clippy]
+dbg_macro = "warn"
 nursery = "warn"
 pedantic = "warn"
+todo = "warn"
 
 [workspace.lints.rustdoc]
 broken_intra_doc_links = "warn"
