@@ -107,7 +107,7 @@ xshell = "0.2.6"
 async-trait = "0.1.81"
 bytes = "1.7.2"
 clap = { version = "4.5.16", features = ["cargo", "derive"] }
-console = "0.15.8"
+console = "0.15.10"
 ctrlc = { version = "3.4.5", features = ["termination"] }
 dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
@@ -119,9 +119,9 @@ macro_rules_attribute = "0.2.0"
 pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.22.0" }
 paste = "1.0.15"
 regex = { workspace = true }
-serde = { version = "1.0.209", features = ["derive"] }
+serde = { version = "1.0.217", features = ["derive"] }
 tap = "1.0.1"
-thiserror = "2.0.3"
+thiserror = "2.0.9"
 thiserror-ext = "0.2.0"
 tokio = { version = "1.40.0", features = [
   "io-std",
@@ -134,7 +134,7 @@ tokio = { version = "1.40.0", features = [
 tokio-stream = "0.1.15"
 tokio-util = { version = "0.7.11", features = ["codec", "compat"] }
 tt-call = "1.0.9"
-which = "7.0.0"
+which = "7.0.1"
 
 [target.'cfg(windows)'.dependencies]
 is_elevated = "0.1.2"
