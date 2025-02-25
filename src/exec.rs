@@ -9,7 +9,7 @@ use bytes::{Bytes, BytesMut};
 use dialoguer::FuzzySelect;
 use futures::prelude::*;
 use indoc::indoc;
-use itertools::{chain, Itertools};
+use itertools::{Itertools, chain};
 use regex::{RegexSet, RegexSetBuilder};
 use tap::prelude::*;
 use tokio::{
@@ -253,8 +253,8 @@ impl Cmd {
     /// and [`Cmd::exec_checkall`] (otherwise).
     #[doc = docs_errors_exec!()]
     async fn exec_check_output(self, mute: bool, merge: bool) -> Result<Output> {
-        use tokio_stream::StreamExt;
         use Error::{CmdJoinError, CmdNoHandleError, CmdSpawnError, CmdWaitError};
+        use tokio_stream::StreamExt;
 
         fn make_reader(
             src: Option<impl AsyncRead>,

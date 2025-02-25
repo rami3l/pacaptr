@@ -1,10 +1,10 @@
 #![cfg(feature = "test")]
 #![allow(clippy::dbg_macro, clippy::missing_panics_doc)]
 
-use itertools::{chain, Itertools};
+use itertools::{Itertools, chain};
 pub use pacaptr_macros::test_dsl;
 use regex::RegexBuilder;
-use xshell::{cmd, Shell};
+use xshell::{Shell, cmd};
 
 #[derive(Debug)]
 enum Input<'i> {

@@ -7,7 +7,7 @@ pub(crate) mod style;
 
 use std::fmt::{self, Debug, Display};
 
-use console::{style, Style};
+use console::{Style, style};
 use dialoguer::theme::ColorfulTheme;
 
 /// The right indentation to be applied on prompt prefixes.
