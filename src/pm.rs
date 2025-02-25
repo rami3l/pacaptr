@@ -44,7 +44,7 @@ use tt_call::tt_call;
 use crate::{
     config::Config,
     error::Result,
-    exec::{self, is_exe, Cmd, Mode, Output},
+    exec::{self, Cmd, Mode, Output, is_exe},
     print::{println_quoted, prompt},
 };
 

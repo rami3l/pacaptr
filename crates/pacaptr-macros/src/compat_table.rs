@@ -4,11 +4,11 @@ use std::{
 };
 
 use anyhow::Context;
-use itertools::{chain, Itertools};
+use itertools::{Itertools, chain};
 use proc_macro2::{Span, TokenStream};
 use regex::Regex;
 use syn::{Error, Result};
-use tabled::{settings::Style as TableStyle, Table, Tabled};
+use tabled::{Table, Tabled, settings::Style as TableStyle};
 
 const PM_IMPL_DIR: &str = "src/pm/";
 

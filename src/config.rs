@@ -12,9 +12,9 @@
 use std::{env, path::PathBuf};
 
 use figment::{
+    Figment, Provider,
     providers::{Env, Format, Toml},
     util::bool_from_str_or_int,
-    Figment, Provider,
 };
 use serde::{Deserialize, Deserializer, Serialize};
 use tap::prelude::*;
