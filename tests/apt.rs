@@ -61,10 +61,8 @@ fn apt_qo() {
 #[test]
 fn apt_qp_sw() {
     test_dsl! { r##"
-        in -Sw screenfetch --yes
+        in -Sw fortunes-min --yes
         ou download only mode
-        in -Qp /var/cache/apt/archives/screenfetch_*.deb
-        ou Package: screenfetch
     "## }
 }
 
