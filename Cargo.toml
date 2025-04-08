@@ -123,7 +123,7 @@ serde = { version = "1.0.219", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "2.0.12"
 thiserror-ext = "0.2.0"
-tokio = { version = "1.44.1", features = [
+tokio = { version = "1.44.2", features = [
   "io-std",
   "io-util",
   "macros",
