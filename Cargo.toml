@@ -98,7 +98,7 @@ priority = "optional"
 section = "utility"
 
 [build-dependencies]
-built = { version = "0.7.4", features = ["git2"] }
+built = { version = "0.8.0", features = ["git2"] }
 
 [dev-dependencies]
 xshell = "0.2.6"
@@ -106,9 +106,9 @@ xshell = "0.2.6"
 [dependencies]
 async-trait = "0.1.88"
 bytes = "1.10.1"
-clap = { version = "4.5.37", features = ["cargo", "derive"] }
+clap = { version = "4.5.39", features = ["cargo", "derive"] }
 console = "0.15.11"
-ctrlc = { version = "3.4.6", features = ["termination"] }
+ctrlc = { version = "3.4.7", features = ["termination"] }
 dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
 figment = { version = "0.10.19", features = ["env", "toml"] }
@@ -122,8 +122,8 @@ regex = { workspace = true }
 serde = { version = "1.0.219", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "2.0.12"
-thiserror-ext = "0.2.0"
-tokio = { version = "1.44.2", features = [
+thiserror-ext = "0.3.0"
+tokio = { version = "1.45.1", features = [
   "io-std",
   "io-util",
   "macros",
@@ -140,7 +140,7 @@ which = "7.0.3"
 is_elevated = "0.1.2"
 
 [target.'cfg(unix)'.dependencies]
-nix = { version = "0.30.0", default-features = false, features = ["user"] }
+nix = { version = "0.30.1", default-features = false, features = ["user"] }
 
 [features]
 test = ["pacaptr-macros/test"]
