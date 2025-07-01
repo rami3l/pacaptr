@@ -134,7 +134,7 @@ tokio = { version = "1.45.1", features = [
 tokio-stream = "0.1.15"
 tokio-util = { version = "0.7.15", features = ["codec", "compat"] }
 tt-call = "1.0.9"
-which = "7.0.3"
+which = "8.0.0"
 
 [target.'cfg(windows)'.dependencies]
 is_elevated = "0.1.2"
