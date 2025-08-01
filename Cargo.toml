@@ -106,8 +106,8 @@ xshell = "0.2.6"
 [dependencies]
 async-trait = "0.1.88"
 bytes = "1.10.1"
-clap = { version = "4.5.39", features = ["cargo", "derive"] }
-console = "0.15.11"
+clap = { version = "4.5.42", features = ["cargo", "derive"] }
+console = "0.16.0"
 ctrlc = { version = "3.4.7", features = ["termination"] }
 dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
@@ -123,7 +123,7 @@ serde = { version = "1.0.219", features = ["derive"] }
 tap = "1.0.1"
 thiserror = "2.0.12"
 thiserror-ext = "0.3.0"
-tokio = { version = "1.45.1", features = [
+tokio = { version = "1.47.1", features = [
   "io-std",
   "io-util",
   "macros",
