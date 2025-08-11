@@ -19,7 +19,7 @@ jobs:
     name: Create GitHub release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
 
       - name: Create release
@@ -49,7 +49,7 @@ jobs:
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup extra build tools
         if: matrix.target == 'aarch64-unknown-linux-musl'
@@ -87,7 +87,7 @@ jobs:
         run: |
           apt-get update && apt-get install -y git curl build-essential
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Golang
         uses: actions/setup-go@v5

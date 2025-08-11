@@ -38,7 +38,7 @@ jobs:
           - os: macos-latest
           - os: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup Rust
         if: ${{ steps.cache_build.outputs.cache-hit != 'true' }}
         uses: dtolnay/rust-toolchain@stable
@@ -64,7 +64,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
@@ -82,7 +82,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
@@ -124,7 +124,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin
@@ -142,7 +142,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Get OS build
         run: |
           sw_vers > macos_build.txt
@@ -195,7 +195,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
@@ -215,7 +215,7 @@ jobs:
     container:
       image: fedora:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup extra build tools
         run: dnf install -y make automake gcc gcc-c++ kernel-devel
       - uses: dtolnay/rust-toolchain@stable
@@ -237,7 +237,7 @@ jobs:
     container:
       image: gentoo/stage3
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup extra build tools
         run: |
           # `pacaptr -Ss` might fail without this line.
@@ -266,7 +266,7 @@ jobs:
         run: |
           xbps-install -y -Su || (xbps-install -y -u xbps && xbps-install -y -Su)
           xbps-install -y base-devel curl bash
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
@@ -288,7 +288,7 @@ jobs:
     steps:
       - name: Setup extra build tools
         run: zypper install -y tar gzip curl gcc bash
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
@@ -311,7 +311,7 @@ jobs:
       - name: Setup extra build tools
         run: |
           apk add -U build-base tar bash
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-musl
@@ -330,7 +330,7 @@ jobs:
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup extra build tools
         run: |
           sudo apt-get update
