@@ -831,7 +831,6 @@ dependencies = [
  "macro_rules_attribute",
  "nix",
  "pacaptr-macros",
- "paste",
  "regex",
  "serde",
  "tap",
