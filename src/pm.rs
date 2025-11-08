@@ -354,10 +354,10 @@ pub trait PmHelper: Pm {
         async fn run(cfg: &Config, cmd: &Cmd, mode: PmMode, strat: &Strategy) -> Result<Output> {
             let mut curr_cmd = cmd.clone();
             let no_confirm = cfg.no_confirm;
-            if cfg.no_cache {
-                if let NoCacheStrategy::WithFlags(v) = &strat.no_cache {
-                    curr_cmd.flags.extend(v.clone());
-                }
+            if cfg.no_cache
+                && let NoCacheStrategy::WithFlags(v) = &strat.no_cache
+            {
+                curr_cmd.flags.extend(v.clone());
             }
             match &strat.prompt {
                 PromptStrategy::None => curr_cmd.exec(mode.into()).await,
@@ -400,7 +400,7 @@ pub trait PmHelper: Pm {
                 NoCacheStrategy::Scc => self.scc(&[], &flags).await?,
                 NoCacheStrategy::Sccc => self.sccc(&[], &flags).await?,
                 _ => (),
-            };
+            }
         }
 
         Ok(res)

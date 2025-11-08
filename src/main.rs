@@ -1,5 +1,6 @@
 mod cmd;
 
+#[allow(clippy::pedantic)]
 mod _built {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
 }
