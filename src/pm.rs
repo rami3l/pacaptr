@@ -5,42 +5,35 @@
 
 #![allow(clippy::module_name_repetitions)]
 
-macro_rules! pm_mods {
-    ( $( $vis:vis $mod:ident; )+ ) => {
-        $(
-            $vis mod $mod;
-            paste! { pub use self::$mod::[<$mod:camel>]; }
-        )+
-    }
-}
-
-pm_mods! {
-    apk;
-    apt;
-    brew;
-    choco;
-    conda;
-    dnf;
-    emerge;
-    pip;
-    pkcon;
-    port;
-    scoop;
-    tlmgr;
-    unknown;
-    winget;
-    xbps;
-    zypper;
-}
+mod apk;
+mod apt;
+mod brew;
+mod choco;
+mod conda;
+mod dnf;
+mod emerge;
+mod pip;
+mod pkcon;
+mod port;
+mod scoop;
+mod tlmgr;
+mod unknown;
+mod winget;
+mod xbps;
+mod zypper;
 
 use std::env;
 
 use async_trait::async_trait;
 use itertools::Itertools;
 use macro_rules_attribute::macro_rules_attribute;
-use paste::paste;
 use tt_call::tt_call;
 
+use self::{
+    apk::Apk, apt::Apt, brew::Brew, choco::Choco, conda::Conda, dnf::Dnf, emerge::Emerge, pip::Pip,
+    pkcon::Pkcon, port::Port, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, winget::Winget,
+    xbps::Xbps, zypper::Zypper,
+};
 use crate::{
     config::Config,
     error::Result,
