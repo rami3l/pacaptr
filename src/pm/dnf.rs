@@ -192,7 +192,6 @@ impl Pm for Dnf {
     }
 
     /// Si displays remote package information: name, version, description, etc.
-
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.run(Cmd::new(["dnf", "info"]).kws(kws).flags(flags))
             .await
