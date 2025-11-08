@@ -29,7 +29,7 @@ pub enum Error {
 
     /// Error when handling a [`Config`](crate::config::Config).
     #[error("failed to parse config")]
-    ConfigError(#[from] figment::Error),
+    ConfigError(#[from] Box<figment::Error>),
 
     /// A [`Cmd`](crate::exec::Cmd) failed to finish.
     #[error("failed to get exit code of subprocess")]
