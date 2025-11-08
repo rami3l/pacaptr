@@ -349,6 +349,7 @@ impl Pacaptr {
                 .join(Config::env_provider())
                 .join(Config::file_provider())
                 .extract::<Config>()
+                .map_err(Box::new)
         })?);
         self.dispatch_from(cfg).await
     }
