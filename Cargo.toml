@@ -5,7 +5,7 @@ resolver = "2"
 members = [".", "crates/*"]
 
 [workspace.package]
-version = "0.23.0"
+version = "0.23.1"
 license = "GPL-3.0"
 edition = "2024"
 
@@ -116,7 +116,7 @@ futures = { version = "0.3.30", default-features = false, features = ["std"] }
 indoc = "2.0.6"
 itertools = { workspace = true }
 macro_rules_attribute = "0.2.2"
-pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.23.0" }
+pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.23.1" }
 regex = { workspace = true }
 serde = { version = "1.0.219", features = ["derive"] }
 tap = "1.0.1"
