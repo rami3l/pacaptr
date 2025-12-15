@@ -68,7 +68,7 @@ jobs:
 
       # https://github.com/vercel/turbo/blob/ea934d13038361c24a1f71cad3b490d6c0936f37/.github/workflows/turborepo-release.yml#L268-L272
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: pacaptr-${{ matrix.target }}
           path: target/${{ matrix.target }}/release/pacaptr*
