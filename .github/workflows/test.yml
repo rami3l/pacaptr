@@ -74,7 +74,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: x86_64-pc-windows-msvc
         run: |
-          cargo build --verbose
+          cargo build
           cargo test --features=test tests
           cargo test --features=test choco -- --test-threads=1
           cargo test --features=test choco -- --ignored --test-threads=1
@@ -112,7 +112,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: x86_64-pc-windows-msvc
         run: |
-          cargo build --verbose
+          cargo build
           cargo test --features=test tests
 
           cargo test --features=test scoop
@@ -134,7 +134,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: aarch64-apple-darwin
         run: |
-          cargo build --verbose
+          cargo build
           cargo test --features=test tests
           cargo test --features=test brew
           cargo test --features=test brew -- --ignored
@@ -187,7 +187,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: aarch64-apple-darwin
         run: |
-          cargo build --verbose
+          cargo build
           cargo test --features=test tests
           cargo test --features=test port
           cargo test --features=test port -- --ignored
@@ -205,7 +205,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
         run: |
-          cargo build --verbose
+          cargo build
           cargo test --features=test tests
           cargo test --features=test apt
           cargo test --features=test apt -- --ignored
@@ -227,7 +227,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
         run: |
-          cargo build --verbose
+          cargo build
           cargo test --features=test tests
           cargo test --features=test dnf
           cargo test --features=test dnf -- --ignored
@@ -252,7 +252,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
         run: |
-          cargo build --verbose
+          cargo build
           cargo test --features=test tests
           cargo test --features=test emerge
           cargo test --features=test emerge -- --ignored
@@ -276,7 +276,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
         run: |
-          cargo build --verbose
+          cargo build
           cargo test --features=test tests
           cargo test --features=test xbps
           cargo test --features=test xbps -- --ignored
@@ -298,7 +298,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
         run: |
-          cargo build --verbose
+          cargo build
           cargo test --features=test tests
           cargo test --features=test zypper -- --test-threads=1
           cargo test --features=test zypper -- --ignored --test-threads=1
@@ -322,7 +322,7 @@ jobs:
           RUSTFLAGS: "-C target-feature=-crt-static"
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
         run: |
-          cargo build --verbose
+          cargo build
           cargo test --features=test tests
           cargo test --features=test apk
           cargo test --features=test apk -- --ignored
@@ -344,7 +344,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
         run: |
-          cargo build --verbose
+          cargo build
 
           cargo test --features=test pkcon
           cargo test --features=test pip
