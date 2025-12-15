@@ -63,6 +63,7 @@ fn apk_si() {
     test_dsl! { r##"
         in -Si wget
         ou Network utility to retrieve files from the Web
+        rt 1
     "## }
 }
 
