@@ -166,7 +166,7 @@ jobs:
           /opt/homebrew/bin/gtar --usage
       - name: Cache MacPorts
         id: cache-macports
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /opt/local/
           key: ${{ runner.os }}-macports-${{ hashFiles('macos_build.txt') }}
