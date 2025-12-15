@@ -29,8 +29,15 @@ const fn cmd_prefix() -> (&'static str, &'static [&'static str]) {
 
 #[derive(Debug, Default)]
 pub struct Test<'t> {
-    sequence: Vec<(Input<'t>, Vec<&'t str>)>,
+    sequence: Vec<Expectation<'t>>,
     pending_input: Option<Input<'t>>,
+}
+
+#[derive(Debug)]
+pub struct Expectation<'t> {
+    input: Input<'t>,
+    outputs: Vec<&'t str>,
+    code: u8,
 }
 
 impl<'t> Test<'t> {
@@ -62,13 +69,26 @@ impl<'t> Test<'t> {
 
     #[must_use]
     pub fn output(mut self, out: &'t [&str]) -> Self {
-        if let Some(cmd) = self.pending_input.take() {
-            self.sequence.push((cmd, out.into()));
-        } else if let Some((_cmd, outs)) = self.sequence.last_mut() {
-            outs.extend(out);
+        if let Some(input) = self.pending_input.take() {
+            self.sequence.push(Expectation {
+                input,
+                outputs: out.into(),
+                code: 0,
+            });
+        } else if let Some(exp) = self.sequence.last_mut() {
+            exp.outputs.extend(out);
         } else {
             panic!("expect an input before an output");
         }
+        self
+    }
+
+    #[must_use]
+    pub fn code(mut self, code: u8) -> Self {
+        let Some(exp) = self.sequence.last_mut() else {
+            panic!("expect an input before a return code");
+        };
+        exp.code = code;
         self
     }
 
@@ -88,9 +108,9 @@ impl<'t> Test<'t> {
         );
 
         let s = Shell::new().unwrap();
-        for (input, patterns) in &self.sequence {
+        for exp in &self.sequence {
             let (sh, sh_args) = cmd_prefix();
-            let cmd = match *input {
+            let cmd = match exp.input {
                 Input::Exec { cmd, kws } => chain!(cmd, kws).join(" "),
                 Input::Pacaptr { args, flags } => {
                     format!("cargo run --quiet -- {}", chain!(args, flags).join(" "))
@@ -100,12 +120,15 @@ impl<'t> Test<'t> {
             let output = cmd.ignore_status().output().unwrap();
             let got = String::from_utf8_lossy(&output.stdout);
             println!("{got}");
-            try_match(&got, patterns);
-            let code = output.status.code();
-            let got_stderr = String::from_utf8_lossy(&output.stderr);
-            assert!(
-                output.status.success(),
-                "failed with exit code {code:?} and the following stderr: {got_stderr}"
+            try_match(&got, &exp.outputs);
+
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            let code = output.status.code().unwrap_or_default() as u8;
+            assert_eq!(
+                code,
+                exp.code,
+                "failed with exit code {code:?} and the following stderr: {got_stderr}",
+                got_stderr = String::from_utf8_lossy(&output.stderr),
             );
         }
     }

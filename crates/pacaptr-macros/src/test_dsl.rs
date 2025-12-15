@@ -7,6 +7,7 @@ enum TestDslItem {
     In(Vec<String>),
     InBang(Vec<String>),
     Ou(String),
+    Rt(u8),
 }
 
 impl TestDslItem {
@@ -14,6 +15,7 @@ impl TestDslItem {
         let in_bang = "in ! ";
         let in_ = "in ";
         let ou = "ou ";
+        let rt = "rt ";
         let tokenize = |s: &str| s.split_whitespace().map_into().collect();
         #[allow(clippy::option_if_let_else)]
         if let Some(rest) = ln.strip_prefix(in_bang) {
@@ -22,9 +24,15 @@ impl TestDslItem {
             Ok(Self::In(tokenize(rest)))
         } else if let Some(rest) = ln.strip_prefix(ou) {
             Ok(Self::Ou(rest.into()))
+        } else if let Some(rest) = ln.strip_prefix(rt) {
+            let code = rest
+                .trim()
+                .parse()
+                .map_err(|_| Error::new(Span::call_site(), "return code must be a valid u8"))?;
+            Ok(Self::Rt(code))
         } else {
             let msg = format!(
-                "Item must start with one of the following: {}, found `{}`",
+                "item must start with one of the following: {}, found `{}`",
                 [in_bang, in_, ou,]
                     .iter()
                     .map(|s| format!("`{}`", s.trim_end()))
@@ -48,6 +56,10 @@ impl TestDslItem {
             Self::Ou(o) => {
                 let o = Literal::string(o);
                 quote! { .output(&[ #o ]) }
+            }
+            Self::Rt(code) => {
+                let code = Literal::u8_suffixed(*code);
+                quote! { .code(#code) }
             }
         }
     }
