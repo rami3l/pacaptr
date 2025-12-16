@@ -96,7 +96,7 @@ jobs:
 
       # https://github.com/vercel/turbo/blob/ea934d13038361c24a1f71cad3b490d6c0936f37/.github/workflows/turborepo-release.yml#L306-L309
       - name: Download artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           path: target/gh-artifacts
 
