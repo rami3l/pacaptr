@@ -21,7 +21,7 @@ fn scoop_qi() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn scoop_r_s() {
     test_dsl! { r##"
         in --using scoop -S wget --yes

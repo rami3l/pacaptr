@@ -46,7 +46,7 @@ fn apk_qs() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn apk_r_s() {
     test_dsl! { r##"
         in -S wget --yes

@@ -51,7 +51,7 @@ fn port_qs() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn port_r_s() {
     test_dsl! { r##"
         in --using port -S curl --yes

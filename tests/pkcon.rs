@@ -29,7 +29,7 @@ fn pkcon_qs() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn pkcon_r_s() {
     test_dsl! { r##"
         # Update package databases

@@ -83,6 +83,7 @@ impl<'t> Test<'t> {
         self
     }
 
+    #[allow(dead_code)]
     #[must_use]
     pub fn code(mut self, code: u8) -> Self {
         let Some(exp) = self.sequence.last_mut() else {

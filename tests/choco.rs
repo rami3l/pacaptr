@@ -33,7 +33,7 @@ fn choco_qi() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn choco_r_s() {
     test_dsl! { r##"
         in -S wget --yes

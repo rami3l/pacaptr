@@ -31,7 +31,7 @@ fn conda_qs() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn conda_r_s() {
     test_dsl! { r##"
         in --using conda -S sympy --yes

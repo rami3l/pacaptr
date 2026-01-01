@@ -39,7 +39,7 @@ fn pip_qs() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn pip_r_s() {
     test_dsl! { r##"
         in --using pip -S sphinx --yes
