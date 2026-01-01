@@ -55,7 +55,7 @@ fn port_qs() {
 fn port_r_s() {
     test_dsl! { r##"
         in --using port -S curl --yes
-        ou --->  Installing curl
+        ou --->  Fetching archive for curl
         in ! curl -V
         ou libcurl
         ou Protocols:
