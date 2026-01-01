@@ -80,7 +80,7 @@ fn dnf_qs() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn dnf_r_s() {
     test_dsl! { r##"
         in -S wget2 --yes

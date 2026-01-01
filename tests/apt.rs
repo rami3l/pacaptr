@@ -76,7 +76,7 @@ fn apt_qs() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn apt_r_s() {
     test_dsl! { r##"
         # Update package databases

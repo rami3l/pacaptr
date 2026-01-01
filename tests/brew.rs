@@ -55,7 +55,7 @@ fn brew_qs() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn brew_r_s() {
     test_dsl! { r##"
         in --using brew -S screenfetch --yes

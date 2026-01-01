@@ -21,7 +21,7 @@ fn winget_qi() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn winget_r_s() {
     test_dsl! { r##"
         in --using winget -S wget --yes

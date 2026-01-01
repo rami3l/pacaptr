@@ -65,7 +65,7 @@ fn zypper_qs() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn zypper_r_s() {
     test_dsl! { r##"
         in -S wget --yes

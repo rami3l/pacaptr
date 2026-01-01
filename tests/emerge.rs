@@ -47,7 +47,7 @@ fn emerge_qs() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "heavy test"]
 fn emerge_r_s() {
     test_dsl! { r##"
         in -S screenfetch --yes
