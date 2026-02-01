@@ -145,34 +145,6 @@ jobs:
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v6
-      - name: Get OS build
-        run: |
-          sw_vers > macos_build.txt
-          cat macos_build.txt
-      # https://github.com/actions/cache/issues/629#issuecomment-1189184648
-      - name: Create gtar wrapper
-        run: |
-          mkdir target
-          cat << 'EOF' > "target/gtar"
-          #!/bin/bash
-          set -x
-          exec sudo /opt/homebrew/bin/gtar.orig "$@"
-          EOF
-      - name: Install gtar wrapper
-        run: |
-          sudo mv /opt/homebrew/bin/gtar /opt/homebrew/bin/gtar.orig
-          sudo mv target/gtar /opt/homebrew/bin/gtar
-          sudo chmod +x /opt/homebrew/bin/gtar
-          /opt/homebrew/bin/gtar --usage
-      - name: Cache MacPorts
-        id: cache-macports
-        uses: actions/cache@v5
-        with:
-          path: /opt/local/
-          key: ${{ runner.os }}-macports-${{ hashFiles('macos_build.txt') }}
-      - name: Restore MacPorts PATH
-        if: steps.cache-macports.outputs.cache-hit == 'true'
-        run: echo "/opt/local/bin" >> "$GITHUB_PATH"
       - name: Install MacPorts
         if: steps.cache-macports.outputs.cache-hit != 'true'
         run: |
