@@ -15,6 +15,13 @@ updates:
     schedule:
       interval: "monthly"
     groups:
+      console:
+        patterns:
+          - "console"
+          - "dialoguer"
+          - "indicatif"
+        update-types:
+          - "minor"
       minors:
         update-types:
           - "minor"
