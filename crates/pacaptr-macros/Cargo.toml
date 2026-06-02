@@ -20,7 +20,7 @@ proc-macro2 = "1.0.106"
 quote = { version = "1.0.45", optional = true }
 regex = { workspace = true }
 syn = "2.0.117"
-tabled = "0.20.0"
+tabled = "0.21.0"
 
 [features]
 test = ["dep:litrs", "dep:quote"]
