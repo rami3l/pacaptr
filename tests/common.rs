@@ -94,18 +94,10 @@ impl<'t> Test<'t> {
     }
 
     pub fn run(&self) {
-        let try_match = |out: &str, patterns: &[&str]| {
-            for &p in patterns {
-                let re = RegexBuilder::new(p).multi_line(true).build().unwrap();
-                let is_match = re.is_match(out);
-                assert!(is_match, "failed with pattern `{p}`, got `{out}`");
-            }
-        };
-
         // Prevent running the test before `self.sequence` is configured.
         assert!(
             !self.sequence.is_empty(),
-            "Test sequence not yet configured"
+            "test sequence not yet configured"
         );
 
         let s = Shell::new().unwrap();
@@ -119,17 +111,21 @@ impl<'t> Test<'t> {
             };
             let cmd = cmd!(s, "{sh}").args(sh_args).arg(dbg!(&cmd));
             let output = cmd.ignore_status().output().unwrap();
-            let got = String::from_utf8_lossy(&output.stdout);
-            println!("{got}");
-            try_match(&got, &exp.outputs);
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            for &p in &exp.outputs {
+                let re = RegexBuilder::new(p).multi_line(true).build().unwrap();
+                assert!(
+                    re.is_match(&stdout),
+                    "failed with pattern `{p}`, got `{stdout}` and the following stderr: {stderr}",
+                );
+            }
 
             #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
             let code = output.status.code().unwrap_or_default() as u8;
             assert_eq!(
-                code,
-                exp.code,
-                "failed with exit code {code:?} and the following stderr: {got_stderr}",
-                got_stderr = String::from_utf8_lossy(&output.stderr),
+                code, exp.code,
+                "failed with exit code {code:?} and the following stderr: {stderr}",
             );
         }
     }
