@@ -130,6 +130,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin
+      - name: Upgrade Homebrew
+        run: brew update
       - name: Build and run tests
         env:
           CARGO_BUILD_TARGET: aarch64-apple-darwin
