@@ -30,7 +30,7 @@ static STRAT_PROMPT: LazyLock<Strategy> = LazyLock::new(|| Strategy {
 });
 
 static STRAT_INSTALL: LazyLock<Strategy> = LazyLock::new(|| Strategy {
-    prompt: PromptStrategy::CustomPrompt,
+    prompt: PromptStrategy::native_no_confirm(["--yes"]),
     no_cache: NoCacheStrategy::Scc,
     ..Strategy::default()
 });
