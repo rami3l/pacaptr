@@ -24,14 +24,14 @@ fn winget_qi() {
 #[ignore = "heavy test"]
 fn winget_r_s() {
     test_dsl! { r##"
-        in --using winget -S wget --yes
+        in --using winget -S wget --yes -- --scope machine
         ou Found Wget
         ou JernejSimoncic\.Wget
         ou Successfully installed
         in --using winget -Q
         ou Wget
         ou JernejSimoncic\.Wget
-        in --using winget -R wget --yes
+        in --using winget -R wget --yes -- --scope machine
         ou Found Wget
         ou JernejSimoncic\.Wget
         ou Successfully uninstalled
