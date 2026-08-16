@@ -45,7 +45,7 @@ jobs:
         with:
           components: clippy,rustfmt
       - name: Setup `cargo-binstall` and `taplo`
-        uses: taiki-e/install-action@v2.85.9
+        uses: taiki-e/install-action@v2.85.13
         with:
           tool: taplo-cli
       - name: Check TOML format
