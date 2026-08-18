@@ -139,7 +139,7 @@ impl Pm for Winget {
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["winget", "source", "update", "--accept-source-agreements"])
+        Cmd::new(["winget", "source", "update"])
             .flags(flags)
             .pipe(|cmd| self.run(cmd))
             .await?;
