@@ -1,6 +1,8 @@
 #![cfg(feature = "test")]
 #![allow(clippy::dbg_macro, clippy::missing_panics_doc)]
 
+use std::env;
+
 use itertools::{Itertools, chain};
 pub use pacaptr_macros::test_dsl;
 use regex::RegexBuilder;
@@ -94,7 +96,10 @@ impl<'t> Test<'t> {
     }
 
     pub fn run(&self) {
-        // Prevent running the test before `self.sequence` is configured.
+        assert!(
+            env::var_os("CI").is_some(),
+            "test execution is blocked without the `CI` environment variable set",
+        );
         assert!(
             !self.sequence.is_empty(),
             "test sequence not yet configured"
