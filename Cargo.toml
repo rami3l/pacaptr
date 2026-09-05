@@ -47,10 +47,8 @@ name = "pacaptr"
 version.workspace = true
 license.workspace = true
 edition.workspace = true
-homepage = "https://github.com/rami3l/pacaptr"
 repository = "https://github.com/rami3l/pacaptr"
 description = "Pacman-like syntax wrapper for many package managers."
-readme = "README.md"
 
 keywords = ["package-management"]
 categories = ["command-line-utilities"]
@@ -117,7 +115,7 @@ futures_codec = "0.5.0"
 indoc = "2.0.6"
 itertools = { workspace = true }
 macro_rules_attribute = "0.2.2"
-pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.23.2" }
+pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.23.2", optional = true }
 regex = { workspace = true }
 serde = { version = "1.0.219", features = ["derive"] }
 smol = "2.0.2"
