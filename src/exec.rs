@@ -332,8 +332,8 @@ impl Cmd {
         static ALL: AtomicBool = AtomicBool::new(false);
 
         // The answer obtained from the prompt.
-        // The only Atomic* we're dealing with is `ALL`, so `Ordering::Relaxed` is fine.
-        // See: <https://marabos.nl/atomics/memory-ordering.html#relaxed>
+        // The only Atomic* we're dealing with is `ALL`, so `Ordering::Relaxed`
+        // is fine. See: <https://marabos.nl/atomics/memory-ordering.html#relaxed>
         let proceed = ALL.load(Ordering::Relaxed) || {
             println_quoted(&*prompt::PENDING, &self);
             let answer = tokio::task::block_in_place(move || {
