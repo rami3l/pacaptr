@@ -86,9 +86,10 @@ impl Pm for Brew {
 
     /// Ql displays files provided by local package.
     async fn ql(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        // TODO: it seems that the output of `brew list python` in fish has a mechanism
-        // against duplication: /usr/local/Cellar/python/3.6.0/Frameworks/
-        // Python.framework/ (1234 files)
+        // TODO: it seems that the output of `brew list python` in fish has a
+        // mechanism against duplication:
+        // /usr/local/Cellar/python/3.6.0/Frameworks/ Python.framework/
+        // (1234 files)
         self.run(Cmd::new(["brew", "list"]).kws(kws).flags(flags))
             .await
     }
@@ -160,9 +161,9 @@ impl Pm for Brew {
         Cmd::new(if self.cfg.needed {
             ["brew", "install"]
         } else {
-            // If the package is not installed, `brew reinstall` behaves just like `brew
-            // install`, so `brew reinstall` matches perfectly the behavior of
-            // `pacman -S`.
+            // If the package is not installed, `brew reinstall` behaves just
+            // like `brew install`, so `brew reinstall` matches
+            // perfectly the behavior of `pacman -S`.
             ["brew", "reinstall"]
         })
         .kws(kws)
