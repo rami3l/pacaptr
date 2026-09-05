@@ -113,25 +113,18 @@ dialoguer = { version = "0.12.0", features = ["fuzzy-select"] }
 dirs-next = "2.0.0"
 figment = { version = "0.10.19", features = ["env", "toml"] }
 futures = { version = "0.3.30", default-features = false, features = ["std"] }
+futures_codec = "0.5.0"
 indoc = "2.0.6"
 itertools = { workspace = true }
 macro_rules_attribute = "0.2.2"
 pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.23.2" }
 regex = { workspace = true }
 serde = { version = "1.0.219", features = ["derive"] }
+smol = "2.0.2"
+smol-macros = "0.1.1"
 tap = "1.0.1"
 thiserror = "2.0.12"
 thiserror-ext = "0.3.0"
-tokio = { version = "1.45.1", features = [
-  "io-std",
-  "io-util",
-  "macros",
-  "process",
-  "rt-multi-thread",
-  "sync",
-] }
-tokio-stream = "0.1.15"
-tokio-util = { version = "0.7.15", features = ["codec", "compat"] }
 tt-call = "1.0.9"
 which = "8.0.0"
 

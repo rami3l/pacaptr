@@ -55,12 +55,7 @@ pub fn println(prompt: impl Display, msg: impl Display) {
 
 /// Prints out an error message.
 pub fn println_err(msg: impl Display) {
-    println!(
-        plain_format!(),
-        &*prompt::ERROR,
-        msg,
-        indent = PROMPT_INDENT,
-    );
+    println!(plain_format!(), *prompt::ERROR, msg, indent = PROMPT_INDENT);
 }
 
 /// Prints out a backtick-quoted message after the given prompt.
