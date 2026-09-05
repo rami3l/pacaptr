@@ -250,9 +250,9 @@ impl Cmd {
         use Error::{CmdNoHandleError, CmdSpawnError, CmdWaitError};
 
         fn make_reader(
-            src: Option<impl AsyncRead + Send + Unpin + 'static>,
+            src: Option<impl AsyncRead + Send + Unpin>,
             name: &str,
-        ) -> Result<impl Stream<Item = io::Result<Bytes>> + Send> {
+        ) -> Result<impl Stream<Item = io::Result<Bytes>>> {
             src.map(|r| FramedRead::new(r, BytesCodec))
                 .ok_or_else(|| CmdNoHandleError {
                     handle: name.into(),
