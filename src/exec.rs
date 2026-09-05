@@ -1,28 +1,24 @@
 //! APIs for spawning subprocesses and handling their results.
 
 use std::{
+    io,
     process::Stdio,
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use bytes::{Bytes, BytesMut};
+use bytes::Bytes;
 use dialoguer::FuzzySelect;
-use futures::prelude::*;
+use futures::{future::Either, prelude::*, stream};
+use futures_codec::{BytesCodec, FramedRead};
 use indoc::indoc;
 use itertools::{Itertools, chain};
 use regex::{RegexSet, RegexSetBuilder};
-use tap::prelude::*;
-use tokio::{
-    io::{self, AsyncRead, AsyncWrite},
+use smol::{
+    Unblock,
+    io::{AsyncRead, AsyncWrite},
     process::Command as Exec,
-    task::JoinHandle,
 };
-#[allow(clippy::wildcard_imports)]
-use tokio_util::{
-    codec::{BytesCodec, FramedRead},
-    compat::*,
-    either::Either,
-};
+use tap::prelude::*;
 use which::which;
 
 use crate::{
@@ -194,8 +190,7 @@ async fn exec_tee(
     let buf_sink = (&mut buf).into_sink();
 
     let sink = if let Some(out) = out {
-        let out_sink = out.compat_write().into_sink();
-        buf_sink.fanout(out_sink).left_sink()
+        buf_sink.fanout(out.into_sink()).left_sink()
     } else {
         buf_sink.right_sink()
     };
@@ -210,7 +205,6 @@ macro_rules! docs_errors_exec {
             # Errors
             This function might return one of the following errors:
 
-            - [`Error::CmdJoinError`]
             - [`Error::CmdNoHandleError`]
             - [`Error::CmdSpawnError`]
             - [`Error::CmdWaitError`]
@@ -253,16 +247,16 @@ impl Cmd {
     /// and [`Cmd::exec_checkall`] (otherwise).
     #[doc = docs_errors_exec!()]
     async fn exec_check_output(self, mute: bool, merge: bool) -> Result<Output> {
-        use Error::{CmdJoinError, CmdNoHandleError, CmdSpawnError, CmdWaitError};
-        use tokio_stream::StreamExt;
+        use Error::{CmdNoHandleError, CmdSpawnError, CmdWaitError};
 
         fn make_reader(
-            src: Option<impl AsyncRead>,
+            src: Option<impl AsyncRead + Send + Unpin + 'static>,
             name: &str,
-        ) -> Result<impl Stream<Item = io::Result<Bytes>>> {
-            src.map(into_bytes).ok_or_else(|| CmdNoHandleError {
-                handle: name.into(),
-            })
+        ) -> Result<impl Stream<Item = io::Result<Bytes>> + Send> {
+            src.map(|r| FramedRead::new(r, BytesCodec))
+                .ok_or_else(|| CmdNoHandleError {
+                    handle: name.into(),
+                })
         }
 
         let mut child = self
@@ -279,25 +273,25 @@ impl Cmd {
         let stderr_reader = make_reader(child.stderr.take(), "stderr")?;
         let mut reader = if merge {
             let stdout_reader = make_reader(child.stdout.take(), "stdout")?;
-            StreamExt::merge(stdout_reader, stderr_reader).left_stream()
+            stream::select(stdout_reader, stderr_reader).left_stream()
         } else {
             stderr_reader.right_stream()
         };
 
-        let mut out = if merge {
-            Either::Left(io::stdout())
-        } else {
-            Either::Right(io::stderr())
-        };
+        let output = exec_tee(
+            &mut reader,
+            (!mute).then(|| {
+                if merge {
+                    Either::Left(Unblock::new(io::stdout()))
+                } else {
+                    Either::Right(Unblock::new(io::stderr()))
+                }
+            }),
+        )
+        .await?;
 
-        let code: JoinHandle<Result<Option<i32>>> = tokio::spawn(async move {
-            let status = child.wait().await.map_err(CmdWaitError)?;
-            Ok(status.code())
-        });
-
-        let output = exec_tee(&mut reader, (!mute).then_some(&mut out)).await?;
-        let code = code.await.map_err(CmdJoinError)??;
-        exit_result(code, output)
+        let status = child.status().await.map_err(CmdWaitError)?;
+        exit_result(status.code(), output)
     }
 
     /// Executes a [`Cmd`] and returns its `stdout` and `stderr`.
@@ -336,13 +330,14 @@ impl Cmd {
         // is fine. See: <https://marabos.nl/atomics/memory-ordering.html#relaxed>
         let proceed = ALL.load(Ordering::Relaxed) || {
             println_quoted(&*prompt::PENDING, &self);
-            let answer = tokio::task::block_in_place(move || {
+            let answer = smol::unblock(move || {
                 prompt(
                     "Proceed",
                     "with the previous command?",
                     &["Yes", "All", "No"],
                 )
-            })?;
+            })
+            .await?;
             match answer {
                 // The default answer is `Yes`.
                 0 => true,
@@ -450,11 +445,4 @@ pub fn is_root() -> bool {
 #[must_use]
 pub fn is_root() -> bool {
     nix::unistd::Uid::current().is_root()
-}
-
-/// Turns an [`AsyncRead`] into a [`Stream`].
-///
-/// _Shamelessly copied from [`StackOverflow`](https://stackoverflow.com/a/59327560)._
-fn into_bytes(reader: impl AsyncRead) -> impl Stream<Item = io::Result<Bytes>> {
-    FramedRead::new(reader, BytesCodec::new()).map_ok(BytesMut::freeze)
 }

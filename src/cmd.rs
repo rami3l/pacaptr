@@ -27,7 +27,6 @@ use pacaptr::{
     print::{println, prompt},
 };
 use tap::prelude::*;
-use tokio::task;
 use tt_call::tt_call;
 
 use crate::_built::GIT_VERSION;
@@ -344,13 +343,16 @@ impl Pacaptr {
     /// # Errors
     /// See [`Error`](crate::error::Error) for a list of possible errors.
     pub async fn dispatch(&self) -> Result<()> {
-        let cfg = self.cfg().join(task::block_in_place(|| {
-            Figment::new()
-                .join(Config::env_provider())
-                .join(Config::file_provider())
-                .extract::<Config>()
-                .map_err(Box::new)
-        })?);
+        let cfg = self.cfg().join(
+            smol::unblock(|| {
+                Figment::new()
+                    .join(Config::env_provider())
+                    .join(Config::file_provider())
+                    .extract::<Config>()
+                    .map_err(Box::new)
+            })
+            .await?,
+        );
         self.dispatch_from(cfg).await
     }
 }
@@ -361,7 +363,8 @@ mod tests {
 
     use std::sync::LazyLock;
 
-    use tokio::test;
+    use macro_rules_attribute::apply;
+    use smol_macros::test;
 
     use super::*;
 
@@ -370,7 +373,7 @@ mod tests {
         ..Config::default()
     });
 
-    #[test]
+    #[apply(test!)]
     #[should_panic(expected = "should run: suy")]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn simple_syu() {
@@ -383,7 +386,7 @@ mod tests {
         opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 
-    #[test]
+    #[apply(test!)]
     #[should_panic(expected = "should run: suy")]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn long_syu() {
@@ -401,7 +404,7 @@ mod tests {
         opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 
-    #[test]
+    #[apply(test!)]
     #[should_panic(expected = r#"should run: sw ["curl", "wget"]"#)]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn simple_sw() {
@@ -414,7 +417,7 @@ mod tests {
         opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 
-    #[test]
+    #[apply(test!)]
     #[should_panic(expected = r#"should run: s ["docker"]"#)]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn other_flags() {
@@ -431,7 +434,7 @@ mod tests {
         opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 
-    #[test]
+    #[apply(test!)]
     #[should_panic(expected = r#"should run: s ["docker", "--proxy=localhost:1234"]"#)]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn extra_flags() {
@@ -453,7 +456,7 @@ mod tests {
         opt.dispatch_from(MOCK_CFG.clone()).await.unwrap();
     }
 
-    #[test]
+    #[apply(test!)]
     #[should_panic(expected = r#"should run: si ["docker", "--proxy=localhost:1234"]"#)]
     #[allow(clippy::semicolon_if_nothing_returned)]
     async fn using() {

@@ -2,12 +2,12 @@
 
 use std::{
     fmt::{self, Debug},
+    io,
     process::{ExitCode, Termination},
 };
 
 use thiserror::Error;
 use thiserror_ext::AsReport;
-use tokio::{io, task::JoinError};
 
 use crate::{
     exec::{Output, StatusCode},
@@ -30,10 +30,6 @@ pub enum Error {
     /// Error when handling a [`Config`](crate::config::Config).
     #[error("failed to parse config")]
     ConfigError(#[from] Box<figment::Error>),
-
-    /// A [`Cmd`](crate::exec::Cmd) failed to finish.
-    #[error("failed to get exit code of subprocess")]
-    CmdJoinError(#[from] JoinError),
 
     /// A [`Cmd`](crate::exec::Cmd) failed to spawn.
     #[error("failed to spawn subprocess")]
