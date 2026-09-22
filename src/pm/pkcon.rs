@@ -5,7 +5,6 @@ use std::sync::LazyLock;
 use async_trait::async_trait;
 use futures::prelude::*;
 use indoc::indoc;
-use tap::prelude::*;
 
 use super::{Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
@@ -52,11 +51,12 @@ impl Pm for Pkcon {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            Cmd::new(["pkcon", "get-packages", "--filter", "installed"])
-                .kws(kws)
-                .flags(flags)
-                .pipe(|cmd| self.run(cmd))
-                .await
+            self.run(
+                Cmd::new(["pkcon", "get-packages", "--filter", "installed"])
+                    .kws(kws)
+                    .flags(flags),
+            )
+            .await
         } else {
             self.qs(kws, flags).await
         }
@@ -64,11 +64,12 @@ impl Pm for Pkcon {
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["pkcon", "get-update-detail"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new(["pkcon", "get-update-detail"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Qi displays local package information: name, version, description, etc.
@@ -99,19 +100,21 @@ impl Pm for Pkcon {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["pkcon", "get-packages", "--filter", "installed"])
-            .flags(flags)
-            .pipe(|cmd| self.search_regex(cmd, kws))
-            .await
+        self.search_regex(
+            Cmd::new(["pkcon", "get-packages", "--filter", "installed"]).flags(flags),
+            kws,
+        )
+        .await
     }
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["pkcon", "get-updates"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::with_sudo(["pkcon", "get-updates"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
@@ -119,10 +122,11 @@ impl Pm for Pkcon {
         stream::iter(kws)
             .map(Ok)
             .try_for_each(|kw| {
-                Cmd::with_sudo(["pkcon", "remove"])
-                    .kws([kw])
-                    .flags(flags)
-                    .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
+                self.run_with(
+                    Cmd::with_sudo(["pkcon", "remove"]).kws([kw]).flags(flags),
+                    self.default_mode(),
+                    &STRAT_PROMPT,
+                )
             })
             .await
     }
@@ -133,24 +137,30 @@ impl Pm for Pkcon {
         stream::iter(kws)
             .map(Ok)
             .try_for_each(|kw| {
-                Cmd::with_sudo(["pkcon", "remove", "--autoremove"])
-                    .kws([kw])
-                    .flags(flags)
-                    .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
+                self.run_with(
+                    Cmd::with_sudo(["pkcon", "remove", "--autoremove"])
+                        .kws([kw])
+                        .flags(flags),
+                    self.default_mode(),
+                    &STRAT_PROMPT,
+                )
             })
             .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(if self.cfg.needed {
-            &["pkcon", "install"][..]
-        } else {
-            &["pkcon", "install", "--allow-reinstall"][..]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
+        self.run_with(
+            Cmd::with_sudo(if self.cfg.needed {
+                &["pkcon", "install"][..]
+            } else {
+                &["pkcon", "install", "--allow-reinstall"][..]
+            })
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
         .await
     }
 
@@ -176,11 +186,12 @@ impl Pm for Pkcon {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["pkcon", "update"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["pkcon", "update"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Suy refreshes the local package database, then updates outdated
@@ -193,11 +204,14 @@ impl Pm for Pkcon {
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["pkcon", "install", "--only-download"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["pkcon", "install", "--only-download"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Sy refreshes the local package database.

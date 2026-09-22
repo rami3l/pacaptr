@@ -4,7 +4,6 @@ use std::sync::LazyLock;
 
 use async_trait::async_trait;
 use indoc::indoc;
-use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
@@ -65,11 +64,12 @@ impl Pm for Apt {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["apt", "list", "--installed"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new(["apt", "list", "--installed"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Qc shows the changelog of a package.
@@ -114,103 +114,113 @@ impl Pm for Apt {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["dpkg-query", "-l"])
-            .flags(flags)
-            .pipe(|cmd| self.search_regex_with_header(cmd, kws, 4))
+        self.search_regex_with_header(Cmd::new(["dpkg-query", "-l"]).flags(flags), kws, 4)
             .await
     }
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apt", "upgrade", "--trivial-only"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::with_sudo(["apt", "upgrade", "--trivial-only"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apt", "remove"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apt", "remove"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rn removes a package and skips the generation of configuration backup
     /// files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apt", "purge"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apt", "purge"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rns removes a package and its dependencies which are not required by any
     /// other installed package, and skips the generation of configuration
     /// backup files.
     async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apt", "autoremove", "--purge"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apt", "autoremove", "--purge"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rs removes a package and its dependencies which are not required by any
     /// other installed package, and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apt", "autoremove"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apt", "autoremove"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        if self.cfg.needed {
+        let cmd = if self.cfg.needed {
             Cmd::with_sudo(&[self.cmd(), "install"][..])
         } else {
             Cmd::with_sudo(&[self.cmd(), "install", "--reinstall"][..])
-        }
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
+        };
+        self.run_with(
+            cmd.kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
         .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apt", "clean"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apt", "clean"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Scc removes all files from the cache.
     async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apt", "autoclean"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apt", "autoclean"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Sg lists all packages belonging to the GROUP.
     async fn sg(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(if kws.is_empty() {
-            ["tasksel", "--list-task"]
-        } else {
-            ["tasksel", "--task-packages"]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run(cmd))
+        self.run(
+            Cmd::new(if kws.is_empty() {
+                ["tasksel", "--list-task"]
+            } else {
+                ["tasksel", "--task-packages"]
+            })
+            .kws(kws)
+            .flags(flags),
+        )
         .await
     }
 
@@ -237,14 +247,18 @@ impl Pm for Apt {
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            Cmd::with_sudo(["apt", "upgrade"])
-                .flags(flags)
-                .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-                .await?;
-            Cmd::with_sudo(["apt", "dist-upgrade"])
-                .flags(flags)
-                .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-                .await
+            self.run_with(
+                Cmd::with_sudo(["apt", "upgrade"]).flags(flags),
+                self.default_mode(),
+                &STRAT_PROMPT,
+            )
+            .await?;
+            self.run_with(
+                Cmd::with_sudo(["apt", "dist-upgrade"]).flags(flags),
+                self.default_mode(),
+                &STRAT_INSTALL,
+            )
+            .await
         } else {
             self.s(kws, flags).await
         }
@@ -260,11 +274,14 @@ impl Pm for Apt {
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo([self.cmd(), "install", "--download-only"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::with_sudo([self.cmd(), "install", "--download-only"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Sy refreshes the local package database.

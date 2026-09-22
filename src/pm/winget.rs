@@ -4,7 +4,6 @@ use std::sync::LazyLock;
 
 use async_trait::async_trait;
 use indoc::indoc;
-use tap::prelude::*;
 
 use super::{Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
@@ -74,74 +73,84 @@ impl Pm for Winget {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["winget", "list", "--accept-source-agreements"])
-            .flags(flags)
-            .pipe(|cmd| self.search_regex(cmd, kws))
-            .await
+        self.search_regex(
+            Cmd::new(["winget", "list", "--accept-source-agreements"]).flags(flags),
+            kws,
+        )
+        .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["winget", "uninstall", "--accept-source-agreements"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["winget", "uninstall", "--accept-source-agreements"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rn removes a package and skips the generation of configuration backup
     /// files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([
-            "winget",
-            "uninstall",
-            "--accept-source-agreements",
-            "--purge",
-        ])
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
+        self.run_with(
+            Cmd::new([
+                "winget",
+                "uninstall",
+                "--accept-source-agreements",
+                "--purge",
+            ])
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
         .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([
-            "winget",
-            "install",
-            "--accept-package-agreements",
-            "--accept-source-agreements",
-        ])
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
+        self.run_with(
+            Cmd::new([
+                "winget",
+                "install",
+                "--accept-package-agreements",
+                "--accept-source-agreements",
+            ])
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
         .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["winget", "show", "--accept-source-agreements"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new(["winget", "show", "--accept-source-agreements"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["winget", "search", "--accept-source-agreements"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new(["winget", "search", "--accept-source-agreements"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Sy refreshes the local package database.
     async fn sy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["winget", "source", "update"])
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
+        self.run(Cmd::new(["winget", "source", "update"]).flags(flags))
             .await?;
         if !kws.is_empty() {
             self.s(kws, flags).await?;
@@ -151,15 +160,18 @@ impl Pm for Winget {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([
-            "winget",
-            "upgrade",
-            "--accept-package-agreements",
-            "--accept-source-agreements",
-        ])
-        .kws(if kws.is_empty() { &["--all"][..] } else { kws })
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
+        self.run_with(
+            Cmd::new([
+                "winget",
+                "upgrade",
+                "--accept-package-agreements",
+                "--accept-source-agreements",
+            ])
+            .kws(if kws.is_empty() { &["--all"][..] } else { kws })
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
         .await
     }
 

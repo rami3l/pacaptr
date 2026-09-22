@@ -4,7 +4,6 @@ use std::sync::LazyLock;
 
 use async_trait::async_trait;
 use indoc::indoc;
-use tap::prelude::*;
 
 use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
@@ -77,11 +76,12 @@ impl Pm for Brew {
     /// Qii displays local packages which require X to be installed, aka local
     /// reverse dependencies.
     async fn qii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["brew", "uses", "--installed"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new(["brew", "uses", "--installed"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Ql displays files provided by local package.
@@ -118,21 +118,25 @@ impl Pm for Brew {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["brew", "uninstall"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["brew", "uninstall"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rn removes a package and skips the generation of configuration backup
     /// files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["brew", "uninstall", "--zap", "-f"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["brew", "uninstall", "--zap", "-f"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rns removes a package and its dependencies which are not required by any
@@ -140,35 +144,42 @@ impl Pm for Brew {
     /// backup files.
     async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.rn(kws, flags).await?;
-        Cmd::new(["brew", "autoremove"])
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["brew", "autoremove"]).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rs removes a package and its dependencies which are not required by any
     /// other installed package, and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         self.r(kws, flags).await?;
-        Cmd::new(["brew", "autoremove"])
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["brew", "autoremove"]).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(if self.cfg.needed {
-            ["brew", "install"]
-        } else {
-            // If the package is not installed, `brew reinstall` behaves just
-            // like `brew install`, so `brew reinstall` matches
-            // perfectly the behavior of `pacman -S`.
-            ["brew", "reinstall"]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
+        self.run_with(
+            Cmd::new(if self.cfg.needed {
+                ["brew", "install"]
+            } else {
+                // If the package is not installed, `brew reinstall` behaves just
+                // like `brew install`, so `brew reinstall` matches
+                // perfectly the behavior of `pacman -S`.
+                ["brew", "reinstall"]
+            })
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
         .await
     }
 
@@ -180,11 +191,12 @@ impl Pm for Brew {
             prompt: PromptStrategy::CustomPrompt,
             ..Strategy::default()
         };
-        Cmd::new(["brew", "cleanup"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &strat))
-            .await
+        self.run_with(
+            Cmd::new(["brew", "cleanup"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &strat,
+        )
+        .await
     }
 
     /// Scc removes all files from the cache.
@@ -194,11 +206,12 @@ impl Pm for Brew {
             prompt: PromptStrategy::CustomPrompt,
             ..Strategy::default()
         };
-        Cmd::new(["brew", "cleanup", "-s"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &strat))
-            .await
+        self.run_with(
+            Cmd::new(["brew", "cleanup", "-s"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &strat,
+        )
+        .await
     }
 
     /// Sccc performs a deeper cleaning of the cache than `Scc` (if applicable).
@@ -208,11 +221,14 @@ impl Pm for Brew {
             prompt: PromptStrategy::CustomPrompt,
             ..Strategy::default()
         };
-        Cmd::new(["brew", "cleanup", "--prune=all"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &strat))
-            .await
+        self.run_with(
+            Cmd::new(["brew", "cleanup", "--prune=all"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &strat,
+        )
+        .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
@@ -224,11 +240,12 @@ impl Pm for Brew {
     /// Sii displays packages which require X to be installed, aka reverse
     /// dependencies.
     async fn sii(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["brew", "uses", "--eval-all"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new(["brew", "uses", "--eval-all"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
@@ -240,11 +257,12 @@ impl Pm for Brew {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["brew", "upgrade"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::new(["brew", "upgrade"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Suy refreshes the local package database, then updates outdated
@@ -257,11 +275,12 @@ impl Pm for Brew {
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["brew", "fetch"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["brew", "fetch"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Sy refreshes the local package database.

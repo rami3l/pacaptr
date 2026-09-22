@@ -5,7 +5,6 @@ use std::sync::LazyLock;
 use async_trait::async_trait;
 use indoc::indoc;
 use itertools::Itertools;
-use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
@@ -97,40 +96,48 @@ impl Pm for Emerge {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["emerge", "--unmerge"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_ASK))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["emerge", "--unmerge"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_ASK,
+        )
+        .await
     }
 
     /// Rs removes a package and its dependencies which are not required by any
     /// other installed package, and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["emerge", "--depclean"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_ASK))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["emerge", "--depclean"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_ASK,
+        )
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["emerge"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["emerge"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["eclean-dist"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INTERACTIVE))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["eclean-dist"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_INTERACTIVE,
+        )
+        .await
     }
 
     /// Scc removes all files from the cache.
@@ -153,11 +160,14 @@ impl Pm for Emerge {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["emerge", "-uDN"])
-            .kws(if kws.is_empty() { &["@world"][..] } else { kws })
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["emerge", "-uDN"])
+                .kws(if kws.is_empty() { &["@world"][..] } else { kws })
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Suy refreshes the local package database, then updates outdated

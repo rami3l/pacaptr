@@ -5,7 +5,6 @@ use std::{io::Write, sync::LazyLock};
 use async_trait::async_trait;
 use futures::prelude::*;
 use indoc::indoc;
-use tap::Pipe;
 
 use super::{Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
@@ -177,40 +176,44 @@ impl Pm for Xbps {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["xbps-remove"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["xbps-remove"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rs removes a package and its dependencies which are not required by any
     /// other installed package, and not explicitly installed by the user.
     async fn rs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["xbps-remove", "-R"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["xbps-remove", "-R"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["xbps-install"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["xbps-install"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["xbps-remove", "-O"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["xbps-remove", "-O"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
@@ -236,11 +239,14 @@ impl Pm for Xbps {
     /// Suy refreshes the local package database, then updates outdated
     /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["xbps-install", "-Su"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["xbps-install", "-Su"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Sy refreshes the local package database.
@@ -252,19 +258,21 @@ impl Pm for Xbps {
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["xbps-install", "-D"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["xbps-install", "-D"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["xbps-install", "-u"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["xbps-install", "-u"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 }

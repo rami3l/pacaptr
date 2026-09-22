@@ -120,7 +120,6 @@ regex = { workspace = true }
 serde = { version = "1.0.219", features = ["derive"] }
 smol = "2.0.2"
 smol-macros = "0.1.1"
-tap = "1.0.1"
 thiserror = "2.0.12"
 thiserror-ext = "0.3.0"
 tt-call = "1.0.9"

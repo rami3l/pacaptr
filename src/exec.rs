@@ -18,7 +18,6 @@ use smol::{
     io::{AsyncRead, AsyncWrite},
     process::Command as Exec,
 };
-use tap::prelude::*;
 use which::which;
 
 use crate::{
@@ -153,23 +152,22 @@ impl Cmd {
         // ! Special fix for `zypper`: `zypper install -y curl` is accepted,
         // ! but not `zypper install curl -y`.
         // ! So we place the flags first, and then keywords.
-        if self.should_sudo() {
-            Exec::new("sudo").tap_mut(|builder| {
-                builder
-                    .arg("-S")
-                    .args(&self.cmd)
-                    .args(&self.flags)
-                    .args(&self.kws);
-            })
+        let mut exec = if self.should_sudo() {
+            let mut exec = Exec::new("sudo");
+            exec.arg("-S").args(&self.cmd);
+            exec
         } else {
             let (cmd, subcmd) = self
                 .cmd
                 .split_first()
                 .expect("failed to build Cmd, command is empty");
-            Exec::new(cmd).tap_mut(|builder| {
-                builder.args(subcmd).args(&self.flags).args(&self.kws);
-            })
-        }
+            let mut exec = Exec::new(cmd);
+            exec.args(subcmd);
+            exec
+        };
+
+        exec.args(&self.flags).args(&self.kws);
+        exec
     }
 }
 
@@ -259,16 +257,12 @@ impl Cmd {
                 })
         }
 
-        let mut child = self
-            .build()
-            .stderr(Stdio::piped())
-            .tap_deref_mut(|cmd| {
-                if merge {
-                    cmd.stdout(Stdio::piped());
-                }
-            })
-            .spawn()
-            .map_err(CmdSpawnError)?;
+        let mut exec = self.build();
+        if merge {
+            exec.stdout(Stdio::piped());
+        }
+        exec.stderr(Stdio::piped());
+        let mut child = exec.spawn().map_err(CmdSpawnError)?;
 
         let stderr_reader = make_reader(child.stderr.take(), "stderr")?;
         let mut reader = if merge {

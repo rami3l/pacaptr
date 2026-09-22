@@ -5,7 +5,6 @@ use std::sync::LazyLock;
 use async_trait::async_trait;
 use futures::prelude::*;
 use indoc::indoc;
-use tap::prelude::*;
 
 use super::{Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
@@ -60,11 +59,12 @@ impl Pm for Conda {
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["conda", "package", "--which"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new(["conda", "package", "--which"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Qs searches locally installed package for names or descriptions.
@@ -78,38 +78,43 @@ impl Pm for Conda {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["conda", "remove"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["conda", "remove"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["conda", "install"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["conda", "install"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["conda", "clean", "--all"])
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["conda", "clean", "--all"]).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["conda", "search", "--info"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new(["conda", "search", "--info"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
@@ -123,11 +128,12 @@ impl Pm for Conda {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["conda", "update", "--all"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["conda", "update", "--all"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Suy refreshes the local package database, then updates outdated

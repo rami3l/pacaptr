@@ -4,7 +4,6 @@ use std::sync::LazyLock;
 
 use async_trait::async_trait;
 use indoc::indoc;
-use tap::prelude::*;
 
 use super::{DryRunStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
@@ -62,10 +61,7 @@ impl Pm for Choco {
 
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["choco", "list"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.check_dry(cmd))
+        self.check_dry(Cmd::new(["choco", "list"]).kws(kws).flags(flags))
             .await
     }
 
@@ -82,33 +78,40 @@ impl Pm for Choco {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["choco", "uninstall"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["choco", "uninstall"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rss removes a package and its dependencies which are not required by any
     /// other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["choco", "uninstall", "--removedependencies"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["choco", "uninstall", "--removedependencies"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(if self.cfg.needed {
-            &["choco", "install"][..]
-        } else {
-            &["choco", "install", "--force"][..]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
+        self.run_with(
+            Cmd::new(if self.cfg.needed {
+                &["choco", "install"][..]
+            } else {
+                &["choco", "install", "--force"][..]
+            })
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
         .await
     }
 
@@ -127,14 +130,17 @@ impl Pm for Choco {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(if kws.is_empty() {
-            &["choco", "upgrade", "all"][..]
-        } else {
-            &["choco", "upgrade"][..]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
+        self.run_with(
+            Cmd::new(if kws.is_empty() {
+                &["choco", "upgrade", "all"][..]
+            } else {
+                &["choco", "upgrade"][..]
+            })
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
         .await
     }
 

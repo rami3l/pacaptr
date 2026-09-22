@@ -4,7 +4,6 @@ use std::sync::LazyLock;
 
 use async_trait::async_trait;
 use indoc::indoc;
-use tap::prelude::*;
 use which::which;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
@@ -87,57 +86,72 @@ impl Pm for Scoop {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([&self.shell, "-Command", "scoop", "list"])
-            .flags(flags)
-            .pipe(|cmd| self.search_regex_with_header(cmd, kws, 4))
-            .await
+        self.search_regex_with_header(
+            Cmd::new([&self.shell, "-Command", "scoop", "list"]).flags(flags),
+            kws,
+            4,
+        )
+        .await
     }
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([&self.shell, "-Command", "scoop", "status"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new([&self.shell, "-Command", "scoop", "status"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([&self.shell, "-Command", "scoop", "uninstall"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new([&self.shell, "-Command", "scoop", "uninstall"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rn removes a package and skips the generation of configuration backup
     /// files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([&self.shell, "-Command", "scoop", "uninstall", "--purge"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new([&self.shell, "-Command", "scoop", "uninstall", "--purge"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([&self.shell, "-Command", "scoop", "install"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::new([&self.shell, "-Command", "scoop", "install"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([&self.shell, "-Command", "scoop", "cache", "rm"])
-            .kws(if kws.is_empty() { &["*"][..] } else { kws })
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new([&self.shell, "-Command", "scoop", "cache", "rm"])
+                .kws(if kws.is_empty() { &["*"][..] } else { kws })
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Scc removes all files from the cache.
@@ -147,30 +161,35 @@ impl Pm for Scoop {
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([&self.shell, "-Command", "scoop", "info"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new([&self.shell, "-Command", "scoop", "info"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Ss searches for package(s) by searching the expression in name,
     /// description, short description.
     async fn ss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([&self.shell, "-Command", "scoop", "search"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new([&self.shell, "-Command", "scoop", "search"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([&self.shell, "-Command", "scoop", "update"])
-            .kws(if kws.is_empty() { &["*"][..] } else { kws })
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::new([&self.shell, "-Command", "scoop", "update"])
+                .kws(if kws.is_empty() { &["*"][..] } else { kws })
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Suy refreshes the local package database, then updates outdated
