@@ -26,7 +26,6 @@ use pacaptr::{
     pm::BoxPm,
     print::{println, prompt},
 };
-use tap::prelude::*;
 use tt_call::tt_call;
 
 use crate::_built::GIT_VERSION;
@@ -269,16 +268,17 @@ impl Pacaptr {
                     })* )?
                 } )*
             }
-            options.chars().sorted_unstable().pipe(String::from_iter)
+            String::from_iter(options.chars().sorted_unstable())
         }};}
 
         // Ensure that the cursor is not hidden when `Ctrl-C` is used.
         // See: https://github.com/console-rs/dialoguer/issues/77#issuecomment-669986406
-        _ = ctrlc::set_handler(move || {
+        if let Err(e) = ctrlc::set_handler(move || {
             let term = console::Term::stdout();
             _ = term.show_cursor();
-        })
-        .tap_err(|e| println(&*prompt::INFO, e));
+        }) {
+            println(&*prompt::INFO, e);
+        }
 
         let options = collect_options! {
             Query {
@@ -297,7 +297,7 @@ impl Pacaptr {
             },
         };
 
-        let pm = cfg.conv::<BoxPm>();
+        let pm = BoxPm::from(cfg);
 
         let kws = self.keywords.iter().map(AsRef::as_ref).collect_vec();
         let flags = self.extra_flags.iter().map(AsRef::as_ref).collect_vec();

@@ -4,7 +4,6 @@ use std::sync::LazyLock;
 
 use async_trait::async_trait;
 use indoc::indoc;
-use tap::prelude::*;
 
 use super::{Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{
@@ -92,29 +91,32 @@ impl Pm for Pip {
 
     /// Qu lists packages which have an update available.
     async fn qu(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([self.cmd(), "list", "--outdated"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new([self.cmd(), "list", "--outdated"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([self.cmd(), "uninstall"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_UNINSTALL))
-            .await
+        self.run_with(
+            Cmd::new([self.cmd(), "uninstall"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_UNINSTALL,
+        )
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([self.cmd(), "install"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new([self.cmd(), "install"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and
@@ -132,20 +134,18 @@ impl Pm for Pip {
                 pm: self.name().into(),
             });
         }
-        Cmd::new([self.cmd(), "install", "--upgrade"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new([self.cmd(), "install", "--upgrade"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new([self.cmd(), "download"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
+        self.run(Cmd::new([self.cmd(), "download"]).kws(kws).flags(flags))
             .await
     }
 }

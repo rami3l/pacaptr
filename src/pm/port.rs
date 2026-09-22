@@ -4,7 +4,6 @@ use std::sync::LazyLock;
 
 use async_trait::async_trait;
 use indoc::indoc;
-use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
@@ -100,56 +99,67 @@ impl Pm for Port {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["port", "uninstall"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["port", "uninstall"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rss removes a package and its dependencies which are not required by any
     /// other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["port", "uninstall", "--follow-dependencies"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["port", "uninstall", "--follow-dependencies"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["port", "install"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["port", "install"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(if flags.is_empty() {
-            &["port", "clean", "--all", "inactive"][..]
-        } else {
-            &["port", "clean", "--all"][..]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
+        self.run_with(
+            Cmd::with_sudo(if flags.is_empty() {
+                &["port", "clean", "--all", "inactive"][..]
+            } else {
+                &["port", "clean", "--all"][..]
+            })
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
         .await
     }
 
     /// Scc removes all files from the cache.
     async fn scc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(if flags.is_empty() {
-            &["port", "clean", "--all", "installed"][..]
-        } else {
-            &["port", "clean", "--all"][..]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
+        self.run_with(
+            Cmd::with_sudo(if flags.is_empty() {
+                &["port", "clean", "--all", "installed"][..]
+            } else {
+                &["port", "clean", "--all"][..]
+            })
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
         .await
     }
 
@@ -168,14 +178,17 @@ impl Pm for Port {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(if flags.is_empty() {
-            &["port", "upgrade", "outdated"][..]
-        } else {
-            &["port", "upgrade"][..]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
+        self.run_with(
+            Cmd::with_sudo(if flags.is_empty() {
+                &["port", "upgrade", "outdated"][..]
+            } else {
+                &["port", "upgrade"][..]
+            })
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
         .await
     }
 

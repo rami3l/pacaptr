@@ -4,7 +4,6 @@ use std::sync::LazyLock;
 
 use async_trait::async_trait;
 use indoc::indoc;
-use tap::prelude::*;
 
 use super::{NoCacheStrategy, Pm, PmHelper, PromptStrategy, Strategy};
 use crate::{config::Config, error::Result, exec::Cmd};
@@ -82,11 +81,12 @@ impl Pm for Apk {
 
     /// Qo queries the package which provides FILE.
     async fn qo(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["apk", "info", "--who-owns"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
-            .await
+        self.run(
+            Cmd::new(["apk", "info", "--who-owns"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Qs searches locally installed package for names or descriptions.
@@ -107,32 +107,39 @@ impl Pm for Apk {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apk", "del"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apk", "del"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rn removes a package and skips the generation of configuration backup
     /// files.
     async fn rn(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apk", "del", "--purge"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apk", "del", "--purge"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rns removes a package and its dependencies which are not required by any
     /// other installed package, and skips the generation of configuration
     /// backup files.
     async fn rns(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apk", "del", "--purge", "-r"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apk", "del", "--purge", "-r"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rs removes a package and its dependencies which are not required by any
@@ -143,28 +150,33 @@ impl Pm for Apk {
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apk", "add"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apk", "add"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and
     /// the unused sync database.
     async fn sc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apk", "cache", "-v", "clean"])
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apk", "cache", "-v", "clean"]).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Scc removes all files from the cache.
     async fn scc(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["rm", "-vrf", "/var/cache/apk/*"])
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["rm", "-vrf", "/var/cache/apk/*"]).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
@@ -196,39 +208,46 @@ impl Pm for Apk {
 
     /// Su updates outdated packages.
     async fn su(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(if kws.is_empty() {
-            &["apk", "upgrade"][..]
-        } else {
-            &["apk", "add", "-u"][..]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
+        self.run_with(
+            Cmd::with_sudo(if kws.is_empty() {
+                &["apk", "upgrade"][..]
+            } else {
+                &["apk", "add", "-u"][..]
+            })
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
         .await
     }
 
     /// Suy refreshes the local package database, then updates outdated
     /// packages.
     async fn suy(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(if kws.is_empty() {
-            ["apk", "upgrade", "-U", "-a"]
-        } else {
-            ["apk", "add", "-U", "-u"]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
+        self.run_with(
+            Cmd::with_sudo(if kws.is_empty() {
+                ["apk", "upgrade", "-U", "-a"]
+            } else {
+                ["apk", "add", "-U", "-u"]
+            })
+            .kws(kws)
+            .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
         .await
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["apk", "fetch"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::new(["apk", "fetch"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Sy refreshes the local package database.
@@ -244,10 +263,13 @@ impl Pm for Apk {
     /// U upgrades or adds package(s) to the system and installs the required
     /// dependencies from sync repositories.
     async fn u(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["apk", "add", "--allow-untrusted"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["apk", "add", "--allow-untrusted"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 }

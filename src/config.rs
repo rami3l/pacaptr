@@ -17,7 +17,6 @@ use figment::{
     util::bool_from_str_or_int,
 };
 use serde::{Deserialize, Deserializer, Serialize};
-use tap::prelude::*;
 
 /// The crate name.
 const CRATE_NAME: &str = clap::crate_name!();
@@ -90,13 +89,14 @@ impl Config {
     /// This aligns with `fish`'s behavior.
     /// See: <https://github.com/fish-shell/fish-shell/issues/3170#issuecomment-228311857>
     fn default_path() -> Option<PathBuf> {
-        env::var_os("XDG_CONFIG_HOME")
+        let mut path = env::var_os("XDG_CONFIG_HOME")
             .map(PathBuf::from)
             .filter(|p| p.is_absolute())
-            .or_else(|| dirs_next::home_dir().map(|p| p.join(".config")))
-            .tap_some_mut(|p| {
-                p.extend([CRATE_NAME, &format!("{CRATE_NAME}.toml")]);
-            })
+            .or_else(|| dirs_next::home_dir().map(|p| p.join(".config")));
+        if let Some(p) = path.as_mut() {
+            p.extend([CRATE_NAME, &format!("{CRATE_NAME}.toml")]);
+        }
+        path
     }
 
     /// Gets the custom config file path specified by the `PACAPTR_CONFIG`

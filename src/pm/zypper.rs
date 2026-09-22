@@ -4,7 +4,6 @@ use std::sync::LazyLock;
 
 use async_trait::async_trait;
 use indoc::indoc;
-use tap::prelude::*;
 
 use super::{DryRunStrategy, NoCacheStrategy, Pm, PmHelper, PmMode, PromptStrategy, Strategy};
 use crate::{
@@ -72,9 +71,7 @@ impl Pm for Zypper {
     /// Q generates a list of installed packages.
     async fn q(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
         if kws.is_empty() {
-            Cmd::new(["rpm", "-qa", "--qf", "%{NAME} %{VERSION}\\n"])
-                .flags(flags)
-                .pipe(|cmd| self.run(cmd))
+            self.run(Cmd::new(["rpm", "-qa", "--qf", "%{NAME} %{VERSION}\\n"]).flags(flags))
                 .await
         } else {
             self.qs(kws, flags).await
@@ -83,10 +80,7 @@ impl Pm for Zypper {
 
     /// Qc shows the changelog of a package.
     async fn qc(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["rpm", "-q", "--changelog"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run(cmd))
+        self.run(Cmd::new(["rpm", "-q", "--changelog"]).kws(kws).flags(flags))
             .await
     }
 
@@ -132,11 +126,12 @@ impl Pm for Zypper {
     // when including multiple search terms, only packages with descriptions
     // matching ALL of those terms are returned.
     async fn qs(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["zypper", "search", "--installed-only"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.check_dry(cmd))
-            .await
+        self.check_dry(
+            Cmd::new(["zypper", "search", "--installed-only"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Qu lists packages which have an update available.
@@ -147,30 +142,35 @@ impl Pm for Zypper {
 
     /// R removes a single package, leaving all of its dependencies installed.
     async fn r(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["zypper", "remove"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["zypper", "remove"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// Rss removes a package and its dependencies which are not required by any
     /// other installed package.
     async fn rss(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["zypper", "remove", "--clean-deps"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_PROMPT))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["zypper", "remove", "--clean-deps"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_PROMPT,
+        )
+        .await
     }
 
     /// S installs one or more packages by name.
     async fn s(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["zypper", "install"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["zypper", "install"]).kws(kws).flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Sc removes all the cached packages that are not currently installed, and
@@ -180,10 +180,12 @@ impl Pm for Zypper {
             prompt: PromptStrategy::CustomPrompt,
             ..Strategy::default()
         };
-        Cmd::with_sudo(["zypper", "clean"])
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &strat))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["zypper", "clean"]).flags(flags),
+            self.default_mode(),
+            &strat,
+        )
+        .await
     }
 
     /// Scc removes all files from the cache.
@@ -193,24 +195,26 @@ impl Pm for Zypper {
 
     /// Sg lists all packages belonging to the GROUP.
     async fn sg(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(if kws.is_empty() {
-            ["zypper", "patterns"]
-        } else {
-            ["zypper", "info"]
-        })
-        .kws(kws)
-        .flags(flags)
-        .pipe(|cmd| self.run(cmd))
+        self.run(
+            Cmd::new(if kws.is_empty() {
+                ["zypper", "patterns"]
+            } else {
+                ["zypper", "info"]
+            })
+            .kws(kws)
+            .flags(flags),
+        )
         .await
     }
 
     /// Si displays remote package information: name, version, description, etc.
     async fn si(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::new(["zypper", "info", "--requires"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.check_dry(cmd))
-            .await
+        self.check_dry(
+            Cmd::new(["zypper", "info", "--requires"])
+                .kws(kws)
+                .flags(flags),
+        )
+        .await
     }
 
     /// Sl displays a list of all packages in all installation sources that are
@@ -222,10 +226,10 @@ impl Pm for Zypper {
             return self.check_dry(cmd).await;
         }
         let cmd = Cmd::new(cmd).flags(flags);
-        let out = self
-            .check_output(cmd, PmMode::Mute, &STRAT_CHECK_DRY)
-            .await?
-            .pipe(String::from_utf8)?;
+        let out = String::from_utf8(
+            self.check_output(cmd, PmMode::Mute, &STRAT_CHECK_DRY)
+                .await?,
+        )?;
         exec::grep_print_with_header(&out, kws, 4)
     }
 
@@ -238,29 +242,36 @@ impl Pm for Zypper {
 
     /// Su updates outdated packages.
     async fn su(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["zypper", "--no-refresh", "dist-upgrade"])
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["zypper", "--no-refresh", "dist-upgrade"]).flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Suy refreshes the local package database, then updates outdated
     /// packages.
     async fn suy(&self, _kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["zypper", "dist-upgrade"])
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["zypper", "dist-upgrade"]).flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Sw retrieves all packages from the server, but does not install/upgrade
     /// anything.
     async fn sw(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-        Cmd::with_sudo(["zypper", "install", "--download-only"])
-            .kws(kws)
-            .flags(flags)
-            .pipe(|cmd| self.run_with(cmd, self.default_mode(), &STRAT_INSTALL))
-            .await
+        self.run_with(
+            Cmd::with_sudo(["zypper", "install", "--download-only"])
+                .kws(kws)
+                .flags(flags),
+            self.default_mode(),
+            &STRAT_INSTALL,
+        )
+        .await
     }
 
     /// Sy refreshes the local package database.
