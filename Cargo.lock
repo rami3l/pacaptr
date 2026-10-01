@@ -874,7 +874,6 @@ dependencies = [
  "smol-macros",
  "thiserror 2.0.21",
  "thiserror-ext",
- "tt-call",
  "which",
  "xshell",
 ]
@@ -1341,12 +1340,6 @@ name = "toml_write"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
-
-[[package]]
-name = "tt-call"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4f195fd851901624eee5a58c4bb2b4f06399148fcd0ed336e6f1cb60a9881df"
 
 [[package]]
 name = "uncased"

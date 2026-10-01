@@ -16,17 +16,11 @@
 //!    `.suy()`, according to the combination of flags and options obtained
 //!    above.
 
+mod imp;
+
 use clap::{self, ArgAction, Parser};
 use figment::Figment;
-use itertools::Itertools;
-use pacaptr::{
-    config::Config,
-    error::{Error, Result},
-    methods,
-    pm::BoxPm,
-    print::{println, prompt},
-};
-use tt_call::tt_call;
+use pacaptr::{config::Config, error::Result};
 
 use crate::_built::GIT_VERSION;
 
@@ -230,105 +224,6 @@ impl Pacaptr {
             no_cache: self.no_cache,
             quiet: self.quiet.then_some(true),
             default_pm: self.using.clone(),
-        }
-    }
-
-    /// Executes the job according to the flags received and the package manager
-    /// detected.
-    ///
-    /// # Errors
-    /// See [`Error`](crate::error::Error) for a list of possible errors.
-    #[allow(trivial_numeric_casts)]
-    async fn dispatch_from(&self, mut cfg: Config) -> Result<()> {
-        /// Collect options as a `String`, eg. `-S -y -u => "Suy"`.
-        ///
-        /// # Hack
-        /// In `Pm` we ensure the Pacman methods are all named with flags in
-        /// ASCII order, eg. `Suy` instead of `Syu`. Then, in order to
-        /// stay coherent with Rust coding style the method name should be
-        /// `suy`.
-        macro_rules! collect_options {(
-            $( $op:ident {
-                $( mappings: [$( $key:ident -> $val:ident ), *], )?
-                $( flags: [$( $flag:ident ), *], )?
-            }, )*
-        ) => {{
-            let mut options = String::new();
-            match self.ops {
-                $( Operations::$op {
-                    $( $( $key, )* )?
-                    $( $( $flag, )* )?
-                } => {
-                    options.push_str(&stringify!($op)[0..1]);
-                    $( $(if $key {
-                        cfg.$val = true;
-                    })* )?
-                    $( $(for _ in 0..(u8::from($flag)) {
-                        options.push_str(stringify!($flag));
-                    })* )?
-                } )*
-            }
-            String::from_iter(options.chars().sorted_unstable())
-        }};}
-
-        // Ensure that the cursor is not hidden when `Ctrl-C` is used.
-        // See: https://github.com/console-rs/dialoguer/issues/77#issuecomment-669986406
-        if let Err(e) = ctrlc::set_handler(move || {
-            let term = console::Term::stdout();
-            _ = term.show_cursor();
-        }) {
-            println(&*prompt::INFO, e);
-        }
-
-        let options = collect_options! {
-            Query {
-                flags: [c, e, i, k, l, m, o, p, s, u],
-            },
-            Remove {
-                mappings: [p -> dry_run],
-                flags: [n, s],
-            },
-            Sync {
-                mappings: [p -> dry_run],
-                flags: [c, g, i, l, s, u, w, y],
-            },
-            Update {
-                mappings: [p -> dry_run],
-            },
-        };
-
-        let pm = BoxPm::from(cfg);
-
-        let kws = self.keywords.iter().map(AsRef::as_ref).collect_vec();
-        let flags = self.extra_flags.iter().map(AsRef::as_ref).collect_vec();
-
-        /// Call the method indicated by `options` on `pm`. That is:
-        ///
-        /// ```rust
-        /// match options.to_lowercase().as_ref() {
-        ///     "q" => pm.q(&kws, &flags).await,
-        ///     ..
-        /// }
-        /// ```
-        macro_rules! dispatch_match {(
-            methods = [{ $(
-                $( #[$meta:meta] )*
-                async fn $method:ident;
-            )* }]
-        ) => {
-            match options.to_lowercase().as_ref() {
-                $(stringify!($method) => pm.$method(&kws, &flags).await,)*
-                _ => Err(Error::ArgParseError {
-                    msg: format!("invalid flag combination `-{options}`"),
-                }),
-            }
-        };}
-
-        // Send `methods!()` to `dispatch_match`. That is,
-        // `dispatch_match!( methods = [{ q qc qe .. }] )`.
-        tt_call! {
-            macro = [{ methods }]
-            ~~> dispatch_match
         }
     }
 

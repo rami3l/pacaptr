@@ -12,6 +12,7 @@ mod choco;
 mod conda;
 mod dnf;
 mod emerge;
+mod imp;
 mod pip;
 mod pkcon;
 mod port;
@@ -26,9 +27,8 @@ use std::env;
 
 use async_trait::async_trait;
 use itertools::Itertools;
-use macro_rules_attribute::macro_rules_attribute;
-use tt_call::tt_call;
 
+pub use self::imp::Pm;
 use self::{
     apk::Apk, apt::Apt, brew::Brew, choco::Choco, conda::Conda, dnf::Dnf, emerge::Emerge, pip::Pip,
     pkcon::Pkcon, port::Port, scoop::Scoop, tlmgr::Tlmgr, unknown::Unknown, winget::Winget,
@@ -40,188 +40,6 @@ use crate::{
     exec::{self, Cmd, Mode, Output, is_exe},
     print::{println_quoted, prompt},
 };
-
-/// The list of [`pacman`](https://wiki.archlinux.org/index.php/Pacman) methods supported by [`pacaptr`](crate).
-#[macro_export]
-#[doc(hidden)]
-macro_rules! methods {
-    ($caller:tt) => {
-        tt_call::tt_return! {
-            $caller
-            methods = [{
-                /// Q generates a list of installed packages.
-                async fn q;
-
-                /// Qc shows the changelog of a package.
-                async fn qc;
-
-                /// Qe lists packages installed explicitly (not as dependencies).
-                async fn qe;
-
-                /// Qi displays local package information: name, version, description, etc.
-                async fn qi;
-
-                /// Qii displays local packages which require X to be installed, aka local reverse dependencies.
-                async fn qii;
-
-                /// Qk verifies one or more packages.
-                async fn qk;
-
-                /// Ql displays files provided by local package.
-                async fn ql;
-
-                /// Qm lists packages that are installed but are not available in any installation source (anymore).
-                async fn qm;
-
-                /// Qo queries the package which provides FILE.
-                async fn qo;
-
-                /// Qp queries a package supplied through a file supplied on the command line rather than an entry in the package management database.
-                async fn qp;
-
-                /// Qs searches locally installed package for names or descriptions.
-                async fn qs;
-
-                /// Qu lists packages which have an update available.
-                async fn qu;
-
-                /// R removes a single package, leaving all of its dependencies installed.
-                async fn r;
-
-                /// Rn removes a package and skips the generation of configuration backup files.
-                async fn rn;
-
-                /// Rns removes a package and its dependencies which are not required by any other installed package,
-                /// and skips the generation of configuration backup files.
-                async fn rns;
-
-                /// Rs removes a package and its dependencies which are not required by any other installed package,
-                /// and not explicitly installed by the user.
-                async fn rs;
-
-                /// Rss removes a package and its dependencies which are not required by any other installed package.
-                async fn rss;
-
-                /// S installs one or more packages by name.
-                async fn s;
-
-                /// Sc removes all the cached packages that are not currently installed, and the unused sync database.
-                async fn sc;
-
-                /// Scc removes all files from the cache.
-                async fn scc;
-
-                /// Sccc performs a deeper cleaning of the cache than `Scc` (if applicable).
-                async fn sccc;
-
-                /// Sg lists all packages belonging to the GROUP.
-                async fn sg;
-
-                /// Si displays remote package information: name, version, description, etc.
-                async fn si;
-
-                /// Sii displays packages which require X to be installed, aka reverse dependencies.
-                async fn sii;
-
-                /// Sl displays a list of all packages in all installation sources that are handled by the package management.
-                async fn sl;
-
-                /// Ss searches for package(s) by searching the expression in name, description, short description.
-                async fn ss;
-
-                /// Su updates outdated packages.
-                async fn su;
-
-                /// Suy refreshes the local package database, then updates outdated packages.
-                async fn suy;
-
-                /// Sw retrieves all packages from the server, but does not install/upgrade anything.
-                async fn sw;
-
-                /// Sy refreshes the local package database.
-                async fn sy;
-
-                /// U upgrades or adds package(s) to the system and installs the required dependencies from sync repositories.
-                async fn u;
-            }]
-        }
-    };
-}
-
-macro_rules! make_op_body {
-    ($self:ident, $method:ident) => {{
-        Err(crate::error::Error::OperationUnimplementedError {
-            op: stringify!($method).into(),
-            pm: $self.name().into(),
-        })
-    }};
-}
-
-macro_rules! _decor_pm {(
-    def = [{
-        $( #[$meta0:meta] )*
-        $vis:vis trait $t:ident $(: $supert:ident)? {
-            $( $inner:tt )*
-        }
-    }]
-    methods = [{ $(
-        $( #[$meta1:meta] )*
-        async fn $method:ident;
-    )* }]
-) => {
-    $( #[$meta0] )*
-    $vis trait $t $(: $supert)? {
-        $( $inner )*
-
-        // * Automatically generated methods below... *
-        $( $( #[$meta1] )*
-        async fn $method(&self, _kws: &[&str], _flags: &[&str]) -> Result<()> {
-            make_op_body!(self, $method)
-        } )*
-    }
-};}
-
-/// Send `methods!()` to `_decor_pm`, that is:
-///
-/// ```txt
-/// _decor_pm! {
-///     def = [{ trait Pm { .. } }]
-///     methods = [{ q qc qe .. }] )
-/// }
-/// ```
-macro_rules! decor_pm {
-    ( $( $def:tt )* ) => {
-        tt_call! {
-            macro = [{ methods }]
-            ~~> _decor_pm! {
-                def = [{ $( $def )* }]
-            }
-        }
-    };
-}
-
-/// The feature set of a Package Manager defined by `pacman` commands.
-///
-/// For method explanation see:
-/// - <https://wiki.archlinux.org/index.php/Pacman>
-/// - <https://wiki.archlinux.org/index.php/Pacman/Rosetta>
-#[macro_rules_attribute(decor_pm!)]
-#[async_trait]
-pub trait Pm: Sync {
-    /// Gets the name of the package manager.
-    fn name(&self) -> &str;
-
-    /// Gets the config of the package manager.
-    fn cfg(&self) -> &Config;
-
-    /// Wraps the [`Pm`] instance in a [`Box`].
-    fn boxed<'a>(self) -> BoxPm<'a>
-    where
-        Self: Sized + Send + 'a,
-    {
-        Box::new(self)
-    }
-}
 
 /// An owned, dynamically typed [`Pm`].
 pub type BoxPm<'a> = Box<dyn Pm + Send + 'a>;
@@ -592,53 +410,5 @@ impl NoCacheStrategy {
     }
 }
 
-#[allow(missing_docs)]
 #[cfg(feature = "test")]
-pub mod tests {
-    use async_trait::async_trait;
-    use tt_call::tt_call;
-
-    use super::*;
-    use crate::config::Config;
-
-    #[derive(Debug)]
-    pub struct MockPm {
-        pub cfg: Config,
-    }
-
-    macro_rules! make_mock_op_body {
-        ($self:ident, $kws:ident, $flags:ident, $method:ident) => {{
-            let kws: Vec<_> = itertools::chain!($kws, $flags).collect();
-            panic!("should run: {} {:?}", stringify!($method), &kws)
-        }};
-    }
-
-    macro_rules! impl_pm_mock {(
-        methods = [{ $(
-            $( #[$meta:meta] )*
-            async fn $method:ident;
-        )* }]
-    ) => {
-        #[async_trait]
-        impl Pm for MockPm {
-            /// Gets the name of the package manager.
-            fn name(&self) -> &str {
-                "mockpm"
-            }
-
-            fn cfg(&self) -> &Config {
-                &self.cfg
-            }
-
-            // * Automatically generated methods below... *
-            $( async fn $method(&self, kws: &[&str], flags: &[&str]) -> Result<()> {
-                    make_mock_op_body!(self, kws, flags, $method)
-            } )*
-        }
-    };}
-
-    tt_call! {
-        macro = [{ methods }]
-        ~~> impl_pm_mock
-    }
-}
+pub mod tests;

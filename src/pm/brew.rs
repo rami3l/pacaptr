@@ -170,9 +170,9 @@ impl Pm for Brew {
             Cmd::new(if self.cfg.needed {
                 ["brew", "install"]
             } else {
-                // If the package is not installed, `brew reinstall` behaves just
-                // like `brew install`, so `brew reinstall` matches
-                // perfectly the behavior of `pacman -S`.
+                // If the package is not installed, `brew reinstall` behaves
+                // just like `brew install`, so `brew reinstall`
+                // matches perfectly the behavior of `pacman -S`.
                 ["brew", "reinstall"]
             })
             .kws(kws)
