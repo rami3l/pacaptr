@@ -1,12 +1,7 @@
-mod compat_table;
-#[cfg(feature = "test")]
 mod test_dsl;
 
-use anyhow::Result;
 use proc_macro::TokenStream;
 
-use crate::compat_table::compat_table_impl;
-#[cfg(feature = "test")]
 use crate::test_dsl::test_dsl_impl;
 
 /// A DSL (Domain-Specific Language) embedded in Rust, in order to simplify the
@@ -47,7 +42,6 @@ use crate::test_dsl::test_dsl_impl;
 ///    "## }
 /// }
 /// ```
-#[cfg(feature = "test")]
 #[proc_macro]
 pub fn test_dsl(input: TokenStream) -> TokenStream {
     use itertools::Itertools;
@@ -72,14 +66,6 @@ pub fn test_dsl(input: TokenStream) -> TokenStream {
     res_token_stream(test_dsl_impl(string_lit.value()))
 }
 
-/// Generates the compatibility table as a docstring on the top of given input.
-#[proc_macro]
-pub fn compat_table(input: TokenStream) -> TokenStream {
-    let res =
-        compat_table_impl().map(|docstring| TokenStream::from_iter([docstring.into(), input]));
-    res_token_stream(res)
-}
-
-fn res_token_stream(res: Result<impl Into<TokenStream>, syn::Error>) -> TokenStream {
+fn res_token_stream(res: syn::Result<impl Into<TokenStream>>) -> TokenStream {
     res.map_or_else(|e| e.to_compile_error().into(), Into::into)
 }
