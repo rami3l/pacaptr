@@ -12,18 +12,11 @@ description = "Implementation of several macros used in pacaptr."
 proc-macro = true
 
 [dependencies]
-anyhow = "1.0.102"
 itertools = { workspace = true }
-litrs = { version = "1.0.0", optional = true }
-once_cell = { workspace = true }
+litrs = "1.0.0"
 proc-macro2 = "1.0.106"
-quote = { version = "1.0.45", optional = true }
-regex = { workspace = true }
+quote = "1.0.45"
 syn = "3.0.3"
-tabled = { version = "0.22.0", default-features = false, features = ["std"] }
-
-[features]
-test = ["dep:litrs", "dep:quote"]
 
 [lints]
 workspace = true

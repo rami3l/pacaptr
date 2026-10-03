@@ -53,7 +53,7 @@ description = "Pacman-like syntax wrapper for many package managers."
 keywords = ["package-management"]
 categories = ["command-line-utilities"]
 
-include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "build.rs"]
+include = ["LICENSE", "Cargo.toml", "src/**/*.rs", "src/**/*.md", "build.rs"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -99,6 +99,7 @@ section = "utility"
 built = { version = "0.8.0", features = ["git2"] }
 
 [dev-dependencies]
+pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.23.2" }
 xshell = "0.2.6"
 
 [dependencies]
@@ -115,7 +116,6 @@ futures_codec = "0.5.0"
 indoc = "2.0.6"
 itertools = { workspace = true }
 macro_rules_attribute = "0.2.2"
-pacaptr-macros = { path = "crates/pacaptr-macros", version = "0.23.2", optional = true }
 regex = { workspace = true }
 serde = { version = "1.0.219", features = ["derive"] }
 smol = "2.0.2"
@@ -131,7 +131,7 @@ is_elevated = "0.1.2"
 nix = { version = "0.31.2", default-features = false, features = ["user"] }
 
 [features]
-test = ["pacaptr-macros/test"]
+test = []
 
 [profile.release]
 codegen-units = 1

@@ -1,20 +1,11 @@
 //! `pacaptr` is a `pacman`-like syntax wrapper for many package managers.
-#![cfg_attr(
-    doc,
-    doc = indoc::indoc!{r##"
-        # Compatibility Table
+//! # Compatibility Table
+//!
+//! Currently, `pacaptr` supports the following operations:
+#![doc = include_str!("pm/compat_table.md")]
+//! Note: Some flags are "translated" so are not shown in this table, eg. `-p`
+//! in `-Sp`.
 
-        Currently, `pacaptr` supports the following operations:
-    "##}
-)]
-#![cfg_attr(doc, doc = pacaptr_macros::compat_table!())]
-#![cfg_attr(
-    doc,
-    doc = indoc::indoc!{r##"
-        Note: Some flags are "translated" so are not shown in this table, eg. `-p`
-        in `-Sp`.
-    "##}
-)]
 #![warn(missing_docs)]
 #![cfg_attr(any(test, feature = "test"), allow(clippy::wildcard_imports))]
 
