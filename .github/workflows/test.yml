@@ -71,6 +71,7 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
       - name: Build and run tests
+        shell: bash
         env:
           CARGO_BUILD_TARGET: x86_64-pc-windows-msvc
         run: |
@@ -109,6 +110,7 @@ jobs:
           Get-Command winget
           winget --info
       - name: Build and run tests
+        shell: bash
         env:
           CARGO_BUILD_TARGET: x86_64-pc-windows-msvc
         run: |

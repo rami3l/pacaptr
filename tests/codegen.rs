@@ -83,7 +83,11 @@ fn check(path: impl AsRef<Path>, expected: &str) {
         fs::write(&path, expected).unwrap();
         return;
     }
-    let actual = fs::read_to_string(&path).expect("input path should exist and be readable");
+
+    let actual = fs::read_to_string(&path)
+        .expect("input path should exist and be readable")
+        .replace("\r\n", "\n");
+
     assert_eq!(
         actual,
         expected,
