@@ -301,13 +301,38 @@ jobs:
           cargo test --features=test apk
           cargo test --features=test apk -- --ignored
 
-  pkcon-pip-conda-test:
+  pip-conda-test:
     runs-on: ubuntu-latest
     needs: skip-check
     if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
     steps:
       - uses: actions/checkout@v7
-      - name: Setup extra build tools
+      - name: Setup conda
+        uses: conda-incubator/setup-miniconda@v4
+        with:
+          miniconda-version: "latest"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+      - name: Build and run tests
+        env:
+          CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
+        run: |
+          cargo build --locked
+
+          cargo test --features=test pip
+          cargo test --features=test conda
+
+          cargo test --features=test pip -- --ignored
+          cargo test --features=test conda -- --ignored
+
+  pkcon-test:
+    runs-on: ubuntu-24.04
+    needs: skip-check
+    if: ${{ needs.skip-check.outputs.should_skip != 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup PackageKit tools
         run: |
           sudo apt-get update
           sudo apt-get install -y packagekit packagekit-tools
@@ -319,14 +344,8 @@ jobs:
           CARGO_BUILD_TARGET: x86_64-unknown-linux-musl
         run: |
           cargo build --locked
-
           cargo test --features=test pkcon
-          cargo test --features=test pip
-          cargo test --features=test conda
-
           cargo test --features=test pkcon -- --ignored
-          cargo test --features=test pip -- --ignored
-          cargo test --features=test conda -- --ignored
 
   # https://github.com/PyO3/pyo3/blob/42601f3af94242b017402b763a495798a92da8f8/.github/workflows/ci.yml#L452-L472
   conclusion:
@@ -342,7 +361,8 @@ jobs:
       - xbps-test
       - zypper-test
       - apk-test
-      - pkcon-pip-conda-test
+      - pip-conda-test
+      - pkcon-test
     if: always()
     runs-on: ubuntu-latest
     steps:
