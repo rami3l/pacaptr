@@ -26,7 +26,7 @@ fn pip_q() {
 fn pip_qi() {
     test_dsl! { r##"
         in --using pip -Qi wheel
-        ou Summary: A built-package format for Python
+        ou Summary: Command line tool for manipulating wheel files
     "## }
 }
 
